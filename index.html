@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GM Research — Intelligence Briefings Archive</title>
+<title>GM Research — Intelligence Archive</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -18,6 +18,7 @@
     --purple: #bc8cff;
     --pink: #ff7b72;
     --teal: #39d353;
+    --gold: #d4a853;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,7 +44,6 @@
     gap: 12px;
     margin-bottom: 12px;
   }
-  .header-logo svg { opacity: 0.9; }
   .header h1 {
     font-size: 26px;
     font-weight: 700;
@@ -62,9 +62,7 @@
     gap: 28px;
     margin-top: 20px;
   }
-  .stat {
-    text-align: center;
-  }
+  .stat { text-align: center; }
   .stat-num {
     font-size: 22px;
     font-weight: 700;
@@ -84,7 +82,7 @@
     justify-content: center;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 18px 24px;
+    padding: 14px 24px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
@@ -101,9 +99,54 @@
     border-radius: 50%;
   }
 
+  /* Tab Bar */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px 24px 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    padding: 8px 22px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    position: relative;
+    top: 1px;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    color: var(--text);
+    background: var(--bg);
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+  }
+  .tab-count {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--muted);
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tab-btn.active .tab-count {
+    background: rgba(88,166,255,0.15);
+    color: var(--accent);
+  }
+
   /* Main content */
   .container {
-    max-width: 860px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 32px 20px 0;
   }
@@ -127,10 +170,8 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Date group */
-  .date-group {
-    margin-bottom: 32px;
-  }
+  /* ── BRIEFINGS SECTION ── */
+  .date-group { margin-bottom: 32px; }
   .date-header {
     display: flex;
     align-items: center;
@@ -139,11 +180,7 @@
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
   }
-  .date-label {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
+  .date-label { font-size: 15px; font-weight: 600; color: var(--text); }
   .date-badge {
     font-size: 11px;
     padding: 2px 8px;
@@ -153,24 +190,17 @@
     border: 1px solid var(--border);
   }
   .date-badge.today {
-    background: rgba(88, 166, 255, 0.1);
+    background: rgba(88,166,255,0.1);
     color: var(--accent);
-    border-color: rgba(88, 166, 255, 0.3);
+    border-color: rgba(88,166,255,0.3);
   }
-  .date-count {
-    margin-left: auto;
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .date-count { margin-left: auto; font-size: 12px; color: var(--muted); }
 
-  /* Briefing grid */
   .briefing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 12px;
   }
-
-  /* Briefing card */
   .briefing-card {
     display: flex;
     align-items: center;
@@ -188,38 +218,153 @@
     transform: translateY(-1px);
   }
   .briefing-icon {
-    width: 38px;
-    height: 38px;
+    width: 38px; height: 38px;
     border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
   }
   .briefing-info { min-width: 0; }
   .briefing-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .briefing-type {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
+  .briefing-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .briefing-arrow {
-    margin-left: auto;
-    color: var(--muted);
-    font-size: 14px;
-    flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.15s;
+    margin-left: auto; color: var(--muted); font-size: 14px;
+    flex-shrink: 0; opacity: 0; transition: opacity 0.15s;
   }
   .briefing-card:hover .briefing-arrow { opacity: 1; }
+
+  /* ── TRANSCRIPTS SECTION ── */
+  .transcripts-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .transcripts-header-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .transcripts-count {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .transcript-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .transcript-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .transcript-card:hover {
+    border-color: var(--gold);
+    background: var(--surface2);
+  }
+
+  .tc-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .tc-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+    background: rgba(212,168,83,0.1);
+    border: 1px solid rgba(212,168,83,0.25);
+  }
+  .tc-body { flex: 1; min-width: 0; }
+  .tc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+    margin-bottom: 5px;
+  }
+  .tc-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .tc-domain {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+
+  .tc-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .tc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .tc-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+  .tc-btn.primary {
+    background: rgba(88,166,255,0.1);
+    border-color: rgba(88,166,255,0.35);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .tc-btn.primary:hover {
+    background: rgba(88,166,255,0.2);
+    border-color: var(--accent);
+  }
+  .tc-btn.echo {
+    background: rgba(212,168,83,0.08);
+    border-color: rgba(212,168,83,0.3);
+    color: var(--gold);
+  }
+  .tc-btn.echo:hover {
+    background: rgba(212,168,83,0.18);
+    border-color: var(--gold);
+  }
+  .tc-btn.sc {
+    background: rgba(63,185,80,0.08);
+    border-color: rgba(63,185,80,0.3);
+    color: var(--green);
+  }
+  .tc-btn.sc:hover {
+    background: rgba(63,185,80,0.18);
+    border-color: var(--green);
+  }
 
   /* Empty state */
   .empty {
@@ -251,7 +396,7 @@
     </svg>
     <h1>GM <span>Research</span></h1>
   </div>
-  <div class="header-sub">Daily Intelligence Briefings Archive</div>
+  <div class="header-sub">Intelligence Archive — Briefings &amp; Transcripts</div>
   <div class="header-stats">
     <div class="stat">
       <span class="stat-num" id="total-briefings">—</span>
@@ -260,6 +405,10 @@
     <div class="stat">
       <span class="stat-num" id="total-days">—</span>
       <span class="stat-label">Days</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="total-transcripts">—</span>
+      <span class="stat-label">Transcripts</span>
     </div>
     <div class="stat">
       <span class="stat-num" id="latest-date">—</span>
@@ -273,13 +422,29 @@
   <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> The Brief</div>
   <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> Biohacker Report</div>
   <div class="legend-item"><div class="legend-dot" style="background:#bc8cff"></div> AI Update</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#d4a853"></div> Transcripts</div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-briefings" onclick="switchTab('briefings')">
+    📋 Briefings <span class="tab-count" id="tab-briefings-count">—</span>
+  </button>
+  <button class="tab-btn" id="tab-transcripts" onclick="switchTab('transcripts')">
+    🎬 Transcripts <span class="tab-count" id="tab-transcripts-count">—</span>
+  </button>
 </div>
 
 <div class="container">
-  <div id="content">
+  <div id="briefings-content">
     <div class="status">
       <div class="spinner"></div>
       <div>Loading briefings archive…</div>
+    </div>
+  </div>
+  <div id="transcripts-content" style="display:none">
+    <div class="status">
+      <div class="spinner"></div>
+      <div>Loading transcripts…</div>
     </div>
   </div>
 </div>
@@ -289,89 +454,71 @@
 </div>
 
 <script>
-const REPO = 'ngmicapital/GM-Research';
+const REPO  = 'ngmicapital/GM-Research';
 const BASE  = `https://api.github.com/repos/${REPO}/contents/briefings`;
-const PAGES = `https://ngmicapital.github.io/GM-Research/briefings`;
+const PAGES = `https://ngmicapital.github.io/GM-Research`;
+const RAW   = `https://raw.githubusercontent.com/${REPO}/main`;
 
-// Defines display order and filters out unlisted briefings (e.g. bio-os)
 const BRIEFING_ORDER = ['market-briefing', 'legal-brief', 'biohacker-report', 'ai-briefing'];
 
 const BRIEFING_META = {
-  'market-briefing': {
-    label: 'The Morning Edge',
-    type:  'Market Intelligence',
-    icon:  '📈',
-    color: '#f0883e',
-    bg:    'rgba(240,136,62,0.12)'
-  },
-  'legal-brief': {
-    label: 'The Brief',
-    type:  'Legal Intelligence',
-    icon:  '⚖️',
-    color: '#58a6ff',
-    bg:    'rgba(88,166,255,0.12)'
-  },
-  'biohacker-report': {
-    label: 'Biohacker Report',
-    type:  'Health & Longevity',
-    icon:  '🧬',
-    color: '#3fb950',
-    bg:    'rgba(63,185,80,0.12)'
-  },
-  'ai-briefing': {
-    label: 'AI Update',
-    type:  'AI & Technology',
-    icon:  '🤖',
-    color: '#bc8cff',
-    bg:    'rgba(188,140,255,0.12)'
-  },
+  'market-briefing':  { label: 'The Morning Edge', type: 'Market Intelligence', icon: '📈', color: '#f0883e', bg: 'rgba(240,136,62,0.12)' },
+  'legal-brief':      { label: 'The Brief',         type: 'Legal Intelligence',  icon: '⚖️', color: '#58a6ff', bg: 'rgba(88,166,255,0.12)' },
+  'biohacker-report': { label: 'Biohacker Report',  type: 'Health & Longevity',  icon: '🧬', color: '#3fb950', bg: 'rgba(63,185,80,0.12)'  },
+  'ai-briefing':      { label: 'AI Update',          type: 'AI & Technology',     icon: '🤖', color: '#bc8cff', bg: 'rgba(188,140,255,0.12)' },
 };
 
+// ── Tab switching ──
+let briefingsLoaded = false;
+let transcriptsLoaded = false;
+
+function switchTab(tab) {
+  document.getElementById('tab-briefings').classList.toggle('active', tab === 'briefings');
+  document.getElementById('tab-transcripts').classList.toggle('active', tab === 'transcripts');
+  document.getElementById('briefings-content').style.display = tab === 'briefings' ? 'block' : 'none';
+  document.getElementById('transcripts-content').style.display = tab === 'transcripts' ? 'block' : 'none';
+  if (tab === 'transcripts' && !transcriptsLoaded) {
+    transcriptsLoaded = true;
+    renderTranscripts();
+  }
+}
+
+// ── Date helpers ──
 function formatDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(y, m - 1, d).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatShortDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function isToday(dateStr) {
   return dateStr === new Date().toISOString().slice(0, 10);
 }
 
+// ── Briefings ──
 async function fetchDates() {
   const res = await fetch(BASE);
   if (!res.ok) throw new Error(`GitHub API: ${res.status}`);
-  const items = await res.json();
-  return items
-    .filter(i => i.type === 'dir')
-    .map(i => i.name)
-    .sort((a, b) => b.localeCompare(a)); // newest first
+  return (await res.json()).filter(i => i.type === 'dir').map(i => i.name).sort((a, b) => b.localeCompare(a));
 }
 
 async function fetchBriefings(date) {
   const res = await fetch(`${BASE}/${date}`);
   if (!res.ok) return [];
   const items = await res.json();
-  const found = items
-    .filter(i => i.name.endsWith('.html'))
-    .map(i => i.name.replace('.html', ''))
-    .filter(k => BRIEFING_ORDER.includes(k));
+  const found = items.filter(i => i.name.endsWith('.html')).map(i => i.name.replace('.html', '')).filter(k => BRIEFING_ORDER.includes(k));
   return BRIEFING_ORDER.filter(k => found.includes(k));
 }
 
 function renderCard(date, briefingKey) {
-  const meta = BRIEFING_META[briefingKey] || {
-    label: briefingKey,
-    type:  'Briefing',
-    icon:  '📄',
-    color: '#8b949e',
-    bg:    'rgba(139,148,158,0.12)'
-  };
-  const url = `${PAGES}/${date}/${briefingKey}.html`;
+  const meta = BRIEFING_META[briefingKey] || { label: briefingKey, type: 'Briefing', icon: '📄', color: '#8b949e', bg: 'rgba(139,148,158,0.12)' };
+  const url = `${PAGES}/briefings/${date}/${briefingKey}.html`;
   return `
     <a class="briefing-card" href="${url}" target="_blank">
-      <div class="briefing-icon" style="background:${meta.bg}; border: 1px solid ${meta.color}30;">
-        ${meta.icon}
-      </div>
+      <div class="briefing-icon" style="background:${meta.bg}; border: 1px solid ${meta.color}30;">${meta.icon}</div>
       <div class="briefing-info">
         <div class="briefing-name">${meta.label}</div>
         <div class="briefing-type">${meta.type}</div>
@@ -381,65 +528,110 @@ function renderCard(date, briefingKey) {
 }
 
 async function renderArchive() {
-  const content = document.getElementById('content');
+  const content = document.getElementById('briefings-content');
   try {
     const dates = await fetchDates();
-
     if (dates.length === 0) {
-      content.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">📭</div>
-          <h3>No briefings yet</h3>
-          <p>Briefings will appear here once published.</p>
-        </div>`;
+      content.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><h3>No briefings yet</h3><p>Briefings will appear here once published.</p></div>`;
       return;
     }
-
-    // Fetch all dates in parallel
     const allBriefings = await Promise.all(dates.map(d => fetchBriefings(d)));
-
     let totalBriefings = 0;
     let html = '';
-
     dates.forEach((date, i) => {
       const briefings = allBriefings[i];
       if (briefings.length === 0) return;
       totalBriefings += briefings.length;
-
       const today = isToday(date);
-      const badgeClass = today ? 'date-badge today' : 'date-badge';
-      const badgeText = today ? 'Today' : '';
-
       html += `
         <div class="date-group">
           <div class="date-header">
             <div class="date-label">${formatDate(date)}</div>
-            ${badgeText ? `<div class="${badgeClass}">${badgeText}</div>` : ''}
+            ${today ? `<div class="date-badge today">Today</div>` : ''}
             <div class="date-count">${briefings.length} briefing${briefings.length !== 1 ? 's' : ''}</div>
           </div>
-          <div class="briefing-grid">
-            ${briefings.map(b => renderCard(date, b)).join('')}
-          </div>
+          <div class="briefing-grid">${briefings.map(b => renderCard(date, b)).join('')}</div>
         </div>`;
     });
-
     content.innerHTML = html;
-
-    // Update stats
     document.getElementById('total-briefings').textContent = totalBriefings;
     document.getElementById('total-days').textContent = dates.length;
-    document.getElementById('latest-date').textContent = dates[0]?.slice(5) || '—'; // MM-DD
-
+    document.getElementById('latest-date').textContent = dates[0]?.slice(5) || '—';
+    document.getElementById('tab-briefings-count').textContent = totalBriefings;
+    briefingsLoaded = true;
   } catch (err) {
-    content.innerHTML = `
-      <div class="status" style="color:#ff7b72">
-        ⚠️ Failed to load archive<br>
-        <small style="color:#8b949e; font-size:12px; margin-top:8px; display:block">${err.message}</small>
-      </div>`;
+    content.innerHTML = `<div class="status" style="color:#ff7b72">⚠️ Failed to load archive<br><small style="color:#8b949e;font-size:12px;margin-top:8px;display:block">${err.message}</small></div>`;
   }
 }
 
+// ── Transcripts ──
+async function renderTranscripts() {
+  const content = document.getElementById('transcripts-content');
+  try {
+    const res = await fetch(`${RAW}/transcripts/manifest.json?t=${Date.now()}`);
+    if (!res.ok) throw new Error(`manifest.json not found (${res.status})`);
+    const transcripts = await res.json();
+
+    if (transcripts.length === 0) {
+      content.innerHTML = `<div class="empty"><div class="empty-icon">🎬</div><h3>No transcripts yet</h3><p>Processed transcripts will appear here.</p></div>`;
+      return;
+    }
+
+    // Sort newest first
+    transcripts.sort((a, b) => b.date.localeCompare(a.date));
+
+    const html = `
+      <div class="transcripts-header">
+        <div class="transcripts-header-label">Transcript Library</div>
+        <div class="transcripts-count">${transcripts.length} transcript${transcripts.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="transcript-grid">
+        ${transcripts.map(t => renderTranscriptCard(t)).join('')}
+      </div>`;
+
+    content.innerHTML = html;
+    document.getElementById('total-transcripts').textContent = transcripts.length;
+    document.getElementById('tab-transcripts-count').textContent = transcripts.length;
+  } catch (err) {
+    content.innerHTML = `<div class="status" style="color:#ff7b72">⚠️ Failed to load transcripts<br><small style="color:#8b949e;font-size:12px;margin-top:8px;display:block">${err.message}</small></div>`;
+  }
+}
+
+function renderTranscriptCard(t) {
+  const baseUrl = `${PAGES}/transcripts/${t.slug}/index.html`;
+  const ytLink  = t.youtube_url ? `<a href="${t.youtube_url}" target="_blank" class="tc-btn" style="margin-left:auto">▶ Source</a>` : '';
+  return `
+    <div class="transcript-card">
+      <div class="tc-top">
+        <div class="tc-icon">🎬</div>
+        <div class="tc-body">
+          <div class="tc-title">${t.title}</div>
+          <div class="tc-meta">${t.source} &nbsp;·&nbsp; ${formatShortDate(t.date)}</div>
+          <div class="tc-domain">${t.domain}</div>
+        </div>
+      </div>
+      <div class="tc-actions">
+        <a href="${baseUrl}" target="_blank" class="tc-btn primary">Full Document ↗</a>
+        <a href="${baseUrl}#echo-section" target="_blank" class="tc-btn echo">⚡ Echo</a>
+        <a href="${baseUrl}#executive-summary" target="_blank" class="tc-btn sc">📋 Spark &amp; Cannon</a>
+        ${ytLink}
+      </div>
+    </div>`;
+}
+
+// ── Init ──
 renderArchive();
+// Pre-fetch transcript count for tab badge
+fetch(`${RAW}/transcripts/manifest.json?t=${Date.now()}`)
+  .then(r => r.ok ? r.json() : [])
+  .then(data => {
+    document.getElementById('total-transcripts').textContent = data.length || '0';
+    document.getElementById('tab-transcripts-count').textContent = data.length || '0';
+  })
+  .catch(() => {
+    document.getElementById('total-transcripts').textContent = '0';
+    document.getElementById('tab-transcripts-count').textContent = '0';
+  });
 </script>
 </body>
 </html>
