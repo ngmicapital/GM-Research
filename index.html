@@ -2,167 +2,447 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Briefings Archive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GM Research — Intelligence Briefings Archive</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --orange: #f0883e;
+    --purple: #bc8cff;
+    --pink: #ff7b72;
+    --teal: #39d353;
+  }
 
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  background:#FEFCF3;
-  color:#2D2A23;
-  min-height:100vh;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Header ── */
-.hdr{
-  background:#1E1B16;
-  padding:16px 16px 14px;
-  position:sticky;top:0;z-index:10;
-  border-bottom:2px solid #C97B1A;
-}
-.hdr-in{
-  max-width:660px;margin:0 auto;
-  display:flex;align-items:baseline;gap:10px;
-}
-.hdr h1{
-  font-size:1.15rem;font-weight:700;
-  color:#F5EDD6;letter-spacing:-0.01em;
-}
-.hdr-badge{
-  font-size:0.7rem;font-weight:600;
-  color:#C97B1A;letter-spacing:0.08em;text-transform:uppercase;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
 
-/* ── Container ── */
-.wrap{max-width:660px;margin:0 auto;padding:14px 12px 40px}
+  /* Header */
+  .header {
+    background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 28px;
+    text-align: center;
+  }
+  .header-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .header-logo svg { opacity: 0.9; }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--accent); }
+  .header-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 20px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
-.meta{
-  font-size:0.75rem;color:#A0917A;
-  padding:4px 2px 10px;
-}
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
 
-/* ── Date row ── */
-.row{
-  background:#fff;
-  border:1px solid #E8E0D0;
-  border-radius:12px;
-  margin-bottom:8px;
-  overflow:hidden;
-  box-shadow:0 1px 2px rgba(0,0,0,.04);
-}
+  /* Main content */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 20px 0;
+  }
 
-.row-hd{
-  width:100%;display:flex;align-items:center;
-  justify-content:space-between;
-  padding:13px 14px;
-  background:none;border:none;cursor:pointer;
-  text-align:left;
-  transition:background .12s;
-}
-.row-hd:hover{background:#FDF8EE}
-.row-hd:active{background:#F7EDCE}
+  /* Loading / Error */
+  .status {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-.row-left{display:flex;align-items:baseline;gap:9px}
-.row-date{
-  font-size:.98rem;font-weight:700;
-  color:#2D2A23;font-variant-numeric:tabular-nums;
-}
-.row-day{font-size:.75rem;color:#A0917A}
+  /* Date group */
+  .date-group {
+    margin-bottom: 32px;
+  }
+  .date-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .date-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .date-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .date-badge.today {
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent);
+    border-color: rgba(88, 166, 255, 0.3);
+  }
+  .date-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+  }
 
-.row-right{display:flex;align-items:center;gap:8px}
-.pill{
-  font-size:.7rem;font-weight:600;
-  color:#C97B1A;background:#FEF3DC;
-  padding:2px 7px;border-radius:999px;
-}
-.chev{
-  font-size:.95rem;color:#C0B09A;
-  transition:transform .2s ease;display:inline-block;
-}
-.chev.open{transform:rotate(180deg)}
+  /* Briefing grid */
+  .briefing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
 
-/* ── Panel ── */
-.panel{display:none;padding:0 10px 10px}
-.panel.open{display:block}
+  /* Briefing card */
+  .briefing-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .briefing-card:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .briefing-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .briefing-info { min-width: 0; }
+  .briefing-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .briefing-type {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .briefing-arrow {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 14px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .briefing-card:hover .briefing-arrow { opacity: 1; }
 
-/* ── Card grid ── */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:7px;
-}
-@media(max-width:360px){.grid{grid-template-columns:1fr}}
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .empty p { font-size: 13px; }
 
-/* ── Briefing card ── */
-.card{
-  display:flex;flex-direction:column;
-  border:1px solid;border-radius:8px;
-  overflow:hidden;text-decoration:none;
-  transition:transform .15s,box-shadow .15s;
-  min-height:88px;
-}
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 18px rgba(0,0,0,.35);
-}
-.card--missing{
-  opacity:.3;pointer-events:none;
-  background:#111 !important;border-color:#2a2a2a !important;
-}
-.card-bar{height:3px;width:100%;flex-shrink:0}
-.card-body{
-  flex:1;padding:8px 9px 5px;
-  display:flex;flex-direction:column;gap:3px;
-}
-.card-title{
-  font-size:.76rem;font-weight:700;
-  line-height:1.2;
-}
-.card-sub{font-size:.64rem;color:#94a3b8;line-height:1.3}
-.card-cta{
-  padding:5px 9px 7px;
-  font-size:.68rem;font-weight:700;
-  letter-spacing:.03em;
-}
-
-/* ── Empty state ── */
-.empty{text-align:center;padding:60px 20px}
-.empty-h{font-size:1rem;font-weight:600;color:#7a6a55;margin-bottom:8px}
-.empty-b{font-size:.82rem;color:#B0A090;line-height:1.5}
-.empty-b code{
-  font-size:.78rem;background:#F0EAD8;
-  padding:1px 5px;border-radius:4px;
-}
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 20px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 
-<header class="hdr">
-  <div class="hdr-in">
-    <h1>Briefings Archive</h1>
-    <span class="hdr-badge">dc</span>
+<div class="header">
+  <div class="header-logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#58a6ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1>GM <span>Research</span></h1>
   </div>
-</header>
+  <div class="header-sub">Daily Intelligence Briefings Archive</div>
+  <div class="header-stats">
+    <div class="stat">
+      <span class="stat-num" id="total-briefings">—</span>
+      <span class="stat-label">Briefings</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="total-days">—</span>
+      <span class="stat-label">Days</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="latest-date">—</span>
+      <span class="stat-label">Latest</span>
+    </div>
+  </div>
+</div>
 
-<div class="wrap">
-<div class="empty"><p class="empty-h">No briefings yet</p><p class="empty-b">Files committed to <code>briefings/YYYY-MM-DD/</code> will appear here.</p></div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div> Morning Edge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> Legal Brief</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#bc8cff"></div> AI Intelligence</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> Biohacker Report</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div> Bio OS</div>
+</div>
+
+<div class="container">
+  <div id="content">
+    <div class="status">
+      <div class="spinner"></div>
+      <div>Loading briefings archive…</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Powered by <a href="https://github.com/ngmicapital/GM-Research" target="_blank">ngmicapital/GM-Research</a> &nbsp;·&nbsp; Updated daily</p>
 </div>
 
 <script>
-function tog(date) {
-  var panel = document.getElementById('p-' + date);
-  var chev  = document.getElementById('c-' + date);
-  var btn   = panel.previousElementSibling;
-  var open  = panel.classList.toggle('open');
-  chev.classList.toggle('open', open);
-  btn.setAttribute('aria-expanded', open);
+const REPO = 'ngmicapital/GM-Research';
+const BASE  = `https://api.github.com/repos/${REPO}/contents/briefings`;
+const PAGES = `https://ngmicapital.github.io/GM-Research/briefings`;
+
+const BRIEFING_META = {
+  'morning-briefing': {
+    label: 'The Morning Edge',
+    type:  'Market Intelligence',
+    icon:  '📈',
+    color: '#f0883e',
+    bg:    'rgba(240,136,62,0.12)'
+  },
+  'legal-brief': {
+    label: 'The Brief',
+    type:  'Legal Intelligence',
+    icon:  '⚖️',
+    color: '#58a6ff',
+    bg:    'rgba(88,166,255,0.12)'
+  },
+  'ai-briefing': {
+    label: 'AI Intelligence',
+    type:  'AI & Technology',
+    icon:  '🤖',
+    color: '#bc8cff',
+    bg:    'rgba(188,140,255,0.12)'
+  },
+  'biohacker-report': {
+    label: 'Biohacker Report',
+    type:  'Health & Longevity',
+    icon:  '🧬',
+    color: '#3fb950',
+    bg:    'rgba(63,185,80,0.12)'
+  },
+  'bio-os': {
+    label: 'Bio OS',
+    type:  'Daily Dashboard',
+    icon:  '🌅',
+    color: '#39d353',
+    bg:    'rgba(57,211,83,0.12)'
+  },
+};
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// Auto-open today's entry if present
-var today = new Date().toISOString().split('T')[0];
-if (document.getElementById('p-' + today)) tog(today);
-</script>
+function isToday(dateStr) {
+  return dateStr === new Date().toISOString().slice(0, 10);
+}
 
+async function fetchDates() {
+  const res = await fetch(BASE);
+  if (!res.ok) throw new Error(`GitHub API: ${res.status}`);
+  const items = await res.json();
+  return items
+    .filter(i => i.type === 'dir')
+    .map(i => i.name)
+    .sort((a, b) => b.localeCompare(a)); // newest first
+}
+
+async function fetchBriefings(date) {
+  const res = await fetch(`${BASE}/${date}`);
+  if (!res.ok) return [];
+  const items = await res.json();
+  return items
+    .filter(i => i.name.endsWith('.html'))
+    .map(i => i.name.replace('.html', ''));
+}
+
+function renderCard(date, briefingKey) {
+  const meta = BRIEFING_META[briefingKey] || {
+    label: briefingKey,
+    type:  'Briefing',
+    icon:  '📄',
+    color: '#8b949e',
+    bg:    'rgba(139,148,158,0.12)'
+  };
+  const url = `${PAGES}/${date}/${briefingKey}.html`;
+  return `
+    <a class="briefing-card" href="${url}" target="_blank">
+      <div class="briefing-icon" style="background:${meta.bg}; border: 1px solid ${meta.color}30;">
+        ${meta.icon}
+      </div>
+      <div class="briefing-info">
+        <div class="briefing-name">${meta.label}</div>
+        <div class="briefing-type">${meta.type}</div>
+      </div>
+      <div class="briefing-arrow">→</div>
+    </a>`;
+}
+
+async function renderArchive() {
+  const content = document.getElementById('content');
+  try {
+    const dates = await fetchDates();
+
+    if (dates.length === 0) {
+      content.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📭</div>
+          <h3>No briefings yet</h3>
+          <p>Briefings will appear here once published.</p>
+        </div>`;
+      return;
+    }
+
+    // Fetch all dates in parallel
+    const allBriefings = await Promise.all(dates.map(d => fetchBriefings(d)));
+
+    let totalBriefings = 0;
+    let html = '';
+
+    dates.forEach((date, i) => {
+      const briefings = allBriefings[i];
+      if (briefings.length === 0) return;
+      totalBriefings += briefings.length;
+
+      const today = isToday(date);
+      const badgeClass = today ? 'date-badge today' : 'date-badge';
+      const badgeText = today ? 'Today' : '';
+
+      html += `
+        <div class="date-group">
+          <div class="date-header">
+            <div class="date-label">${formatDate(date)}</div>
+            ${badgeText ? `<div class="${badgeClass}">${badgeText}</div>` : ''}
+            <div class="date-count">${briefings.length} briefing${briefings.length !== 1 ? 's' : ''}</div>
+          </div>
+          <div class="briefing-grid">
+            ${briefings.map(b => renderCard(date, b)).join('')}
+          </div>
+        </div>`;
+    });
+
+    content.innerHTML = html;
+
+    // Update stats
+    document.getElementById('total-briefings').textContent = totalBriefings;
+    document.getElementById('total-days').textContent = dates.length;
+    document.getElementById('latest-date').textContent = dates[0]?.slice(5) || '—'; // MM-DD
+
+  } catch (err) {
+    content.innerHTML = `
+      <div class="status" style="color:#ff7b72">
+        ⚠️ Failed to load archive<br>
+        <small style="color:#8b949e; font-size:12px; margin-top:8px; display:block">${err.message}</small>
+      </div>`;
+  }
+}
+
+renderArchive();
+</script>
 </body>
 </html>
