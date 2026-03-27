@@ -269,11 +269,10 @@
 </div>
 
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div> Morning Edge</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> Legal Brief</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#bc8cff"></div> AI Intelligence</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div> The Morning Edge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> The Brief</div>
   <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> Biohacker Report</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#39d353"></div> Bio OS</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#bc8cff"></div> AI Update</div>
 </div>
 
 <div class="container">
@@ -294,6 +293,9 @@ const REPO = 'ngmicapital/GM-Research';
 const BASE  = `https://api.github.com/repos/${REPO}/contents/briefings`;
 const PAGES = `https://ngmicapital.github.io/GM-Research/briefings`;
 
+// Defines display order and filters out unlisted briefings (e.g. bio-os)
+const BRIEFING_ORDER = ['morning-briefing', 'legal-brief', 'biohacker-report', 'ai-briefing'];
+
 const BRIEFING_META = {
   'morning-briefing': {
     label: 'The Morning Edge',
@@ -309,13 +311,6 @@ const BRIEFING_META = {
     color: '#58a6ff',
     bg:    'rgba(88,166,255,0.12)'
   },
-  'ai-briefing': {
-    label: 'AI Intelligence',
-    type:  'AI & Technology',
-    icon:  '🤖',
-    color: '#bc8cff',
-    bg:    'rgba(188,140,255,0.12)'
-  },
   'biohacker-report': {
     label: 'Biohacker Report',
     type:  'Health & Longevity',
@@ -323,12 +318,12 @@ const BRIEFING_META = {
     color: '#3fb950',
     bg:    'rgba(63,185,80,0.12)'
   },
-  'bio-os': {
-    label: 'Bio OS',
-    type:  'Daily Dashboard',
-    icon:  '🌅',
-    color: '#39d353',
-    bg:    'rgba(57,211,83,0.12)'
+  'ai-briefing': {
+    label: 'AI Update',
+    type:  'AI & Technology',
+    icon:  '🤖',
+    color: '#bc8cff',
+    bg:    'rgba(188,140,255,0.12)'
   },
 };
 
@@ -356,9 +351,11 @@ async function fetchBriefings(date) {
   const res = await fetch(`${BASE}/${date}`);
   if (!res.ok) return [];
   const items = await res.json();
-  return items
+  const found = items
     .filter(i => i.name.endsWith('.html'))
-    .map(i => i.name.replace('.html', ''));
+    .map(i => i.name.replace('.html', ''))
+    .filter(k => BRIEFING_ORDER.includes(k));
+  return BRIEFING_ORDER.filter(k => found.includes(k));
 }
 
 function renderCard(date, briefingKey) {
