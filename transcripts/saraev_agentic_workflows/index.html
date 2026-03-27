@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Workflows: The DO Framework — Nick Saraev</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+
+/* ── RESET & BASE ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── READING PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--progress-bar);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+
+/* ── LAYOUT ── */
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 820px;
+  margin-left: 260px;
+  padding: 40px 24px 120px;
+}
+
+/* ── FLOATING TOC SIDEBAR (LEFT SIDE) ── */
+.toc-sidebar {
+  position: fixed;
+  top: 80px;
+  left: max(16px, calc((100vw - 1200px) / 2));
+  width: 220px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--bg-toc);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.toc-sidebar ul { list-style: none; }
+
+.toc-sidebar li {
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.toc-sidebar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+
+.toc-sidebar a:hover,
+.toc-sidebar a.active { color: var(--accent-gold); }
+
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+
+/* Mobile: hamburger toggle */
+.toc-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 64px;
+  z-index: 1001;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 16px;
+    width: 280px;
+    max-height: 70vh;
+  }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── HEADER / HERO ── */
+.hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mode-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.mode-badge.full { background: var(--accent-teal); color: #fff; }
+
+/* ── HEADINGS ── */
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--text-heading);
+  margin: 64px 0 8px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-heading);
+  margin: 36px 0 12px;
+  line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+
+h4 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--accent-teal);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── EXECUTIVE SUMMARY ── */
+.exec-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.exec-summary h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.exec-summary ul { list-style: none; }
+
+.exec-summary li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.exec-summary li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* ── BLOCKQUOTES ── */
+blockquote {
+  background: var(--bg-quote);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text);
+}
+
+/* ── TIMESTAMPS ── */
+.ts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--timestamp);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* ── ANALYTICAL ENHANCEMENT BLOCKS ── */
+.enhancement {
+  background: var(--bg-enhancement);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.enhancement.connection   { border-color: var(--accent-blue);   }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose);   }
+.enhancement.insight      { border-color: var(--accent-teal);   }
+.enhancement.thesis       { border-color: var(--accent-gold);   }
+.enhancement.consensus    { border-color: var(--accent-green);  }
+.enhancement.verified     { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-enhancement)); }
+
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.enhancement.connection   .enhancement-label { color: var(--accent-blue);   }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose);   }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal);   }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold);   }
+.enhancement.consensus    .enhancement-label { color: var(--accent-green);  }
+.enhancement.verified     .enhancement-label { color: var(--accent-green);  }
+
+/* ── ITEM CARDS ── */
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.item-card h3 {
+  margin-top: 0;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.item-card .one-liner {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card h4 { margin-top: 16px; }
+
+/* ── PROTOCOL CHEAT SHEET ── */
+.protocol-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-teal);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.protocol-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover { background: var(--accent-teal); color: #fff; }
+.copy-btn.copied { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
+
+.protocol-box ul { list-style: none; }
+.protocol-box li { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.protocol-box li:last-child { border-bottom: none; }
+
+/* ── TABLES ── */
+table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+/* ── ECHO DIVIDER ── */
+.echo-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin: 80px 0 60px;
+}
+
+.echo-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 40px;
+}
+
+/* ── ECHO SPECIFIC ── */
+.bottom-line-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 0 8px 8px 0;
+  padding: 28px 32px;
+  margin-bottom: 40px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.bottom-line-card h3 {
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin: 0 0 16px;
+  border: none;
+  padding: 0;
+}
+
+.bottom-line-card ul { list-style: none; }
+
+.bottom-line-card li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+.bottom-line-card li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+}
+
+.claim-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px 22px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.claim-block strong { font-size: 15px; display: block; margin-bottom: 8px; }
+.claim-meta { color: var(--text-muted); margin: 4px 0; font-size: 13px; }
+
+/* ── CONTENT LISTS ── */
+ul.content-list { padding-left: 24px; margin-bottom: 14px; }
+ul.content-list li { margin-bottom: 6px; }
+
+/* ── REFERENCES ── */
+.references { font-size: 14px; color: var(--text-muted); }
+.references h4 { color: var(--accent-gold); font-size: 14px; margin-top: 20px; }
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+
+/* ── PRINT ── */
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; margin-left: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">🌙</span>
+  <span class="icon-dark">☀️</span>
+</button>
+
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Table of contents">☰</button>
+
+<!-- Floating TOC Sidebar — LEFT SIDE -->
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#executive-summary">Executive Summary</a></li>
+    <li><a href="#opportunity">The Opportunity</a></li>
+    <li class="toc-h3"><a href="#agents">What Agents Are</a></li>
+    <li class="toc-h3"><a href="#why-llms-fail">Why LLMs Fail</a></li>
+    <li><a href="#do-framework">DO Framework</a></li>
+    <li class="toc-h3"><a href="#ide-setup">IDE Setup</a></li>
+    <li class="toc-h3"><a href="#system-prompts">System Prompts</a></li>
+    <li class="toc-h3"><a href="#claude-skills">Claude Skills</a></li>
+    <li><a href="#mcp">MCP</a></li>
+    <li class="toc-h3"><a href="#building">Building Workflows</a></li>
+    <li><a href="#self-annealing">Self-Annealing</a></li>
+    <li class="toc-h3"><a href="#cloud">Cloud Deployment</a></li>
+    <li><a href="#parallel">Parallel Agents</a></li>
+    <li class="toc-h3"><a href="#sub-agents">Sub-Agents</a></li>
+    <li><a href="#what-to-automate">What to Automate</a></li>
+    <li><a href="#item-directives">Item: Directives</a></li>
+    <li><a href="#item-execution">Item: Execution Scripts</a></li>
+    <li><a href="#item-annealing">Item: Self-Annealing</a></li>
+    <li><a href="#item-reviewer">Item: Reviewer</a></li>
+    <li><a href="#item-document">Item: Document Agent</a></li>
+    <li><a href="#resources">Resources</a></li>
+    <li><a href="#echo">— Echo Briefing —</a></li>
+    <li class="toc-h3"><a href="#bottom-line">Bottom Line</a></li>
+    <li class="toc-h3"><a href="#key-claims">Key Claims</a></li>
+    <li class="toc-h3"><a href="#quick-actions">Quick Actions</a></li>
+    <li class="toc-h3"><a href="#quotes">Best Quotes</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+
+<!-- ═══════ SPARK & CANNON ═══════ -->
+<div class="hero">
+  <div class="hero-label">Spark &amp; Cannon — Deep Archival Transcript</div>
+  <h1>Agentic Workflows Are a Phase Change — Not an Upgrade: The DO Framework, Self-Annealing Systems, and the Coming River of Value</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span>Nick Saraev · YouTube</div>
+    <div><span class="label">Domain</span>Technology / Business / AI</div>
+    <div><span class="label">Duration</span>~6 hours</div>
+    <div><span class="label">Date</span>2025 / 2026</div>
+  </div>
+  <div style="margin-top:12px;font-size:14px;color:var(--text-muted);">
+    <span class="label">Speakers</span>
+    <strong>Nick Saraev</strong> — AI consultant; founder of Leftclick (AI-enabled outbound agency); built two AI service agencies to $160K/month combined; consulted for billion-dollar businesses
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="exec-summary" id="executive-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>AI is in a deep overhang state and the arbitrage window is open — but closing fast.</strong> Current AI capabilities far exceed public perception. Most people use "galaxy-brain intelligences" as glorified copy-paste tools — trying to drink the ocean through a tiny straw. Those who close the knowledge gap now will divert massive flows from the future economy.</li>
+    <li><strong>Agentic workflows aren't about automating 100% of one role — they're about automating 90% of 10,000 roles.</strong> Horizontal leverage: 9,000 units of economic value vs. 1. This is the industrial revolution analogy — the loom didn't replace the seamstress; it made her supervisor of 10,000 looms, reconfigurable in seconds via natural language.</li>
+    <li><strong>LLMs fail in business because they're probabilistic; the DO Framework fixes this by separating concerns.</strong> Five 90%-accurate steps = 59% overall success. DO isolates the probabilistic orchestration layer from deterministic Python execution scripts — each script does one atomic thing and cannot hallucinate.</li>
+    <li><strong>Self-annealing turns brittle workflows into battle-hardened protocols.</strong> Every error becomes an upgrade cycle: diagnose → fix → update → repeat. After 60 days, a rough directive becomes a heavily shielded system with automatic retry logic, exponential backoff, and validation steps.</li>
+    <li><strong>The 40x cost collapse makes token-heavy agentic workflows economically viable.</strong> Claude Opus 4.1→4.5: $15/$75 → $5/$25 per million tokens (3x reduction). Epoch AI confirms ~40x/year decline in AI inference costs. GPT-4 class performance: $20/M tokens in 2022 → $0.40/M today.</li>
+    <li><strong>Cloud deployment removes the LLM from production entirely.</strong> Deploy only execution scripts to Modal.com. No orchestration = no probabilistic variance. Webhook and cron triggers provide full automation without the LLM in the loop.</li>
+    <li><strong>Anthropic's own research: multi-agent setup outperformed single-agent Opus by 90.2%.</strong> Two essential sub-agent types: Reviewer (fresh-eyes QA) and Document (directive-execution sync). Parallel agents collapse workflow build time by exploring multiple architectures simultaneously.</li>
+  </ul>
+</div>
+
+<!-- ═ OPPORTUNITY ═ -->
+<h2 id="opportunity">🌊 The Opportunity — AI Overhang, River of Value, and Horizontal Leverage <span class="ts">00:00 – 23:00</span></h2>
+
+<blockquote>"They are basically trying to drink through the Pacific or Atlantic Ocean with a tiny straw." <span class="ts">03:10</span></blockquote>
+
+<p><strong>The AI Overhang:</strong> Current AI capabilities are far above what most people believe, expect, or know how to use. Nick frames this as a gap between two lines: public perception (low baseline) and actual capability (far above). Most people treat AI as an external tool — ask, copy, paste. They are not integrating it into business processes. As courses like this reach mainstream awareness, the arbitrage window closes. <span class="ts">02:29</span></p>
+
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  Nick argues the overhang is primarily a <em>knowledge and workflow gap</em>, not a capability gap. The mainstream narrative focuses on AI getting smarter; his thesis is that the smarts are already there and wildly underutilized.
+</div>
+
+<p><strong>The River of Value:</strong> The global economy is a river; capital flows to whoever provides the most value. For centuries that came from human labour. Agentic workflows act as massive diversions: "Those who position themselves as people like Z will capture massive flows from the future economy because agentic workflows aren't optional." <span class="ts">07:33 – 08:43</span></p>
+
+<p><strong>Horizontal Leverage:</strong> Automating 100% of 1 role = 1 unit of economic value. Automating 90% of 10,000 roles = 9,000 units. "If you automate 100% of one person's role, that's basically providing one unit of economic value. Whereas if you automate 90% of 10,000 people's, you're providing 9,000 units of economic value." <span class="ts">09:14 – 10:12</span></p>
+
+<p>The industrial revolution analogy: one seamstress made 10 garments/day; one loom made 10,000. Now imagine rebuilding any configuration of loom in seconds via natural language. That is the agentic workflow. "This is a phase change essentially in a company's ability to automate things." <span class="ts">10:21 – 11:50</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  The horizontal leverage concept maps directly to DO Framework design. DO isn't designed to perfectly automate one thing — it's composable across thousands of workflows in different domains. That composability <em>is</em> the horizontal leverage.
+</div>
+
+<p><strong>The Cost Collapse:</strong> When Claude Opus 4.5 released, cost dropped from $15/$75 to $5/$25 per million tokens (3x reduction). "The cost of intelligence per effectiveness has plunged something like 40x in the last year." <span class="ts">21:32 – 22:25</span></p>
+
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ Confirmed. Claude Opus 4.1→4.5 represented a 3x price reduction. Epoch AI confirms ~40x per year decline for GPT-4 equivalent performance. GPT-4 class performance cost $20/M tokens in 2022; it costs $0.40/M today. Fastest decline rates (up to 900x/year at certain performance thresholds) began after January 2024.
+</div>
+
+<!-- ═ AGENTS ═ -->
+<h2 id="agents">🤖 What Agents Actually Are — Documents → Chatbots → Agents → PTMRO <span class="ts">23:34 – 47:38</span></h2>
+
+<blockquote>"A chat is just an interface. The agent is what lives inside the app." <span class="ts">27:27</span></blockquote>
+
+<p><strong>The Three-Rung Knowledge Ladder:</strong></p>
+<ul class="content-list">
+  <li><strong>Documents</strong> — Static knowledge. One-way. Feature: doesn't rewrite itself. Good for contracts, SOPs. <span class="ts">23:41</span></li>
+  <li><strong>Chatbots</strong> — Dynamic knowledge. Two-way interaction. Like a "really smart colleague confined to a chair" — can talk, can't act. Most people's current AI usage. <span class="ts">24:47</span></li>
+  <li><strong>Agents</strong> — Dynamic action. Two-way interaction plus execution. Long runtimes (5–10 min routinely; up to 5 hours for complex builds). Autonomy. Reflection loops. <span class="ts">25:50</span></li>
+</ul>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Nick's framing of agents as "a crustacean using the shell of an older animal" clarifies why agents look like chatbots but behave differently — and implies better agent-native interfaces are coming. The chat interface is borrowed, not fundamental. <span class="ts">27:42</span>
+</div>
+
+<p><strong>The PTMRO Loop (Planning → Tools → Memory → Reflection → Orchestration):</strong></p>
+<ul class="content-list">
+  <li><strong>Planning</strong> — Assesses task, breaks into steps, decides tool calls <span class="ts">44:51</span></li>
+  <li><strong>Tool Use</strong> — Pre-built spear vs. scrambling for rocks. Structured calls replace improvisation <span class="ts">20:35</span></li>
+  <li><strong>Memory</strong> — Short-term (reasoning tokens, discarded), Intermediate (message chain), Long-term (files, system prompts) <span class="ts">43:17 – 44:22</span></li>
+  <li><strong>Reflection</strong> — Self-evaluation; detects errors; identifies failing approaches; knows when to pivot. "The intelligence of the model." Without this, it's just a script that breaks at the first hiccup. <span class="ts">46:28</span></li>
+  <li><strong>Orchestration</strong> — "The brain that combines all the components" — shuttles information between PTMR steps; adapts the next loop based on reflection output <span class="ts">47:03 – 47:53</span></li>
+</ul>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  The PTMRO loop is the theoretical foundation for why self-annealing works. Reflection is what makes an agent capable of diagnosing its own errors; Orchestration is what makes it capable of updating directives after a fix. Remove either, and self-annealing becomes impossible.
+</div>
+
+<!-- ═ WHY LLMs FAIL ═ -->
+<h2 id="why-llms-fail">⚡ Why LLMs Fail in Business — Compound Probability and the Determinism Problem <span class="ts">31:00 – 38:05</span></h2>
+
+<blockquote>"LLMs, when you do not constrain their outputs, are really unpredictable. They'll try anything, and when they fail, they fail spectacularly." <span class="ts">126:18</span></blockquote>
+
+<p><strong>Compound Probability Errors:</strong> Every LLM output is a probability distribution. For creative work, this flexibility is a feature. For business automation, it's a liability. Five steps at 90% accuracy each = 0.9^5 = <strong>59% overall success rate</strong>. Five steps at 99% accuracy each = 95%. This is why unconstrained workflows degrade quickly with complexity. <span class="ts">31:00 – 36:00</span></p>
+
+<p><strong>The Interpretability Problem:</strong> Business requires audit trails and reproducibility. "We don't actually know how they work under the hood. We don't have an established consistent decision-making process." Solution: give LLMs simple pre-built tools. When a tool is called, the call is logged and interpretable. <span class="ts">37:28 – 38:10</span></p>
+
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  The prevailing discourse focuses on making models smarter. Nick's framework inverts this: the solution to LLM unreliability isn't smarter models — it's <em>removing LLMs from the execution path wherever possible</em> and replacing them with deterministic scripts. The LLM is kept for reasoning and routing; scripts handle execution.
+</div>
+
+<div class="enhancement consensus">
+  <span class="enhancement-label">🌐 Consensus Check</span>
+  Anthropic's own guidance on multi-agent systems (June 2025) explicitly recommends separating orchestration from execution and using LLMs only where genuine reasoning is required. Nick's DO framework independently arrived at the same architectural principle.
+</div>
+
+<!-- ═ DO FRAMEWORK ═ -->
+<h2 id="do-framework">🏗️ The DO Framework — Directive Orchestration Execution <span class="ts">95:00 – 130:00</span></h2>
+
+<blockquote>"It plays to everybody's strengths." <span class="ts">126:14</span></blockquote>
+
+<p><strong>Layer 1 — Directives (Markdown SOPs):</strong> <code>.md</code> files functioning as markdown-formatted standard operating procedures. High-level instructions in natural language with explicit calls to execution scripts ("In Step 3, call <code>apify_scraper.py</code>"). "Did you write all this? No. I had AI write all of this for me based off some simple bullet points. You use AI to come up with the instructions for another AI model." <span class="ts">89:00 – 97:42</span></p>
+
+<p><strong>Layer 2 — Orchestration (LLM Routing):</strong> The live model (Claude, Gemini, GPT) operating inside the IDE. Reads the directive, determines which scripts to call and in what order. This is where LLM probabilistic nature lives — but constrained by the directive's structure and pre-built tools. Multiple models can serve as orchestrator using the same workspace: maintain <code>claude.md</code>, <code>gemini.md</code>, <code>agents.md</code> simultaneously. <span class="ts">47:03 – 128:11</span></p>
+
+<p><strong>Layer 3 — Execution (Deterministic Python Scripts):</strong> Python scripts in <code>/executions/</code>, each doing exactly one thing. Low temperature, same inputs → same outputs. "Make these execution scripts very atomic. Make them do one thing and make them as deterministic as possible. This will significantly improve the quality of your end result." <span class="ts">97:00 – 126:13</span></p>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Protocol Cheat Sheet — DO Framework Setup</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li><strong>/directives/</strong> folder — .md SOP files, one per workflow (e.g., scrape_leads.md)</li>
+    <li><strong>/executions/</strong> folder — Python scripts, one per atomic task (e.g., apify_scraper.py)</li>
+    <li><strong>agents.md / claude.md / gemini.md</strong> — System prompt files; maintain all simultaneously for portability</li>
+    <li><strong>.env file</strong> — All API keys and credentials; scripts reference env vars, never hardcode keys</li>
+    <li><strong>Optional folders</strong> — /resources/, /inputs/, /outputs/, /tmp/ for working files</li>
+    <li><strong>Naming convention</strong> — scrape_leads.md → apify_scraper.py (directive names should map to execution names)</li>
+    <li><strong>AI can call Claude/GPT within execution scripts</strong> — bounded API calls are fine; just not open-ended orchestration</li>
+  </ul>
+</div>
+
+<p><strong>Why DO Works:</strong> Pre-built tools replace on-the-fly tool construction. "Like asking a chef to follow a known paella recipe vs. invent a new dish every time." Tool calls are logged and traceable — even when the LLM "goes a bit loopy," the sequence provides an audit trail. Fully portable: same workspace runs in Anti-Gravity, VS Code, Cursor. <span class="ts">126:43 – 128:11</span></p>
+
+<div class="enhancement thesis">
+  <span class="enhancement-label">🧵 Running Thesis</span>
+  The DO Framework represents Nick's core thesis: reliability in agentic systems comes from <em>architectural separation of concerns</em>, not from waiting for smarter models. This thesis is confirmed by cloud deployment — where the orchestration layer is removed entirely from production. Status: <strong>Developing → Confirmed</strong>.
+</div>
+
+<!-- ═ IDE SETUP ═ -->
+<h2 id="ide-setup">🖥️ IDE Setup — Anti-Gravity, VS Code, and the Workspace Structure <span class="ts">83:00 – 97:50</span></h2>
+
+<p><strong>Anti-Gravity (Google):</strong> Nick's primary recommendation for simplicity. Three-pane: file explorer (left), editor (middle), agent window (right). Cleanest UX for agentic work. <span class="ts">87:46</span></p>
+<p><strong>VS Code:</strong> Massively extensible — "like Skyrim mods" — hundreds of extensions, older visual aesthetic. Recommended for customisation needs. <span class="ts">92:49</span></p>
+<p><strong>Cursor:</strong> AI-first but in Nick's view surpassed by Anti-Gravity. Mentioned briefly. <span class="ts">87:00</span></p>
+<p><strong>Key insight on interoperability:</strong> "All the stuff is interoperable. It doesn't actually really matter what you use. The only thing that really matters is the agent itself and the workspace." <span class="ts">92:49 – 93:24</span> Maintain <code>claude.md</code>, <code>gemini.md</code>, <code>agents.md</code> simultaneously to be ready for any IDE or model switch.</p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Nick's framing of workspace setup as "setting up a desk for an employee" reflects a deliberate pedagogy: the agents.md file is literally an onboarding document for the AI. The more comprehensive that onboarding, the better the agent's default behaviour across all future sessions.
+</div>
+
+<!-- ═ SYSTEM PROMPTS ═ -->
+<h2 id="system-prompts">📋 System Prompts — The agents.md Anatomy and Autonomy Settings <span class="ts">125:00 – 130:00</span></h2>
+
+<blockquote>"Everything I'm telling you right now, we're just going to tell to the agent. We're just going to do it in a very context-compressed way." <span class="ts">129:21</span></blockquote>
+
+<p><strong>What agents.md does:</strong> Persistent context injected automatically at the start of every session — "you just don't ever have to repeat yourself." Explains the DO framework structure to the orchestrator (the agent gets an onboarding session). Defines error handling behaviour: "The agent does not spiral when something breaks." Iteratively improvable — Nick adds a line when he finds a new edge case, typically once a week. <span class="ts">128:50 – 129:39</span></p>
+
+<p><strong>Three essential components:</strong></p>
+<ul class="content-list">
+  <li>Framework explanation + rationale — explain DO and <em>why</em>; context on methodology produces dramatically better behaviour</li>
+  <li>Self-annealing instructions — "When you encounter an error: diagnose, fix, update your scripts and directives. Try super duper hard before escalating."</li>
+  <li>Autonomy + safety settings — bypass permissions mode; cost threshold confirmation; irreversibility warnings</li>
+</ul>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 agents.md Template Snippets</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li>"When you encounter an error: (1) diagnose it, (2) fix it, (3) update scripts/directives to handle similar errors in the future."</li>
+    <li>"Try super duper hard before escalating to me."</li>
+    <li>"Never exceed $X in a single tool call without confirmation."</li>
+    <li>"Flag any irreversible action before executing."</li>
+    <li>"You are operating in the DO framework. Directives are in /directives/. Execution scripts are in /executions/. Always prefer calling execution scripts over ad-hoc solutions."</li>
+  </ul>
+</div>
+
+<!-- ═ CLAUDE SKILLS ═ -->
+<h2 id="claude-skills">🛠️ Claude Skills — DO's Platform-Specific Cousin <span class="ts">150:00 – 157:00</span></h2>
+
+<p>Anthropic's own framework that formalises tool calling for the Claude family. Uses <code>skill.md</code> files with YAML frontmatter defining inputs, outputs, dependencies, and execution steps. Functionally analogous to DO directives but platform-specific.</p>
+<p><strong>DO vs. Claude Skills:</strong> DO is model-agnostic; Skills only work with Claude. Nick's recommendation: use both. When running Claude, Skills add reliability. When switching to Gemini, DO's portability maintains context. <span class="ts">127:38 – 128:11</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Claude Skills and the DO framework both arrive at the same design principle: separate high-level instructions from low-level execution. Two independent development paths (Anthropic's engineering team and Nick's consulting practice) converging on the same architecture is strong evidence this is structurally correct.
+</div>
+
+<!-- ═ MCP ═ -->
+<h2 id="mcp">🔌 MCP — The Universal Tool Connector and Its Token Cost Tradeoff <span class="ts">156:55 – 167:00</span></h2>
+
+<blockquote>"The whole idea of MCP is really just to make the entire internet web accessible to our agents." <span class="ts">159:52</span></blockquote>
+
+<p><strong>What MCP is:</strong> Model Context Protocol, introduced by Anthropic in November 2024. Standardises how AI connects to external data sources and tools. Not Claude-specific — works with OpenAI, Gemini, any model. "MCP is Esperanto for AI agents." <span class="ts">157:00 – 157:33</span></p>
+
+<p><strong>Architecture:</strong> <em>MCP Clients</em> = AI apps (Anti-Gravity, VS Code, Claude Desktop, ChatGPT — the shell around the agent). <em>MCP Servers</em> = tool-specific backends (Apify, Apollo, Google Drive, Sheets). Each provides: Resources (structured data), Tools (functions the agent can call), Prompts (system-level guidance on server usage). <span class="ts">157:34 – 159:50</span></p>
+
+<p><strong>The Token Problem:</strong> Every MCP server loads all its available functions into the agent's context window. ~300 tokens per function definition. 5 servers × 10 tools each = <strong>15,000 tokens before the agent has done anything.</strong> This immediately degrades performance. GPT-3.5 turbo: ~75% accuracy at 5 documents in context, drops to ~55% at 30 documents. <span class="ts">163:08 – 165:00</span></p>
+
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ Token-performance degradation confirmed. The "Lost in the Middle" paper (Liu et al., 2023) showed models retrieve middle-context information significantly less reliably. Needle-in-a-haystack evaluations confirm: at 2M tokens, retrieval accuracy for specific information collapses dramatically compared to 30K token contexts.
+</div>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 MCP Usage Protocol</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li>Prefer execution scripts over MCP for reliability-critical operations</li>
+    <li>Load maximum 3–5 MCP servers per active session</li>
+    <li>Choose well-maintained, high-quality MCP servers (quality variance is high)</li>
+    <li>Build your own custom MCP server for proprietary/internal tools — Nick did his in 10 minutes using AI assistance</li>
+    <li>Watch for "at runtime MCP" developments that will solve the token loading problem</li>
+  </ul>
+</div>
+
+<!-- ═ BUILDING ═ -->
+<h2 id="building">🔨 Building Workflows — From SOPs to Running Code <span class="ts">130:00 – 160:00</span></h2>
+
+<p><strong>Two entry points:</strong> Voice-first (dictate bullet points; voice transcription reduces friction; "it doesn't need to be perfect") or SOP-first (write a procedure for something you do manually). Both result in the same output — an AI-expanded directive .md file. <span class="ts">133:36 – 150:00</span></p>
+
+<p><strong>The Build Loop:</strong> "I'm not actually expecting this to work the first time around because most workflows don't. It's all a process of progressive iteration." Error message → agent reads → proposes fix → implements → retests. Nick during this process: "I honestly just alt tab and then do something else." <span class="ts">40:09 – 40:30</span></p>
+
+<p>Human role in the build loop: "The most important part of my entire day is now just providing some sort of high-level nudge in one direction or another... Like I'm just the person at the very front of the ship doing a little bit of steering. The agents are the minions doing my rowing." <span class="ts">42:43 – 43:07</span></p>
+
+<p><strong>Order of Magnitude Rule:</strong> Only pursue workflow optimisations that offer ≥10x improvement in a key metric (time, cost, accuracy). A 3-min vs. 2-min workflow is a 33% improvement — not worth the engineering time and introduced error risk. A serial 20-min lead scrape that batch-parallelises to 1 min is 20x — worth building. <span class="ts">213:27 – 216:10</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The Order of Magnitude Rule prevents over-engineering micro-optimisations. Optimising speed often trades off against cost or accuracy, so the improvement needs to be large enough to justify both the tradeoff and the risk of introducing new bugs.
+</div>
+
+<!-- ═ SELF-ANNEALING ═ -->
+<h2 id="self-annealing">🔄 Self-Annealing — The Four-Step Loop That Hardens Workflows Over Time <span class="ts">221:01 – 232:00</span></h2>
+
+<blockquote>"Self-annealing agentic workflows behave like Employee B. They don't behave like Employee A. We're giving them a level of autonomy that I think a lot of people previously would have considered insane. But I think the definition of insane is going to change pretty quickly as these models get more and more intelligent." <span class="ts">228:13</span></blockquote>
+
+<p><strong>The Metal Analogy:</strong> Annealing is the process of heating metal and slowly cooling it. Heat causes molecules to settle into a crystal lattice — lowest energy state. Rapid cooling hardens this into a strong, stable structure. Blacksmiths have used this for millennia. Self-annealing workflows apply the same principle: stress-test through real errors, which force the system to tighten and strengthen. <span class="ts">221:11 – 221:55</span></p>
+
+<p><strong>The Four-Step Loop:</strong></p>
+<ul class="content-list">
+  <li><strong>Error</strong> — Something fails during execution <span class="ts">224:21</span></li>
+  <li><strong>Diagnose</strong> — Agent identifies where the failure originated and why <span class="ts">224:23</span></li>
+  <li><strong>Fix</strong> — Agent resolves the error, often finding creative workarounds <span class="ts">224:27</span></li>
+  <li><strong>Update</strong> — Scripts and directives modified to prevent this failure class in future — not just fixing this instance, but hardening against the pattern <span class="ts">224:33</span></li>
+</ul>
+
+<p><strong>Employee A vs. Employee B:</strong> Employee A (the blocker): every problem becomes your problem. "Hey boss, I tried doing XYZ, couldn't make it happen." Work grinds to a halt. Same mistakes repeatedly. Employee B (the star): tries to solve it first, only escalates when necessary, documents solutions for the team, sometimes teaches others. "Self-annealing agentic workflows behave like Employee B." <span class="ts">226:51 – 228:22</span></p>
+
+<p><strong>What develops automatically:</strong> Retry logic, exponential backoff, logging, validation steps, edge case handlers. "Because it is hyper optimized to program really well and understands these things outside of the box, it'll just do them for you." <span class="ts">229:44 – 229:55</span></p>
+
+<div class="enhancement analog">
+  <span class="enhancement-label">📜 Analog</span>
+  Self-annealing is structurally identical to Nassim Taleb's concept of <em>antifragility</em> — systems that don't just resist stress but gain from it. Traditional no-code automation platforms (N8N, Zapier, Make) are fragile: one unexpected input breaks the flow. Self-annealing DO workflows are antifragile: each break makes the flow more robust.
+</div>
+
+<!-- ═ CLOUD ═ -->
+<h2 id="cloud">☁️ Cloud Deployment — Removing the LLM from Production <span class="ts">283:00 – 295:00</span></h2>
+
+<blockquote>"Since we're no longer using directives in our cloud servers, all we're really doing here is running a Python script. Because it's a Python script, these things execute nearly instantly." <span class="ts">293:05</span></blockquote>
+
+<p><strong>The Core Principle:</strong> In IDE development, the full DO loop runs: directive (LLM reads .md) → orchestrator (LLM routes) → execution (Python runs). In cloud production, <em>only Layer 3 (execution scripts) is deployed</em>. No LLM in the loop. No probabilistic variance. Pure deterministic Python. <span class="ts">283:00 – 293:34</span></p>
+
+<p><strong>Modal.com:</strong> Pay-per-use, webhook URL generation, cron scheduling, sub-second cold starts after warm-up. Nick used it for 2–3 weeks and spent 4 cents of his $5 free credit. "$30 in free credits would take a small business's agentic workflow deployment really far." Deployment: provide agents.md with Modal integration instructions → ask agent to "create a modal webhook for [directive name]" → agent deploys, returns webhook URL. <span class="ts">286:47 – 290:48</span></p>
+
+<p><strong>Webhook vs. Scheduled Triggers:</strong> Webhooks are event-driven (external service POSTs → workflow executes). Scheduled triggers (cron) are time-driven (run lead scraper every 5 minutes). Example: when a prospect moves to "send proposal" in ClickUp CRM, the webhook fires and generates the proposal automatically. <span class="ts">291:00 – 294:32</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Cloud deployment completes the full maturation arc: build in IDE → self-anneal to robustness → deploy execution scripts to cloud → connect webhooks to external triggers → fully autonomous pipeline. The LLM's role ends at the point of reliable execution.
+</div>
+
+<!-- ═ PARALLEL ═ -->
+<h2 id="parallel">⚡ Parallel Agents — Building 5x in the Same Time <span class="ts">294:46 – 310:00</span></h2>
+
+<p>"You're going to go from one employee to a whole team." Run 3–5 agents simultaneously, each exploring a different architectural approach to the same problem. Nick's personal optimum: 3 simultaneous. "I don't really work with more than three simultaneously unless we're doing long background tasks because my attention starts wavering." <span class="ts">294:50 – 295:44</span></p>
+
+<p><strong>Parallel Workflow Build Process:</strong></p>
+<ul class="content-list">
+  <li>Ask one agent to generate 3 distinct approaches with pros/cons for each</li>
+  <li>Open 3 separate IDE instances, give each a dedicated <code>/tmp/approach_N/</code> folder</li>
+  <li>Feed each agent its approach and let them build in parallel</li>
+  <li>Review all outputs side by side; pick the best approach</li>
+  <li>Optionally combine the best elements of multiple approaches</li>
+  <li>Merge winning solution into main DO directory structure and retest <span class="ts">299:01 – 300:21</span></li>
+</ul>
+
+<p><strong>Cross-Model Strategy:</strong> Use Claude, Gemini, and GPT simultaneously to avoid individual provider rate limits. All three use the same workspace (DO's portability pays off here). "Most models have converged to really similar accuracy ratings. Aside from preference, this is how you keep those costs low." <span class="ts">127:50 – 128:11</span></p>
+
+<p><strong>Background Tasks + Hooks:</strong> For long-running workflows (e.g., 45-min video editing pipeline), use background tasks to free the agent window. Set up a completion hook to play a chime sound when the task finishes. Nick demonstrates: sets up the hook, opens 5 instances, sends each a task, hears a chime cascade when they complete. <span class="ts">251:06 – 254:33</span></p>
+
+<!-- ═ SUB-AGENTS ═ -->
+<h2 id="sub-agents">🤝 Sub-Agents — Reviewer and Document Types <span class="ts">~310:00 – end</span></h2>
+
+<p><strong>Two recommended sub-agent types:</strong></p>
+<ul class="content-list">
+  <li><strong>Reviewer Sub-Agent</strong> — Fresh-eyes code review. Parent builds something; spawns a separate agent with fresh context to review with no attachment to the implementation choices. Like hiring a new developer to review the senior developer's work. <em>Different context window = no confirmation bias.</em></li>
+  <li><strong>Document Sub-Agent</strong> — Keeps directives and execution scripts in sync after self-annealing cycles have evolved the scripts away from their original documentation. Reads both directive and scripts, identifies gaps, updates directive to reflect current implementation.</li>
+</ul>
+
+<p><strong>Spawning Rules:</strong> Sub-agents should only be spawned by the parent agent — no recursive spawning. Least-privilege principle: give sub-agents only the context they need for their specific task. <span class="ts">~310:00 – 320:00</span></p>
+
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ Confirmed. Anthropic's published engineering blog (June 2025) documents their internal multi-agent research system. Claude Opus 4 as lead agent + Claude Sonnet 4 sub-agents outperformed single-agent Claude Opus 4 by <strong>90.2%</strong> on research evaluation tasks. Improvement attributed to parallel breadth-first exploration and distribution of reasoning across independent context windows.
+</div>
+
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  Mainstream multi-agent framing (CrewAI etc.) focuses on specialised role-based hierarchies (CEO agent, developer agent, marketer agent). Nick's framing inverts this: sub-agents aren't domain experts — they're <em>quality control mechanisms</em> (Reviewer) and <em>documentation maintenance mechanisms</em> (Document). The value isn't specialisation; it's fresh perspective and consistency enforcement.
+</div>
+
+<!-- ═ WHAT TO AUTOMATE ═ -->
+<h2 id="what-to-automate">📊 What to Automate — Linear vs. Non-Linear ROI <span class="ts">~260:00 – 283:00</span></h2>
+
+<p>Some tasks produce linear returns: you save exactly as much time as you automate. Others produce non-linear returns: each automated instance compounds the value of the next (lead scraping → enrichment → personalisation → campaigns → booked calls → revenue).</p>
+
+<p><strong>Highest-value targets:</strong> High repetition + low creative variance; processes requiring human coordination between multiple steps; processes with measurable outputs (leads generated, proposals sent).</p>
+
+<p><strong>Do not automate yet:</strong> High-creativity, high-stakes outputs requiring genuine contextual judgment. Nick's example: the actual sales call. Automating 90% of the lead-to-meeting pipeline is powerful; replacing the conversation itself is counterproductive at current model capability levels. Any process with high irreversibility cost must have human-in-the-loop validation before execution.</p>
+
+<!-- ═ PHASE 3 ITEMS ═ -->
+<h2>📦 Item Breakdown</h2>
+
+<div class="item-card" id="item-directives">
+  <h3>🏗️ DO Layer 1: Directives — The Markdown SOP</h3>
+  <div class="one-liner">High-level natural-language workflow instructions in .md files that serve as the LLM's operational manual for each task.</div>
+  <h4>What They Include</h4>
+  <p>Inputs, outputs, step-by-step instructions in natural language, explicit calls to execution scripts, error-handling notes, human-in-the-loop checkpoints.</p>
+  <h4>The Practice (Step-by-Step)</h4>
+  <p>1. Describe the workflow in bullet points (voice or text) → 2. Have AI expand bullets into a full directive .md file → 3. Review and edit — you're the director, not the author → 4. Store in /directives/[workflow_name].md → 5. Let self-annealing upgrade the directive over time based on discovered edge cases.</p>
+  <h4>The Evidence</h4>
+  <p>Nick demonstrates multiple working directives live: Upwork scrape-apply, proposal generation, lead scraping, YouTube outlier research. Each originated as bullet points expanded by AI.</p>
+  <h4>Key Caveats</h4>
+  <p>Directives are "living documents" — they will and should change as execution scripts evolve. The Document sub-agent exists specifically to keep them in sync.</p>
+</div>
+
+<div class="item-card" id="item-execution">
+  <h3>⚙️ DO Layer 3: Execution Scripts — Deterministic Python</h3>
+  <div class="one-liner">Single-purpose Python scripts that do exactly one thing and do it reliably, forming the stable execution backbone of every workflow.</div>
+  <h4>What They Include</h4>
+  <p>API calls, data processing, file I/O, database operations, external service integrations — all parameterised through the .env file.</p>
+  <h4>The Practice (Step-by-Step)</h4>
+  <p>1. Orchestrator LLM reads directive, identifies which script to call → 2. Calls python executions/[script].py with arguments → 3. Script executes deterministically, returns output → 4. Orchestrator reads output and proceeds → 5. If error: self-annealing loop activates.</p>
+  <h4>The Evidence</h4>
+  <p>Nick demonstrates: apify_scraper.py, process_leads_with_claude.py, upwork_applier.py in live workflow demos.</p>
+  <h4>Key Caveats</h4>
+  <p>Can call AI models internally (e.g., Claude for lead scoring) as bounded API calls — not open-ended orchestration. "Make these execution scripts very atomic."</p>
+</div>
+
+<div class="item-card" id="item-annealing">
+  <h3>🔄 Self-Annealing System Prompt Block</h3>
+  <div class="one-liner">A small set of system prompt instructions that transform an agent from a blocker into a self-sufficient operator.</div>
+  <h4>The Core Instruction</h4>
+  <p><code>"When you encounter an error: (1) Diagnose it. (2) Fix it. (3) Update your scripts and directives to handle similar errors in the future. Try super duper hard before escalating to the user."</code></p>
+  <h4>What Develops Automatically</h4>
+  <p>Retry logic, exponential backoff, validation steps, logging, edge case handling, creative workarounds when primary approach fails.</p>
+  <h4>Origin Story</h4>
+  <p>Nick noticed agents sometimes solved problems autonomously and sometimes didn't — the variable was whether the system prompt explicitly instructed for self-solution. "I did not always self-anneal. I just realized that hm, there's some situations where my model solves the problem itself and then other situations where it comes to me for help. Why don't I just make it explicit?" <span class="ts">129:41</span></p>
+</div>
+
+<div class="item-card" id="item-reviewer">
+  <h3>👁️ Reviewer Sub-Agent — Fresh-Eyes QA</h3>
+  <div class="one-liner">A fresh-context agent instance spawned by the parent agent to review completed code with zero attachment to implementation choices.</div>
+  <h4>What It Includes</h4>
+  <p>Completed execution script(s), focused review prompt, no access to wider workspace.</p>
+  <h4>The Practice</h4>
+  <p>1. Parent agent completes implementation → 2. Parent spawns Reviewer: "Review this script for bugs, edge cases, and reliability issues. Do not assume my approach is correct." → 3. Reviewer returns structured findings → 4. Parent integrates feedback and updates.</p>
+  <h4>Mechanism</h4>
+  <p>Different context window = no confirmation bias. Reviewer sees only the artifact, not the history of decisions that produced it.</p>
+  <h4>Key Caveats</h4>
+  <p>Only parent spawns sub-agents. Reviewer sub-agents should not themselves spawn sub-agents.</p>
+</div>
+
+<div class="item-card" id="item-document">
+  <h3>📝 Document Sub-Agent — Directive-Execution Sync</h3>
+  <div class="one-liner">A maintenance agent that keeps directives and execution scripts in sync after self-annealing cycles have evolved the scripts away from their original documentation.</div>
+  <h4>The Practice</h4>
+  <p>1. After significant self-annealing cycle, spawn Document sub-agent → 2. Sub-agent reads directive + current scripts → 3. Identifies gaps, outdated steps, undocumented changes → 4. Updates directive to reflect current implementation → 5. Returns updated directive for parent to review and accept.</p>
+  <h4>Key Caveats</h4>
+  <p>Run after major changes, not after every edit. The directive should lag slightly behind implementation — you don't want to document errors, only stable improvements.</p>
+</div>
+
+<!-- ═ RESOURCES ═ -->
+<h2 id="resources">📚 Resources &amp; References</h2>
+
+<div class="references">
+  <h4>🌐 Websites &amp; Tools</h4>
+  <ul>
+    <li><a href="https://modal.com" target="_blank">Modal.com</a> — cloud deployment for Python execution scripts; webhook + cron scheduling; ~$30 free credits; pay-per-use</li>
+    <li>Anti-Gravity (Google) — AI-native IDE recommended for simplicity; three-pane layout</li>
+    <li>VS Code — extensible IDE with massive plugin library ("like Skyrim mods")</li>
+    <li>Apify — web scraping platform with MCP server</li>
+    <li>Apollo.io — lead data enrichment platform</li>
+    <li>Instantly / Smartlead — cold email delivery platforms</li>
+    <li>ClickUp — CRM mentioned for webhook integration example</li>
+  </ul>
+
+  <h4>👤 People &amp; Organisations</h4>
+  <ul>
+    <li>Nick Saraev — <a href="https://leftclick.ai" target="_blank">Leftclick.ai</a>; Maker School community; YouTube channel</li>
+    <li>Anthropic — Claude model provider; MCP (Nov 2024); multi-agent research (June 2025)</li>
+    <li>OpenAI — GPT model family; referenced in SWE-bench context</li>
+    <li>Google DeepMind — Gemini model family; Anti-Gravity IDE</li>
+  </ul>
+
+  <h4>📊 Studies &amp; Data</h4>
+  <ul>
+    <li><a href="https://www.swebench.com" target="_blank">SWE-bench Verified</a> — Claude Opus 4.5: 80.9%. Note: contamination concerns; SWE-bench Pro (frontier models ~23%) is less contaminated alternative</li>
+    <li>Anthropic Engineering Blog — "How we built our multi-agent research system" (June 2025) — 90.2% improvement with sub-agents over single-agent Opus</li>
+    <li><a href="https://epoch.ai/data-insights/llm-inference-price-trends" target="_blank">Epoch AI — LLM Inference Price Trends</a> — ~40x/year cost decline for GPT-4 equivalent performance</li>
+    <li>"Lost in the Middle" (Liu et al., 2023, Stanford) — token-performance degradation in long context windows</li>
+  </ul>
+
+  <h4>📅 Key Dates</h4>
+  <ul>
+    <li>November 2024 — Anthropic introduces Model Context Protocol (MCP)</li>
+    <li>2025 — Claude Opus 4.5 released with 3x price reduction vs Opus 4.1</li>
+    <li>June 2025 — Anthropic publishes multi-agent research system engineering blog</li>
+    <li>Early 2024 — Fastest period of AI inference cost decline begins</li>
+  </ul>
+</div>
+
+
+<!-- ═══════ ECHO ═══════ -->
+<hr class="echo-divider">
+<div class="echo-label">Echo — Decision-Ready Briefing</div>
+
+<div class="hero" id="echo">
+  <h1>Agentic Workflows Are a Phase Change — The DO Framework Briefing</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span>Nick Saraev · YouTube · ~6 hours</div>
+    <div><span class="label">Domain</span>Technology / Business / AI</div>
+    <div><span class="label">Reliability</span>Mixed — demos data-backed; ROI claims anecdotal but directionally consistent with research</div>
+    <div><span class="label">Content Type</span>Practical course</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="bottom-line-card" id="bottom-line">
+  <h3>⚡ The Bottom Line</h3>
+  <ul>
+    <li><strong>The opportunity is horizontal leverage, not full automation.</strong> Automating 90% of 10,000 roles produces 9,000 units of economic value vs. 1 unit from automating 100% of 1 role.</li>
+    <li><strong>LLMs fail in business because probabilities compound.</strong> Five 90%-accurate steps = 59% overall success. The DO framework fixes this by separating probabilistic LLM reasoning from deterministic Python execution scripts.</li>
+    <li><strong>Self-annealing turns early-stage workflows into battle-hardened systems.</strong> Three words in the system prompt ("diagnose, fix, update") transforms an agent from Employee A (blocks you every time) into Employee B (solves it, documents it, never repeats it).</li>
+    <li><strong>Cloud deployment removes the LLM from production entirely.</strong> Deploy only execution scripts to Modal.com. No orchestration = no probabilistic variance in production.</li>
+    <li><strong>Multi-agent setups produce non-linear output.</strong> Anthropic's own research: multi-agent Claude system outperformed single-agent Opus by 90.2%. Two essential sub-agent types: Reviewer (fresh-eyes QA) and Document (directive-execution sync).</li>
+  </ul>
+</div>
+
+<h2 id="key-claims">🔑 Key Claims (Ranked)</h2>
+
+<div class="claim-block">
+  <strong>1. The DO framework is the core architecture for reliable agentic workflows</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Demonstrated live across 10+ workflow builds. Architecture independently validated by Anthropic's multi-agent engineering guidance.</p>
+  <p class="claim-meta">↳ <em>Consensus:</em> Aligned — industry converging on this separation-of-concerns architecture.</p>
+</div>
+
+<div class="claim-block">
+  <strong>2. Compound probability errors make unconstrained LLM workflows fragile</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Math (0.9^5 = 59%). Token-performance degradation research on GPT-3.5 confirms degradation with context length.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> Newer models have higher per-step accuracy, shifting the threshold — but the math still applies.</p>
+  <p class="claim-meta">↳ <em>Consensus:</em> Aligned — compound failure is a core concern in production ML systems.</p>
+</div>
+
+<div class="claim-block">
+  <strong>3. Self-annealing compresses months of workflow hardening into automatic cycles</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Nick claims workflows look "fundamentally different" after 60 days. Agents automatically add retry logic, exponential backoff, and validation steps.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> Requires explicit instruction in the system prompt — doesn't happen by default.</p>
+  <p class="claim-meta">↳ <em>Consensus:</em> Emerging — this specific pattern is novel but consistent with documented agentic behaviour.</p>
+</div>
+
+<div class="claim-block">
+  <strong>4. AI inference cost has collapsed ~40x in one year</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Claude Opus 4.1 → 4.5: $15/$75 → $5/$25/M tokens (3x reduction). Epoch AI: ~40x/year decline. GPT-4 class: $20/M (2022) → $0.40/M (2025).</p>
+  <p class="claim-meta">↳ <em>Consensus:</em> ✅ Confirmed by multiple independent sources.</p>
+</div>
+
+<div class="claim-block">
+  <strong>5. Parallel agents collapse workflow build time by exploring multiple approaches simultaneously</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Live demo — 5 agents building 5 different lead-scraping architectures in parallel in dedicated /tmp/ folders. Best approach selected and merged.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> Attention overhead becomes limiting at >3 simultaneous agents for non-background tasks.</p>
+</div>
+
+<div class="claim-block">
+  <strong>6. SWE-bench Verified scores (~80%) demonstrate frontier model coding capabilities</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Claude Opus 4.5 scores 80.9% on SWE-bench Verified.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> ⚠️ Contamination concerns — OpenAI audit found training data overlap on some instances. SWE-bench Pro (less contaminated) shows ~23% for same frontier models.</p>
+</div>
+
+<div class="claim-block">
+  <strong>7. Anthropic's sub-agent research shows 90.2% improvement over single-agent baseline</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> Published Anthropic engineering blog (June 2025) — Opus 4 lead + Sonnet 4 sub-agents, tested on complex research tasks.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> Improvement was largest on breadth-first tasks; narrow single-document tasks showed smaller gains.</p>
+  <p class="claim-meta">↳ <em>Consensus:</em> ✅ Confirmed by primary source.</p>
+</div>
+
+<div class="claim-block">
+  <strong>8. MCP loads all tool definitions into context, degrading model performance</strong>
+  <p class="claim-meta">↳ <em>Evidence:</em> 300 tokens/function × 50 functions (5 servers × 10 tools) = 15,000 tokens before first action. Context-length degradation confirmed in published research.</p>
+  <p class="claim-meta">↳ <em>Caveat:</em> "At runtime MCP" developments are partially addressing this; better models handle longer context better.</p>
+</div>
+
+<h2 id="quick-actions">⚡ Quick Actions</h2>
+<table>
+  <thead>
+    <tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Set up workspace</td><td>Create /directives/ + /executions/ + agents.md</td><td>Once per project</td><td>Ask agent: "Set up my workspace in accordance with claude.md" — it builds the whole structure</td></tr>
+    <tr><td>Write self-annealing instruction</td><td>3-line block in agents.md</td><td>Once (update as needed)</td><td>"Diagnose, fix, update scripts/directives. Try super hard before escalating."</td></tr>
+    <tr><td>Set cost threshold guard</td><td>Dollar threshold in agents.md</td><td>Once</td><td>Prevents runaway API spend; confirm before any single action above threshold</td></tr>
+    <tr><td>Add irreversibility flag</td><td>Flag + await confirmation</td><td>Once in agents.md</td><td>Agent confirms before mass email sends, data deletion, irreversible actions</td></tr>
+    <tr><td>Build parallel approaches</td><td>3 agents, 3 /tmp/approach_N/ folders</td><td>When starting new workflow build</td><td>Ask one agent for 3 approaches + pros/cons; distribute to 3 instances; pick best</td></tr>
+    <tr><td>Run Reviewer sub-agent</td><td>Code artifact + review prompt only</td><td>After every significant implementation</td><td>"Review this script for bugs and edge cases. Do not assume my approach is correct."</td></tr>
+    <tr><td>Run Document sub-agent</td><td>Directive + current scripts</td><td>After major self-annealing cycles</td><td>"Update this directive to reflect current implementation. Flag any gaps."</td></tr>
+    <tr><td>Deploy to Modal webhook</td><td>modal deploy + webhook URL</td><td>Once workflow is self-annealed</td><td>Only deploy execution scripts — no LLM in cloud loop; connect URL to external trigger</td></tr>
+    <tr><td>Set up completion hook</td><td>Chime sound via IDE hook</td><td>Once per agent setup</td><td>Allows alt-tab without missing completions; different sounds for "done" vs. "action required"</td></tr>
+    <tr><td>Order of Magnitude Rule</td><td>≥10x improvement required</td><td>Before every optimization</td><td>Only pursue refactors with ≥10x improvement in time, cost, or accuracy</td></tr>
+  </tbody>
+</table>
+
+<h2 id="quotes">💬 Best Quotes</h2>
+
+<blockquote>"Rather than thinking about agentic workflows as being able to automate 100% of one role, I want you to think about it as being capable of automating 90% of 10,000 roles. If you automate 100% of one person's role, that's basically providing one unit of economic value. Whereas if you automate 90% of 10,000 people's, you're providing 9,000 units of economic value." <span class="ts">09:14</span> — The core economic thesis for agentic workflow adoption.</blockquote>
+
+<blockquote>"Self-annealing agentic workflows behave like Employee B. They don't behave like Employee A. We're giving them a level of autonomy that I think a lot of people previously would have considered insane. But I think the definition of insane is going to change pretty quickly as these models get more and more intelligent." <span class="ts">228:13</span> — The case for aggressive autonomy settings in production workflows.</blockquote>
+
+<blockquote>"Since we're no longer using directives in our cloud servers, all we're really doing here is running a Python script. Because it's a Python script, these things execute nearly instantly. Rather than have to wonder about whether this thing is sent, rather than wait a startup time or send and receive things to Anthropic, we execute pretty quick." <span class="ts">293:05</span> — The payoff of cloud deployment and LLM-free production execution.</blockquote>
+
+<h2>📎 References</h2>
+<div class="references">
+  <ul>
+    <li>Nick Saraev — <a href="https://leftclick.ai" target="_blank">Leftclick.ai</a>; YouTube channel; Maker School community</li>
+    <li><a href="https://modal.com" target="_blank">Modal.com</a> — cloud deployment; webhook + cron scheduling; free credits</li>
+    <li><a href="https://www.swebench.com" target="_blank">SWE-bench Verified</a> — Claude Opus 4.5: 80.9%</li>
+    <li>Anthropic Engineering Blog — "How we built our multi-agent research system" (June 2025) — 90.2% improvement with sub-agents</li>
+    <li><a href="https://epoch.ai/data-insights/llm-inference-price-trends" target="_blank">Epoch AI — LLM Inference Price Trends</a> — ~40x/year cost decline confirmed</li>
+    <li>Anthropic — Model Context Protocol (MCP), introduced November 2024</li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── Dark Mode Toggle ──
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+// ── Reading Progress Bar ──
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+
+// ── TOC Sidebar: Active Section Tracking ──
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+
+  if (headings.length === 0 || tocLinks.length === 0) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+
+// ── TOC Hamburger Toggle (Mobile) ──
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+
+// ── Smooth Scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ── Copy Protocol to Clipboard ──
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
