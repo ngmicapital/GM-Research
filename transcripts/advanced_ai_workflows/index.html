@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrams, Hooks, and Aliases — The Senior Engineer's AI Playbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSCRIPT INTELLIGENCE — HTML TEMPLATE
+   Light mode default · Dark toggle · Floating TOC · Copy-to-clipboard
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--progress-bar);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 820px;
+  margin-left: 260px;
+  padding: 40px 24px 120px;
+}
+
+.toc-sidebar {
+  position: fixed;
+  top: 80px;
+  left: max(16px, calc((100vw - 1200px)/2));
+  width: 220px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--bg-toc);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.toc-sidebar ul { list-style: none; }
+
+.toc-sidebar li {
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.toc-sidebar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+
+.toc-sidebar a:hover,
+.toc-sidebar a.active { color: var(--accent-gold); }
+
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+
+.toc-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 64px;
+  z-index: 1001;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 16px;
+    width: 280px;
+    max-height: 70vh;
+  }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mode-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.mode-badge.full { background: var(--accent-teal); color: #fff; }
+
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--text-heading);
+  margin: 64px 0 8px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-heading);
+  margin: 36px 0 12px;
+  line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+
+h4 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--accent-teal);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.exec-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.exec-summary h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.exec-summary ul { list-style: none; }
+
+.exec-summary li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.exec-summary li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+blockquote {
+  background: var(--bg-quote);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text);
+}
+
+.ts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--timestamp);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.enhancement {
+  background: var(--bg-enhancement);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.enhancement.connection   { border-color: var(--accent-blue);   }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose);   }
+.enhancement.insight      { border-color: var(--accent-teal);   }
+.enhancement.thesis       { border-color: var(--accent-gold);   }
+.enhancement.consensus    { border-color: var(--accent-green);  }
+.enhancement.verified     { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-enhancement)); }
+
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.enhancement.connection   .enhancement-label { color: var(--accent-blue);   }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose);   }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal);   }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold);   }
+.enhancement.consensus    .enhancement-label { color: var(--accent-green);  }
+.enhancement.verified     .enhancement-label { color: var(--accent-green);  }
+
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.item-card h3 {
+  margin-top: 0;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.item-card .one-liner {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card h4 { margin-top: 16px; }
+
+.protocol-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-teal);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.protocol-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover { background: var(--accent-teal); color: #fff; }
+.copy-btn.copied { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
+
+.protocol-box ul { list-style: none; }
+
+.protocol-box li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.protocol-box li:last-child { border-bottom: none; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+
+.echo-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin: 80px 0 60px;
+}
+
+.echo-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 40px;
+}
+
+.references {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.references h4 {
+  color: var(--accent-gold);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+
+pre, code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+pre {
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  line-height: 1.6;
+}
+
+pre code { background: none; border: none; padding: 0; }
+
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">🌙</span>
+  <span class="icon-dark">☀️</span>
+</button>
+
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">☰</button>
+
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#executive-summary">Executive Summary</a></li>
+    <li><a href="#mermaid-context">🗺️ Mermaid Diagram Context</a></li>
+    <li><a href="#shell-aliases">⚙️ Shell Aliases</a></li>
+    <li><a href="#stop-hooks">🔧 Stop Hooks</a></li>
+    <li><a href="#personal-cli">🛠️ Personal CLI Tools</a></li>
+    <li><a href="#ide-vs-cli">🖥️ IDE vs. Terminal</a></li>
+    <li><a href="#investigation">🔎 AI for Investigation</a></li>
+    <li><a href="#reset-strategies">🔁 Reset Strategies</a></li>
+    <li><a href="#technique-cards">🃏 Technique Cards</a></li>
+    <li><a href="#protocol-cheat-sheet">📋 Protocol Cheat Sheet</a></li>
+    <li><a href="#session-delta">🔄 Session Delta</a></li>
+    <li><a href="#references-sc">📚 References</a></li>
+    <li class="toc-h3"><a href="#echo-section">— Echo Briefing —</a></li>
+    <li><a href="#bottom-line">⚡ Bottom Line</a></li>
+    <li><a href="#key-claims">🔑 Key Claims</a></li>
+    <li><a href="#quick-actions">⚡ Quick Actions</a></li>
+    <li><a href="#best-quotes">💬 Best Quotes</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+
+<!-- ═══════════════════════════════════════════════════
+     SPARK & CANNON SECTION
+     ═══════════════════════════════════════════════════ -->
+
+<div class="hero">
+  <div class="hero-label">Spark &amp; Cannon — Deep Archival Transcript</div>
+  <h1>Diagrams, Hooks, and Aliases — The Senior Engineer's Playbook for AI-Powered Coding</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> How I AI · Claire Vio feat. John Lindquist</div>
+    <div><span class="label">Domain</span> Technology / AI Development Workflows</div>
+    <div><span class="label">Duration</span> ~56 min</div>
+    <div><span class="label">Date</span> Early 2026</div>
+  </div>
+  <div style="margin-top:16px; font-size:14px; color:var(--text-muted);">
+    <strong style="color:var(--text-heading);">Claire Vio</strong> — Host; product leader &amp; AI obsessive; How I AI podcast<br>
+    <strong style="color:var(--text-heading);">John Lindquist</strong> — Founder &amp; lead educator, <a href="https://egghead.io">egghead.io</a>; "AI Dev Essentials" newsletter; Claude Code &amp; Cursor power user
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="exec-summary" id="executive-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>Mermaid diagrams injected at startup eliminate wasted codebase exploration:</strong> By storing your application's architecture as Mermaid diagram markdown files and loading them into Claude Code's system prompt via <code>--append-system-prompt</code>, every session starts with full structural context already in memory. No file reads, no codebase spelunking — answers come faster and edits land correctly because the AI understands dependency chains before you type a word. <span class="ts">04:09–10:30</span></li>
+    <li><strong>Stop hooks turn Claude Code into a self-correcting quality pipeline:</strong> Using the Anthropic Agent SDK, attach a TypeScript stop hook that fires every time Claude finishes a task. It checks for changed files, runs your type checker, feeds errors back to Claude as a blocking message, and — when clean — auto-commits. The loop runs without human input. <span class="ts">27:01–35:15</span></li>
+    <li><strong>Shell aliases compress your most powerful Claude configurations to one keystroke:</strong> ZSH or PowerShell aliases let you launch dangerous mode, switch to Haiku, or fire up a diagram-loaded session with a single letter. The investment is 10 minutes; the payoff is every subsequent session. <span class="ts">19:28–20:54</span></li>
+    <li><strong>Build every idea immediately as a personal CLI — don't wait for the right project:</strong> The moment you have an idea, open a terminal, brain-dump into Claude Code via dictation, and build the smallest possible thing. The constrained UI of the terminal forces focus and eliminates distraction. <span class="ts">21:05–26:43</span></li>
+    <li><strong>AI's most underused capability is investigation, not generation:</strong> Orientation work before touching a legacy codebase (tracing git history, surfacing impact, understanding who wrote what and why) that used to consume a day or two can now be prompted in 30 seconds. The ROI is immediate and unambiguous. <span class="ts">46:33–49:24</span></li>
+    <li><strong>Plan mode has eliminated most of the "AI drift" problem:</strong> When Claude goes off the rails, export the conversation, get a second model to critique it, revert to the previous commit, and start over. But increasingly, plan mode prevents drift from occurring in the first place. <span class="ts">51:57–55:07</span></li>
+  </ul>
+</div>
+
+<!-- ─── PHASE 2: THEMATIC SECTIONS ─── -->
+
+<h2 id="mermaid-context">🗺️ Mermaid Diagrams as Context Infrastructure — Compressing Your App into Machine-Readable Memory</h2>
+
+<blockquote>"Every time an AI starts it has no memory, no idea of what's going on in your application. People try and set up lots of rules but they usually don't include a lot of: how does my application work and how do the pieces fit?" <span class="ts">05:06</span></blockquote>
+
+<h4>What Mermaid Diagrams Are</h4>
+<p>Mermaid is a standard text format for rendering flowcharts, sequence diagrams, and database schemas inside markdown. A Mermaid diagram compresses an entire authentication flow or database operation into 20–30 lines of structured text. Humans need a visual render to navigate it; AI consumes it directly as dense, semantically rich context. <span class="ts">05:47–06:27</span></p>
+<p>John stores these as markdown files (with embedded Mermaid blocks) in a <code>/memory/ai/diagrams/</code> directory in every project. Windsurf recently released a similar product called "Codemaps" — AI-annotated hierarchical maps of your codebase — confirming the concept is converging into an industry standard. <span class="ts">04:58–05:05</span></p>
+
+<h4>The <code>--append-system-prompt</code> Command</h4>
+<p>Running <code>claude --append-system-prompt "$(cat .ai/diagrams/*.md)"</code> loads all diagram files into Claude's system prompt before any user prompt is processed. <span class="ts">07:02–07:52</span></p>
+<p>Result: a query like "explain the authentication flow" returns an immediate, structured answer with zero file reads. Trade-off: significantly more tokens used upfront. John's verdict: <em>"the work that you do, the time that you spend on these tasks is more valuable than that to me."</em> <span class="ts">09:36–09:47</span></p>
+
+<div class="enhancement consensus">
+  <span class="enhancement-label">🌐 Consensus Check</span>
+  Windsurf Codemaps (November 2025) and the growing category of "context preloading" tools confirm this as a rapidly converging best practice. Research into LLM context usage consistently shows pre-structured architectural context outperforms in-session retrieval for complex, dependency-heavy tasks.
+</div>
+
+<h4>When to Generate Diagrams</h4>
+<p>John's timing: after something is working and before a PR is merged. "Once it's working, diagram it out." For greenfield projects: spike first, build until it works, then diagram — not before. <span class="ts">13:59–14:42</span></p>
+<p>Claire runs a GitHub Action that generates diagrams automatically on PR close — a CI-based pattern that scales the workflow team-wide. <span class="ts">13:38–13:57</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Most developers configure <em>how</em> Claude behaves (via CLAUDE.md, style rules). Fewer configure <em>what</em> Claude knows about their app. Mermaid diagrams fill the architectural knowledge gap that rules files never address. <span class="ts">05:17–05:26</span>
+</div>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Diagrams → System Prompt → Faster, more accurate edits. This is the same principle as CLAUDE.md files but applied to architectural structure rather than style preferences. The distinction matters: architecture tells the AI how components relate; rules tell it how to behave. Both are needed. <span class="ts">05:17–05:26</span>
+</div>
+
+<h4>Non-Engineering Use Cases</h4>
+<p>Security compliance documentation (SOC 2, data flow diagrams for enterprise customers) — historically a painful, expensive manual task, now generatable on demand. Customer-facing technical documentation: generate diagrams from code, summarise for customers, iterate without touching the underlying markdown. <span class="ts">15:22–18:00</span></p>
+
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>Windsurf Codemaps confirmed.</strong> Cognition.ai/blog/codemaps (Nov 2025) — AI-annotated codebase maps "powered by SWE-1.5 and Claude Sonnet 4.5." Includes Mermaid diagram generation, Cascade agent integration, and shareable hierarchical navigation. John's independent approach and Windsurf's product-ised version are architecturally identical in concept.
+</div>
+
+<!-- ─── -->
+
+<h2 id="shell-aliases">⚙️ Shell Aliases — Compressing Complex Claude Configurations to One Letter</h2>
+
+<blockquote>"Once you have these systems in place, you can just capture them in the smallest shortcuts." <span class="ts">20:20</span></blockquote>
+
+<p>Every time you manually type a long Claude Code invocation with flags, you're paying a friction tax. Aliases eliminate this. On Mac, ZSH is the default shell; on Windows, PowerShell. Syntax differs; principle is identical. <span class="ts">19:28–19:48</span></p>
+
+<h4>John's Alias Setup (Live Demo)</h4>
+<ul style="margin: 0 0 14px 20px;">
+  <li><code>x</code> — <code>claude --dangerously-skip-permissions</code>. Full bypass, no permission prompts. Maximum speed for trusted work.</li>
+  <li><code>h</code> — Claude using Haiku model. Faster, cheaper, slightly less capable. For quick tasks where Sonnet is overkill.</li>
+  <li><code>cdi</code> — Claude with the full diagram-loading system prompt pre-injected. One command to start a fully context-loaded session.</li>
+</ul>
+<p>Claire's extension: aliases can be project-specific — <code>cc-projectname</code> to pull in only the relevant diagrams for a specific initiative. <span class="ts">20:33–20:52</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Aliases are the lowest-effort, highest-leverage optimisation in the entire episode. The configuration is once; the saving is every subsequent session. Any engineer not doing this is manually re-entering the same flags every day.
+</div>
+
+<!-- ─── -->
+
+<h2 id="stop-hooks">🔧 Stop Hooks — Building a Self-Correcting AI Development Loop</h2>
+
+<blockquote>"Once you know part of your workflow always runs, you might as well run it automatically." <span class="ts">35:09</span></blockquote>
+
+<h4>What Stop Hooks Are</h4>
+<p>A "stop" event fires in Claude Code when Claude has finished its turn and is waiting for user input. A stop hook intercepts that moment and runs a script before control returns. Hooks are configured in <code>settings.local.json</code> (personal) or <code>settings.json</code> (team-shared). The key: team-shared hooks give every engineer the same quality baseline automatically. <span class="ts">28:48–30:13</span></p>
+
+<h4>Hook Architecture (Live Demo)</h4>
+<p>John's stop hook is a TypeScript script using the Anthropic Agent SDK, which provides strongly-typed <code>HookInput</code> objects containing session ID, working directory, permission mode, and more. <span class="ts">29:38–29:57</span></p>
+<ol style="margin: 0 0 14px 24px;">
+  <li>Check if any files changed since the last stop event</li>
+  <li>If files changed → run <code>bun type-check</code></li>
+  <li>If TypeScript errors → <code>console.log(JSON.stringify({ decision: "block", reason: errorOutput }))</code> → Claude self-corrects</li>
+  <li>If no errors → prompt Claude to auto-commit (excluding sensitive files)</li>
+  <li>If no files changed → exit silently</li>
+</ol>
+
+<h4>Demo Result</h4>
+<p>Claude created a file with a quote syntax error → stop hook fired → Claude received the error report → self-corrected without user intervention → stop hook fired again, found no errors → auto-committed. Two full stop cycles. Zero human input post-task. <span class="ts">33:44–34:47</span></p>
+
+<h4>The console.log Gotcha</h4>
+<p>The SDK reads your first <code>stdout</code> output as Claude's hook input. Use <code>console.error</code> for any debug logging; use <code>console.log</code> only for the structured JSON response you want Claude to receive. Mixing them causes silent, confusing failures. <span class="ts">32:10–33:08</span></p>
+
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>Fully confirmed against Anthropic documentation.</strong> Claude Code hooks guide (docs.anthropic.com/en/docs/claude-code/hooks-guide) and Agent SDK TypeScript reference (platform.claude.com/docs/en/agent-sdk/hooks) confirm: the stop hook event type, the <code>HookInput</code> schema (sessionId, cwd, permissionMode), and the JSON <code>console.log</code> return contract. The workflow John demonstrates is production-documented.
+</div>
+
+<h4>What Else Belongs in a Stop Hook</h4>
+<p>Formatting (Prettier, ESLint auto-fix) · Circular dependency detection · File length enforcement · Code complexity analysis · Duplicate code detection ("this code looks like X elsewhere — extract it?") · Any pre-commit or pre-push check that currently runs manually. <span class="ts">36:55–37:52</span></p>
+
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  Most engineers think of Claude Code as a text-in, text-out interaction tool. John positions it as a programmable quality-gating system. These are fundamentally different mental models with fundamentally different ROI.
+</div>
+
+<p>Claire's call to engineering leaders: "If you haven't created these hooks for key repos or key projects where everybody is benefiting from this when they're using something like Claude Code then you're missing out on some of the scaled leverage." <span class="ts">36:01–36:37</span></p>
+
+<!-- ─── -->
+
+<h2 id="personal-cli">🛠️ Personal CLI Tools — Build Every Idea, Immediately</h2>
+
+<blockquote>"It's easier to edit than author. So, let's get the authoring out of the way and then even if you completely revise the whole thing, it's a much easier starting point to work with something." <span class="ts">26:28</span> — John Lindquist</blockquote>
+
+<p>John's philosophy: the moment you have an idea, open a terminal in a new folder and brain-dump via dictation. Get something running — even if wrong — and iterate. Claire: "If you have nothing, you can't iterate on nothing." A wrong first draft is infinitely more useful than a blank page because it surfaces what you actually want. <span class="ts">21:05–26:09</span></p>
+
+<h4>The "Sketch" Demo</h4>
+<p>John built a CLI called "sketch" — a wrapper around Gemini's image generation CLI with pre-loaded prompt templates, colour themes, and quantity settings. Demo: user selects store type, page style, colour theme, quantity → Gemini generates N variations → pick one → drop into an AI as a wireframe reference for web development. Built in minutes; immediately useful as an ideation tool. <span class="ts">21:13–23:29</span></p>
+
+<h4>Why Terminal UI Beats Web UI for Personal Tools</h4>
+<p>The constrained interface forces focus. No temptation to over-design. A few questions, multi-select fields, keyboard navigation — that's it. Web UIs invite scope creep. Building CLI tools has become dramatically easier with AI — ASCII logos, interactive prompts, keyboard shortcuts — previously tedious, now trivially generatable. <span class="ts">24:03–25:17</span></p>
+
+<div class="enhancement analog">
+  <span class="enhancement-label">📜 Analog</span>
+  Personal CLIs are the AI era's equivalent of personal scripts and dotfiles. Developers have always built small automation tools for themselves — what's changed is the barrier is now near-zero and the tools can be genuinely polished.
+</div>
+
+<!-- ─── -->
+
+<h2 id="ide-vs-cli">🖥️ IDE vs. Terminal — Both Required, Different Jobs</h2>
+
+<blockquote>"I think you need both. I think you need an IDE and there are so many use cases for the CLIs." <span class="ts">42:27</span></blockquote>
+
+<p><strong>The case for CLIs:</strong> Deep configuration and composability — load specific MCPs, inject specific prompts, set specific models — all in a single aliased command, runnable in the background. Claude Code's headless mode enables truly parallelisable work. <span class="ts">42:38–43:00</span></p>
+
+<p><strong>The case for IDEs:</strong> Focused editing — selecting lines, reading file context, modifying targeted sections. VS Code extension ecosystems can feed diagnostics, warnings, and errors directly back to the agent. IDE agent modes (Cursor's agent view) are increasingly streamlined for specific workflows. <span class="ts">43:24–43:50</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  IDE vs. CLI maps directly to focused work vs. automated pipeline. IDE for human-in-the-loop editing; CLI for background, unattended task execution. Not competing use cases — different moments in the same workflow.
+</div>
+
+<p>On IDE market differentiation: John argues the quality bar is so high that friction from any AI tool causes "instant dismissal." Cursor's agent mode is the right kind of bold move — seamless UX leaps, not incremental feature parity. <span class="ts">44:34–45:33</span></p>
+
+<!-- ─── -->
+
+<h2 id="investigation">🔎 AI for Codebase Investigation — The Most Underused Enterprise Use Case</h2>
+
+<blockquote>"Think about if I gave you infinite junior to mid-career talent who is always available, who would do the work you would do if you had unlimited amount of time and no meetings. What would you do when a ticket came in?" <span class="ts">49:47</span> — Claire Vio</blockquote>
+
+<p>The highest-ROI use of AI tools is not writing code. It's the orientation work that precedes writing code: finding who touched a file, understanding why a function is the way it is, tracing blast radius before a change. For every ticket, engineers historically spend a day or two just getting oriented — especially in legacy codebases. AI wipes out most of that. <span class="ts">47:00–48:47</span></p>
+
+<p>In practice: "Find every single debug path. Find every single — why has this file changed over the course of history. Write a summary of everybody who's touched this file so I can know why this function is the way it is." <span class="ts">48:19–48:30</span></p>
+
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  Skeptical engineers question AI code quality. John's reframe: even if you distrust AI for writing code, the investigation use case has almost no quality risk — the output is a summary and risk flags, not production code. This is the wedge argument for skeptical organisations. <span class="ts">49:03–49:26</span>
+</div>
+
+<p>Claire's complementary point: use AI to document what it found — so the next engineer at the same codebase has a shorter orientation cycle. "On the other end, if you're not using it to document, you're also missing out." <span class="ts">49:29–49:43</span></p>
+
+<!-- ─── -->
+
+<h2 id="reset-strategies">🔁 Prompting Reset Strategies — When to Start Over and How</h2>
+
+<blockquote>"Starting over works every time." <span class="ts">53:45</span></blockquote>
+
+<p>AI drift happens when Claude is heading somewhere the developer doesn't want, and the developer keeps trying to steer it back rather than resetting. "The AI is trying to go somewhere and you want it to go over here and you keep on telling it to join your path but it still wants to get somewhere else." Once the context is polluted with misaligned attempts, corrections compound the confusion. <span class="ts">53:07–53:24</span></p>
+
+<h4>The Two-Move Reset</h4>
+<ol style="margin: 0 0 14px 24px;">
+  <li><strong>Revert to the previous commit.</strong> Clean slate at the code level.</li>
+  <li><strong>Export the conversation; paste it (with relevant code files) into a different model</strong> — ChatGPT Pro, Gemini Deep Think. Get a critique from an AI not invested in the wrong direction. Diagnose where things went wrong. Revise prompt. Start fresh. <span class="ts">52:27–53:47</span></li>
+</ol>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  The "second model as mediator" technique maps to how senior engineers use code reviews — bring in someone not invested in the current approach to see the problem fresh. Human team dynamics and AI operational dynamics have more in common than most engineers realise. <span class="ts">54:04–54:38</span>
+</div>
+
+<p><strong>Plan mode as drift prevention:</strong> "The recent planning modes released with Claude Code and Cursor have eliminated a vast majority of that drift." Plan mode forces upfront alignment before code generation begins. Recommendation: use plan mode for anything beyond a single-file edit. <span class="ts">54:58–55:14</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The reset is not a failure. It's faster than continuing to fight a polluted context. The sunk cost fallacy applies to AI conversations as much as to any other work.
+</div>
+
+<!-- ─── PHASE 3: TECHNIQUE CARDS ─── -->
+
+<h2 id="technique-cards">🃏 Technique Cards</h2>
+
+<div class="item-card">
+  <h3 id="card-mermaid">🗺️ Mermaid Diagram Context Loading</h3>
+  <div class="one-liner">Store architecture as Mermaid markdown files; inject them all into Claude's system prompt at session startup using <code>--append-system-prompt</code> and a glob pattern.</div>
+
+  <h4>Setup</h4>
+  <p>Create a <code>/memory/ai/diagrams/</code> directory. Generate diagram files using Claude Code (prompt: "diagram all user interactions, events, and data flows in the codebase"). Each file is a markdown file containing Mermaid diagram blocks.</p>
+
+  <h4>Injection Command</h4>
+  <pre><code>claude --append-system-prompt "$(cat .ai/diagrams/*.md)"</code></pre>
+  <p>Alias as <code>cdi</code> for one-keystroke access.</p>
+
+  <h4>When to Generate</h4>
+  <p>After a feature works; before PR merge. Retroactively on legacy codebases before starting AI-assisted development. Automatically via GitHub Actions on PR close.</p>
+
+  <h4>Trade-offs</h4>
+  <p>Cost: higher upfront token usage. Benefit: zero file reads per task, faster responses, correct dependency-impact awareness.</p>
+</div>
+
+<div class="item-card">
+  <h3 id="card-hook">⚙️ Stop Hook Quality Gate</h3>
+  <div class="one-liner">A TypeScript script using the Anthropic Agent SDK that fires on every Claude stop event, runs your type checker, feeds errors back as a blocking message, and commits clean code automatically.</div>
+
+  <h4>Dependencies</h4>
+  <p><code>@anthropic</code> (Anthropic Agent SDK) · Your project's type checker / linter (<code>bun type-check</code>, <code>eslint --fix</code>, etc.)</p>
+
+  <h4>Logic Flow</h4>
+  <ol style="margin: 0 0 14px 24px;">
+    <li>Hook fires on <code>stop</code> event</li>
+    <li>Check: did any files change? If no → exit</li>
+    <li>Run <code>bun type-check</code></li>
+    <li>If errors → <code>console.log(JSON.stringify({ decision: "block", reason: "TypeScript errors: " + errorOutput }))</code> → Claude auto-corrects → loop restarts</li>
+    <li>If no errors → prompt Claude to commit all changed files (exclude sensitive)</li>
+  </ol>
+
+  <h4>Critical Gotcha</h4>
+  <p><code>console.log</code> = instruction back to Claude. Use <code>console.error</code> for debug logs.</p>
+
+  <h4>Configuration</h4>
+  <p>Personal: <code>settings.local.json</code> · Team-shared: <code>settings.json</code></p>
+</div>
+
+<div class="item-card">
+  <h3 id="card-aliases">🔤 Shell Aliases for AI Configurations</h3>
+  <div class="one-liner">Alias your most-used Claude Code flag combinations to 1–3 letter shortcuts in your shell config.</div>
+
+  <h4>Examples (ZSH / .zshrc)</h4>
+  <pre><code>alias x='claude --dangerously-skip-permissions'
+alias h='claude --model claude-haiku-4-5-20251001'
+alias cdi='claude --append-system-prompt "$(cat .ai/diagrams/*.md)"'</code></pre>
+
+  <h4>Project-Specific Pattern</h4>
+  <pre><code>alias cc-myproject='claude --append-system-prompt "$(cat ~/projects/myproject/.ai/diagrams/*.md)"'</code></pre>
+
+  <h4>When to Use Which</h4>
+  <p><code>x</code> (dangerous mode): trusted solo work, fast iteration. <code>h</code> (Haiku): quick tasks, cost-sensitive. <code>cdi</code> (diagrams): any session where codebase context matters.</p>
+</div>
+
+<!-- ─── PROTOCOL CHEAT SHEET ─── -->
+
+<div class="protocol-box" id="protocol-cheat-sheet">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Protocol Cheat Sheet</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li><strong>Diagram generation prompt:</strong> "Walk through my codebase and generate Mermaid diagrams for all user interactions, database operations, events, and data flows"</li>
+    <li><strong>Context injection alias:</strong> <code>alias cdi='claude --append-system-prompt "$(cat .ai/diagrams/*.md)"'</code></li>
+    <li><strong>Dangerous mode alias:</strong> <code>alias x='claude --dangerously-skip-permissions'</code></li>
+    <li><strong>Haiku alias:</strong> <code>alias h='claude --model claude-haiku-4-5-20251001'</code></li>
+    <li><strong>Stop hook return format:</strong> <code>console.log(JSON.stringify({ decision: "block", reason: "Fix errors: " + output }))</code></li>
+    <li><strong>Debug logs in hooks:</strong> always use <code>console.error</code> — never <code>console.log</code></li>
+    <li><strong>Team hook config:</strong> <code>settings.json</code> (shared) vs. <code>settings.local.json</code> (personal)</li>
+    <li><strong>Reset sequence:</strong> revert to last commit → export conversation → paste into second model → get critique → revise prompt → start fresh</li>
+    <li><strong>Plan mode trigger:</strong> anything beyond a single-file edit — activate before generating</li>
+    <li><strong>Diagram timing:</strong> after feature works, before PR merge — not upfront on greenfield</li>
+    <li><strong>Investigation prompt:</strong> "Write a summary of everyone who touched this file and why this function is the way it is"</li>
+  </ul>
+</div>
+
+<!-- ─── SESSION DELTA ─── -->
+
+<h2 id="session-delta">🔄 Cross-Series Convergence</h2>
+
+<p>This is a different guest and series from prior Claude Code transcripts in the knowledge base. No direct Session Delta applies. However, a cross-series convergence is worth noting:</p>
+
+<table>
+  <thead>
+    <tr><th>Theme</th><th>Ross Mike (Greg Isenberg episode)</th><th>John Lindquist (This episode)</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Plan mode</td><td>Core technique; use before any multi-step task</td><td>"Eliminated a vast majority of drift"</td><td>🟢 Full alignment — independently named by both</td></tr>
+    <tr><td>Context preloading</td><td>PRDs and CLAUDE.md as context docs</td><td>Mermaid diagrams via system prompt</td><td>🟢 Same principle, different layer (intent vs. architecture)</td></tr>
+    <tr><td>Quality gates</td><td>Feature-by-feature test loop</td><td>Stop hooks with type check</td><td>🟢 Both encode quality into the workflow, not post-hoc</td></tr>
+    <tr><td>Investigation ROI</td><td>Implicit in good inputs</td><td>Explicit — investigation is the killer enterprise use case</td><td>🟡 Complementary angles on the same insight</td></tr>
+  </tbody>
+</table>
+
+<!-- ─── REFERENCES ─── -->
+
+<h2 id="references-sc">📚 Resources &amp; References</h2>
+
+<div class="references">
+  <h4>👤 People &amp; Organisations</h4>
+  <ul>
+    <li><strong>John Lindquist</strong> — <a href="https://egghead.io/q/resources-by-john-lindquist">egghead.io courses</a> · <a href="https://x.com/johnlindquist">@johnlindquist on X</a></li>
+    <li><strong>Claire Vio</strong> — Host, How I AI · <a href="https://howiipod.com">howiipod.com</a></li>
+    <li><strong>egghead.io</strong> — Video tutorial platform; AI tooling courses and live workshops</li>
+  </ul>
+  <h4>📖 Newsletters</h4>
+  <ul>
+    <li><a href="https://egghead.io/newsletters/ai-dev-essentials">AI Dev Essentials</a> — John Lindquist's weekly newsletter covering model evaluations, tooling releases, workflow patterns</li>
+  </ul>
+  <h4>🌐 Tools &amp; Technologies</h4>
+  <ul>
+    <li><strong>Claude Code</strong> — Anthropic's terminal AI coding agent; primary tool throughout</li>
+    <li><a href="https://mermaid.js.org">Mermaid</a> — Text-based diagram format rendered inside markdown</li>
+    <li><a href="https://docs.windsurf.com/windsurf/codemaps">Windsurf Codemaps</a> — Product-ised version of the diagram-as-context concept (Nov 2025)</li>
+    <li><strong>Gemini CLI</strong> — Google's command-line AI; used in "sketch" for image generation</li>
+    <li><a href="https://platform.claude.com/docs/en/agent-sdk/typescript">Anthropic Agent SDK (TypeScript)</a> — SDK used to build the stop hook</li>
+    <li><strong>Cursor</strong> — AI-powered IDE; agent mode referenced throughout</li>
+    <li><strong>Bun</strong> — JavaScript runtime and package manager used in hook demo</li>
+  </ul>
+  <h4>📊 Documentation</h4>
+  <ul>
+    <li><a href="https://docs.anthropic.com/en/docs/claude-code/hooks-guide">Claude Code hooks guide</a></li>
+    <li><a href="https://platform.claude.com/docs/en/agent-sdk/hooks">Agent SDK hooks reference</a></li>
+    <li><a href="https://www.lennysnewsletter.com/p/advanced-claude-code-techniques-context">Lenny's Newsletter write-up on this episode</a></li>
+  </ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     ECHO SECTION
+     ═══════════════════════════════════════════════════ -->
+
+<hr class="echo-divider" id="echo-section">
+<div class="echo-label">Echo — Decision-Ready Briefing</div>
+
+<div class="hero">
+  <h1>Diagrams, Hooks &amp; Aliases — Senior Engineer's AI Playbook</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> How I AI · John Lindquist · ~56 min</div>
+    <div><span class="label">Domain</span> Technology / AI Dev Workflows</div>
+    <div><span class="label">Reliability</span> Expert opinion — all techniques demonstrated live; SDK usage independently verified</div>
+    <div><span class="label">Content Type</span> Practitioner tutorial / expert interview</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<h2 id="bottom-line">⚡ The Bottom Line</h2>
+
+<div class="exec-summary">
+  <ul>
+    <li><strong>Mermaid diagrams injected at startup eliminate codebase exploration overhead.</strong> Store architecture as markdown diagram files; inject them all via <code>--append-system-prompt</code>. Every session starts with full structural memory — zero file reads, faster and more accurate edits.</li>
+    <li><strong>Stop hooks create a self-correcting quality pipeline.</strong> A TypeScript script using the Anthropic Agent SDK fires when Claude finishes, runs your type checker, feeds errors back as a blocking message, and auto-commits clean code. No human in the loop after task start.</li>
+    <li><strong>Investigation is the highest-ROI enterprise use case — not code generation.</strong> Orienting to a legacy codebase (git history, impact tracing, risk surfacing) used to take days. It's now a 30-second prompt.</li>
+    <li><strong>Plan mode has largely solved the "AI drift" problem.</strong> When Claude goes off the rails: revert to last commit, export conversation, run it through a second model as mediator, revise your prompt, start fresh. Plan mode prevents most of this from occurring.</li>
+    <li><strong>Shell aliases compress your best Claude configurations to one keystroke.</strong> <code>x</code> for dangerous mode, <code>h</code> for Haiku, <code>cdi</code> for diagram-loaded context — set once, use forever.</li>
+  </ul>
+</div>
+
+<h2 id="key-claims">🔑 Key Claims (Ranked)</h2>
+
+<p><strong>1. Pre-loading architectural context via <code>--append-system-prompt</code> is the single highest-leverage Claude Code technique</strong><br>
+↳ Evidence: Live demo — "explain the authentication flow" answered instantly with zero file reads after diagram injection. <span class="ts">09:18–09:58</span><br>
+↳ Caveat: Costs more tokens upfront; optimal for medium-to-large codebases.<br>
+↳ Consensus: Aligned — Windsurf Codemaps (Nov 2025) confirms as an emerging industry standard.</p>
+
+<p><strong>2. Stop hooks turn Claude Code into an automated quality pipeline</strong><br>
+↳ Evidence: Live demo — file created with TypeScript error → hook fired → Claude self-corrected → auto-committed. Zero human input post-task. <span class="ts">33:44–34:47</span><br>
+↳ Caveat: <code>console.log</code> in hook scripts feeds directly to Claude — use <code>console.error</code> for debug output.<br>
+↳ Consensus: Aligned with CI/CD best practices.</p>
+
+<p><strong>3. AI's most underused capability is investigation and orientation, not code generation</strong><br>
+↳ Evidence: John's direct claim; the investigation workflow is demonstrably faster with AI. <span class="ts">47:00–49:26</span><br>
+↳ Caveat: None — investigation output is summaries and risk flags, not production code.</p>
+
+<p><strong>4. Shell aliases deliver the highest effort-to-ROI ratio in AI workflows</strong><br>
+↳ Evidence: John's live setup — 1-letter aliases for dangerous mode, Haiku model, diagram-loaded sessions. <span class="ts">19:51–20:17</span></p>
+
+<p><strong>5. Plan mode eliminates the majority of AI drift before it starts</strong><br>
+↳ Evidence: "Planning modes released with Claude Code and Cursor have eliminated a vast majority of that drift." <span class="ts">54:58–55:07</span></p>
+
+<p><strong>6. The "second model as mediator" is the most reliable reset technique</strong><br>
+↳ Evidence: Export the derailed conversation → paste into ChatGPT Pro or Gemini Deep Think → get an objective critique → revise prompt → start fresh. <span class="ts">52:27–53:47</span></p>
+
+<p><strong>7. Personal CLIs should be built for every recurring idea — immediately, via dictation</strong><br>
+↳ Evidence: John's "sketch" tool — a Gemini image generation CLI built in minutes, immediately useful as an ideation tool. <span class="ts">21:05–23:29</span></p>
+
+<p><strong>8. Team-shared hooks in <code>settings.json</code> scale quality standards across an entire engineering org</strong><br>
+↳ Evidence: John distinguishes personal vs. team-distributed hook config. Claire advocates assigning ownership. <span class="ts">28:48–36:37</span></p>
+
+<p><strong>9. Mermaid diagrams serve dual purpose: AI context AND developer comprehension review</strong><br>
+↳ Evidence: "What did I just build? Show me diagrams of what the code is doing." <span class="ts">14:43–14:54</span></p>
+
+<p><strong>10. CLI tools have a UX advantage over web tools for rapid prototyping — less scope creep, faster to ship</strong><br>
+↳ Evidence: "The constrained UI space of the terminal actually makes sure you don't get distracted." <span class="ts">24:33–24:37</span><br>
+↳ 🎯 Against consensus: Most developers default to web UI for personal tools. The constraint is a feature.</p>
+
+<h2 id="quick-actions">⚡ Quick Actions</h2>
+
+<table>
+  <thead>
+    <tr><th>Workflow</th><th>Command / Setup</th><th>When to Use</th><th>Key Detail</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Inject diagrams at session start</td><td><code>claude --append-system-prompt "$(cat .ai/diagrams/*.md)"</code></td><td>Every session on a project with diagrams</td><td>Alias as <code>cdi</code> for one-keystroke access</td></tr>
+    <tr><td>Generate diagrams from codebase</td><td>Prompt: "Diagram all user interactions, events, and data flows"</td><td>After a feature works; before PR merge; retroactively on legacy codebases</td><td>Store output in <code>/memory/ai/diagrams/*.md</code></td></tr>
+    <tr><td>Dangerous mode alias</td><td><code>alias x='claude --dangerously-skip-permissions'</code></td><td>Trusted solo work requiring speed</td><td>Bypass all permission prompts</td></tr>
+    <tr><td>Haiku alias</td><td><code>alias h='claude --model claude-haiku-4-5-20251001'</code></td><td>Quick tasks, cost-sensitive sessions</td><td>Faster + cheaper; slightly less capable</td></tr>
+    <tr><td>Stop hook type check</td><td>Anthropic Agent SDK + <code>bun type-check</code></td><td>Runs automatically on every Claude stop event</td><td>Return <code>{ decision: "block", reason: errors }</code> via <code>console.log</code></td></tr>
+    <tr><td>Stop hook auto-commit</td><td>Conditional: no errors → prompt Claude to commit</td><td>After type check passes</td><td>Exclude sensitive files in commit prompt</td></tr>
+    <tr><td>Debug logging in hooks</td><td><code>console.error("debug")</code></td><td>Any hook debugging</td><td>Never use <code>console.log</code> for debug — feeds to Claude</td></tr>
+    <tr><td>AI drift reset</td><td>Revert last commit → export convo → second model critique → revise prompt</td><td>When Claude has drifted for more than ~1 correction attempt</td><td>Don't try to steer back from far-gone context</td></tr>
+    <tr><td>Plan mode</td><td>Shift+Tab in Claude Code</td><td>Any task beyond a single-file edit</td><td>Prevents most drift from occurring</td></tr>
+    <tr><td>Investigation prompt</td><td>"Write a summary of everyone who touched this file and why this function is the way it is"</td><td>First step on any unfamiliar ticket or legacy code area</td><td>Works better with diagrams pre-loaded</td></tr>
+  </tbody>
+</table>
+
+<h2 id="best-quotes">💬 Best Quotes</h2>
+
+<blockquote>
+  <em>"Think about if I gave you infinite junior to mid-career talent who is always available, who would do the work you would do if you had unlimited amount of time and no meetings. What would you do when a ticket came in?"</em> <span class="ts">49:47</span> — <strong>Claire Vio</strong> — The framing that unlocks AI workflow design: not "what can I automate?" but "what would optimal look like if resources were infinite?"
+</blockquote>
+
+<blockquote>
+  <em>"It's easier to edit than author. So, let's get the authoring out of the way and then even if you completely revise the whole thing, it's a much easier starting point to work with something."</em> <span class="ts">26:28</span> — <strong>John Lindquist</strong> — The core argument for building every idea immediately, even imperfectly.
+</blockquote>
+
+<blockquote>
+  <em>"Starting over works every time."</em> <span class="ts">53:45</span> — <strong>John Lindquist</strong> — Counterintuitive but consistently true: fighting a polluted context costs more than resetting.
+</blockquote>
+
+<div class="references" style="margin-top: 48px;">
+  <h4>📎 References</h4>
+  <ul>
+    <li><a href="https://docs.anthropic.com/en/docs/claude-code/hooks-guide">Claude Code hooks guide</a></li>
+    <li><a href="https://platform.claude.com/docs/en/agent-sdk/typescript">Anthropic Agent SDK (TypeScript)</a></li>
+    <li><a href="https://platform.claude.com/docs/en/agent-sdk/hooks">Agent SDK hooks reference</a></li>
+    <li><a href="https://docs.windsurf.com/windsurf/codemaps">Windsurf Codemaps</a></li>
+    <li><a href="https://egghead.io/newsletters/ai-dev-essentials">AI Dev Essentials newsletter</a></li>
+    <li><a href="https://egghead.io/q/resources-by-john-lindquist">John Lindquist's egghead courses</a></li>
+    <li><a href="https://howiipod.com">How I AI podcast</a></li>
+    <li><a href="https://mermaid.js.org">Mermaid diagram format</a></li>
+    <li><a href="https://www.lennysnewsletter.com/p/advanced-claude-code-techniques-context">Lenny's Newsletter write-up</a></li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+  if (headings.length === 0 || tocLinks.length === 0) return;
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  headings.forEach(h => observer.observe(h));
+})();
+
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
