@@ -1,4 +1,110 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+'use strict';
+
+const fs   = require('fs');
+const path = require('path');
+
+const ROOT            = path.join(__dirname, '..');
+const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
+const TRANSCRIPTS_DIR = path.join(ROOT, 'transcripts');
+const MANIFEST_FILE   = path.join(TRANSCRIPTS_DIR, 'manifest.json');
+const OUTPUT_FILE     = path.join(ROOT, 'index.html');
+
+// ─── Briefing metadata ───────────────────────────────────────────────────────
+
+const BRIEFING_META = {
+  'market-briefing':   { title:'The Morning Edge', subtitle:'Market Intelligence',   icon:'&#x1F4C8;',         accent:'#22c55e', accentDim:'#22c55e18', typeLabel:'Morning Edge', filename:'market-briefing.html' },
+  'legal-brief':       { title:'The Brief',        subtitle:'Legal Intelligence',    icon:'&#x2696;&#xFE0F;',  accent:'#60a5fa', accentDim:'#60a5fa18', typeLabel:'The Brief',    filename:'legal-brief.html' },
+  'ai-briefing':       { title:'AI Intelligence',   subtitle:'Models & Strategy',     icon:'&#x1F916;',         accent:'#a78bfa', accentDim:'#a78bfa18', typeLabel:'AI Update',    filename:'ai-briefing.html' },
+  'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html' },
+};
+const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report'];
+
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function formatDate(ds) {
+  const d = new Date(`${ds}T12:00:00Z`);
+  return d.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+}
+
+// ─── Card HTML generators ────────────────────────────────────────────────────
+
+function briefingCard(date, key) {
+  const m = BRIEFING_META[key];
+  return `
+      <a href="briefings/${date}/${m.filename}" class="card-row">
+        <div class="card-accent" style="background:${m.accent}"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:${m.accentDim}">${m.icon}</div>
+          <div class="card-type" style="color:${m.accent}">${m.typeLabel}</div>
+          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div></div>
+          <div class="card-arrow">&#x203A;</div>
+        </div>
+      </a>`;
+}
+
+function transcriptCard(t) {
+  const folder = t.slug;
+  const date = t.date;
+  return `
+      <a href="transcripts/${folder}/index.html" class="card-row">
+        <div class="card-accent" style="background:#f59e0b"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
+          <div class="card-type" style="color:#f59e0b">Transcript</div>
+          <div class="card-mid">
+            <div class="card-title">${escapeHtml(t.title)}</div>
+            <div class="card-preview">${escapeHtml(t.source)} &middot; ${escapeHtml(t.domain)}</div>
+          </div>
+          <div class="card-arrow">&#x203A;</div>
+        </div>
+      </a>`;
+}
+
+function dateGroupHTML(date, briefings, transcripts, isToday) {
+  const bCount = briefings.length, tCount = transcripts.length;
+  const parts = [];
+  if (bCount) parts.push(`${bCount} briefing${bCount>1?'s':''}`);
+  if (tCount) parts.push(`${tCount} transcript${tCount>1?'s':''}`);
+  return `
+    <div class="date-group">
+      <div class="date-header">
+        <span>${formatDate(date)}${isToday?' <span class="today-badge">TODAY</span>':''}</span>
+        <span class="date-count">${parts.join(' &middot; ')}</span>
+      </div>
+      ${briefings.map(k => briefingCard(date, k)).join('')}
+      ${transcripts.map(t => transcriptCard(t)).join('')}
+      <div class="date-group-pad"></div>
+    </div>`;
+}
+
+// ─── Build full HTML ─────────────────────────────────────────────────────────
+
+function buildHTML(briefingEntries, transcriptsByDate) {
+  const totalBriefings = briefingEntries.reduce((n,e) => n + e.briefings.length, 0);
+  const totalTranscripts = Object.values(transcriptsByDate).reduce((n,arr) => n + arr.length, 0);
+  const allDates = [...new Set([...briefingEntries.map(e=>e.date), ...Object.keys(transcriptsByDate)])].sort().reverse();
+  const today = new Date().toISOString().split('T')[0];
+  const todayDisplay = new Date().toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();
+
+  const briefingMap = {};
+  briefingEntries.forEach(e => { briefingMap[e.date] = e.briefings; });
+
+  // Heatmap
+  const hm = [];
+  for (let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];
+    const c=(briefingMap[ds]?.length||0)+(transcriptsByDate[ds]?.length||0);
+    hm.push(`<div class="hm${c===0?'':c<=2?' l1':c<=3?' l2':' l3'}"></div>`);}
+
+  // Category counts
+  const cc={};ORDER.forEach(k=>{cc[k]=0;});
+  briefingEntries.forEach(e=>{e.briefings.forEach(b=>{cc[b]=(cc[b]||0)+1;});});
+
+  const feedHTML = allDates.map(date =>
+    dateGroupHTML(date, briefingMap[date]||[], transcriptsByDate[date]||[], date===today)
+  ).join('');
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -93,7 +199,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
     </div>
   </div>
   <div class="topbar-right">
-    <div class="topbar-date">SAT, MAR 28, 2026</div>
+    <div class="topbar-date">${todayDisplay}</div>
     <div class="live-label"><div class="live-dot"></div> Live</div>
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"><span class="icon-moon">&#x1F319;</span><span class="icon-sun">&#x2600;&#xFE0F;</span></button>
   </div>
@@ -108,145 +214,19 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 </div>
 <div class="heatmap-section">
   <div class="heatmap-label">Activity</div>
-  <div class="heatmap"><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm"></div><div class="hm l3"></div><div class="hm l3"></div></div>
+  <div class="heatmap">${hm.join('')}</div>
   <div class="heatmap-legend"><span>Less</span><div class="legend-sq" style="background:var(--bg-3)"></div><div class="legend-sq" style="background:var(--hm-l1)"></div><div class="legend-sq" style="background:var(--hm-l2)"></div><div class="legend-sq" style="background:var(--green)"></div><span>More</span></div>
 </div>
 <div class="filter-bar">
-  <div class="filter-chip active">All<span class="filter-count">11</span></div>
-  <div class="filter-chip c-m">Market<span class="filter-count">2</span></div>
-  <div class="filter-chip c-l">Legal<span class="filter-count">2</span></div>
-  <div class="filter-chip c-a">AI<span class="filter-count">2</span></div>
-  <div class="filter-chip c-b">Biohacker<span class="filter-count">2</span></div>
-  <div class="filter-chip c-t">Transcripts<span class="filter-count">3</span></div>
+  <div class="filter-chip active">All<span class="filter-count">${totalBriefings+totalTranscripts}</span></div>
+  <div class="filter-chip c-m">Market<span class="filter-count">${cc['market-briefing']}</span></div>
+  <div class="filter-chip c-l">Legal<span class="filter-count">${cc['legal-brief']}</span></div>
+  <div class="filter-chip c-a">AI<span class="filter-count">${cc['ai-briefing']}</span></div>
+  <div class="filter-chip c-b">Biohacker<span class="filter-count">${cc['biohacker-report']}</span></div>
+  <div class="filter-chip c-t">Transcripts<span class="filter-count">${totalTranscripts}</span></div>
 </div>
 <div class="feed">
-
-    <div class="date-group">
-      <div class="date-header">
-        <span>Saturday, March 28, 2026 <span class="today-badge">TODAY</span></span>
-        <span class="date-count">4 briefings</span>
-      </div>
-      
-      <a href="briefings/2026-03-28/market-briefing.html" class="card-row">
-        <div class="card-accent" style="background:#22c55e"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#22c55e18">&#x1F4C8;</div>
-          <div class="card-type" style="color:#22c55e">Morning Edge</div>
-          <div class="card-mid"><div class="card-title">The Morning Edge — Market Intelligence</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-28/legal-brief.html" class="card-row">
-        <div class="card-accent" style="background:#60a5fa"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#60a5fa18">&#x2696;&#xFE0F;</div>
-          <div class="card-type" style="color:#60a5fa">The Brief</div>
-          <div class="card-mid"><div class="card-title">The Brief — Legal Intelligence</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-28/ai-briefing.html" class="card-row">
-        <div class="card-accent" style="background:#a78bfa"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#a78bfa18">&#x1F916;</div>
-          <div class="card-type" style="color:#a78bfa">AI Update</div>
-          <div class="card-mid"><div class="card-title">AI Intelligence — Models & Strategy</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-28/biohacker-report.html" class="card-row">
-        <div class="card-accent" style="background:#2dd4bf"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#2dd4bf18">&#x1F9EC;</div>
-          <div class="card-type" style="color:#2dd4bf">Biohacker</div>
-          <div class="card-mid"><div class="card-title">Biohacker Report — Health & Longevity</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      
-      <div class="date-group-pad"></div>
-    </div>
-    <div class="date-group">
-      <div class="date-header">
-        <span>Friday, March 27, 2026</span>
-        <span class="date-count">4 briefings &middot; 3 transcripts</span>
-      </div>
-      
-      <a href="briefings/2026-03-27/market-briefing.html" class="card-row">
-        <div class="card-accent" style="background:#22c55e"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#22c55e18">&#x1F4C8;</div>
-          <div class="card-type" style="color:#22c55e">Morning Edge</div>
-          <div class="card-mid"><div class="card-title">The Morning Edge — Market Intelligence</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-27/legal-brief.html" class="card-row">
-        <div class="card-accent" style="background:#60a5fa"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#60a5fa18">&#x2696;&#xFE0F;</div>
-          <div class="card-type" style="color:#60a5fa">The Brief</div>
-          <div class="card-mid"><div class="card-title">The Brief — Legal Intelligence</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-27/ai-briefing.html" class="card-row">
-        <div class="card-accent" style="background:#a78bfa"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#a78bfa18">&#x1F916;</div>
-          <div class="card-type" style="color:#a78bfa">AI Update</div>
-          <div class="card-mid"><div class="card-title">AI Intelligence — Models & Strategy</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="briefings/2026-03-27/biohacker-report.html" class="card-row">
-        <div class="card-accent" style="background:#2dd4bf"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#2dd4bf18">&#x1F9EC;</div>
-          <div class="card-type" style="color:#2dd4bf">Biohacker</div>
-          <div class="card-mid"><div class="card-title">Biohacker Report — Health & Longevity</div></div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      
-      <a href="transcripts/saraev_agentic_workflows/index.html" class="card-row">
-        <div class="card-accent" style="background:#f59e0b"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
-          <div class="card-type" style="color:#f59e0b">Transcript</div>
-          <div class="card-mid">
-            <div class="card-title">Agentic Workflows Are a Phase Change — Not an Upgrade: The DO Framework, Self-Annealing Systems, and the Coming River of Value</div>
-            <div class="card-preview">Nick Saraev · YouTube &middot; Technology / Business / AI</div>
-          </div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="transcripts/ethier_fastest_20lbs_muscle/index.html" class="card-row">
-        <div class="card-accent" style="background:#f59e0b"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
-          <div class="card-type" style="color:#f59e0b">Transcript</div>
-          <div class="card-mid">
-            <div class="card-title">The Fastest Way to Gain 20 lbs of Muscle Naturally</div>
-            <div class="card-preview">Jeremy Ethier &middot; Fitness &amp; Hypertrophy Science</div>
-          </div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <a href="transcripts/advanced_ai_workflows/index.html" class="card-row">
-        <div class="card-accent" style="background:#f59e0b"></div>
-        <div class="card-body">
-          <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
-          <div class="card-type" style="color:#f59e0b">Transcript</div>
-          <div class="card-mid">
-            <div class="card-title">Diagrams, Hooks &amp; Aliases — The Senior Engineer's AI Playbook</div>
-            <div class="card-preview">How I AI · John Lindquist &middot; Technology / AI Dev Workflows</div>
-          </div>
-          <div class="card-arrow">&#x203A;</div>
-        </div>
-      </a>
-      <div class="date-group-pad"></div>
-    </div>
+${feedHTML||'<div class="empty"><p class="empty-h">No briefings yet</p></div>'}
 </div>
 <div class="footer"><div class="footer-left"><a href="https://github.com/ngmicapital/GM-Research" target="_blank">ngmicapital/GM-Research</a><div class="footer-dot"></div><span>Updated daily</span><div class="footer-dot"></div><span>Powered by Claude</span></div></div>
 <script>
@@ -254,4 +234,32 @@ function toggleTheme(){var h=document.documentElement,c=h.getAttribute('data-the
 (function(){var s=localStorage.getItem('gm-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
 </script>
 </body>
-</html>
+</html>`;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+let briefingEntries = [];
+if (fs.existsSync(BRIEFINGS_DIR)) {
+  briefingEntries = fs.readdirSync(BRIEFINGS_DIR)
+    .filter(n => /^\d{4}-\d{2}-\d{2}$/.test(n)).sort().reverse()
+    .map(date => {
+      const files = fs.readdirSync(path.join(BRIEFINGS_DIR, date)).filter(f => f.endsWith('.html'));
+      return { date, briefings: ORDER.filter(k => files.includes(BRIEFING_META[k].filename)) };
+    });
+}
+
+let transcriptsByDate = {};
+if (fs.existsSync(MANIFEST_FILE)) {
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf8'));
+  manifest.forEach(t => {
+    const d = t.date || '2026-01-01';
+    if (!transcriptsByDate[d]) transcriptsByDate[d] = [];
+    transcriptsByDate[d].push(t);
+  });
+}
+
+fs.writeFileSync(OUTPUT_FILE, buildHTML(briefingEntries, transcriptsByDate));
+const bCount = briefingEntries.reduce((n,e) => n + e.briefings.length, 0);
+const tCount = Object.values(transcriptsByDate).reduce((n,a) => n + a.length, 0);
+console.log(`index.html written — ${briefingEntries.length} date(s), ${bCount} briefing(s), ${tCount} transcript(s)`);
