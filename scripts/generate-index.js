@@ -21,6 +21,72 @@ const BRIEFING_META = {
 const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report'];
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function stripHtml(s) { return s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
+
+// Extract a preview summary + tags from a briefing HTML file
+function extractBriefingMeta(filePath, key) {
+  let preview = '';
+  let tags = [];
+  try {
+    const html = fs.readFileSync(filePath, 'utf8');
+
+    // Strategy 1: TL;DR block (market, ai, biohacker)
+    const tldrMatch = html.match(/class="tldr"[\s\S]*?<p>([\s\S]*?)<\/p>/);
+    if (tldrMatch) {
+      let text = stripHtml(tldrMatch[1]);
+      // Truncate to first sentence or 120 chars
+      const sentEnd = text.indexOf('. ');
+      if (sentEnd > 20 && sentEnd < 140) text = text.slice(0, sentEnd + 1);
+      else if (text.length > 120) text = text.slice(0, 117) + '...';
+      preview = text;
+    }
+
+    // Strategy 2: Legal brief — use first 2 story titles
+    if (!preview && key === 'legal-brief') {
+      const storyTitles = [];
+      const re = /story-title">([^<]+)/g;
+      let m;
+      while ((m = re.exec(html)) && storyTitles.length < 2) {
+        let t = stripHtml(m[1]);
+        // Truncate long titles at em-dash or colon
+        const dashIdx = t.indexOf(' — ');
+        if (dashIdx > 10 && dashIdx < 60) t = t.slice(0, dashIdx);
+        const colonIdx = t.indexOf(': ');
+        if (colonIdx > 10 && colonIdx < 50) t = t.slice(0, colonIdx);
+        storyTitles.push(t);
+      }
+      if (storyTitles.length) preview = storyTitles.join(' · ');
+    }
+
+    // Strategy 3: fallback — first section-title items
+    if (!preview) {
+      const sectionTitles = [];
+      const re = /section-title">\s*(?:[^\s<]*\s)?([^<]+)/g;
+      let m;
+      while ((m = re.exec(html)) && sectionTitles.length < 3) {
+        const t = stripHtml(m[1]);
+        if (t.length > 3 && !t.includes('{')) sectionTitles.push(t);
+      }
+      if (sectionTitles.length) preview = sectionTitles.join(' · ');
+    }
+
+    // Extract tags from key patterns
+    const tagPatterns = {
+      'market-briefing':  /\b(BTC|ETH|SOL|Gold|SPX|VIX|WTI|Brent|DXY|NVDA|TSLA)\b/g,
+      'legal-brief':      /\b(SEC|CFTC|ESMA|FCA|MAS|ASIC|OCC|MiCA|GENIUS|CLARITY|FIT21|Ripple|Coinbase|Binance)\b/g,
+      'ai-briefing':      /\b(Claude|GPT|Gemini|DeepSeek|Mistral|NVIDIA|Llama|Anthropic|OpenAI|Google)\b/g,
+      'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone)\b/g,
+    };
+    const tagRe = tagPatterns[key];
+    if (tagRe) {
+      const found = new Set();
+      let m;
+      while ((m = tagRe.exec(html))) found.add(m[1]);
+      tags = [...found].slice(0, 3);
+    }
+  } catch(e) { /* file read error — use defaults */ }
+  return { preview, tags };
+}
 
 function formatDate(ds) {
   const d = new Date(`${ds}T12:00:00Z`);
@@ -31,13 +97,20 @@ function formatDate(ds) {
 
 function briefingCard(date, key) {
   const m = BRIEFING_META[key];
+  const filePath = path.join(BRIEFINGS_DIR, date, m.filename);
+  const extracted = extractBriefingMeta(filePath, key);
+  const preview = extracted.preview || m.preview;
+  const tagsHTML = extracted.tags.length
+    ? `<div class="card-tags">${extracted.tags.map(t => `<span class="card-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+    : '';
   return `
       <a href="briefings/${date}/${m.filename}" class="card-row">
         <div class="card-accent" style="background:${m.accent}"></div>
         <div class="card-body">
           <div class="card-icon" style="background:${m.accentDim}">${m.icon}</div>
           <div class="card-type" style="color:${m.accent}">${m.typeLabel}</div>
-          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div><div class="card-preview">${m.preview}</div></div>
+          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div><div class="card-preview">${escapeHtml(preview)}</div></div>
+          ${tagsHTML}
           <div class="card-arrow">&#x203A;</div>
         </div>
       </a>`;
@@ -216,6 +289,8 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .card-title{font-size:13px;font-weight:500;color:var(--text-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-preview{font-size:12px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-row:hover .card-preview{color:var(--text-2)}
+.card-tags{display:flex;gap:4px;margin-left:16px;flex-shrink:0}
+.card-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-3);background:var(--bg-3);padding:2px 7px;border-radius:3px;white-space:nowrap}
 .card-arrow{color:var(--text-3);font-size:18px;padding:0 4px 0 16px;transition:all .2s;opacity:0}
 .card-row:hover .card-arrow{opacity:1;color:var(--amber);transform:translateX(2px)}
 .date-group-pad{height:16px}
@@ -226,7 +301,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .empty{text-align:center;padding:60px 20px}.empty-h{font-size:1rem;font-weight:600;color:var(--text-2);margin-bottom:8px}.empty-b{font-size:.82rem;color:var(--text-3)}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 @media(max-width:900px){.card-type{width:100px}}
-@media(max-width:600px){.topbar,.hero,.filter-bar,.date-header,.heatmap-section,.keywords-section,.footer{padding-left:20px;padding-right:20px}.card-row{margin:0 12px}.hero-top{flex-direction:column;gap:12px}.card-preview,.card-icon{display:none}.topbar-date{display:none}}
+@media(max-width:600px){.topbar,.hero,.filter-bar,.date-header,.heatmap-section,.keywords-section,.footer{padding-left:20px;padding-right:20px}.card-row{margin:0 12px}.hero-top{flex-direction:column;gap:12px}.card-preview,.card-icon,.card-tags{display:none}.topbar-date{display:none}}
 </style>
 </head>
 <body>
