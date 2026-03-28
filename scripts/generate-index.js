@@ -23,8 +23,9 @@ const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-repor
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function stripHtml(s) { return s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
 
-// Extract a preview summary + tags from a briefing HTML file
+// Extract a headline, preview summary + tags from a briefing HTML file
 function extractBriefingMeta(filePath, key) {
+  let headline = '';
   let preview = '';
   let tags = [];
   try {
@@ -34,32 +35,42 @@ function extractBriefingMeta(filePath, key) {
     const tldrMatch = html.match(/class="tldr"[\s\S]*?<p>([\s\S]*?)<\/p>/);
     if (tldrMatch) {
       let text = stripHtml(tldrMatch[1]);
-      // Truncate to first sentence or 120 chars
-      const sentEnd = text.indexOf('. ');
-      if (sentEnd > 20 && sentEnd < 140) text = text.slice(0, sentEnd + 1);
-      else if (text.length > 120) text = text.slice(0, 117) + '...';
-      preview = text;
+      // Find sentence boundary (". " followed by uppercase) — avoids splitting on "$99.64"
+      const sentEnd = text.search(/\.\s+[A-Z]/);
+      if (sentEnd > 15) {
+        let h = text.slice(0, sentEnd + 1);
+        if (h.length > 90) h = h.slice(0, h.lastIndexOf(' ', 87) || 87) + '...';
+        headline = h;
+        let rest = text.slice(sentEnd + 2).trim();
+        // Second sentence for preview
+        const sent2 = rest.search(/\.\s+[A-Z]/);
+        if (sent2 > 10) rest = rest.slice(0, sent2 + 1);
+        if (rest.length > 120) rest = rest.slice(0, 117) + '...';
+        preview = rest;
+      } else {
+        headline = text.length > 90 ? text.slice(0, text.lastIndexOf(' ', 87) || 87) + '...' : text;
+      }
     }
 
-    // Strategy 2: Legal brief — use first 2 story titles
-    if (!preview && key === 'legal-brief') {
+    // Strategy 2: Legal brief — use first story title as headline, second as preview
+    if (!headline && key === 'legal-brief') {
       const storyTitles = [];
       const re = /story-title">([^<]+)/g;
       let m;
-      while ((m = re.exec(html)) && storyTitles.length < 2) {
+      while ((m = re.exec(html)) && storyTitles.length < 3) {
         let t = stripHtml(m[1]);
-        // Truncate long titles at em-dash or colon
         const dashIdx = t.indexOf(' — ');
         if (dashIdx > 10 && dashIdx < 60) t = t.slice(0, dashIdx);
         const colonIdx = t.indexOf(': ');
         if (colonIdx > 10 && colonIdx < 50) t = t.slice(0, colonIdx);
         storyTitles.push(t);
       }
-      if (storyTitles.length) preview = storyTitles.join(' · ');
+      if (storyTitles.length >= 1) headline = storyTitles[0];
+      if (storyTitles.length >= 2) preview = storyTitles.slice(1).join(' · ');
     }
 
-    // Strategy 3: fallback — first section-title items
-    if (!preview) {
+    // Strategy 3: fallback — first section-title as headline
+    if (!headline) {
       const sectionTitles = [];
       const re = /section-title">\s*(?:[^\s<]*\s)?([^<]+)/g;
       let m;
@@ -67,7 +78,8 @@ function extractBriefingMeta(filePath, key) {
         const t = stripHtml(m[1]);
         if (t.length > 3 && !t.includes('{')) sectionTitles.push(t);
       }
-      if (sectionTitles.length) preview = sectionTitles.join(' · ');
+      if (sectionTitles.length >= 1) headline = sectionTitles[0];
+      if (sectionTitles.length >= 2) preview = sectionTitles.slice(1).join(' · ');
     }
 
     // Extract tags from key patterns
@@ -85,7 +97,7 @@ function extractBriefingMeta(filePath, key) {
       tags = [...found].slice(0, 3);
     }
   } catch(e) { /* file read error — use defaults */ }
-  return { preview, tags };
+  return { headline, preview, tags };
 }
 
 function formatDate(ds) {
@@ -99,7 +111,8 @@ function briefingCard(date, key) {
   const m = BRIEFING_META[key];
   const filePath = path.join(BRIEFINGS_DIR, date, m.filename);
   const extracted = extractBriefingMeta(filePath, key);
-  const preview = extracted.preview || m.preview;
+  const title = extracted.headline || m.preview;
+  const preview = extracted.preview || '';
   const tagsHTML = extracted.tags.length
     ? `<div class="card-tags">${extracted.tags.map(t => `<span class="card-tag">${escapeHtml(t)}</span>`).join('')}</div>`
     : '';
@@ -109,7 +122,7 @@ function briefingCard(date, key) {
         <div class="card-body">
           <div class="card-icon" style="background:${m.accentDim}">${m.icon}</div>
           <div class="card-type" style="color:${m.accent}">${m.typeLabel}</div>
-          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div><div class="card-preview">${escapeHtml(preview)}</div></div>
+          <div class="card-mid"><div class="card-title">${escapeHtml(title)}</div>${preview ? `<div class="card-preview">${escapeHtml(preview)}</div>` : ''}</div>
           ${tagsHTML}
           <div class="card-arrow">&#x203A;</div>
         </div>
@@ -287,7 +300,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .card-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;width:120px;flex-shrink:0;font-family:'JetBrains Mono',monospace}
 .card-mid{flex:1;min-width:0}
 .card-title{font-size:13px;font-weight:500;color:var(--text-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-preview{font-size:12px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-preview{font-size:12px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-row:hover .card-preview{color:var(--text-2)}
 .card-tags{display:flex;gap:4px;margin-left:16px;flex-shrink:0}
 .card-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-3);background:var(--bg-3);padding:2px 7px;border-radius:3px;white-space:nowrap}
