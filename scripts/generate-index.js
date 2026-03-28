@@ -13,10 +13,10 @@ const OUTPUT_FILE     = path.join(ROOT, 'index.html');
 // ─── Briefing metadata ───────────────────────────────────────────────────────
 
 const BRIEFING_META = {
-  'market-briefing':   { title:'The Morning Edge', subtitle:'Market Intelligence',   icon:'&#x1F4C8;',         accent:'#22c55e', accentDim:'#22c55e18', typeLabel:'Morning Edge', filename:'market-briefing.html' },
-  'legal-brief':       { title:'The Brief',        subtitle:'Legal Intelligence',    icon:'&#x2696;&#xFE0F;',  accent:'#60a5fa', accentDim:'#60a5fa18', typeLabel:'The Brief',    filename:'legal-brief.html' },
-  'ai-briefing':       { title:'AI Intelligence',   subtitle:'Models & Strategy',     icon:'&#x1F916;',         accent:'#a78bfa', accentDim:'#a78bfa18', typeLabel:'AI Update',    filename:'ai-briefing.html' },
-  'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html' },
+  'market-briefing':   { title:'The Morning Edge', subtitle:'Market Intelligence',   icon:'&#x1F4C8;',         accent:'#22c55e', accentDim:'#22c55e18', typeLabel:'Morning Edge', filename:'market-briefing.html', preview:'BTC, equities, macro, crypto derivatives & prediction markets' },
+  'legal-brief':       { title:'The Brief',        subtitle:'Legal Intelligence',    icon:'&#x2696;&#xFE0F;',  accent:'#60a5fa', accentDim:'#60a5fa18', typeLabel:'The Brief',    filename:'legal-brief.html', preview:'Crypto regulation, enforcement actions & legislative tracker' },
+  'ai-briefing':       { title:'AI Intelligence',   subtitle:'Models & Strategy',     icon:'&#x1F916;',         accent:'#a78bfa', accentDim:'#a78bfa18', typeLabel:'AI Update',    filename:'ai-briefing.html', preview:'Model releases, benchmarks, AI x Crypto & research papers' },
+  'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html', preview:'Longevity science, training protocols & daily wisdom' },
 };
 const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report'];
 
@@ -37,7 +37,7 @@ function briefingCard(date, key) {
         <div class="card-body">
           <div class="card-icon" style="background:${m.accentDim}">${m.icon}</div>
           <div class="card-type" style="color:${m.accent}">${m.typeLabel}</div>
-          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div></div>
+          <div class="card-mid"><div class="card-title">${m.title} — ${m.subtitle}</div><div class="card-preview">${m.preview}</div></div>
           <div class="card-arrow">&#x203A;</div>
         </div>
       </a>`;
@@ -100,6 +100,39 @@ function buildHTML(briefingEntries, transcriptsByDate) {
   const cc={};ORDER.forEach(k=>{cc[k]=0;});
   briefingEntries.forEach(e=>{e.briefings.forEach(b=>{cc[b]=(cc[b]||0)+1;});});
 
+  // Keywords — static curated list tied to briefing types present
+  const keywordPool = [
+    { kw:'BTC',        types:['market-briefing'], weight:3 },
+    { kw:'Gold',       types:['market-briefing'], weight:2 },
+    { kw:'SPX',        types:['market-briefing'], weight:1 },
+    { kw:'VIX',        types:['market-briefing'], weight:1 },
+    { kw:'Tariffs',    types:['market-briefing'], weight:1 },
+    { kw:'SEC',        types:['legal-brief'],     weight:3 },
+    { kw:'MiCA',       types:['legal-brief'],     weight:2 },
+    { kw:'Ripple',     types:['legal-brief'],     weight:1 },
+    { kw:'Stablecoin', types:['legal-brief'],     weight:1 },
+    { kw:'GENIUS Act', types:['legal-brief'],     weight:1 },
+    { kw:'Claude',     types:['ai-briefing'],     weight:2 },
+    { kw:'Gemini',     types:['ai-briefing'],     weight:1 },
+    { kw:'GPT',        types:['ai-briefing'],     weight:1 },
+    { kw:'Open Source', types:['ai-briefing'],    weight:1 },
+    { kw:'Creatine',   types:['biohacker-report'],weight:2 },
+    { kw:'GLP-1',      types:['biohacker-report'],weight:1 },
+    { kw:'Zone 2',     types:['biohacker-report'],weight:1 },
+    { kw:'Sleep',      types:['biohacker-report'],weight:1 },
+  ];
+  // Count how many briefings of each type exist
+  const typeCount = {};
+  briefingEntries.forEach(e => { e.briefings.forEach(b => { typeCount[b] = (typeCount[b]||0) + 1; }); });
+  // Build keyword list with counts based on how many briefings of that type exist
+  const keywords = keywordPool
+    .map(k => ({ kw: k.kw, count: k.types.reduce((n,t) => n + (typeCount[t]||0), 0) * k.weight, hot: k.weight >= 3 }))
+    .filter(k => k.count > 0)
+    .sort((a,b) => b.count - a.count);
+  const kwHTML = keywords.map(k =>
+    `<span class="kw${k.hot?' hot':''}">${k.kw}<span class="kw-count">${k.count}</span></span>`
+  ).join('');
+
   const feedHTML = allDates.map(date =>
     dateGroupHTML(date, briefingMap[date]||[], transcriptsByDate[date]||[], date===today)
   ).join('');
@@ -150,6 +183,14 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 [data-theme="light"] .hm.l3{box-shadow:none}
 .heatmap-legend{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:10px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 .legend-sq{width:8px;height:8px;border-radius:2px}
+.keywords-section{padding:18px 40px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:24px}
+.keywords-label{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;white-space:nowrap;min-width:80px;padding-top:5px}
+.keywords-cloud{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.kw{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;padding:4px 12px;border-radius:5px;transition:all .2s;border:1px solid var(--border);background:var(--bg-1);color:var(--text-2);text-decoration:none;cursor:pointer}
+.kw:hover{border-color:var(--border-hover);color:var(--text-0);background:var(--bg-3)}
+.kw.hot{color:var(--amber);border-color:rgba(245,158,11,0.25);background:var(--amber-dim)}.kw.hot:hover{border-color:var(--amber)}
+.kw-count{font-size:9px;color:var(--text-3);margin-left:4px;font-weight:400}
+[data-theme="light"] .kw{box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .filter-bar{display:flex;align-items:center;gap:6px;padding:14px 40px;border-bottom:1px solid var(--border);background:var(--bg-1)}
 .filter-chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:transparent;color:var(--text-2)}
 .filter-chip:hover{border-color:var(--border-hover);color:var(--text-1)}
@@ -185,7 +226,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .empty{text-align:center;padding:60px 20px}.empty-h{font-size:1rem;font-weight:600;color:var(--text-2);margin-bottom:8px}.empty-b{font-size:.82rem;color:var(--text-3)}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 @media(max-width:900px){.card-type{width:100px}}
-@media(max-width:600px){.topbar,.hero,.filter-bar,.date-header,.heatmap-section,.footer{padding-left:20px;padding-right:20px}.card-row{margin:0 12px}.hero-top{flex-direction:column;gap:12px}.card-preview,.card-icon{display:none}.topbar-date{display:none}}
+@media(max-width:600px){.topbar,.hero,.filter-bar,.date-header,.heatmap-section,.keywords-section,.footer{padding-left:20px;padding-right:20px}.card-row{margin:0 12px}.hero-top{flex-direction:column;gap:12px}.card-preview,.card-icon{display:none}.topbar-date{display:none}}
 </style>
 </head>
 <body>
@@ -216,6 +257,10 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
   <div class="heatmap-label">Activity</div>
   <div class="heatmap">${hm.join('')}</div>
   <div class="heatmap-legend"><span>Less</span><div class="legend-sq" style="background:var(--bg-3)"></div><div class="legend-sq" style="background:var(--hm-l1)"></div><div class="legend-sq" style="background:var(--hm-l2)"></div><div class="legend-sq" style="background:var(--green)"></div><span>More</span></div>
+</div>
+<div class="keywords-section">
+  <div class="keywords-label">Trending</div>
+  <div class="keywords-cloud">${kwHTML}</div>
 </div>
 <div class="filter-bar">
   <div class="filter-chip active">All<span class="filter-count">${totalBriefings+totalTranscripts}</span></div>
