@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wyckoff Crypto Discussion — 27 March 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+#progress-bar {
+  position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+  background: var(--progress-bar); z-index: 9999; transition: width 0.1s linear;
+}
+.theme-toggle {
+  position: fixed; top: 16px; left: 16px; z-index: 1000;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%;
+  width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+.page-wrapper { display: flex; max-width: 1200px; margin: 0 auto; }
+.main-content { flex: 1; max-width: 820px; margin-left: 260px; padding: 40px 24px 120px; }
+.toc-sidebar {
+  position: fixed; top: 80px; left: max(16px, calc((100vw - 1200px)/2));
+  width: 220px; max-height: calc(100vh - 120px); overflow-y: auto;
+  background: var(--bg-toc); border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px; box-shadow: 0 2px 12px var(--shadow); z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 12px;
+}
+.toc-sidebar ul { list-style: none; }
+.toc-sidebar li { font-size: 13px; margin-bottom: 6px; line-height: 1.4; }
+.toc-sidebar a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; display: block; padding: 2px 0; }
+.toc-sidebar a:hover, .toc-sidebar a.active { color: var(--accent-gold); }
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+.toc-hamburger {
+  display: none; position: fixed; top: 16px; left: 64px; z-index: 1001;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%;
+  width: 40px; height: 40px; cursor: pointer; align-items: center;
+  justify-content: center; font-size: 18px; box-shadow: 0 2px 8px var(--shadow);
+}
+@media (max-width: 1100px) {
+  .toc-sidebar { display: none; position: fixed; top: 64px; left: 16px; width: 280px; max-height: 70vh; }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content { margin-left: auto; margin-right: auto; }
+}
+.hero { padding: 60px 0 48px; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+.hero-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 20px;
+}
+h1 {
+  font-family: 'Fraunces', serif; font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px); line-height: 1.2;
+  color: var(--text-heading); margin-bottom: 24px; letter-spacing: -0.5px;
+}
+.meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px 32px;
+  font-size: 14px; color: var(--text-muted); margin-bottom: 16px;
+}
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold);
+  display: block; margin-bottom: 2px;
+}
+.mode-badge {
+  display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; margin-top: 12px;
+}
+.mode-badge.quick { background: var(--accent-orange); color: #fff; }
+h2 {
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px;
+  color: var(--text-heading); margin: 64px 0 8px; padding-top: 32px;
+  border-top: 1px solid var(--border); letter-spacing: -0.3px; line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+h3 {
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px;
+  color: var(--text-heading); margin: 36px 0 12px; line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+h4 {
+  font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 16px;
+  color: var(--accent-teal); margin: 24px 0 8px;
+}
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.exec-summary {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 32px; margin-bottom: 48px; box-shadow: 0 1px 4px var(--shadow);
+}
+.exec-summary h2 { margin-top: 0; padding-top: 0; border-top: none; font-size: 22px; margin-bottom: 20px; }
+.exec-summary ul { list-style: none; }
+.exec-summary li { position: relative; padding-left: 20px; margin-bottom: 16px; font-size: 15px; }
+.exec-summary li::before { content: '▸'; position: absolute; left: 0; color: var(--accent-gold); font-weight: 600; }
+blockquote {
+  background: var(--bg-quote); border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px; margin: 16px 0; border-radius: 0 6px 6px 0;
+  font-style: italic; color: var(--text);
+}
+.ts {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--timestamp);
+  background: var(--bg-card); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border);
+}
+.enhancement {
+  background: var(--bg-enhancement); border-left: 3px solid;
+  padding: 14px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; font-size: 14px;
+}
+.enhancement.connection   { border-color: var(--accent-blue); }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose); }
+.enhancement.insight      { border-color: var(--accent-teal); }
+.enhancement.thesis       { border-color: var(--accent-gold); }
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; display: block;
+}
+.enhancement.connection   .enhancement-label { color: var(--accent-blue); }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose); }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal); }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold); }
+.item-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 24px 28px; margin: 20px 0; box-shadow: 0 1px 4px var(--shadow);
+}
+.item-card h3 { margin-top: 0; font-size: 19px; margin-bottom: 6px; }
+.item-card .one-liner {
+  font-size: 15px; color: var(--text-muted); font-style: italic;
+  margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.item-card h4 { margin-top: 16px; }
+.protocol-box {
+  background: var(--bg-card); border: 2px solid var(--accent-teal); border-radius: 8px;
+  padding: 24px 28px; margin: 24px 0; position: relative;
+}
+.protocol-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--accent-teal);
+}
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px;
+  text-transform: uppercase; background: transparent; border: 1px solid var(--accent-teal);
+  color: var(--accent-teal); padding: 4px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s;
+}
+.copy-btn:hover { background: var(--accent-teal); color: #fff; }
+.copy-btn.copied { background: var(--accent-green); border-color: var(--accent-green); color: #fff; }
+.protocol-box ul { list-style: none; }
+.protocol-box li { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.protocol-box li:last-child { border-bottom: none; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+th {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold);
+  text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.echo-divider { border: none; height: 2px; background: linear-gradient(90deg, transparent, var(--accent-gold), transparent); margin: 80px 0 60px; }
+.echo-label {
+  text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 40px;
+}
+.references { font-size: 14px; color: var(--text-muted); }
+.references h4 { color: var(--accent-gold); font-size: 14px; margin-top: 20px; }
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+.delta-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13px; }
+.delta-table th { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold); text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); }
+.delta-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.delta-table tr:last-child td { border-bottom: none; }
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">&#127769;</span>
+  <span class="icon-dark">&#9728;&#65039;</span>
+</button>
+
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">&#9776;</button>
+
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#echo-top">Echo Briefing</a></li>
+    <li class="toc-h3"><a href="#bottom-line">The Bottom Line</a></li>
+    <li class="toc-h3"><a href="#key-claims">Key Claims</a></li>
+    <li class="toc-h3"><a href="#quick-actions">Quick Actions</a></li>
+    <li class="toc-h3"><a href="#best-quotes">Best Quotes</a></li>
+    <li><a href="#spark-cannon-top">Spark &amp; Cannon</a></li>
+    <li class="toc-h3"><a href="#executive-summary">Executive Summary</a></li>
+    <li><a href="#sp500">S&amp;P 500 — Three-Stage Downtrend</a></li>
+    <li><a href="#nasdaq">NASDAQ — Need Volume Spike</a></li>
+    <li><a href="#macro-sequence">Mega Caps — Last Domino</a></li>
+    <li><a href="#usd">US Dollar — Accumulation</a></li>
+    <li><a href="#gaming-ai">Gaming &amp; AI Crypto</a></li>
+    <li><a href="#capital-philosophy">Capital Allocation Philosophy</a></li>
+    <li><a href="#crude-oil">Crude Oil — P&amp;F to $140</a></li>
+    <li><a href="#energy-stocks">Energy Stocks — Lonely Winners</a></li>
+    <li><a href="#btc-daily">BTC Daily — Support Break</a></li>
+    <li><a href="#btc-weekly">BTC Weekly — Demand Dissipating</a></li>
+    <li><a href="#btc-nvda-mirror">BTC-Nvidia Mirror</a></li>
+    <li><a href="#eth">Ethereum — Higher Low Failing</a></li>
+    <li><a href="#nvda">Nvidia — Holding Puts</a></li>
+    <li><a href="#coin">Coinbase — Dangerous Spot</a></li>
+    <li><a href="#tao">Bittensor — AI Strength</a></li>
+    <li><a href="#hype">Hyperliquid — Outperforming</a></li>
+    <li><a href="#bnb">Binance Coin — Weak</a></li>
+    <li><a href="#trx">Tron — Apex Formation</a></li>
+    <li><a href="#usdt-section">USDT — Less Bullish</a></li>
+    <li><a href="#session-delta">Session Delta</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+
+<!-- ═══════════════════════════════════════════════════
+     ECHO SECTION
+     ═══════════════════════════════════════════════════ -->
+
+<div class="hero" id="echo-top">
+  <div class="hero-label">Echo — Decision-Ready Briefing</div>
+  <h1>Downtrend Acceleration Imminent — $43K Bitcoin in Play</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Alessio Rutigliano · Wyckoff Crypto Discussion</div>
+    <div><span class="label">Domain</span> Finance &amp; Technical Analysis</div>
+    <div><span class="label">Reliability</span> Expert opinion — Wyckoff methodology with P&amp;F confirmation</div>
+    <div><span class="label">Content Type</span> Weekly Market Review</div>
+  </div>
+  <span class="mode-badge quick">Quick Mode</span>
+</div>
+
+<h2 id="bottom-line">&#9889; The Bottom Line</h2>
+
+<ul style="list-style:none; margin: 16px 0;">
+  <li style="position:relative; padding-left:20px; margin-bottom:16px;"><span style="position:absolute;left:0;color:var(--accent-gold);font-weight:600;">&#9642;</span> <strong>Bitcoin's distributional structure generates a $43K aggressive P&amp;F target</strong> — the full count from the distribution yields $43K, confirmed independently by a historical percentage analog (30% below support). $52K remains the primary short-term target, but a black swan acceleration makes $43K realistic. Alessio is completely out of the spot position.</li>
+  <li style="position:relative; padding-left:20px; margin-bottom:16px;"><span style="position:absolute;left:0;color:var(--accent-gold);font-weight:600;">&#9642;</span> <strong>The S&amp;P three-stage downtrend is entering its final acceleration phase.</strong> Monday's bullish bar was quickly retraced, volume is <em>decreasing</em> below the 200-day MA, and institutions are absent. Capitulation event expected in coming weeks.</li>
+  <li style="position:relative; padding-left:20px; margin-bottom:16px;"><span style="position:absolute;left:0;color:var(--accent-gold);font-weight:600;">&#9642;</span> <strong>Mega caps are the last domino.</strong> Apple, Amazon, Tesla, and META all at or breaking support with poor demand. This is the classic distribution cascade's final act.</li>
+  <li style="position:relative; padding-left:20px; margin-bottom:16px;"><span style="position:absolute;left:0;color:var(--accent-gold);font-weight:600;">&#9642;</span> <strong>The US Dollar is forming an accumulation structure</strong> — volume spike, higher low, LPS setup. If it breaks out, speculative assets face months of pressure.</li>
+  <li style="position:relative; padding-left:20px; margin-bottom:16px;"><span style="position:absolute;left:0;color:var(--accent-gold);font-weight:600;">&#9642;</span> <strong>Crude oil P&amp;F count reaches $140</strong> — higher lows on diminishing supply. Energy stocks have 1-2 months of runway. Market pricing escalation of Iran-US conflict.</li>
+</ul>
+
+<h2 id="key-claims">&#128273; Key Claims (Ranked)</h2>
+
+<p><strong>1. Bitcoin $43K is achievable in a black swan scenario</strong><br>
+&#8627; Evidence: Full distributional P&amp;F count + 30% historical analog converge on ~$43K<br>
+&#8627; Caveat: Requires market-wide capitulation; weekend news could alter trajectory</p>
+
+<p><strong>2. The S&amp;P three-stage downtrend is approaching stage three — vertical capitulation</strong><br>
+&#8627; Evidence: Volume decreasing below 200-day MA; Monday bar retraced instantly; demand tails meaningless in downtrend</p>
+
+<p><strong>3. Ethereum's higher low thesis is failing — $16 potential floor</strong><br>
+&#8627; Evidence: Disappointing weekly rally; what appeared to be SC may only be Preliminary Support of a much larger structure</p>
+
+<p><strong>4. US Dollar accumulation structure forming — LPS in place</strong><br>
+&#8627; Evidence: Volume spike at low, higher low, 21 SMA support, volatility contraction</p>
+
+<p><strong>5. Crude oil has P&amp;F potential to $140</strong><br>
+&#8627; Evidence: Local swing count from accumulation zone; higher lows on diminishing supply</p>
+
+<p><strong>6. Mega cap stocks are the final correction leg (BTC → tech → mega caps)</strong><br>
+&#8627; Evidence: Apple, Amazon, Tesla at support with poor demand; META already broken down</p>
+
+<p><strong>7. Coinbase in a dangerous spot — support break risk</strong><br>
+&#8627; Evidence: Weaker structure than prior formation, no demand spike, big reaction from highs</p>
+
+<p><strong>8. Hyperliquid outperforming — DEX vs CEX divergence signals late-stage bear market</strong><br>
+&#8627; Evidence: 2022 pattern repeating; big players moving to DEX for black swan protection</p>
+
+<h3 id="quick-actions">&#9889; Quick Actions</h3>
+<table>
+  <thead>
+    <tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>BTC short setup</td><td>Monitor 5-min chart for completion</td><td>"Almost complete" — next few days</td><td>For adventurous traders only</td></tr>
+    <tr><td>Wait for climactic volume</td><td>S&amp;P + NASDAQ need spike comparable to prior extremes</td><td>When it happens</td><td>Single demand tails meaningless — need climactic move + consolidation</td></tr>
+    <tr><td>Bittensor pullback entry</td><td>Wait for shakeout into lower area</td><td>On diminishing volume reaction</td><td>Bet on pullback, not continuation</td></tr>
+    <tr><td>Hyperliquid value entry</td><td>Wait for higher low while market makes lower lows</td><td>When structure resolves</td><td>Prefer value entry over breakout</td></tr>
+    <tr><td>Tron 4H reaccumulations</td><td>Small consolidation + diminishing volume on 4H</td><td>Ongoing</td><td>90-day MA preserved; apex forming</td></tr>
+    <tr><td>Energy stock hold</td><td>Maintain Exxon, Marathon, Chevron</td><td>1-2 months more runway</td><td>Exxon target $200</td></tr>
+  </tbody>
+</table>
+
+<h3 id="best-quotes">&#128172; Best Quotes</h3>
+
+<blockquote>"In spite of the bullish character of this bar, the result is still disappointing for bulls." <span class="ts">1:01</span> — On Monday's S&amp;P trap bar.</blockquote>
+
+<blockquote>"Wake me up when we got a good volume spike like this, even like this. And we are still not there." <span class="ts">18:46</span> — Criteria for re-engaging with stocks.</blockquote>
+
+<blockquote>"It's kind of funny to think that just a couple of months ago, everyone was so bullish on gold at the top while the likely winner at this point is the US dollar." <span class="ts">22:33</span> — The contrarian dollar thesis.</blockquote>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SPARK & CANNON SECTION
+     ═══════════════════════════════════════════════════ -->
+
+<hr class="echo-divider">
+<div class="echo-label" id="spark-cannon-top">Spark &amp; Cannon — Deep Archival Transcript</div>
+
+<div class="hero">
+  <h1>Downtrend Acceleration, $43K Bitcoin Target, and the Mega Cap Domino</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Alessio Rutigliano · Wyckoff Crypto Discussion</div>
+    <div><span class="label">Domain</span> Finance &amp; Technical Analysis</div>
+    <div><span class="label">Duration</span> ~34 minutes</div>
+    <div><span class="label">Date</span> 27 March 2026</div>
+  </div>
+  <div><span class="label">Speakers</span></div>
+  <p><strong>Alessio Rutigliano</strong> — Founder, Wyckoff Analytics</p>
+  <span class="mode-badge quick">Quick Mode</span>
+</div>
+
+<!-- Executive Summary -->
+<div class="exec-summary" id="executive-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>Three-stage downtrend acceleration now in motion — Monday's bullish bar was a trap:</strong> Stage one (orderly), stage two (demand deterioration), and now approaching stage three — the final acceleration. Monday's large bullish bar was quickly retraced, confirming supply in weak hands. Volume below the 200-day MA is <em>decreasing</em> — institutions have sold and are waiting for value prices. <span class="ts">0:00 – 3:23</span></li>
+    <li><strong>Bitcoin breaks below apex support — P&amp;F targets at $52K primary, $43K aggressive:</strong> Comparative analysis shows the current structure is weaker than the first, suggesting faster demand deterioration. The daily rally failed to produce a meaningful CHoBEH. Point and figure analysis of the full distributional structure generates $43K, confirmed by a 30% historical percentage analog. <span class="ts">3:32 – 9:20</span></li>
+    <li><strong>Bitcoin weekly: demand dissipating — 200-week MA is the next battlefield:</strong> US Global volume shows the highest demand signature since the prior zone, but the last two bars show rejection at resistance on lower volume. Two independent methodologies converge on sub-$50K. <span class="ts">11:02 – 12:28</span></li>
+    <li><strong>Mega caps are the last domino — Apple, Amazon, Tesla all showing poor demand at support:</strong> Bitcoin topped first, tech followed, mega caps are the final leg. META has already broken down. This is the classic distribution cascade completing. <span class="ts">22:41 – 24:31</span></li>
+    <li><strong>US Dollar accumulation forming — contrarian winner:</strong> Volume spike, higher low, volatility contraction, 21 SMA support. An LPS setup that could push dollar higher — bearish for Bitcoin short-term. <span class="ts">21:29 – 22:41</span></li>
+    <li><strong>Crude oil P&amp;F count to $140 — energy stocks have 1-2 months of runway:</strong> Higher lows on diminishing supply, market pricing Iran-US escalation. Exxon targeting $200. <span class="ts">32:04 – 34:06</span></li>
+  </ul>
+</div>
+
+<!-- Phase 2: Thematic Organisation -->
+
+<h2 id="sp500">&#128201; S&amp;P 500 — Three-Stage Downtrend Reaches Maximum Pain Zone <span class="ts">0:00 – 3:23</span></h2>
+
+<blockquote>"In spite of the bullish character of this bar, the result is still disappointing for bulls." <span class="ts">1:01</span></blockquote>
+
+<h4>&#128208; The Three-Stage Framework</h4>
+<p>Stage one: orderly downtrend structure. <span class="ts">0:08</span> Stage two: deterioration of demand. <span class="ts">0:20</span> Stage three: final acceleration into the oversold condition with intensity. <span class="ts">0:28</span> Alessio believes we are approaching the point of maximum pain for bulls — "some kind of general capitulation that could bring a lot of liquidity in the market, produce a lot of discounts in stocks and cryptos and finally attract the activity of the Composite Operators." <span class="ts">1:38 – 2:03</span></p>
+
+<h4>&#128252; Tape Reading — Monday's Bull Trap</h4>
+<p>Monday's big bar was tricky. In a downtrend, supply is in weak hands — "much easier for the price action to travel a long distance" on catalysts. <span class="ts">0:36 – 0:53</span> Despite the bullish character, the rally did not even reach the overbought condition of the channel — it stopped below it. <span class="ts">1:06 – 1:14</span> After the initial jump, demand continued to deteriorate. The rapid retracement "indicates a potential for acceleration to the downside." <span class="ts">1:22 – 1:38</span></p>
+
+<h4>&#128270; Volume Below the 200-Day MA — Institutions Are Absent</h4>
+<p>Volume is actually <em>decreasing</em> while price travels below the 200-day moving average — "no pickup in institutional activity." <span class="ts">2:52 – 3:07</span> "It looks like the smartest guys have sold in this area and now they are just waiting until they get value prices again." <span class="ts">3:07 – 3:16</span></p>
+
+<h4>&#9888;&#65039; Demand Tails Are Not Enough</h4>
+<p>Alessio will not pay attention to demand tails since "we have so many of them." In a downtrend, a single demand tail means nothing. "Just one day with a demand tail is not enough in this stage to produce a significant reversal." We need a climactic move <em>and then</em> consolidation. <span class="ts">2:19 – 2:52</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">&#127919; Key Insight</span>
+  Decreasing volume below the 200-day MA means institutions are not buying — they've already sold and are waiting for value. The absence of institutional participation during a support test is one of the most reliable bearish signals in Wyckoff analysis. <span class="ts">2:52 – 3:16</span>
+</div>
+
+<h2 id="nasdaq">&#128201; NASDAQ — Need a Volume Spike, Still Not There <span class="ts">17:46 – 19:02</span></h2>
+
+<blockquote>"Wake me up when we got a good volume spike like this, even like this. And we are still not there." <span class="ts">18:46</span></blockquote>
+
+<p>The NASDAQ mirrors the S&amp;P weakness. Supply levels remain elevated. <span class="ts">18:11 – 18:28</span> Alessio is looking for an expansion in volume comparable to previous climactic spikes — "this is not the time yet to buy stocks." <span class="ts">18:28 – 18:37</span></p>
+
+<p>On the weekly, all bars have been marked by big supply tails — "many attempts to rally and each rally fails into the end of the week." <span class="ts">18:55 – 19:10</span> The 200-week moving average is where extreme oversold conditions historically occur for campaigners, but "we are still far from what could be an extreme oversold condition." <span class="ts">19:18 – 19:42</span></p>
+
+<h2 id="macro-sequence">&#128257; Macro Sequence — Bitcoin Leads, Tech Follows, Mega Caps Are Last <span class="ts">22:41 – 24:31</span></h2>
+
+<blockquote>"Bitcoin in distribution mode. Then tech stocks follow. And at the end of the correction, the last leg to the downside for the S&amp;P and the NASDAQ is dominated by the mega caps." <span class="ts">23:37 – 23:50</span></blockquote>
+
+<h4>&#128201; The Cascade</h4>
+<p>Bitcoin topped first and entered distribution. <span class="ts">23:37</span> Tech stocks followed. <span class="ts">23:41</span> Now the mega caps are the final leg. <span class="ts">23:44 – 23:50</span></p>
+
+<p><strong>Apple:</strong> Outperforming until now, but "still struggling at this level" with "poor demand in this area." <span class="ts">22:50 – 22:57</span></p>
+<p><strong>Amazon:</strong> Struggling at support. <span class="ts">22:57 – 23:06</span></p>
+<p><strong>Tesla:</strong> In a "low volume, low demand zone right at the support." <span class="ts">23:06 – 23:13</span></p>
+<p><strong>META:</strong> Already broken down in the last two days. The weekly acceleration suggests "we probably penetrate this low and that could be really painful." <span class="ts">23:58 – 24:24</span></p>
+
+<p>Every chart points to "weak demand at support, indecision that tends to end with some kind of acceleration to the downside." <span class="ts">23:13 – 23:37</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">&#128279; Connection</span>
+  BTC distribution (completed) → tech stock weakness (playing out) → mega cap breakdown (imminent). This three-stage cascade is Alessio's macro roadmap for timing the eventual bottom. <span class="ts">23:37 – 23:50</span>
+</div>
+
+<h2 id="usd">&#128181; US Dollar — Accumulation Forming, Contrarian Winner <span class="ts">21:29 – 22:41</span></h2>
+
+<blockquote>"It's kind of funny to think that just a couple of months ago, everyone was so bullish on gold at the top while the likely winner at this point is the US dollar." <span class="ts">22:25 – 22:41</span></blockquote>
+
+<h4>&#129521; Accumulation Signals</h4>
+<p>Volume spike at the low, higher low, contraction of volatility — "now we are fighting with the resistance." <span class="ts">21:37 – 21:54</span> Some expansion of supply around resistance was expected. <span class="ts">21:54 – 22:02</span> Despite the high volume, the 21 SMA has acted as support. "We had a contraction and now it looks like we are ready to rally again." <span class="ts">22:09 – 22:17</span></p>
+<p>The structure "dangerously looks like an LPS to me" — Alessio expects another attempt to retest the high next week. <span class="ts">22:17 – 22:25</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">&#128279; Connection</span>
+  Dollar strength → Bitcoin weakness. "In the short term, this is not good for Bitcoin yet." The dollar accumulation thesis directly threatens the crypto recovery timeline. <span class="ts">22:33 – 22:41</span>
+</div>
+
+<h2 id="gaming-ai">&#127918; Gaming &amp; AI Crypto — Uncorrelated Strength, Not a Broad Signal <span class="ts">19:42 – 20:40</span></h2>
+
+<blockquote>"It's good to see that at least something is working, but this is not a good signal for the overall crypto market." <span class="ts">20:10 – 20:18</span></blockquote>
+
+<p>Some cryptos fight the downtrend — notably AI tokens. But most are gaming tokens, which tend to be uncorrelated. <span class="ts">19:49 – 20:10</span> Same pattern in the 2022 bear cycle. <span class="ts">20:10 – 20:18</span> For active traders: use 4-hour charts to trade short-term reaccumulations. But "the strength of coins like this is not suggestive of higher prices for Bitcoin and Ethereum." <span class="ts">20:18 – 20:49</span></p>
+
+<h2 id="capital-philosophy">&#127974; Capital Allocation Philosophy — V-Bottoms vs. Wide Trading Ranges <span class="ts">15:08 – 17:46</span></h2>
+
+<blockquote>"I'm not expecting necessarily to have like a big V-bottom and come back to the resistance again. No, I think that we probably need to create a structure, create a trading range, like a wide trading range that can keep us busy for the whole first part of 2026." <span class="ts">17:01 – 17:29</span></blockquote>
+
+<h4>&#129504; Three Things You Need at the Lows</h4>
+<p><strong>1. Awareness:</strong> To exit this downtrend, we likely need consolidation — at least a structure on the weekly. <span class="ts">14:43 – 15:08</span></p>
+<p><strong>2. A plan:</strong> Managing the consolidation area "could be very unnerving for many traders." <span class="ts">15:08 – 15:23</span></p>
+<p><strong>3. Capital:</strong> "I hope that we have been helping you guys to preserve your capital." <span class="ts">15:23 – 15:39</span></p>
+
+<h4>&#128201; V-Bottom vs. Complex Bottom</h4>
+<p>Without a proper distributional structure — just a deterioration of demand and a quick shakeout — you get V-bottoms. These are "kind of easy" to buy. <span class="ts">16:04 – 16:45</span> But with a proper distributional structure at the top, the bottom "is not a classical V-bottom, it is something way more complex." <span class="ts">16:45 – 17:01</span> Alessio expects a wide trading range for H1 2026. <span class="ts">17:14 – 17:29</span></p>
+
+<div class="enhancement analog">
+  <span class="enhancement-label">&#128220; Analog</span>
+  The NASDAQ structure mirrors a historical analog where the first demand point appeared, followed by a larger range that eventually revisited the previous resistance level (now support). <span class="ts">17:46 – 18:11</span>
+</div>
+
+<h2 id="crude-oil">&#128738; Crude Oil — P&amp;F Count to $140, Market Pricing Escalation <span class="ts">32:04 – 34:06</span></h2>
+
+<blockquote>"Oh boy, there is enough causality in the structure, local structure, to get above this local spike and get to 140." <span class="ts">33:15 – 33:24</span></blockquote>
+
+<h4>&#128200; Structure — One of the Best Charts</h4>
+<p>After the big supply tail, a higher low formed within days. <span class="ts">32:11 – 32:35</span> Supply signatures diminished. A big day of supply expansion produced no downside result. Still holding the 21 SMA. <span class="ts">32:35 – 32:43</span> Higher low on diminishing supply — "I still think we could potentially have another leg to the upside." <span class="ts">32:43 – 32:58</span></p>
+
+<h4>&#128208; Point &amp; Figure Count</h4>
+<p>Using the local swing count: "enough causality to get above this local spike and get to 140." <span class="ts">33:07 – 33:24</span> Alessio has "no interest in this trade" — not hoping for higher prices. "But this chart looks very dangerous to me." <span class="ts">33:24 – 33:41</span></p>
+
+<h4>&#127760; Macro Implications</h4>
+<p>Higher crude = "big problem for the stock market and big problem for the economy." <span class="ts">32:58 – 33:07</span> On volume: increase of supply with no result, making this higher low — absorbing selling pressure. <span class="ts">33:41 – 33:49</span> The Iran-US conflict is the key catalyst: "the market is pricing an escalation, not a de-escalation." <span class="ts">33:49 – 34:06</span></p>
+
+<div class="enhancement thesis">
+  <span class="enhancement-label">&#129525; Running Thesis</span>
+  Crude oil building cause through higher lows since the prior session. Status: <strong>developing</strong> — a weekend announcement could change the picture, but structural case for higher prices strengthens each week.
+</div>
+
+<h2 id="energy-stocks">&#9889; Energy Stocks — The Lonely Winners, 1-2 Months of Runway <span class="ts">25:11 – 26:25</span></h2>
+
+<blockquote>"They have a final leg to the upside when the whole market is going down and then as they correct we have a rotation back to technology stocks." <span class="ts">26:01 – 26:17</span></blockquote>
+
+<p><strong>Exxon (XOM):</strong> Uptrend accelerating. "There's a chance here to get to $200 for the stock." <span class="ts">25:16 – 25:32</span></p>
+<p><strong>Marathon:</strong> "A bit tricky" due to pullback and volume divergence between data feeds. Trend remains strong despite short-term correction into 9-day MA. <span class="ts">25:32 – 25:46</span></p>
+<p><strong>Chevron:</strong> Acceleration, pause, now committing above the previous high. <span class="ts">25:46 – 26:01</span></p>
+<p><strong>Timeline:</strong> "I think that we still have one month or two months ahead where these stocks can really continue to make higher highs." <span class="ts">26:09 – 26:25</span></p>
+
+<!-- Phase 3: Specific Asset Breakdown -->
+
+<h2 style="border-top:2px solid var(--accent-gold);">&#128270; Specific Asset Breakdown</h2>
+
+<div class="item-card" id="btc-daily">
+  <h3>&#128992; Bitcoin (BTC) — Break Below Apex Support, Comparative Weakness <span class="ts">3:32 – 9:20</span> [Daily]</h3>
+  <div class="one-liner">"The buying that has occurred in this area is still not enough to produce a meaningful change of behavior in this market." <span class="ts">9:13</span></div>
+
+  <p><strong>Status:</strong> Bearish — Support Break Imminent <code>[HIGH CONVICTION]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Avoid / Hedge</strong><br>
+  <strong>Wyckoff Phase:</strong> Distribution — approaching Phase D/E (SOW / markdown)</p>
+
+  <h4>&#128202; Comparative Analysis — Structure #1 vs. #2</h4>
+  <p>Both structures share the same pattern: local high → upthrust. <span class="ts">3:32 – 3:49</span> Critical difference: "this is actually weaker than this" — committed below the support level for the first time. <span class="ts">3:49 – 4:04</span> Instead of many days below the 60-day MA, "we could just have one or two days below this line and then retest the support." <span class="ts">4:13 – 4:28</span></p>
+
+  <h4>&#128252; Tape Reading — The Failed Rally</h4>
+  <p>"Is this the low?" — we need to assess the bounce. A rally covering the whole demand bar would be a real CHoBEH. <span class="ts">8:39 – 9:03</span> But the automatic rally stopped well below the bar's high — "not enough to produce a meaningful change of behavior." <span class="ts">9:03 – 9:20</span></p>
+
+  <h4>&#127919; Downside Targets</h4>
+  <p><strong>First support:</strong> $60K low. <span class="ts">4:28 – 4:35</span><br>
+  <strong>Primary:</strong> $52K (multiple P&amp;F counts confirmed). <span class="ts">6:42 – 6:57</span><br>
+  <strong>Aggressive (black swan):</strong> $43K — full distributional count. <span class="ts">7:06 – 7:30</span></p>
+
+  <h4>&#9986;&#65039; Trade Management</h4>
+  <p><strong>Position:</strong> Completely out since the disappointing breakout. <span class="ts">5:44 – 6:14</span><br>
+  <strong>History:</strong> Bought on 5-min → closed 30% → breakout disappointing → cut 30% more → fully exited. <span class="ts">5:44 – 6:09</span><br>
+  <strong>Next:</strong> Waiting for another extreme oversold + volume spike. Short setup "almost complete" for adventurous traders. <span class="ts">6:09 – 6:21</span></p>
+
+  <div class="enhancement tension">
+    <span class="enhancement-label">&#9889; Tension</span>
+    At <span class="ts">5:08</span> the RS ratio line is improving vs. the S&amp;P, but at <span class="ts">5:25</span> the risk-off environment means COs are deliberately waiting for lower prices — relative strength is irrelevant when the whole market is in capitulation mode.
+  </div>
+</div>
+
+<div class="item-card" id="btc-weekly">
+  <h3>&#128992; Bitcoin (BTC) — Weekly: Demand Dissipating, 200-Week MA in Focus <span class="ts">11:02 – 12:28</span> [Weekly]</h3>
+  <div class="one-liner">"The demand that we have seen at this level is quickly dissipating." <span class="ts">11:31</span></div>
+
+  <p><strong>Status:</strong> Weak — Demand Fading <code>[HIGH CONVICTION]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Avoid / Hedge</strong></p>
+
+  <h4>&#128202; US Global Volume Analysis</h4>
+  <p>Using US Global volume (different from Coinbase data). <span class="ts">11:02 – 11:07</span> Demand signature is the highest since the prior level — but the last two bars are "very disappointing": rejection at resistance on lower volume than the demand bars. <span class="ts">11:07 – 11:31</span></p>
+
+  <h4>&#128201; 200-Week MA — Historical Analog</h4>
+  <p>Prior analog: 30% damage below historical support → applying same percentage = ~$43K — matching the P&amp;F count. <span class="ts">12:03 – 12:20</span> "Different methodologies but same result... we could slide below that $50K level." <span class="ts">12:20 – 12:37</span></p>
+
+  <div class="enhancement connection">
+    <span class="enhancement-label">&#128279; Connection</span>
+    P&amp;F distributional count → $43K. Historical percentage analog → ~$43K. Two independent methodologies converging strengthens the case for sub-$50K. <span class="ts">12:20 – 12:28</span>
+  </div>
+</div>
+
+<div class="item-card" id="btc-nvda-mirror">
+  <h3>&#128992; Bitcoin-Nvidia Mirror — Distribution Structures Rhyme <span class="ts">9:30 – 10:53</span> [Daily]</h3>
+  <div class="one-liner">"The distributional structure for Nvidia shares something in common with the structure of Bitcoin." <span class="ts">10:08</span></div>
+
+  <p>Nvidia's current structure mirrors Bitcoin's distributional top from months ago — same pattern of deteriorating demand at support, lower highs, lower lows, then acceleration. <span class="ts">10:08 – 10:37</span> Alessio is using Wyckoff Scanner Smart ATR one-box settings. <span class="ts">10:37 – 10:53</span></p>
+
+  <div class="enhancement analog">
+    <span class="enhancement-label">&#128220; Analog</span>
+    Bitcoin distribution (completed) → Nvidia distribution (completing). Cross-asset analog successfully anticipated tech weakness. <span class="ts">9:52 – 10:37</span>
+  </div>
+</div>
+
+<div class="item-card" id="eth">
+  <h3>&#128309; Ethereum (ETH) — Losing Confidence in Higher Low, Could Slide to $16 <span class="ts">12:37 – 14:32</span> [Weekly]</h3>
+  <div class="one-liner">"Instead of getting a higher low at this point, I'm losing confidence in this higher low there." <span class="ts">12:44</span></div>
+
+  <p><strong>Status:</strong> Bearish — Higher Low Thesis Weakening <code>[MODERATE]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Avoid / Hedge</strong></p>
+
+  <h4>&#128201; The Failed Rally</h4>
+  <p>Weekly rally has been "quite disappointing." <span class="ts">12:37</span> Same analog: volume spike → poor rally → break below → temporary oversold. However, current structure is "slightly stronger" — could just retest the area. <span class="ts">13:00 – 13:34</span></p>
+
+  <h4>&#128208; Downside &amp; Structure</h4>
+  <p>A member pointed to $16 as potential floor — Alessio agrees. <span class="ts">13:34 – 13:50</span> Shifting expectation from quick reversal to a structure that "will likely need more time to unfold." <span class="ts">13:50 – 14:08</span></p>
+
+  <h4>&#128270; Wyckoff Phase Reassessment</h4>
+  <p>What appeared to be SC → AR → ST (Phase A) may only be Preliminary Support — the real SC could still be ahead. "We could be in the middle of a much larger structure." <span class="ts">14:08 – 14:24</span> Patience required — don't be discouraged by sideways action. <span class="ts">14:32 – 14:41</span></p>
+
+  <div class="enhancement thesis">
+    <span class="enhancement-label">&#129525; Running Thesis</span>
+    Ethereum accumulation timeline. Status: <strong>extended</strong> — what appeared to be Phase A may only be Preliminary Support of a much wider structure persisting through H1 2026.
+  </div>
+</div>
+
+<div class="item-card" id="nvda">
+  <h3>&#128187; Nvidia (NVDA) — Holding Puts, 200-Day MA About to Break <span class="ts">20:49 – 21:20</span> [Daily]</h3>
+  <div class="one-liner">"Once we lose, on such an important stock, the 200-day moving average, nothing good happens." <span class="ts">21:05</span></div>
+
+  <p><strong>Status:</strong> Active Short (Puts) — Patience Rewarded <code>[HIGH CONVICTION]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Active Short</strong></p>
+  <p>Still holds puts from prior sessions. <span class="ts">20:56</span> Key level: 200-day MA — "nothing good happens" once it breaks. <span class="ts">21:05 – 21:12</span> P&amp;F chart from prior session points to lower targets. <span class="ts">21:12 – 21:20</span></p>
+</div>
+
+<div class="item-card" id="coin">
+  <h3>&#128202; Coinbase (COIN) — Dangerous Spot, Support Break Risk <span class="ts">26:25 – 27:11</span></h3>
+  <div class="one-liner">"My take on this is that we are in a very dangerous spot." <span class="ts">27:04</span></div>
+
+  <p><strong>Status:</strong> Danger — Support Break Risk <code>[HIGH CONVICTION]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Avoid</strong></p>
+  <p>Current structure is weaker than prior, following a big reaction from the highs. <span class="ts">26:33 – 26:44</span> "Basically no demand spike into support could easily cause a break of this line." <span class="ts">26:44 – 26:53</span> Alessio wants volume spike before calling the bottom. <span class="ts">26:53 – 27:04</span></p>
+</div>
+
+<div class="item-card" id="tao">
+  <h3>&#129302; Bittensor (TAO) — AI Crypto Strength, Volume Expansion <span class="ts">27:17 – 28:30</span></h3>
+  <div class="one-liner">"Something is happening behind the scene for this asset." <span class="ts">27:49</span></div>
+
+  <p><strong>Status:</strong> Constructive — Volume Expanding <code>[MODERATE]</code><br>
+  <strong>Conviction Tier:</strong> &#128993; <strong>Watchlist</strong></p>
+  <p>The AI ecosystem in crypto shows strength. Multiple days of volume expansion — not just one or two spikes. <span class="ts">27:33 – 27:49</span> Not buying yet — still risk-off for crypto. <span class="ts">27:24 – 27:33</span></p>
+  <p><strong>Preferred entry:</strong> Shakeout into the lower area on diminishing volume. <span class="ts">27:57 – 28:15</span> "I would prefer to bet on the pullback rather than the continuation to the upside." <span class="ts">28:23 – 28:30</span></p>
+</div>
+
+<div class="item-card" id="hype">
+  <h3>&#128994; Hyperliquid (HYPE) — Holding Much Better, Potential Accumulation <span class="ts">28:30 – 30:41</span></h3>
+  <div class="one-liner">"This whole chart looks quite bullish especially when you compare this asset to other assets which have been in a very severe downtrend." <span class="ts">29:44</span></div>
+
+  <p><strong>Status:</strong> Outperforming — Potential Accumulation <code>[MODERATE]</code><br>
+  <strong>Conviction Tier:</strong> &#128993; <strong>Watchlist</strong><br>
+  <strong>Wyckoff Phase:</strong> Potential Phase B/C — SC → AR → ST in higher part of range</p>
+
+  <h4>&#128260; DEX vs. CEX Divergence</h4>
+  <p>Decentralized exchanges holding while centralized exchanges (Binance) are weak — "typical of the late stage of a bear market." <span class="ts">28:30 – 28:45</span> In 2022, big players moved to DEX for black swan protection (FTX precedent). <span class="ts">28:45 – 29:06</span></p>
+
+  <h4>&#128202; Structure</h4>
+  <p>SC → AR → ST in the higher part of the range is "kind of bullish" — near-marginal higher low vs. SC. Good volume, diminishing supply. <span class="ts">29:29 – 30:01</span> Could create a higher low while other assets make lower lows. <span class="ts">30:17 – 30:34</span></p>
+  <p><strong>Trade plan:</strong> "More interested in picking value here rather than buying a breakout on this resistance." <span class="ts">30:34 – 30:41</span></p>
+
+  <p><strong>&#9878;&#65039; Relative Strength:</strong> Directly contrasted with BNB which "looks still weak, basically the same pattern of Bitcoin." HYPE is "holding much much better." <span class="ts">29:13 – 29:29</span></p>
+</div>
+
+<div class="item-card" id="bnb">
+  <h3>&#128993; Binance Coin (BNB) — Same Pattern as Bitcoin <span class="ts">29:13 – 29:21</span></h3>
+  <div class="one-liner">"Binance Coin looks still weak. It's basically the same pattern of Bitcoin. Nothing changes." <span class="ts">29:13</span></div>
+
+  <p><strong>Status:</strong> Weak — Mirrors BTC <code>[MODERATE]</code><br>
+  <strong>Conviction Tier:</strong> &#128308; <strong>Avoid</strong></p>
+  <p><strong>&#9878;&#65039; Relative Strength:</strong> Directly contrasted with Hyperliquid. See HYPE section.</p>
+</div>
+
+<div class="item-card" id="trx">
+  <h3>&#128994; Tron (TRX) — Apex Formation, Uptrend in Force <span class="ts">30:41 – 31:56</span> [Daily + 4H]</h3>
+  <div class="one-liner">"I think that we are entering an apex here — this is the best chart." <span class="ts">30:55</span></div>
+
+  <p><strong>Status:</strong> Uptrend — Apex Forming <code>[HIGH CONVICTION]</code><br>
+  <strong>Conviction Tier:</strong> &#128993; <strong>Watchlist</strong></p>
+  <p>After the short climactic move, price has preserved the 90-day MA. <span class="ts">31:03 – 31:11</span> Strategy: 4H chart, small consolidation areas, diminishing volume. <span class="ts">31:11 – 31:25</span> Another contraction of volatility forming. Caveat: latest 4H volume spike is "a bit too much." But uptrend still in force. <span class="ts">31:25 – 31:42</span></p>
+</div>
+
+<div class="item-card" id="usdt-section">
+  <h3>&#128993; USDT — Less Bullish, Supply Increasing <span class="ts">31:42 – 31:56</span></h3>
+  <div class="one-liner">"USDT looks less bullish since we have more supply coming in this area." <span class="ts">31:42</span></div>
+
+  <p><strong>Status:</strong> Weakening — Supply Increasing <code>[SPECULATIVE]</code><br>
+  <strong>Conviction Tier:</strong> &#128993; <strong>Watchlist</strong> (with caution)</p>
+  <p>Massive spike bar. Uptrend "could easily deteriorate." This was "already a big move" — "this could deteriorate quickly now." <span class="ts">31:42 – 32:04</span></p>
+</div>
+
+<!-- Session Delta -->
+<h2 id="session-delta">&#128260; Session Delta (Changes Since 20 March 2026)</h2>
+
+<table class="delta-table">
+  <thead>
+    <tr><th>Asset</th><th>Last Session (Mar 20)</th><th>This Session (Mar 27)</th><th>Change</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>S&amp;P 500</strong></td><td>Three tests of 200-day MA, each weaker. Stride #2.</td><td>Three-stage downtrend active. Monday bull trap. Volume <em>decreasing</em> below 200-day.</td><td>&#11015;&#65039; Acceleration imminent</td></tr>
+    <tr><td><strong>NASDAQ</strong></td><td>Spring trap confirmed.</td><td>"Wake me up" — need volume spike. Weekly bars all have supply tails.</td><td>— Same, clearer criteria</td></tr>
+    <tr><td><strong>BTC Daily</strong></td><td>Suspicious rally, trimming further.</td><td>Completely out. Short setup almost complete. $60K → $52K → $43K targets.</td><td>&#11015;&#65039; Exited entirely</td></tr>
+    <tr><td><strong>BTC Weekly</strong></td><td>Volume higher but rally "mediocre."</td><td>Demand dissipating rapidly. 200-week MA focus. $43K aggressive target added.</td><td>&#11015;&#65039; New $43K target</td></tr>
+    <tr><td><strong>Ethereum</strong></td><td>Muted rally = redistribution signal.</td><td>Losing confidence in higher low. $16 floor. May be only Preliminary Support.</td><td>&#11015;&#65039; Significantly more bearish</td></tr>
+    <tr><td><strong>Nvidia</strong></td><td>LPSy worst rally. P&amp;F 136-140 downside.</td><td>Still holding puts. 200-day MA break will accelerate. Mirrors BTC distribution.</td><td>— Same (patience)</td></tr>
+    <tr><td><strong>US Dollar</strong></td><td>Minor consolidation, not breakdown.</td><td>Accumulation forming. LPS setup. Could rally.</td><td>&#11014;&#65039; Upgraded to accumulation</td></tr>
+    <tr><td><strong>Crude Oil</strong></td><td>Consolidating above 9 SMA.</td><td>"Best chart." Higher lows. P&amp;F to $140.</td><td>&#11014;&#65039; Much stronger conviction</td></tr>
+    <tr><td><strong>Energy Stocks</strong></td><td>Exxon adding on breakout.</td><td>Exxon to $200. 1-2 months runway.</td><td>&#11014;&#65039; Targets elevated</td></tr>
+    <tr><td><strong>Coinbase</strong></td><td>Not discussed.</td><td>"Dangerous spot." Support break risk.</td><td>&#127381; New bearish</td></tr>
+    <tr><td><strong>Bittensor</strong></td><td>Not discussed.</td><td>AI crypto strength. Volume expansion. Waiting for pullback.</td><td>&#127381; New watchlist</td></tr>
+    <tr><td><strong>Hyperliquid</strong></td><td>Not discussed.</td><td>DEX outperforming CEX. Potential accumulation.</td><td>&#127381; New watchlist</td></tr>
+    <tr><td><strong>Tron</strong></td><td>"Best candidate." Spring + test.</td><td>Apex forming. "Best chart." 4H strategy.</td><td>— Continuation</td></tr>
+    <tr><td><strong>BNB</strong></td><td>Not discussed.</td><td>Same as BTC. Weak.</td><td>&#127381; Avoid</td></tr>
+    <tr><td><strong>Mega Caps</strong></td><td>Not specifically discussed.</td><td>All weak at support. META broken. Final cascade leg.</td><td>&#127381; Final correction leg</td></tr>
+    <tr><td><strong>Capital Stance</strong></td><td>90% cash / net short.</td><td>Same + out of BTC. V-bottom unlikely. Wide range H1 2026.</td><td>— Maximum defensive</td></tr>
+  </tbody>
+</table>
+
+</main>
+</div>
+
+<script>
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+  if (headings.length === 0 || tocLinks.length === 0) return;
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  headings.forEach(h => observer.observe(h));
+})();
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
