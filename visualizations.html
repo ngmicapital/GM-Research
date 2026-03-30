@@ -186,12 +186,64 @@
   .thread-chip-text { color: var(--text-2); font-size: 11px; max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .thread-connector { display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 14px; padding: 0 4px; }
 
+  /* Mobile hamburger menu */
+  .hamburger{display:none;width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:var(--bg-3);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
+  .hamburger span{display:block;width:16px;height:2px;background:var(--text-1);border-radius:1px;transition:all .3s}
+  .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;opacity:0;transition:opacity .3s}
+  .mobile-overlay.open{opacity:1 !important}
+  .mobile-menu{position:fixed;top:0;left:0;width:280px;height:100%;background:var(--bg-1);border-right:1px solid var(--border);z-index:201;transition:transform .3s ease;overflow-y:auto;display:flex;flex-direction:column;transform:translateX(-100%)}
+  .mobile-menu.open{transform:translateX(0) !important}
+  .mobile-menu-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+  .mobile-menu-close{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-2)}
+  .mobile-menu-nav{padding:20px;flex:1}
+  .mobile-menu-section{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text-3);margin-bottom:12px;margin-top:20px}
+  .mobile-menu-section:first-child{margin-top:0}
+  .mobile-menu-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-1);text-decoration:none;font-size:14px;font-weight:500;transition:all .2s;margin-bottom:2px}
+  .mobile-menu-link:hover,.mobile-menu-link.active{background:var(--bg-3);color:var(--text-0)}
+  .mobile-menu-link.active{border-left:2px solid var(--amber)}
+  .mobile-menu-link .mm-icon{font-size:16px;width:24px;text-align:center}
+  .mobile-menu-footer{padding:20px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3)}
+
   @media(max-width:900px){.asset-grid{grid-template-columns:repeat(2,1fr)}.pipeline{grid-template-columns:repeat(2,1fr)}.radar-container{flex-direction:column}.sentiment-grid{grid-template-columns:repeat(4,1fr)}}
-  @media(max-width:600px){.page{padding:20px}.asset-grid{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:1fr}.sentiment-grid{grid-template-columns:repeat(3,1fr)}.velocity-bars{display:none}.thread-appearances{flex-direction:column}.thread-connector{display:none}}
+  @media(max-width:768px){
+    .hamburger{display:flex}
+    .topbar{padding:0 16px;display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:8px}
+    .topbar-left{justify-self:center}
+    .topbar-sep,.topbar-tabs{display:none}
+    .topbar-right{gap:8px}
+    .page{padding:20px 16px 60px}
+    .page-title{font-size:24px}
+    .page-sub{font-size:12px}
+    .section-header{flex-wrap:wrap;gap:8px}
+    .section-title{font-size:15px}
+    .section-cat{margin-left:0}
+    .panel{padding:16px;border-radius:8px}
+    .asset-grid{grid-template-columns:1fr 1fr;gap:8px}
+    .asset-card{padding:14px}
+    .asset-name{font-size:12px}
+    .asset-count{font-size:18px}
+    .pipeline{grid-template-columns:1fr}
+    .sentiment-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+    .sentiment-day{padding:8px}
+    .sentiment-emoji{font-size:18px}
+    .sentiment-score{font-size:11px}
+    .radar-container{flex-direction:column}
+    .radar-chart{height:220px}
+    .radar-sidebar{width:100%}
+    .velocity-bars{display:none}
+    .velocity-keyword{width:80px;font-size:11px}
+    .velocity-delta{width:50px;font-size:10px}
+    .thread-appearances{flex-direction:column}
+    .thread-connector{display:none}
+    .thread-chip{padding:8px 10px;font-size:11px}
+    .thread-chip-text{max-width:100%}
+    .timeline-chart{height:180px}
+  }
 </style>
 </head>
 <body>
 <div class="topbar">
+  <button class="hamburger" onclick="openMobileMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="topbar-left">
     <a href="index.html" class="logo"><div class="logo-mark">GM</div>GM <span>Research</span></a>
     <div class="topbar-sep"></div>
@@ -202,6 +254,23 @@
   </div>
   <div class="topbar-right">
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"><span class="icon-moon">&#x1F319;</span><span class="icon-sun">&#x2600;&#xFE0F;</span></button>
+  </div>
+</div>
+<div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+<div class="mobile-menu">
+  <div class="mobile-menu-header">
+    <a href="index.html" class="logo" style="font-size:14px"><div class="logo-mark" style="width:24px;height:24px;font-size:10px">GM</div>GM <span>Research</span></a>
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">&times;</button>
+  </div>
+  <div class="mobile-menu-nav">
+    <div class="mobile-menu-section">Navigation</div>
+    <a href="index.html" class="mobile-menu-link"><span class="mm-icon">&#x1F3E0;</span> Home</a>
+    <a href="visualizations.html" class="mobile-menu-link active"><span class="mm-icon">&#x1F4CA;</span> Visualizations</a>
+  </div>
+  <div class="mobile-menu-footer">
+    <a href="https://github.com/ngmicapital/GM-Research" target="_blank" style="color:var(--text-2);text-decoration:none">ngmicapital/GM-Research</a><br>
+    Updated daily<br>
+    <span style="color:var(--green);margin-top:6px;display:inline-block">&#9679; SYSTEM LIVE</span>
   </div>
 </div>
 
@@ -759,6 +828,18 @@
 <script>
 function toggleTheme(){var h=document.documentElement,c=h.getAttribute('data-theme'),n=c==='light'?'dark':'light';h.setAttribute('data-theme',n);localStorage.setItem('gm-theme',n)}
 (function(){var s=localStorage.getItem('gm-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+function openMobileMenu(){
+  var o=document.querySelector('.mobile-overlay'),m=document.querySelector('.mobile-menu');
+  o.style.display='block';o.style.opacity='1';
+  m.style.transform='translateX(0)';
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  var o=document.querySelector('.mobile-overlay'),m=document.querySelector('.mobile-menu');
+  o.style.opacity='0';m.style.transform='';
+  document.body.style.overflow='';
+  setTimeout(function(){o.style.display='none'},300);
+}
 </script>
 </body>
 </html>
