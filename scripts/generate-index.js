@@ -17,8 +17,8 @@ const BRIEFING_META = {
   'legal-brief':       { title:'The Brief',        subtitle:'Legal Intelligence',    icon:'&#x2696;&#xFE0F;',  accent:'#60a5fa', accentDim:'#60a5fa18', typeLabel:'The Brief',    filename:'legal-brief.html', preview:'Crypto regulation, enforcement actions & legislative tracker' },
   'ai-briefing':       { title:'AI Intelligence',   subtitle:'Models & Strategy',     icon:'&#x1F916;',         accent:'#a78bfa', accentDim:'#a78bfa18', typeLabel:'AI Update',    filename:'ai-briefing.html', preview:'Model releases, benchmarks, AI x Crypto & research papers' },
   'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html', preview:'Longevity science, training protocols & daily wisdom' },
-  'rabbit-hole':       { title:'Rabbit Hole',        subtitle:'Deep Dive',             icon:'&#x1F573;&#xFE0F;', accent:'#DC3545', accentDim:'#DC354518', typeLabel:'Rabbit Hole',  filename:'rabbit-hole.html', preview:'One topic, explored with depth and narrative momentum' },
-  'praxis-brief':      { title:'Praxis',              subtitle:'Ideas In Practice',      icon:'&#x1F4A1;',         accent:'#7c6af7', accentDim:'#7c6af718', typeLabel:'Praxis',        filename:'praxis-brief.html', preview:'Philosophy, strategy, tools & emerging ideas' },
+  'rabbit-hole':       { title:'Rabbit Hole',        subtitle:'Deep Dive',             icon:'&#x1F573;&#xFE0F;', accent:'#eab308', accentDim:'#eab30818', typeLabel:'Rabbit Hole',  filename:'rabbit-hole.html', preview:'One topic, explored with depth and narrative momentum' },
+  'praxis-brief':      { title:'Praxis',              subtitle:'Ideas In Practice',      icon:'&#x1F4A1;',         accent:'#DC3545', accentDim:'#DC354518', typeLabel:'Praxis',        filename:'praxis-brief.html', preview:'Philosophy, strategy, tools & emerging ideas' },
 };
 const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'rabbit-hole', 'praxis-brief'];
 
