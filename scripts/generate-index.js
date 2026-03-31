@@ -338,6 +338,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .mob-live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease-in-out infinite}
 @media(max-width:900px){.card-type{width:100px}}
 @media(max-width:768px){
+body{overflow-x:hidden}
 .mob-hamburger{display:flex}
 .mob-menu-overlay{display:block}
 .mob-menu{display:flex}
@@ -356,8 +357,8 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .filter-chip{flex-shrink:0}
 .filter-chip.c-t{margin-left:0}
 .date-header{padding:16px 16px 10px;font-size:10px}
-.card-row{margin:0 10px}
-.card-body{padding:12px 10px}
+.card-row{margin:0 10px;overflow:hidden}
+.card-body{padding:12px 10px;min-width:0}
 .card-icon,.card-preview,.card-tags{display:none}
 .card-accent{height:32px;margin:0;align-self:center;margin-right:12px}
 .card-type{display:inline-flex!important;width:auto!important;font-size:8px;padding:2px 6px;border-radius:3px;background:var(--type-bg,transparent)!important;white-space:nowrap;flex-shrink:0;margin-right:8px;letter-spacing:.5px}
