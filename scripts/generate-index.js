@@ -99,6 +99,7 @@ function extractBriefingMeta(filePath, key) {
       'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone)\b/g,
       // Rabbit hole topics vary each issue — extract bolded proper nouns dynamically
       'rabbit-hole':      /<strong>([A-Z][A-Za-z\u00C0-\u024F]{2,18}(?:\s[A-Z][A-Za-z\u00C0-\u024F]{2,15})?)<\/strong>/g,
+      'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
     };
     const tagRe = tagPatterns[key];
     if (tagRe) {
