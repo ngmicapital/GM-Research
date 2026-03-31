@@ -147,10 +147,10 @@ function transcriptCard(t) {
   const tagsHTML = domainTags.length ? `<div class="card-tags">${domainTags.map(d => `<span class="card-tag">${escapeHtml(d)}</span>`).join('')}</div>` : '';
   return `
       <a href="transcripts/${folder}/index.html" class="card-row">
-        <div class="card-accent" style="background:#f59e0b"></div>
+        <div class="card-accent" style="background:#f97316"></div>
         <div class="card-body">
-          <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
-          <div class="card-type" style="color:#f59e0b;--type-bg:#f59e0b18">Transcript</div>
+          <div class="card-icon" style="background:#f9731618">&#x1F3A5;</div>
+          <div class="card-type" style="color:#f97316;--type-bg:#f9731618">Transcript</div>
           <div class="card-mid">
             <div class="card-title">${escapeHtml(t.title)}</div>
             <div class="card-preview">${escapeHtml(t.source)}</div>
@@ -396,7 +396,7 @@ body{overflow-x:hidden}
     <a href="index.html" class="mob-menu-item" style="color:#60a5fa"><span class="mob-menu-icon">&#x2696;&#xFE0F;</span>Legal Briefs</a>
     <a href="index.html" class="mob-menu-item" style="color:#a78bfa"><span class="mob-menu-icon">&#x1F916;</span>AI Updates</a>
     <a href="index.html" class="mob-menu-item" style="color:#2dd4bf"><span class="mob-menu-icon">&#x1F9EC;</span>Biohacker Reports</a>
-    <a href="index.html" class="mob-menu-item" style="color:#f59e0b"><span class="mob-menu-icon">&#x1F3A5;</span>Transcripts</a>
+    <a href="index.html" class="mob-menu-item" style="color:#f97316"><span class="mob-menu-icon">&#x1F3A5;</span>Transcripts</a>
   </div>
   <div class="mob-menu-footer">
     <div class="mob-menu-footer-text">ngmicapital/GM-Research<br>Updated daily &middot; Powered by Claude</div>
