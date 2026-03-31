@@ -18,8 +18,9 @@ const BRIEFING_META = {
   'ai-briefing':       { title:'AI Intelligence',   subtitle:'Models & Strategy',     icon:'&#x1F916;',         accent:'#a78bfa', accentDim:'#a78bfa18', typeLabel:'AI Update',    filename:'ai-briefing.html', preview:'Model releases, benchmarks, AI x Crypto & research papers' },
   'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html', preview:'Longevity science, training protocols & daily wisdom' },
   'rabbit-hole':       { title:'Rabbit Hole',        subtitle:'Deep Dive',             icon:'&#x1F573;&#xFE0F;', accent:'#DC3545', accentDim:'#DC354518', typeLabel:'Rabbit Hole',  filename:'rabbit-hole.html', preview:'One topic, explored with depth and narrative momentum' },
+  'praxis-brief':      { title:'Praxis',              subtitle:'Ideas In Practice',      icon:'&#x1F4A1;',         accent:'#7c6af7', accentDim:'#7c6af718', typeLabel:'Praxis',        filename:'praxis-brief.html', preview:'Philosophy, strategy, tools & emerging ideas' },
 };
-const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'rabbit-hole'];
+const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'rabbit-hole', 'praxis-brief'];
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function stripHtml(s) { return s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
@@ -141,7 +142,8 @@ function briefingCard(date, key) {
 
 function transcriptCard(t) {
   const folder = t.slug;
-  const date = t.date;
+  const domainTags = (t.domain || '').split(/\s*[\/&]\s*/).map(s => s.trim()).filter(s => s.length > 1 && s.length <= 22).slice(0, 3);
+  const tagsHTML = domainTags.length ? `<div class="card-tags">${domainTags.map(d => `<span class="card-tag">${escapeHtml(d)}</span>`).join('')}</div>` : '';
   return `
       <a href="transcripts/${folder}/index.html" class="card-row">
         <div class="card-accent" style="background:#f59e0b"></div>
@@ -150,8 +152,9 @@ function transcriptCard(t) {
           <div class="card-type" style="color:#f59e0b;--type-bg:#f59e0b18">Transcript</div>
           <div class="card-mid">
             <div class="card-title">${escapeHtml(t.title)}</div>
-            <div class="card-preview">${escapeHtml(t.source)} &middot; ${escapeHtml(t.domain)}</div>
+            <div class="card-preview">${escapeHtml(t.source)}</div>
           </div>
+          ${tagsHTML}
           <div class="card-arrow">&#x203A;</div>
         </div>
       </a>`;
