@@ -121,7 +121,7 @@ function briefingCard(date, key) {
         <div class="card-accent" style="background:${m.accent}"></div>
         <div class="card-body">
           <div class="card-icon" style="background:${m.accentDim}">${m.icon}</div>
-          <div class="card-type" style="color:${m.accent}">${m.typeLabel}</div>
+          <div class="card-type" style="color:${m.accent};--type-bg:${m.accentDim}">${m.typeLabel}</div>
           <div class="card-mid"><div class="card-title">${escapeHtml(title)}</div>${preview ? `<div class="card-preview">${escapeHtml(preview)}</div>` : ''}</div>
           ${tagsHTML}
           <div class="card-arrow">&#x203A;</div>
@@ -137,7 +137,7 @@ function transcriptCard(t) {
         <div class="card-accent" style="background:#f59e0b"></div>
         <div class="card-body">
           <div class="card-icon" style="background:#f59e0b18">&#x1F3A5;</div>
-          <div class="card-type" style="color:#f59e0b">Transcript</div>
+          <div class="card-type" style="color:#f59e0b;--type-bg:#f59e0b18">Transcript</div>
           <div class="card-mid">
             <div class="card-title">${escapeHtml(t.title)}</div>
             <div class="card-preview">${escapeHtml(t.source)} &middot; ${escapeHtml(t.domain)}</div>
@@ -313,13 +313,87 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .footer-dot{width:3px;height:3px;border-radius:50%;background:var(--text-3)}
 .empty{text-align:center;padding:60px 20px}.empty-h{font-size:1rem;font-weight:600;color:var(--text-2);margin-bottom:8px}.empty-b{font-size:.82rem;color:var(--text-3)}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mob-hamburger{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-3);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;padding:0}
+.mob-hamburger span{display:block;width:16px;height:1.5px;background:var(--text-2);border-radius:1px}
+.mob-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;opacity:0;pointer-events:none;transition:opacity .25s}
+.mob-menu-overlay.open{opacity:1;pointer-events:auto}
+.mob-menu{display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--bg-1);border-right:1px solid var(--border);z-index:200;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:10px 0 40px rgba(0,0,0,.5)}
+.mob-menu.open{transform:translateX(0)}
+.mob-menu-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mob-menu-logo{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text-0);display:flex;align-items:center;gap:8px}
+.mob-logo-mark{width:24px;height:24px;border-radius:5px;background:linear-gradient(135deg,var(--amber),#d97706);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#000;flex-shrink:0}
+.mob-amber{color:var(--amber)}
+.mob-menu-close{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-2);line-height:1;padding:0}
+.mob-menu-nav{flex:1;padding:16px 0;overflow-y:auto}
+.mob-menu-section{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text-3);padding:16px 20px 8px}
+.mob-menu-item{display:flex;align-items:center;gap:14px;padding:14px 20px;color:var(--text-2);text-decoration:none;cursor:pointer;border-left:3px solid transparent;border-top:none;border-right:none;border-bottom:none;background:none;width:100%;text-align:left;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;transition:all .15s}
+.mob-menu-item:hover{background:var(--bg-3);color:var(--text-0)}
+.mob-menu-item.mob-active{color:var(--text-0);background:var(--bg-3);border-left-color:var(--amber)}
+.mob-menu-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0;opacity:.7}
+.mob-menu-item.mob-active .mob-menu-icon{opacity:1}
+.mob-menu-divider{height:1px;background:var(--border);margin:8px 20px}
+.mob-menu-footer{padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0}
+.mob-menu-footer-text{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-3);line-height:1.6}
+.mob-menu-live{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-top:8px}
+.mob-live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease-in-out infinite}
 @media(max-width:900px){.card-type{width:100px}}
-@media(max-width:600px){.topbar,.hero,.filter-bar,.date-header,.heatmap-section,.keywords-section,.footer{padding-left:20px;padding-right:20px}.card-row{margin:0 12px}.hero-top{flex-direction:column;gap:12px}.card-preview,.card-icon,.card-tags{display:none}.topbar-date{display:none}}
+@media(max-width:768px){
+.mob-hamburger{display:flex}
+.mob-menu-overlay{display:block}
+.mob-menu{display:flex}
+.topbar{padding:0 16px}
+.topbar-sep,.topbar-tabs,.topbar-date,.live-label{display:none}
+.hero{padding:20px 16px 16px}
+.hero-title{font-size:22px;letter-spacing:-.5px}
+.heatmap-section{padding:10px 16px;gap:10px}
+.heatmap-legend{display:none}
+.keywords-section{padding:14px 16px;flex-direction:column;gap:8px}
+.keywords-label{min-width:auto}
+.keywords-cloud{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kw{text-align:center;padding:6px 8px;font-size:10px}
+.filter-bar{padding:10px 16px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0}
+.filter-chip.c-t{margin-left:0}
+.date-header{padding:16px 16px 10px;font-size:10px}
+.card-row{margin:0 10px}
+.card-body{padding:12px 10px}
+.card-icon,.card-preview,.card-tags{display:none}
+.card-accent{height:32px;margin:0;align-self:center;margin-right:12px}
+.card-type{display:inline-flex!important;width:auto!important;font-size:8px;padding:2px 6px;border-radius:3px;background:var(--type-bg,transparent)!important;white-space:nowrap;flex-shrink:0;margin-right:8px;letter-spacing:.5px}
+.card-arrow{opacity:.4;padding-left:8px}
+.card-row:hover .card-arrow{transform:none;color:inherit;opacity:.4}
+.footer{padding:20px 16px}
+}
 </style>
 </head>
 <body>
+<div class="mob-menu-overlay" id="mob-overlay" onclick="closeMenu()"></div>
+<div class="mob-menu" id="mob-menu">
+  <div class="mob-menu-header">
+    <div class="mob-menu-logo"><div class="mob-logo-mark">GM</div>GM <span class="mob-amber">Research</span></div>
+    <button class="mob-menu-close" onclick="closeMenu()">&times;</button>
+  </div>
+  <div class="mob-menu-nav">
+    <div class="mob-menu-section">Navigation</div>
+    <a href="index.html" class="mob-menu-item mob-active"><span class="mob-menu-icon">&#x1F3E0;</span>Home</a>
+    <a href="visualizations.html" class="mob-menu-item"><span class="mob-menu-icon">&#x1F4CA;</span>Visualizations</a>
+    <div class="mob-menu-divider"></div>
+    <div class="mob-menu-section">Categories</div>
+    <a href="index.html" class="mob-menu-item" style="color:#22c55e"><span class="mob-menu-icon">&#x1F4C8;</span>Market Briefings</a>
+    <a href="index.html" class="mob-menu-item" style="color:#60a5fa"><span class="mob-menu-icon">&#x2696;&#xFE0F;</span>Legal Briefs</a>
+    <a href="index.html" class="mob-menu-item" style="color:#a78bfa"><span class="mob-menu-icon">&#x1F916;</span>AI Updates</a>
+    <a href="index.html" class="mob-menu-item" style="color:#2dd4bf"><span class="mob-menu-icon">&#x1F9EC;</span>Biohacker Reports</a>
+    <a href="index.html" class="mob-menu-item" style="color:#f59e0b"><span class="mob-menu-icon">&#x1F3A5;</span>Transcripts</a>
+  </div>
+  <div class="mob-menu-footer">
+    <div class="mob-menu-footer-text">ngmicapital/GM-Research<br>Updated daily &middot; Powered by Claude</div>
+    <div class="mob-menu-live"><div class="mob-live-dot"></div>System Live</div>
+  </div>
+</div>
 <div class="topbar">
   <div class="topbar-left">
+    <button class="mob-hamburger" onclick="openMenu()" aria-label="Open menu"><span></span><span></span><span></span></button>
     <a href="index.html" class="logo"><div class="logo-mark">GM</div>GM <span>Research</span></a>
     <div class="topbar-sep"></div>
     <div class="topbar-tabs">
@@ -365,6 +439,8 @@ ${feedHTML||'<div class="empty"><p class="empty-h">No briefings yet</p></div>'}
 <script>
 function toggleTheme(){var h=document.documentElement,c=h.getAttribute('data-theme'),n=c==='light'?'dark':'light';h.setAttribute('data-theme',n);localStorage.setItem('gm-theme',n)}
 (function(){var s=localStorage.getItem('gm-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+function openMenu(){document.getElementById('mob-overlay').classList.add('open');document.getElementById('mob-menu').classList.add('open')}
+function closeMenu(){document.getElementById('mob-overlay').classList.remove('open');document.getElementById('mob-menu').classList.remove('open')}
 </script>
 </body>
 </html>`;
