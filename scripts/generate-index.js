@@ -33,7 +33,10 @@ function extractBriefingMeta(filePath, key) {
     const html = fs.readFileSync(filePath, 'utf8');
 
     // Strategy 1: TL;DR block (market, ai, biohacker)
-    const tldrMatch = html.match(/class="tldr"[\s\S]*?<p>([\s\S]*?)<\/p>/);
+    // Handles: <div class="tldr-text">, <p class="tldr-text">, and plain <p> inside .tldr
+    const tldrTextMatch = html.match(/class="tldr-text"[^>]*>([\s\S]*?)<\/(?:p|div)>/);
+    const tldrPMatch = !tldrTextMatch && html.match(/class="tldr"[\s\S]*?<p>([\s\S]*?)<\/p>/);
+    const tldrMatch = tldrTextMatch || tldrPMatch;
     if (tldrMatch) {
       let text = stripHtml(tldrMatch[1]);
       // Find sentence boundary (". " followed by uppercase) — avoids splitting on "$99.64"
@@ -67,7 +70,11 @@ function extractBriefingMeta(filePath, key) {
         storyTitles.push(t);
       }
       if (storyTitles.length >= 1) headline = storyTitles[0];
-      if (storyTitles.length >= 2) preview = storyTitles.slice(1).join(' · ');
+      if (storyTitles.length >= 2) {
+        let p = storyTitles.slice(1).join(' · ');
+        if (p.length > 120) p = p.slice(0, 117) + '...';
+        preview = p;
+      }
     }
 
     // Strategy 3: fallback — first section-title as headline
@@ -471,3 +478,22 @@ fs.writeFileSync(OUTPUT_FILE, buildHTML(briefingEntries, transcriptsByDate));
 const bCount = briefingEntries.reduce((n,e) => n + e.briefings.length, 0);
 const tCount = Object.values(transcriptsByDate).reduce((n,a) => n + a.length, 0);
 console.log(`index.html written — ${briefingEntries.length} date(s), ${bCount} briefing(s), ${tCount} transcript(s)`);
+
+// ─── Post-build UI validator ──────────────────────────────────────────────────
+// Checks every card extraction for common issues and warns loudly.
+const SUSPICIOUS = ['Released ', 'Architecture:', 'See also', '§', 'http', 'undefined', 'null'];
+let issues = 0;
+briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
+  e.briefings.forEach(key => {
+    const m = BRIEFING_META[key];
+    const filePath = path.join(BRIEFINGS_DIR, e.date, m.filename);
+    const { headline, preview } = extractBriefingMeta(filePath, key);
+    const warn = (msg) => { console.warn(`  ⚠️  [${e.date}/${key}] ${msg}`); issues++; };
+    if (!headline)                                    warn('EMPTY headline — falling back to default');
+    if (headline.length < 15)                         warn(`SHORT headline (${headline.length} chars): "${headline}"`);
+    if (preview.length > 130)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
+    SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
+  });
+});
+if (issues === 0) console.log('✓  UI validator: all card extractions look clean');
+else console.warn(`\n  ${issues} extraction issue(s) found above — check briefing HTML structure\n`);
