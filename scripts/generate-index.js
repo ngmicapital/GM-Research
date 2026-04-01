@@ -23,7 +23,21 @@ const BRIEFING_META = {
 const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'rabbit-hole', 'praxis-brief'];
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function stripHtml(s) { return s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim(); }
+function stripHtml(s) {
+  return s
+    .replace(/<[^>]*>/g, '')
+    // Named entities
+    .replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&hellip;/g, '…')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&lsquo;/g, '\u2018').replace(/&rsquo;/g, '\u2019')
+    .replace(/&ldquo;/g, '\u201C').replace(/&rdquo;/g, '\u201D')
+    .replace(/&apos;/g, "'").replace(/&copy;/g, '©').replace(/&reg;/g, '®')
+    // Numeric entities (hex and decimal)
+    .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#([0-9]+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/\s+/g, ' ').trim();
+}
 
 // Extract a headline, preview summary + tags from a briefing HTML file
 function extractBriefingMeta(filePath, key) {
@@ -499,6 +513,8 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
     if (headline.length < 15)                         warn(`SHORT headline (${headline.length} chars): "${headline}"`);
     if (!preview)                                     warn('EMPTY preview — card will show no description text');
     if (preview.length > 130)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
+    if (/&[a-zA-Z]+;/.test(headline))                warn(`RAW HTML ENTITY in headline: "${headline}"`);
+    if (/&[a-zA-Z]+;/.test(preview))                 warn(`RAW HTML ENTITY in preview: "${preview}"`);
     SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
   });
 });
