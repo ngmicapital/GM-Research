@@ -497,9 +497,14 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
     const warn = (msg) => { console.warn(`  ⚠️  [${e.date}/${key}] ${msg}`); issues++; };
     if (!headline)                                    warn('EMPTY headline — falling back to default');
     if (headline.length < 15)                         warn(`SHORT headline (${headline.length} chars): "${headline}"`);
+    if (!preview)                                     warn('EMPTY preview — card will show no description text');
     if (preview.length > 130)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
     SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
   });
 });
-if (issues === 0) console.log('✓  UI validator: all card extractions look clean');
-else console.warn(`\n  ${issues} extraction issue(s) found above — check briefing HTML structure\n`);
+if (issues === 0) {
+  console.log('✓  UI validator: all card extractions look clean');
+} else {
+  console.warn(`\n  ${issues} extraction issue(s) found above — check briefing HTML structure\n`);
+  process.exit(1);  // Non-zero exit prevents git operations when run in a pipeline
+}
