@@ -92,7 +92,31 @@ function extractBriefingMeta(filePath, key) {
       }
     }
 
-    // Strategy 3: fallback — first section-title as headline
+    // Strategy 3a: Praxis / card-title based extraction
+    // Reads the first card-title as headline and subsequent card-titles as preview.
+    // Avoids the section-title fallback which only yields generic section names.
+    if (!headline && key === 'praxis-brief') {
+      const cardTitles = [];
+      const re = /card-title"[^>]*>([\s\S]*?)<\/div>/g;
+      let m;
+      while ((m = re.exec(html)) && cardTitles.length < 4) {
+        const t = stripHtml(m[1]);
+        if (t.length > 5 && !t.includes('{')) cardTitles.push(t);
+      }
+      if (cardTitles.length >= 1) {
+        let h = cardTitles[0];
+        if (h.length > 90) h = h.slice(0, h.lastIndexOf(' ', 87) || 87) + '...';
+        headline = h;
+      }
+      if (cardTitles.length >= 2) {
+        let p = cardTitles.slice(1, 3).map(t => t.length > 55 ? t.slice(0, t.lastIndexOf(' ', 52) || 52) + '...' : t).join(' · ');
+        if (p.length > 120) p = p.slice(0, 117) + '...';
+        preview = p;
+      }
+    }
+
+    // Strategy 3b: fallback — first section-title as headline
+    // ⚠ Known issue: produces generic output for briefings without tldr-text or card-title elements.
     if (!headline) {
       const sectionTitles = [];
       const re = /section-title">\s*(?:[^\s<]*\s)?([^<]+)/g;
@@ -103,6 +127,20 @@ function extractBriefingMeta(filePath, key) {
       }
       if (sectionTitles.length >= 1) headline = sectionTitles[0];
       if (sectionTitles.length >= 2) preview = sectionTitles.slice(1).join(' · ');
+    }
+
+    // ── Extraction quality check ──────────────────────────────────────────────
+    // Warn when the headline looks like it was lifted from a section header
+    // rather than actual content (a sign that extraction failed).
+    const GENERIC_SECTION_NAMES = [
+      'key ideas', 'ideas & insights', 'ideas and insights',
+      'strategy & practice', 'strategy and practice',
+      'tools & resources', 'tools and resources',
+      'on the horizon', 'watchlist', 'overview', 'summary',
+      'top stories', 'highlights', 'the rundown',
+    ];
+    if (headline && GENERIC_SECTION_NAMES.some(s => headline.toLowerCase().startsWith(s))) {
+      console.warn(`⚠  [validator] ${key} @ ${filePath.split(/[\\/]/).slice(-2).join('/')}: headline looks like a section header ("${headline}"). Add a tldr-text element or card-title for better extraction.`);
     }
 
     // Extract tags from key patterns
