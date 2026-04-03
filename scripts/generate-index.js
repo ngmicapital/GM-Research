@@ -78,10 +78,14 @@ function extractBriefingMeta(filePath, key) {
       let m;
       while ((m = re.exec(html)) && storyTitles.length < 3) {
         let t = stripHtml(m[1]);
+        // Trim at em-dash (subheadline separator) — allow up to 90 chars before the dash
         const dashIdx = t.indexOf(' — ');
-        if (dashIdx > 10 && dashIdx < 60) t = t.slice(0, dashIdx);
+        if (dashIdx > 10 && dashIdx < 90) t = t.slice(0, dashIdx);
+        // Trim at colon prefix
         const colonIdx = t.indexOf(': ');
         if (colonIdx > 10 && colonIdx < 50) t = t.slice(0, colonIdx);
+        // Hard cap
+        if (t.length > 90) t = t.slice(0, t.lastIndexOf(' ', 87) || 87) + '...';
         storyTitles.push(t);
       }
       if (storyTitles.length >= 1) headline = storyTitles[0];
