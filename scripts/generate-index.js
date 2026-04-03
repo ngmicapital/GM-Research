@@ -217,11 +217,24 @@ function transcriptCard(t) {
       </a>`;
 }
 
+const RECIPE_CARD = `
+      <a href="recipes/ultimate-chewy-brownies/index.html" class="card-row">
+        <div class="card-accent" style="background:#92400e"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background:#92400e18">&#x1F36B;</div>
+          <div class="card-type" style="color:#92400e;--type-bg:#92400e18">Recipe</div>
+          <div class="card-mid"><div class="card-title">The Ultimate Chewy Brownie — Synthesised from 7 sources, engineered for maximum chew</div><div class="card-preview">Brown butter + oil, dual sugars, 2+2 egg ratio, cornstarch, double chocolate, 163°C low-and-slow. Science-backed.</div></div>
+          <div class="card-tags"><span class="card-tag">Brownies</span><span class="card-tag">Baking</span><span class="card-tag">Chewy</span></div>
+          <div class="card-arrow">&#x203A;</div>
+        </div>
+      </a>`;
+
 function dateGroupHTML(date, briefings, transcripts, isToday) {
   const bCount = briefings.length, tCount = transcripts.length;
   const parts = [];
   if (bCount) parts.push(`${bCount} briefing${bCount>1?'s':''}`);
   if (tCount) parts.push(`${tCount} transcript${tCount>1?'s':''}`);
+  if (isToday) parts.push('1 recipe');
   return `
     <div class="date-group">
       <div class="date-header">
@@ -230,6 +243,7 @@ function dateGroupHTML(date, briefings, transcripts, isToday) {
       </div>
       ${briefings.map(k => briefingCard(date, k)).join('')}
       ${transcripts.map(t => transcriptCard(t)).join('')}
+      ${isToday ? RECIPE_CARD : ''}
       <div class="date-group-pad"></div>
     </div>`;
 }
@@ -302,7 +316,7 @@ function buildHTML(briefingEntries, transcriptsByDate) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg-0:#06060a;--bg-1:#0a0a10;--bg-2:#0e0e16;--bg-3:#13131d;--border:#1a1a28;--border-hover:#2a2a3d;--text-0:#fff;--text-1:#c8c8d4;--text-2:#8888a0;--text-3:#55556a;--amber:#f59e0b;--amber-dim:#f59e0b18;--green:#22c55e;--green-dim:#22c55e18;--blue:#60a5fa;--blue-dim:#60a5fa18;--purple:#a78bfa;--purple-dim:#a78bfa18;--teal:#2dd4bf;--teal-dim:#2dd4bf18;--topbar-bg:rgba(10,10,16,0.8);--hero-grad-from:#0e0e16;--hero-glow:rgba(245,158,11,0.04);--hm-l1:#1a3320;--hm-l2:#1f5c2e;--scrollbar-track:#06060a}
+:root{--bg-0:#06060a;--bg-1:#0a0a10;--bg-2:#0e0e16;--bg-3:#13131d;--border:#1a1a28;--border-hover:#2a2a3d;--text-0:#fff;--text-1:#c8c8d4;--text-2:#8888a0;--text-3:#55556a;--amber:#f59e0b;--amber-dim:#f59e0b18;--green:#22c55e;--green-dim:#22c55e18;--blue:#60a5fa;--blue-dim:#60a5fa18;--purple:#a78bfa;--purple-dim:#a78bfa18;--teal:#2dd4bf;--teal-dim:#2dd4bf18;--brown:#92400e;--brown-dim:#92400e18;--topbar-bg:rgba(10,10,16,0.8);--hero-grad-from:#0e0e16;--hero-glow:rgba(245,158,11,0.04);--hm-l1:#1a3320;--hm-l2:#1f5c2e;--scrollbar-track:#06060a}
 [data-theme="light"]{--bg-0:#f5f5f7;--bg-1:#fff;--bg-2:#f0f0f3;--bg-3:#e8e8ee;--border:#d4d4dc;--border-hover:#b8b8c4;--text-0:#111118;--text-1:#333340;--text-2:#66667a;--text-3:#9999aa;--amber:#d97706;--amber-dim:#d9770615;--green:#16a34a;--green-dim:#16a34a12;--blue:#2563eb;--blue-dim:#2563eb12;--purple:#7c3aed;--purple-dim:#7c3aed12;--teal:#0d9488;--teal-dim:#0d948812;--topbar-bg:rgba(255,255,255,0.85);--hero-grad-from:#ebebf0;--hero-glow:rgba(245,158,11,0.06);--hm-l1:#bbf7d0;--hm-l2:#4ade80;--scrollbar-track:#f5f5f7}
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
 body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-system,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -355,7 +369,8 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .filter-chip.c-l{color:var(--blue);border-color:rgba(96,165,250,0.2)}.filter-chip.c-l:hover{background:var(--blue-dim)}
 .filter-chip.c-a{color:var(--purple);border-color:rgba(167,139,250,0.2)}.filter-chip.c-a:hover{background:var(--purple-dim)}
 .filter-chip.c-b{color:var(--teal);border-color:rgba(45,212,191,0.2)}.filter-chip.c-b:hover{background:var(--teal-dim)}
-.filter-chip.c-t{color:var(--amber);border-color:rgba(245,158,11,0.2);margin-left:auto}.filter-chip.c-t:hover{background:var(--amber-dim)}
+.filter-chip.c-t{color:var(--amber);border-color:rgba(245,158,11,0.2)}.filter-chip.c-t:hover{background:var(--amber-dim)}
+.filter-chip.c-r{color:var(--brown);border-color:rgba(146,64,14,0.2);margin-left:auto}.filter-chip.c-r:hover{background:var(--brown-dim)}
 .filter-count{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:8px;margin-left:4px}
 .feed{padding:0}.date-group{border-bottom:1px solid var(--border)}
 .date-header{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;padding:20px 40px 12px;display:flex;justify-content:space-between;align-items:center}
@@ -453,6 +468,7 @@ body{overflow-x:hidden}
     <a href="index.html" class="mob-menu-item" style="color:#a78bfa"><span class="mob-menu-icon">&#x1F916;</span>AI Updates</a>
     <a href="index.html" class="mob-menu-item" style="color:#2dd4bf"><span class="mob-menu-icon">&#x1F9EC;</span>Biohacker Reports</a>
     <a href="index.html" class="mob-menu-item" style="color:#f97316"><span class="mob-menu-icon">&#x1F3A5;</span>Transcripts</a>
+    <a href="recipes/ultimate-chewy-brownies/index.html" class="mob-menu-item" style="color:#92400e"><span class="mob-menu-icon">&#x1F36B;</span>Recipes</a>
   </div>
   <div class="mob-menu-footer">
     <div class="mob-menu-footer-text">ngmicapital/GM-Research<br>Updated daily &middot; Powered by Claude</div>
@@ -499,6 +515,7 @@ body{overflow-x:hidden}
   <div class="filter-chip c-a">AI<span class="filter-count">${cc['ai-briefing']}</span></div>
   <div class="filter-chip c-b">Biohacker<span class="filter-count">${cc['biohacker-report']}</span></div>
   <div class="filter-chip c-t">Transcripts<span class="filter-count">${totalTranscripts}</span></div>
+  <div class="filter-chip c-r">Recipes<span class="filter-count">1</span></div>
 </div>
 <div class="feed">
 ${feedHTML||'<div class="empty"><p class="empty-h">No briefings yet</p></div>'}
