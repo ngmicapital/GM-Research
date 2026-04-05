@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence | April 5, 2026</title>
+<style>
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #111827;
+  --bg-sidebar: #0a0f16;
+  --bg-card: #161d2b;
+  --bg-card-hover: #1c2538;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --border: #21262d;
+  --accent-gold: #d4a017;
+  --accent-gold-light: #f0c040;
+  --accent-blue: #1f6feb;
+  --accent-purple: #8957e5;
+  --accent-amber: #d29922;
+  --accent-green: #3fb950;
+  --accent-red: #f85149;
+  --accent-teal: #3dc9b0;
+}
+body.light-mode {
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f0ede8;
+  --bg-sidebar: #e8e4dd;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f3ee;
+  --text-primary: #1c1c1e;
+  --text-secondary: #4a4a4f;
+  --text-muted: #8a8a8e;
+  --border: #d1c9be;
+  --accent-gold: #b8860b;
+  --accent-gold-light: #8a6508;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.7;
+  transition: background 0.3s, color 0.3s;
+}
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 220px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 20px 0;
+  transition: transform 0.3s;
+}
+.sidebar-brand {
+  padding: 0 16px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.sidebar-brand .wordmark {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  display: block;
+}
+.sidebar-brand .sidebar-date {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.sidebar-section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 16px 4px;
+}
+.sidebar-story {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  border-left: 2px solid transparent;
+  text-decoration: none;
+}
+.sidebar-story:hover { color: var(--text-secondary); text-decoration: none; }
+.sidebar-story.active {
+  color: var(--text-primary);
+  border-left-color: var(--accent-gold);
+}
+.sidebar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.dot-headline { background: var(--accent-gold); }
+.dot-high { background: var(--accent-blue); }
+.dot-medium { background: var(--accent-green); }
+.sidebar-nav-link {
+  display: block;
+  padding: 5px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sidebar-nav-link:hover { color: var(--text-secondary); text-decoration: none; }
+
+/* Toggle button */
+.theme-toggle {
+  position: fixed;
+  top: 14px; right: 16px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+.theme-toggle:hover { background: var(--bg-card-hover); }
+
+/* Hamburger */
+.hamburger {
+  position: fixed;
+  top: 14px; left: 14px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 1200px) {
+  .hamburger { display: flex; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0 !important; }
+}
+
+/* Main content */
+.main-content {
+  margin-left: 240px;
+  max-width: 960px;
+  padding: 40px 32px 80px;
+}
+
+/* Masthead */
+.masthead {
+  text-align: center;
+  padding-bottom: 32px;
+  margin-bottom: 40px;
+}
+.masthead h1 {
+  font-family: Georgia, serif;
+  font-size: 3.2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+.gold-bar {
+  width: 80px;
+  height: 3px;
+  background: var(--accent-gold);
+  margin: 12px auto;
+}
+.masthead-subtitle {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.masthead-date {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.meta-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.meta-pill {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.meta-pill-gold {
+  background: rgba(212,160,23,0.15);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+.masthead-separator {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin-top: 24px;
+}
+
+/* Section headers */
+.section-header {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin: 40px 0 20px;
+}
+
+/* Story cards */
+.story-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.story-card:hover { background: var(--bg-card-hover); }
+.story-card.tier-headline { border-left: 3px solid var(--accent-gold); }
+.story-card.tier-high { border-left: 3px solid var(--accent-blue); }
+.story-card.tier-medium { border-left: 3px solid var(--accent-green); }
+
+.story-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.tier-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.badge-headline {
+  background: rgba(212,160,23,0.2);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+.badge-high {
+  background: rgba(31,111,235,0.2);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+}
+.badge-medium {
+  background: rgba(63,185,80,0.15);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+.source-tag {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.credibility-tag {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.category-tag {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--accent-teal);
+}
+
+.signal-confidence {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.story-title {
+  font-family: Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 16px;
+}
+
+.golden-quote {
+  border-left: 3px solid var(--accent-gold);
+  background: rgba(212,160,23,0.05);
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-style: italic;
+  color: var(--accent-gold-light);
+  border-radius: 0 4px 4px 0;
+}
+.quote-attribution {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-style: normal;
+}
+
+.story-body { color: var(--text-secondary); }
+.story-body p { margin-bottom: 10px; }
+
+.precedent-block {
+  border-left: 2px dashed var(--text-muted);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 14px 0;
+}
+
+.analysis-block {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent-blue);
+  padding: 14px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 14px 0;
+  color: var(--text-secondary);
+}
+.analysis-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-blue);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.contrarian-block {
+  border-left: 3px solid var(--accent-purple);
+  padding: 14px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 14px 0;
+  color: var(--text-secondary);
+  background: rgba(137,87,229,0.05);
+}
+.contrarian-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-purple);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.implications-block {
+  border-left: 3px solid var(--accent-amber);
+  padding: 14px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 14px 0;
+  color: var(--text-secondary);
+}
+.implications-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-amber);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.portfolio-block {
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  background: rgba(63,185,80,0.05);
+}
+.portfolio-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-green);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.action-block {
+  border: 1px solid var(--accent-gold);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  background: rgba(212,160,23,0.05);
+}
+.action-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-gold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.action-row {
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.action-trader { background: rgba(248,81,73,0.2); color: #ff7b72; }
+.action-counsel { background: rgba(31,111,235,0.2); color: #79c0ff; }
+.action-compliance { background: rgba(137,87,229,0.2); color: #d2a8ff; }
+.action-founder { background: rgba(63,185,80,0.2); color: #7ee787; }
+.action-role {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-right: 8px;
+}
+
+.connected-block {
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+.connected-block .block-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-blue);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.connected-item {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.tag {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--border);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Brief notes */
+.brief-notes-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+}
+.brief-notes-card .card-title {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.brief-note-item {
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.brief-note-item:last-child { border-bottom: none; }
+.brief-note-item strong { color: var(--text-primary); }
+
+/* Cross-cutting grid */
+.cross-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (max-width: 700px) { .cross-grid { grid-template-columns: 1fr; } }
+.cross-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.cross-card-title {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--accent-teal);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.cross-direction {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+.dir-green { color: var(--accent-green); }
+.dir-amber { color: var(--accent-amber); }
+.dir-red { color: var(--accent-red); }
+.dir-gold { color: var(--accent-gold-light); }
+.cross-card p { font-size: 13px; color: var(--text-secondary); }
+
+/* Tone Barometer */
+.tone-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.tone-row:last-child { border-bottom: none; }
+.flag-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  min-width: 36px;
+  text-align: center;
+}
+.flag-us { background: #1f3a6e; color: #93b4f0; border: 1px solid #2d5299; }
+.flag-eu { background: #1a1a5e; color: #a0a8f8; border: 1px solid #2828a0; }
+.flag-uk { background: #3a1a1a; color: #f09090; border: 1px solid #8b2020; }
+.flag-sg { background: #1a3a2a; color: #7fcca0; border: 1px solid #1e6640; }
+.flag-au { background: #2a1a3a; color: #c0a0f0; border: 1px solid #5e2a8b; }
+.tone-signal { font-size: 13px; }
+
+/* Countdown table */
+.countdown-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+.countdown-table th {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.countdown-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.countdown-table td:first-child { color: var(--text-primary); font-weight: 600; }
+.countdown-table td:nth-child(2) { font-family: 'Courier New', monospace; color: var(--text-muted); font-size: 12px; }
+.days-pill {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.days-urgent { background: rgba(212,160,23,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+.days-normal { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* Pipeline tracker */
+.pipeline-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+.pipeline-table th {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.pipeline-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+.pipeline-table td:first-child { color: var(--text-primary); font-weight: 600; }
+.pipeline-progress {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.progress-seg {
+  height: 10px;
+  border-radius: 2px;
+  flex: 1;
+  background: var(--border);
+}
+.progress-seg.active { background: var(--accent-blue); }
+.progress-seg.enacted { background: var(--accent-green); }
+.movement-up { color: var(--accent-green); font-weight: bold; }
+.movement-flat { color: var(--text-muted); }
+.movement-down { color: var(--accent-red); font-weight: bold; }
+
+/* Open Submissions */
+.submissions-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+.submissions-table th {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.submissions-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.sub-open { color: var(--accent-green); font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; }
+.sub-closing { color: var(--accent-gold); font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; }
+.sub-ongoing { color: var(--accent-blue); font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; }
+.sub-closed { color: var(--text-muted); font-family: 'Courier New', monospace; font-size: 10px; text-decoration: line-through; }
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.footer-tier { margin-bottom: 8px; }
+.footer-disclaimer { margin-top: 16px; font-size: 10px; color: var(--text-muted); }
+
+/* General card */
+.generic-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+}
+.generic-card .card-title {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<button class="theme-toggle" id="themeToggle" onclick="document.body.classList.toggle('light-mode'); this.textContent = document.body.classList.contains('light-mode') ? '🌙' : '☀️'">☀️</button>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span class="wordmark">The Brief</span>
+    <span class="sidebar-date">Sunday, 5 April 2026</span>
+  </div>
+  <div class="sidebar-section-label">Stories</div>
+  <a href="#story-1" class="sidebar-story">
+    <span class="sidebar-dot dot-headline"></span>
+    <span>Australia Digital Assets Bill Passes</span>
+  </a>
+  <a href="#story-2" class="sidebar-story">
+    <span class="sidebar-dot dot-high"></span>
+    <span>OCC Charter Wave — Coinbase &amp; 10 Others</span>
+  </a>
+  <a href="#story-3" class="sidebar-story">
+    <span class="sidebar-dot dot-high"></span>
+    <span>CLARITY Act Four-Way Senate Deadlock</span>
+  </a>
+  <a href="#story-4" class="sidebar-story">
+    <span class="sidebar-dot dot-high"></span>
+    <span>SEC/CFTC Joint Crypto Taxonomy</span>
+  </a>
+  <a href="#story-5" class="sidebar-story">
+    <span class="sidebar-dot dot-high"></span>
+    <span>OCC GENIUS Act NPRM — May 1</span>
+  </a>
+  <a href="#story-6" class="sidebar-story">
+    <span class="sidebar-dot dot-medium"></span>
+    <span>White House AI Preemption Framework</span>
+  </a>
+  <a href="#story-7" class="sidebar-story">
+    <span class="sidebar-dot dot-medium"></span>
+    <span>Mined in America Act Introduced</span>
+  </a>
+  <a href="#story-8" class="sidebar-story">
+    <span class="sidebar-dot dot-medium"></span>
+    <span>MiCA Final Countdown — 86 Days</span>
+  </a>
+  <div class="sidebar-section-label" style="margin-top:12px;">Sections</div>
+  <a href="#cross-cutting" class="sidebar-nav-link">↗ Cross-Cutting</a>
+  <a href="#tone-barometer" class="sidebar-nav-link">📡 Tone Barometer</a>
+  <a href="#countdown" class="sidebar-nav-link">⏱ Countdown</a>
+  <a href="#pipeline" class="sidebar-nav-link">🏗 Pipeline Tracker</a>
+  <a href="#submissions" class="sidebar-nav-link">📋 Open Submissions</a>
+</nav>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <h1>The Brief</h1>
+    <div class="gold-bar"></div>
+    <div class="masthead-subtitle">Legal Intelligence Report</div>
+    <div class="masthead-date">Sunday, 5 April 2026</div>
+    <div class="meta-row">
+      <span class="meta-pill meta-pill-gold">8 Stories</span>
+      <span class="meta-pill">45+ Sources</span>
+      <span class="meta-pill">Past 48 Hours</span>
+    </div>
+    <div class="masthead-separator"></div>
+  </div>
+
+  <!-- STORY 1 — HEADLINE -->
+  <div id="story-1" class="story-card tier-headline">
+    <div class="story-meta">
+      <span class="tier-badge badge-headline">Headline</span>
+      <span class="source-tag">CoinDesk · Gilbert + Tobin</span>
+      <span class="credibility-tag">MEDIA + SECONDARY</span>
+      <span class="category-tag">AUSTRALIA · LICENSING</span>
+    </div>
+    <div class="signal-confidence">🟢 High — legislation enacted (Royal Assent pending, both houses passed)</div>
+    <h2 class="story-title">Australia Passes Digital Assets Framework Bill — AFSL Mandatory for Exchanges and Custody Providers</h2>
+
+    <div class="golden-quote">
+      "A pivotal moment, establishing a foundation for institutional participation in the digital assets sector."
+      <div class="quote-attribution">— Kate Cooper, CEO of OKX Australia &amp; co-chair, Digital Economy Council of Australia [CoinDesk, April 1, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>The <strong>Corporations Amendment (Digital Assets Framework) Bill 2025</strong> passed both houses of the Australian Parliament on <strong>April 1, 2026</strong> — the most significant crypto legislation to clear any legislature this calendar quarter. The Bill creates two new regulated product categories under the Corporations Act 2001: <strong>Digital Asset Platforms (DAPs)</strong> and <strong>Tokenised Custody Platforms (TCPs)</strong>, bringing crypto exchanges and custody providers under the same Australian Financial Services Licence (AFSL) framework that governs brokers and fund managers.</p>
+      <p>The compliance requirements mirror the financial services mainstream: segregated client asset safeguarding, standardised product disclosure statements, internal dispute resolution systems, and participation in external compensation schemes. ASIC has announced a sector-wide no-action position until <strong>June 30, 2026</strong> for firms actively applying for licences, with the full six-month transition window running from Royal Assent. Firms that do not apply by June 30 or obtain an AFSL within six months must cease providing regulated digital asset services in Australia.</p>
+      <p>The economic stakes are significant. Research by the Digital Finance Cooperative Research Centre estimates the regulated digital asset sector could generate <strong>A$24 billion annually</strong> — approximately 1% of GDP — representing a step-change from earlier projections of A$1 billion by 2030. The exposure draft consultation closed October 24, 2025; the Bill was introduced November 26, 2025. The speed of passage reflects cross-party consensus built over three years of parliamentary inquiry dating to the 2021 "Australia as a Technology and Financial Centre" Senate Select Committee final report.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> EU MiCA (June 2023) is the closest comparable — an AFSL framework for digital assets similarly required a transition window of 12–18 months and triggered significant exchange exits from non-compliant operators. Binance Australia closed retail operations in May 2023 amid regulatory scrutiny, a pattern likely to repeat for non-compliant operators post-transition.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The AFSL regime is a known quantity for Australian practitioners — the legal infrastructure (licensing forms, disclosure obligations, ASIC INFO 225 guidance) already exists. The primary compliance challenge is not novelty but speed: six months to achieve AFSL authorisation is tight for firms without existing Australian financial services infrastructure. <strong>Winners:</strong> incumbent operators with existing compliance teams (Swyftx, CoinSpot, Independent Reserve, Kraken AU, OKX Australia), and institutional players who have been waiting for a clear regulatory framework before entering the market. <strong>Losers:</strong> smaller exchanges without capital for compliance buildout, and DeFi protocols that may inadvertently fall within the "Digital Asset Platform" definition depending on how ASIC interprets custody of user funds. The key legal question now is ASIC's definitional guidance on what constitutes a DAP vs. a TCP — the statute's current definitions leave interpretive room that experienced practitioners will exploit.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <div class="block-label">🔄 Contrarian Take</div>
+      <p>The A$24 billion GDP estimate is aspirational modelling, not near-term reality. More critically, mapping an AFSL framework — designed for equity brokers and managed fund operators — onto digital asset platforms risks regulatory transplant failure: the technology does not fit the compliance architecture, particularly for self-custody and DeFi-adjacent services. Australia may find, as the EU did with MiCA's reverse solicitation loophole, that definitional overreach drives sophisticated users offshore while entrenching incumbents.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Exchanges:</strong> CoinSpot, Independent Reserve, Swyftx, Kraken AU, and OKX Australia are best positioned. Smaller operators — particularly those in custody, staking, and lending — face the most acute compliance burden. <strong>Capital flows:</strong> Institutional capital (super funds, family offices) that has been waiting for regulatory certainty is now unlocked — expect ETF product launches and managed digital asset mandates within six months of the Act's commencement. <strong>Infrastructure:</strong> Fireblocks, BitGo, and Copper will compete aggressively for the custody mandate that comes with TCP licensing.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <div class="block-label">📊 Portfolio Impact</div>
+      <p><strong>Bullish:</strong> Australian crypto-adjacent equities, institutional custody providers (BitGo, Fireblocks), exchanges with existing AFSL infrastructure. <strong>Bearish:</strong> Small non-compliant exchanges operating in AU without compliance resources. <strong>Neutral:</strong> DeFi protocols pending ASIC definitional guidance.</p>
+    </div>
+
+    <div class="action-block">
+      <div class="block-label">📋 What To Do</div>
+      <div class="action-row action-trader"><span class="action-role">Trader:</span> If holding Australian exchange tokens or operating via an AU exchange, verify your provider's AFSL application status now. Exchanges that exit the market create custody and liquidity risk.</div>
+      <div class="action-row action-counsel"><span class="action-role">Counsel:</span> Review the Bill text and ASIC INFO 225. Begin mapping client activities against the DAP/TCP definitions immediately — the transitional no-action window closes June 30, 2026.</div>
+      <div class="action-row action-compliance"><span class="action-role">Compliance:</span> Initiate AFSL gap analysis against Part 7.6 of the Corporations Act. Prioritise: AFS licence application, client money obligations, dispute resolution registration (AFCA).</div>
+      <div class="action-row action-founder"><span class="action-role">Founder:</span> If your protocol or platform has Australian users and involves custody of digital assets in any form, take urgent legal advice on DAP/TCP classification. The definition is broader than typical exchange-only frameworks.</div>
+    </div>
+
+    <div class="connected-block">
+      <div class="block-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #4 (SEC/CFTC Joint Taxonomy) — Australia's DAP/TCP categories invite comparison with the US five-category taxonomy; both represent jurisdiction-specific approaches to the same definitional problem.</div>
+      <div class="connected-item">↔️ Story #8 (MiCA Final Countdown) — Australia's six-month transition mirrors MiCA's approach; both deadlines cluster around June 30, 2026, creating a simultaneous compliance crunch across three major jurisdictions.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#ASIC</span>
+      <span class="tag">#Australia</span>
+      <span class="tag">#AFSL</span>
+      <span class="tag">#licensing</span>
+      <span class="tag">#custody</span>
+      <span class="tag">#DAP</span>
+      <span class="tag">#TCP</span>
+    </div>
+  </div>
+
+  <!-- STORY 2 — HIGH -->
+  <div id="story-2" class="story-card tier-high">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">CoinDesk · The Block · Banking Dive</span>
+      <span class="credibility-tag">MEDIA</span>
+      <span class="category-tag">USA · OCC · BANKING</span>
+    </div>
+    <div class="signal-confidence">🟢 High — conditional OCC approval filed; 12 CFR 5.20 amendment in effect</div>
+    <h2 class="story-title">OCC Grants Coinbase Conditional Trust Charter — 11 Crypto Firms Approved in 83 Days as Banking Lobby Escalates Opposition</h2>
+
+    <div class="golden-quote">
+      "The OCC's approval of Coinbase as a national trust company is a top-down signal that the United States is prepared to treat digital asset custodians as legitimate financial infrastructure."
+      <div class="quote-attribution">— Kraken spokesperson [paraphrased — CoinDesk reporting, April 2, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>On <strong>April 2, 2026</strong>, the OCC granted conditional approval for <strong>Coinbase National Trust Company</strong> — a de novo non-insured national trust company to be headquartered in New York. The approval enables Coinbase to operate as a federally regulated digital asset custodian once pre-opening conditions are met. This is not a full commercial bank charter; it does not provide FDIC insurance coverage or Federal Reserve master account access, but it does confer the OCC regulatory imprimatur, national preemption of state money transmission licensing, and access to the trusted counterparty framework that institutional clients require.</p>
+      <p>Coinbase joins a wave of eleven companies receiving conditional OCC approvals or filing within an 83-day window in early 2026: Circle, Ripple, Paxos, BitGo, Fidelity Digital Assets, Bridge (Stripe subsidiary), Crypto.com, Protego, Morgan Stanley, and Payoneer. The pace — roughly one approval or filing every 7.5 days — is unprecedented in OCC history for any single sector. An amendment to <strong>12 CFR 5.20</strong> (published in the Federal Register March 2, 2026) took effect in April, replacing "fiduciary activities" with "operations of a trust company and activities related thereto" — a technical expansion of scope that broadened eligibility for this charter type.</p>
+      <p>The <strong>American Bankers Association</strong> has escalated opposition, formally requesting that the OCC pause all crypto firm charter reviews. The ABA's argument: conditional charter approvals should not allow crypto companies to bypass SEC/CFTC registration obligations, effectively creating a regulatory arbitrage window. The ABA separately rejected the White House stablecoin compromise on March 5, 2026, specifically objecting to any provision that permits stablecoin yield — framing it as unlicensed deposit-taking. The ABA's escalation signals that traditional banking interests view this charter wave as an existential threat to the regulated deposit business.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The OCC's 2020 attempt to create a "fintech charter" was struck down in <em>Lacewell v. OCC</em> (2nd Cir., 2021) because the fintech entities did not receive deposits. Non-insured national trust companies are legally distinct — they have an established statutory basis under the National Bank Act — making the current approvals legally more defensible, but the ABA will still litigate if the OCC does not pause.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The 12 CFR 5.20 amendment is the linchpin. By expanding the chartering statute's operative language, the OCC created a broader gateway that crypto firms can walk through without needing the full commercial banking build. The legal risk is the ABA's threatened challenge: if a court reads the National Bank Act narrowly, the non-insured national trust charter for digital assets custodians could be vacated, as the 2nd Circuit did with the fintech charter. <strong>Winners:</strong> Coinbase, Circle, Ripple, Paxos — they gain the national brand halo and institutional counterparty confidence that comes with federal banking oversight, and they can operate across all 50 states without 50 state money transmission licences. <strong>Losers:</strong> State-chartered trust companies that currently hold institutional crypto custody mandates, and traditional banks competing for institutional crypto custody business. The FDIC's parallel rule (approved December 16, 2025) for FDIC-supervised bank stablecoin subsidiaries creates a competing vehicle for bank-affiliated entry.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <div class="block-label">🔄 Contrarian Take</div>
+      <p>The ABA's concern is not entirely self-serving: a non-insured national trust company that holds hundreds of billions in crypto assets without FDIC backstop creates a systemic risk question that regulators have not fully answered. Conditional approval is not operational approval — the pre-opening conditions the OCC attaches to these charters are substantive, and several prior conditional OCC approvals (including Anchorage Digital's 2021 approval) have taken years to fully operationalise.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Custody market:</strong> The federal trust charter fundamentally changes institutional procurement for crypto custody. Risk managers at pension funds, endowments, and sovereign wealth funds can now check a "federally regulated" box for Coinbase Custody that was previously unavailable. <strong>Ripple effect:</strong> RLUSD and USDC both benefit from their issuers (Ripple, Circle) holding federal trust charters — this strengthens the stablecoin-as-institutional-infrastructure narrative. <strong>M&amp;A:</strong> The reported Coinbase/Ripple bidding war for Circle (Circle stated it is not for sale) signals that custody and stablecoin issuance are now viewed as bankable franchise assets worth billions in acquisition premium.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <div class="block-label">📊 Portfolio Impact</div>
+      <p><strong>Bullish:</strong> Coinbase (COIN), Ripple (RLUSD ecosystem), Circle (IPO pathway strengthened), institutional custody infrastructure. <strong>Bearish:</strong> State-chartered crypto trust companies, traditional prime brokers without crypto custody capability. <strong>Neutral:</strong> DeFi protocols (custody narrative does not directly touch non-custodial infrastructure).</p>
+    </div>
+
+    <div class="action-block">
+      <div class="block-label">📋 What To Do</div>
+      <div class="action-row action-trader"><span class="action-role">Trader:</span> Coinbase's OCC charter materially strengthens COIN's long-term institutional moat. This is a structural catalyst, not a short-term trade — factor into position sizing on COIN and related custody plays.</div>
+      <div class="action-row action-counsel"><span class="action-role">Counsel:</span> Review the 12 CFR 5.20 amendment text and OCC conditional approval conditions. Draft client alerts on the ABA litigation risk — conditional approval could be stayed if litigation is filed before pre-opening conditions are met.</div>
+      <div class="action-row action-compliance"><span class="action-role">Compliance:</span> For firms currently relying on Coinbase Custody under state frameworks: begin due diligence on the transition to the federal charter — operational conditions, insurance coverage changes, counterparty documentation updates.</div>
+      <div class="action-row action-founder"><span class="action-role">Founder:</span> If building institutional-grade crypto infrastructure: the OCC trust charter is now the de facto standard for institutional counterparty requirements. Evaluate whether your custody strategy can rely on a chartered entity or requires your own charter.</div>
+    </div>
+
+    <div class="connected-block">
+      <div class="block-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #3 (CLARITY Act) — ABA opposition to crypto charters and stablecoin yield are the same political fight. If CLARITY Act passes with yield ban intact, bank-aligned interests win on both fronts simultaneously.</div>
+      <div class="connected-item">↔️ Story #5 (OCC GENIUS Act NPRM) — The OCC is simultaneously chartering crypto trust companies and writing stablecoin capital rules. These are not independent processes — the chartering framework and NPRM together define the federal banking pathway for stablecoin issuers.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#OCC</span>
+      <span class="tag">#Coinbase</span>
+      <span class="tag">#trustcharter</span>
+      <span class="tag">#custody</span>
+      <span class="tag">#ABA</span>
+      <span class="tag">#12CFR520</span>
+    </div>
+  </div>
+
+  <!-- STORY 3 — HIGH -->
+  <div id="story-3" class="story-card tier-high">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">CryptoSlate · FinTech Weekly · 247 Wall St.</span>
+      <span class="credibility-tag">MEDIA</span>
+      <span class="category-tag">USA · LEGISLATION · STABLECOIN</span>
+    </div>
+    <div class="signal-confidence">🟡 Medium — bill proposed, Senate markup pending, four-way deadlock</div>
+    <h2 class="story-title">CLARITY Act Hits Four-Way Senate Deadlock — Stablecoin Yield Ban Triggers Circle Stock -20% Collapse and May Midterm Deadline Risk</h2>
+
+    <div class="golden-quote">
+      "If the Senate Banking Committee does not hold a markup before May, the bill's chances of passing before the November 2026 midterm elections are severely at risk."
+      <div class="quote-attribution">— Senator Bernie Moreno [paraphrased — legislative reporting, April 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>The <strong>Digital Asset Market CLARITY Act</strong> (H.R. 3633) — the US market structure bill that would delineate SEC/CFTC jurisdiction over digital commodities vs. digital securities — has stalled in the Senate Banking Committee as of April 2, 2026. The four-way deadlock pits: (1) crypto industry backers seeking DeFi safe harbors and jurisdictional clarity; (2) bank-aligned critics (ABA) opposing yield-bearing stablecoins; (3) regulators who have already issued interpretive guidance and question whether legislation is needed; and (4) structural critics citing investor protection gaps in the proposed framework.</p>
+      <p>The central flashpoint is the <strong>stablecoin yield ban</strong>. The CLARITY Act's latest draft prohibits passive yield and anything "economically or functionally equivalent to bank interest" on regulated stablecoins. Circle's stock fell over <strong>20%</strong> on March 24 after the draft leaked — the provision directly threatens USDC's 4% yield offering on Coinbase, which has become a key revenue driver. The banking lobby argues that yield-bearing stablecoins are unlicensed deposit-taking; crypto firms argue that yield is fundamental to utility and competitiveness with unregulated offshore alternatives. Ripple's RLUSD — built on a payments-first, non-yield model — is positioned to benefit if the yield ban survives, with its $1.25B market cap representing an alternative stablecoin architecture that does not depend on yield.</p>
+      <p>Coinbase's Chief Legal Officer stated in early April that Senate resolution was "very close," but congressional recess timing has intervened. A Senate Banking Committee markup is tentatively possible in the second half of April 2026. If missed, <strong>Senator Moreno has warned</strong> that the bill's legislative window closes ahead of the November 2026 midterms. The DeFi protection provisions — which would exempt non-custodial protocol developers from financial intermediary classification — remain in the draft but are not the source of the deadlock.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The <em>Commodity Futures Modernization Act 2000</em> similarly stalled for two years before a final session push. More recently, the <em>Bank Secrecy Act</em> crypto amendments took three Congresses to fully implement. Legislative deadline dynamics around midterms are well-established: bills that do not pass in H1 of the final pre-election year rarely advance.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The yield ban is the dispositive issue. If it survives, stablecoin business models built on interest income — USDC (Circle), PYUSD (PayPal), and any yield-sharing arrangement — face existential regulatory risk. The SEC/CFTC joint guidance (Story #4) has already clarified most of the jurisdictional taxonomy, which weakens the legislative urgency argument for the bill's other provisions. <strong>Winners if bill fails:</strong> DeFi protocols (avoid financial intermediary classification by default), non-yield stablecoin models (RLUSD). <strong>Losers if bill fails:</strong> Crypto industry broadly — regulatory uncertainty persists; no statutory safe harbour for digital commodities; SEC enforcement risk remains for tokens not covered by the March 17 guidance. <strong>Winners if bill passes with yield ban:</strong> Traditional banks, ABA-aligned institutions, RLUSD/payments-model stablecoins. <strong>Losers:</strong> Circle, Coinbase yield products, DeFi yield aggregators.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <div class="block-label">🔄 Contrarian Take</div>
+      <p>The yield ban may be the CLARITY Act's most consumer-protective provision. Uninsured yield-bearing stablecoins are structurally identical to uninsured bank deposits — the catastrophic runs on Terra/LUNA and various CeFi platforms demonstrated what happens when yield-dependent stability mechanisms face redemption pressure. A bill that codifies "no yield on regulated stablecoins" is not anti-innovation — it is anti-systemic-risk. The crypto industry's 20% panic-sell in Circle stock may be overwrought.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Circle:</strong> The stock price reaction signals market assessment that yield is core to USDC's competitive positioning. If the yield ban passes, Circle must pivot its business model before its IPO — the timing is painful. <strong>Coinbase:</strong> Yield products represent a significant revenue line; a yield ban restructures fee income and potentially reduces stablecoin utility on the platform. <strong>DeFi:</strong> The non-custodial developer safe harbour in the current CLARITY Act draft is the provision DeFi actually needs — deadlock risks throwing the baby out with the bathwater. <strong>Banks:</strong> The CLARITY Act's passage or failure does not change the OCC charter wave (Story #2) — institutional crypto infrastructure is being built regardless of legislative outcome.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <div class="block-label">📊 Portfolio Impact</div>
+      <p><strong>Bullish (if bill passes with yield ban):</strong> RLUSD ecosystem, bank-issued stablecoins. <strong>Bullish (if bill fails):</strong> Existing regulatory trajectory continues — USDC recovers on yield certainty. <strong>Bearish (if bill passes with yield ban):</strong> Circle (USDC), Coinbase yield products. <strong>Neutral:</strong> Bitcoin, Ethereum — not directly affected by stablecoin yield provision.</p>
+    </div>
+
+    <div class="action-block">
+      <div class="block-label">📋 What To Do</div>
+      <div class="action-row action-trader"><span class="action-role">Trader:</span> Monitor Senate Banking Committee markup scheduling in the second half of April. A markup announcement is a catalyst for COIN and Circle-adjacent positions; a recess without markup is a negative signal. Hedge stablecoin yield exposure.</div>
+      <div class="action-row action-counsel"><span class="action-role">Counsel:</span> Draft contingency memos on both scenarios: (1) CLARITY Act passes with yield ban — advise stablecoin clients on restructuring yield products; (2) bill fails — advise on operating under SEC/CFTC guidance-only framework.</div>
+      <div class="action-row action-compliance"><span class="action-role">Compliance:</span> Map all yield-bearing stablecoin products against the proposed "economically or functionally equivalent to bank interest" definition. Begin engagement with compliance counsel on restructuring scenarios now — do not wait for the markup.</div>
+      <div class="action-row action-founder"><span class="action-role">Founder:</span> If your protocol relies on stablecoin yield mechanics, model the impact of a yield ban now. Explore whether a reserve-yield architecture (yield accrues to the reserve, not the holder) survives the proposed definition.</div>
+    </div>
+
+    <div class="connected-block">
+      <div class="block-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #2 (OCC Charter Wave) — ABA opposition to stablecoin yield and crypto trust charters are the same policy fight. Both represent bank-aligned resistance to crypto firms accessing federally regulated banking infrastructure.</div>
+      <div class="connected-item">↔️ Story #5 (OCC GENIUS Act NPRM) — The GENIUS Act stablecoin framework is already in OCC rulemaking, regardless of CLARITY Act status. If CLARITY fails, stablecoin regulation continues via GENIUS — but market structure clarity is deferred.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#CLARITYAct</span>
+      <span class="tag">#stablecoin</span>
+      <span class="tag">#yieldban</span>
+      <span class="tag">#Circle</span>
+      <span class="tag">#USDC</span>
+      <span class="tag">#DeFi</span>
+      <span class="tag">#Senate</span>
+    </div>
+  </div>
+
+  <!-- STORY 4 — HIGH -->
+  <div id="story-4" class="story-card tier-high">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">SEC.gov · Norton Rose · Alston &amp; Bird · Jenner &amp; Block</span>
+      <span class="credibility-tag">PRIMARY + SECONDARY</span>
+      <span class="category-tag">USA · SEC · CFTC · CLASSIFICATION</span>
+    </div>
+    <div class="signal-confidence">🟢 High — interpretive guidance issued, Release No. 33-11412</div>
+    <h2 class="story-title">SEC and CFTC Issue Joint Five-Category Token Taxonomy — Most Digital Assets Declared Non-Securities Under Release No. 33-11412</h2>
+
+    <div class="golden-quote">
+      "After more than a decade of uncertainty, this interpretation will provide market participants with a clear understanding of how the Commission treats crypto assets under federal securities laws."
+      <div class="quote-attribution">— SEC Chairman Paul Atkins [SEC Press Release 2026-30, March 17, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>On <strong>March 17, 2026</strong>, the SEC and CFTC jointly issued <strong>Release No. 33-11412</strong> — a landmark interpretive release establishing a five-category token taxonomy that is now the operative US regulatory framework for crypto asset classification. The release remains the dominant legal text circulating at major crypto law firms (Alston &amp; Bird, Jenner &amp; Block, Norton Rose Fulbright, Sidley Austin all published client alerts in the past ten days) and represents the most significant regulatory clarity event for US crypto markets in at least a decade.</p>
+      <p>The five categories are: <strong>(1) Digital Commodities</strong> — named assets: Bitcoin, Ether, Solana, XRP, Cardano, Dogecoin — fall under CFTC jurisdiction, not SEC; <strong>(2) Digital Collectibles</strong> — art, music, memecoins — non-securities; <strong>(3) Digital Tools</strong> — membership tokens, credentials — non-securities; <strong>(4) Stablecoins</strong> — non-securities subject to GENIUS Act and OCC/FDIC frameworks; <strong>(5) Digital Securities</strong> — only this category is subject to SEC registration requirements. The release clarifies that protocol mining, protocol staking, wrapping non-security assets, and retroactive airdrops fall outside securities laws. Critically: "A security is a security regardless of whether it is issued onchain or offchain" — anti-fraud liability survives even after tokens separate from investment contracts, if material misstatements occurred during the contract's existence.</p>
+      <p>The SEC-CFTC MOU of <strong>March 11, 2026</strong> established the formal coordination framework that made this joint release possible. A dedicated SEC-CFTC harmonization event ("Project Crypto") was held January 29, 2026, with Chairman Atkins delivering opening remarks. The CFTC confirmed it will administer the Commodity Exchange Act consistently with the SEC's interpretation — closing the jurisdictional arbitrage gap that has existed since <em>Howey</em>'s application to crypto was contested.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The <em>Hinman Speech</em> (June 2018) attempted an informal "sufficient decentralisation" test that was later disavowed by courts. Release No. 33-11412 is binding interpretive guidance, not a speech — it carries significantly more legal weight, though it remains subject to APA challenge and judicial review.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The taxonomy's most consequential features are: (a) the explicit naming of XRP, Solana, Cardano, and Dogecoin as Digital Commodities — removing them from the SEC's enforcement arsenal; and (b) the preservation of anti-fraud liability after decentralisation — this is the enforcement backstop that remains even for Category 1 assets. The release is interpretive guidance, not a rule — it can be reversed by a future administration or challenged in court. However, the joint SEC-CFTC MOU means any reversal requires bilateral coordination, making it substantially harder to undo than a unilateral SEC reversal. <strong>Winners:</strong> Projects with tokens classified as Digital Commodities, exchanges holding inventory of Category 1–4 assets, DeFi protocols building on non-security rails. <strong>Losers:</strong> Projects whose tokens remain in Category 5 (Digital Securities), who now face a formal securities regime with no ambiguity as cover.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <div class="block-label">🔄 Contrarian Take</div>
+      <p>The taxonomy is interpretive, not statutory — a future SEC chair could issue a contrary release with 90 days' notice. XRP's inclusion as a Digital Commodity is legally questionable given the unresolved issues from <em>SEC v. Ripple</em>; the Ripple settlement may have been a condition precedent for its inclusion rather than a purely legal determination. Projects in the grey zone between Category 3 (Digital Tools) and Category 5 (Digital Securities) will spend the next three years litigating definitional edges.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Exchanges:</strong> Coinbase, Kraken, and Gemini can now hold and facilitate trading in Category 1–4 assets without SEC broker-dealer registration for those assets — a massive compliance burden lifted. <strong>Institutional:</strong> Pension funds and endowments can now invest in Digital Commodities through commodity investment vehicles without securities law complications. <strong>Layer 1 projects:</strong> Solana (SOL), Cardano (ADA), Dogecoin (DOGE) receive explicit commodity classification — ecosystem investment cases strengthened. <strong>DeFi:</strong> Protocol staking and wrapping are explicitly non-securities activities — removes the dominant regulatory overhang on Ethereum staking and wrapped token protocols.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <div class="block-label">📊 Portfolio Impact</div>
+      <p><strong>Bullish:</strong> SOL, ADA, XRP, DOGE (commodity classification), ETH staking protocols, DeFi wrapping infrastructure. <strong>Bearish:</strong> Tokens in legal grey zones that the taxonomy may push squarely into Category 5. <strong>Neutral:</strong> Bitcoin (already regarded as commodity — taxonomy confirms, does not change).</p>
+    </div>
+
+    <div class="action-block">
+      <div class="block-label">📋 What To Do</div>
+      <div class="action-row action-trader"><span class="action-role">Trader:</span> Explicitly named Digital Commodities (BTC, ETH, SOL, XRP, ADA, DOGE) now have the strongest regulatory footing of any crypto assets in any jurisdiction. This is a structural long signal for institutional inflows to these assets.</div>
+      <div class="action-row action-counsel"><span class="action-role">Counsel:</span> Begin formal token reclassification analysis for all existing client token issuances against the five-category framework. File in the SEC Crypto Task Force written input process to seek informal guidance on edge-case classifications before enforcement is brought.</div>
+      <div class="action-row action-compliance"><span class="action-role">Compliance:</span> Update your crypto asset inventory against the taxonomy. Assets not clearly in Categories 1–4 require Category 5 (Digital Security) compliance planning — registration or exemption analysis under Securities Act.</div>
+      <div class="action-row action-founder"><span class="action-role">Founder:</span> If your token is not explicitly in Categories 1–4 and you have not yet obtained a legal opinion on classification, do so immediately. The release's anti-fraud liability preservation means enforcement risk persists even for decentralised projects.</div>
+    </div>
+
+    <div class="connected-block">
+      <div class="block-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #3 (CLARITY Act) — The taxonomy reduces legislative urgency for CLARITY Act's jurisdictional provisions; the stablecoin yield debate is now the primary remaining battleground.</div>
+      <div class="connected-item">↔️ Story #5 (OCC GENIUS Act NPRM) — Stablecoins classified as Category 4 (non-securities) in the taxonomy are now subject exclusively to the GENIUS Act banking framework — the OCC NPRM is their regulatory home.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#SEC</span>
+      <span class="tag">#CFTC</span>
+      <span class="tag">#taxonomy</span>
+      <span class="tag">#33-11412</span>
+      <span class="tag">#Howey</span>
+      <span class="tag">#digitalcommodity</span>
+      <span class="tag">#XRP</span>
+    </div>
+  </div>
+
+  <!-- STORY 5 — HIGH -->
+  <div id="story-5" class="story-card tier-high">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">Jones Day · OCC Federal Register · Latham &amp; Watkins</span>
+      <span class="credibility-tag">PRIMARY + SECONDARY</span>
+      <span class="category-tag">USA · OCC · STABLECOIN · GENIUS ACT</span>
+    </div>
+    <div class="signal-confidence">🟢 High — NPRM filed, Federal Register published, comment deadline confirmed</div>
+    <h2 class="story-title">OCC GENIUS Act NPRM: $5M Capital Floor, 211 Questions, May 1 Deadline — Stablecoin Issuance Rules Take Shape</h2>
+
+    <div class="golden-quote">
+      "The proposed rule would establish a comprehensive framework for stablecoin issuance by national banks, setting reserve requirements, capital thresholds, and redemption timelines that will define the competitive landscape for dollar-denominated digital payments."
+      <div class="quote-attribution">— Jones Day client alert summary of OCC NPRM [paraphrased — Jones Day, March 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>On <strong>March 2, 2026</strong>, the OCC released a Notice of Proposed Rulemaking (NPRM) creating <strong>new Part 15 of Title 12 of the Code of Federal Regulations</strong> — implementing stablecoin rules for OCC-supervised national banks under the <strong>GENIUS Act of 2025</strong>. The comment deadline is <strong>May 1, 2026</strong>, with 211 questions covering every aspect of the proposal. This is the most detailed stablecoin regulatory document yet published by any US banking regulator and will directly shape the architecture of dollar-denominated digital payments for the next decade.</p>
+      <p>Key provisions: <strong>Reserve requirements</strong> — minimum 1:1 backing; eligible assets include US currency, demand deposits at Federal Reserve Banks, US Treasuries with maturity ≤93 days, reverse repos collateralised by Treasuries, money market funds, and tokenized reserves. <strong>Redemption</strong> — standard 2 business days; extended to 7 calendar days if redemption demands exceed 10% within 24 hours (OCC must be notified within 24 hours of threshold breach). <strong>Capital</strong> — de novo issuers must hold the greater of $5 million or the chartering-specified amount for 36 months; operational backstop of 12 months of projected expenses. <strong>Scale-up threshold</strong> — at $10 billion outstanding issuance, state-chartered issuers must transition to federal supervision within 360 days or cease new issuance. The GENIUS Act itself takes effect <strong>January 18, 2027</strong>, or 120 days after final rules are issued, whichever is earlier.</p>
+      <p>The FDIC approved its own parallel proposed rule on December 16, 2025, permitting FDIC-supervised banks to issue stablecoins through subsidiaries — creating a dual regulatory track (OCC vs. FDIC) that compliance teams at bank-affiliated stablecoin issuers must now navigate simultaneously. The $10 billion threshold is particularly consequential: USDC ($25B+) and Tether (predominantly offshore) would both trigger federal oversight obligations if the NPRM is adopted without modification.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The $10B scale-up threshold mirrors the <em>Dodd-Frank Act</em> SIFI threshold logic — designating systemically important status triggers enhanced federal oversight. The 93-day Treasury maturity limit follows the SEC money market fund reform framework (Rule 2a-7), applying money market discipline to stablecoin reserves.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The 7-calendar-day redemption extension is the most operationally significant provision. For large stablecoin issuers, a 10%-in-24-hours run threshold is not a stress scenario — it is a routine event during market volatility. Building Treasury operations around the OCC notification requirement (24 hours to file upon breach) creates substantial operational risk. <strong>Winners:</strong> Bank-affiliated stablecoin issuers (JPMorgan JPMD, Bank of America digital dollar initiatives) who already have the regulatory infrastructure; non-bank issuers like Circle, Paxos, and Ripple who now have a clear federal pathway. <strong>Losers:</strong> Offshore stablecoin issuers (Tether primarily) who cannot easily obtain OCC/FDIC authorisation but will face competitive pressure as US-issued stablecoins receive a regulatory premium in institutional markets. The $5M capital floor is low enough to not be a barrier; the 36-month holding requirement is the real constraint for de novo entrants.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <div class="block-label">🔄 Contrarian Take</div>
+      <p>The 93-day Treasury maturity limit for reserve assets is stricter than money market funds (which can hold up to 397-day maturity). Applied to a stablecoin with fractional redemption rights, this is over-engineered: it forces issuers into the most liquid but lowest-yielding instruments, destroying any residual interest income and making bank-chartered stablecoin issuance less competitive than the OCC charter wave suggests.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Circle (USDC):</strong> Already above the $10B threshold — federal supervision transition is mandatory unless the threshold is raised in the final rule. The May 1 comment deadline is the opportunity to lobby on this point. <strong>Tether:</strong> Offshore structure prevents direct compliance; risk of losing institutional market share to GENIUS Act-compliant competitors. <strong>PayPal (PYUSD):</strong> PYUSD issuance by Paxos — now chartered under OCC conditions — makes PYUSD a natural beneficiary of the new framework. <strong>DeFi:</strong> Tokenized reserves as eligible reserve assets is a notable concession — creates a pathway for DeFi-native reserve management that was not contemplated in earlier drafts.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <div class="block-label">📊 Portfolio Impact</div>
+      <p><strong>Bullish:</strong> USDC (framework certainty), Paxos-issued stablecoins, bank-affiliated digital dollar projects. <strong>Bearish:</strong> Tether (USDT) — regulatory disadvantage in institutional markets if GENIUS Act stablecoins receive preferred treatment in bank reserve portfolios. <strong>Neutral:</strong> Bitcoin, L1 infrastructure — reserve framework does not directly affect non-stablecoin assets.</p>
+    </div>
+
+    <div class="action-block">
+      <div class="block-label">📋 What To Do</div>
+      <div class="action-row action-trader"><span class="action-role">Trader:</span> The May 1 comment deadline is not a market event — watch for the final rule publication (expected Q4 2026) as the hard catalyst. Monitor USDT/USDC market share dynamics for early signs of institutional rotation toward GENIUS-compliant stablecoins.</div>
+      <div class="action-row action-counsel"><span class="action-role">Counsel:</span> File comments on the 211 NPRM questions, focusing on: (1) $10B threshold — lobby for CPI-indexed adjustment; (2) 7-day redemption extension trigger — argue the 10% threshold needs a safe harbour for routine market volatility; (3) tokenized reserves definition — seek operational clarity.</div>
+      <div class="action-row action-compliance"><span class="action-role">Compliance:</span> If your institution issues or holds stablecoins above $1B: begin GENIUS Act compliance gap analysis now. The January 18, 2027 effective date sounds distant; OCC authorisation applications take 12–18 months.</div>
+      <div class="action-row action-founder"><span class="action-role">Founder:</span> For stablecoin protocol founders: the tokenized reserves provision is your opening — engage OCC with a detailed comment on how on-chain reserve attestation satisfies the monthly independent attestation requirement. This is a pivotal definitional fight.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#GENIUS</span>
+      <span class="tag">#OCC</span>
+      <span class="tag">#stablecoin</span>
+      <span class="tag">#NPRM</span>
+      <span class="tag">#Part15</span>
+      <span class="tag">#Circle</span>
+      <span class="tag">#Tether</span>
+    </div>
+  </div>
+
+  <!-- STORY 6 — MEDIUM -->
+  <div id="story-6" class="story-card tier-medium">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">WilmerHale · Foley &amp; Lardner · Ropes &amp; Gray</span>
+      <span class="credibility-tag">SECONDARY</span>
+      <span class="category-tag">USA · AI GOVERNANCE · FEDERAL PREEMPTION</span>
+    </div>
+    <div class="signal-confidence">🟡 Medium — legislative recommendations sent to Congress; bill not yet introduced</div>
+    <h2 class="story-title">White House Sends National AI Policy Framework to Congress — Federal Preemption of State AI Laws and Copyright Safe Harbour for Training Data Proposed</h2>
+
+    <div class="golden-quote">
+      "The Administration's recommendations prioritize a pro-innovation regulatory environment that relies on existing sector-specific regulators rather than creating a new central AI authority."
+      <div class="quote-attribution">— WilmerHale summary of White House AI Framework [paraphrased — March 23, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>On <strong>March 20, 2026</strong>, the White House sent formal legislative recommendations to Congress for a <strong>National Policy Framework for Artificial Intelligence</strong> — following President Trump's December 2025 executive order instructing the White House to develop recommendations that preempt state-level AI regulation. The framework represents the Administration's definitive statement on AI governance architecture and is now before Congress for legislative action.</p>
+      <p>The four key recommendations: <strong>(1) Federal preemption</strong> — a single uniform federal AI standard displacing the current patchwork of state laws, including California's SB 1047 framework and the Colorado AI Act (effective June 30, 2026); <strong>(2) Child protection</strong> — mandatory age-assurance requirements for AI platforms accessible by minors, parental controls, and limits on behavioral advertising directed at children; <strong>(3) Copyright</strong> — the Administration's view that AI training on copyrighted material does not constitute copyright infringement, while leaving fair use determinations to the judiciary; <strong>(4) No new central AI regulator</strong> — existing sector-specific regulators (FTC, SEC, FDA, financial regulators) retain jurisdiction in their domains; no AI equivalent of the FCA or ESMA proposed.</p>
+      <p>For crypto and financial services practitioners, the AI governance framework intersects with digital asset regulation at two critical points: algorithmic trading surveillance (existing SEC/CFTC jurisdiction preserved), and AI-generated financial advice and investment products (FTC and SEC retain authority). The EU AI Act's August 2, 2026 full application deadline creates a direct regulatory divergence: EU high-risk AI classification for financial recommendation systems vs. US reliance on existing financial regulatory frameworks.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The federal preemption approach mirrors the <em>National Bank Act</em> preemption of state banking laws, which created uniform standards at the cost of state innovation. The AI copyright position follows the Administration's 2025 position on fair use in AI training, similar to the Obama Administration's approach to database rights.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>Federal preemption is the legally consequential provision. If Congress enacts a preemption statute, the Colorado AI Act, New York automated employment decision tool requirements, and California's forthcoming AI accountability legislation are all displaced. <strong>Winners:</strong> Large AI developers (Anthropic, OpenAI, Google DeepMind) operating at national scale who bear disproportionate state compliance costs; companies using AI in financial services who avoid conflicting state-level requirements. <strong>Losers:</strong> State regulators and legislators who have been driving AI governance innovation; privacy advocates who relied on state law to supplement weak federal protections. The copyright training data provision is the most legally contested — it contradicts several active circuit court proceedings and may not survive judicial review regardless of what Congress enacts.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p>For crypto-AI hybrid applications (AI-driven trading, on-chain AI agents, tokenized AI compute): the framework's reliance on existing sector-specific regulators means SEC/CFTC retain authority over AI systems in financial markets — no new exemption is created. The preemption proposal will reduce compliance fragmentation but will also reduce the pace of state-level AI experimentation that has driven innovation.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#AI</span>
+      <span class="tag">#WhiteHouse</span>
+      <span class="tag">#preemption</span>
+      <span class="tag">#copyright</span>
+      <span class="tag">#EUAIAct</span>
+      <span class="tag">#governance</span>
+    </div>
+  </div>
+
+  <!-- STORY 7 — MEDIUM -->
+  <div id="story-7" class="story-card tier-medium">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">Congress.gov · CoinDesk · Bitcoin Reserve Monitor</span>
+      <span class="credibility-tag">PRIMARY + MEDIA</span>
+      <span class="category-tag">USA · BITCOIN RESERVE · MINING · LEGISLATION</span>
+    </div>
+    <div class="signal-confidence">🟡 Medium — bill introduced, Senate committee, not yet voted</div>
+    <h2 class="story-title">Senators Cassidy and Lummis Introduce Mined in America Act — Federal Bitcoin Mining Certification with Capital Gains Tax Exemption for Treasury Sales</h2>
+
+    <div class="golden-quote">
+      "The Mined in America Act would certify domestic Bitcoin mining as critical infrastructure, codify the Strategic Bitcoin Reserve into statute, and provide tax incentives that align miner interests with national strategic objectives."
+      <div class="quote-attribution">— Legislative analysis of Mined in America Act [paraphrased — congressional reporting, March 30, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>On <strong>March 30, 2026</strong>, Senators Cassidy and Lummis introduced the <strong>Mined in America Act</strong> — a bill that creates a voluntary federal certification program for domestic Bitcoin mining facilities and provides a <strong>capital gains tax exemption</strong> for certified miners selling newly mined BTC directly to the US Treasury for the Strategic Bitcoin Reserve. The bill also codifies the Strategic Bitcoin Reserve — established by executive order (Federal Register, March 11, 2025) — into statutory law, removing the risk of a future administration unwinding the reserve by executive action alone.</p>
+      <p>The bill arrives at a critical moment for US Bitcoin mining economics. The 25% tariff on imported ASIC mining hardware (effective January 15, 2026) has materially increased capital costs for new mining installations. The potential 100% duty on Chinese imports — a tail risk for late 2026 pending trade negotiations — would make Bitmain and MicroBT hardware economically nonviable for US operators, creating a structural advantage for domestic mining hardware alternatives. The Mined in America certification provides a government procurement pathway (selling to Treasury) that partially offsets these cost increases for qualifying domestic miners.</p>
+      <p>State-level Bitcoin reserve momentum continues: Arizona Governor signed <strong>HB 2749</strong> creating the Arizona Bitcoin &amp; Digital Assets Reserve (redirecting unclaimed-property profits into BTC), and New Hampshire's Governor signed <strong>HB 302</strong> creating the nation's first formally constituted Bitcoin &amp; Digital Assets Reserve Fund. Florida, Texas, and other states have active reserve legislation. The federal BITCOIN Act (S.954, Senator Lummis) — proposing Treasury purchase of 1 million BTC over 5 years — remains pending in the Senate, with the Mined in America Act serving as a complementary vehicle to the reserve procurement framework.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The capital gains exemption for Treasury-directed sales mirrors the structure used for Opportunity Zone investments under the 2017 Tax Cuts and Jobs Act — using tax incentives to direct private capital toward government policy objectives.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The capital gains exemption is the operative incentive. At current BTC prices, a miner selling at spot to Treasury rather than the open market foregoes potential upside — the tax exemption must be large enough to compensate for the directional bet on price. The codification of the Strategic Bitcoin Reserve into statute is the more legally durable provision: it removes executive reversal risk and creates a precedent-setting statutory acknowledgment of Bitcoin as a reserve asset. <strong>Winners:</strong> US-based Bitcoin miners (Marathon Digital, Riot Platforms, CleanSpark), domestic ASIC manufacturers (any emerging US alternatives to Bitmain/MicroBT). <strong>Losers:</strong> Offshore miners who cannot access the certification or tax exemption; ASIC hardware importers facing the tariff-plus-no-certification double penalty.</p>
+    </div>
+
+    <div class="implications-block">
+      <div class="block-label">🏗️ Industry Implications</div>
+      <p><strong>Mining stocks:</strong> MARA, RIOT, CLSK — all benefit from reduced effective capital gains tax on Treasury-directed BTC sales. <strong>Energy:</strong> Domestic mining certification criteria likely include energy provenance requirements — renewable energy miners in Texas, Wyoming, and Montana benefit. <strong>Bitcoin price:</strong> Treasury procurement as a structured demand floor is bullish, but the volumes involved in the certification program are likely modest relative to total mined supply.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#Bitcoin</span>
+      <span class="tag">#mining</span>
+      <span class="tag">#MinedInAmerica</span>
+      <span class="tag">#strategicreserve</span>
+      <span class="tag">#Lummis</span>
+      <span class="tag">#tariffs</span>
+    </div>
+  </div>
+
+  <!-- STORY 8 — MEDIUM -->
+  <div id="story-8" class="story-card tier-medium">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">ESMA · InnReg · Latham MiCA Tracker</span>
+      <span class="credibility-tag">PRIMARY + SECONDARY</span>
+      <span class="category-tag">EU · MiCA · ENFORCEMENT · CASP</span>
+    </div>
+    <div class="signal-confidence">🟢 High — enacted deadline, enforcement confirmed post-June 30</div>
+    <h2 class="story-title">UPDATE: MiCA Final Grandfathering Countdown — 86 Days Remain, BaFin/AMF/AFM Conducting Spot Checks, 14 CASPs Authorised</h2>
+
+    <div class="golden-quote">
+      "National Competent Authorities must be ready to enforce against the unauthorised provision of crypto-asset services once the transitional period ends. Last-minute authorisation applications will face heightened regulatory scrutiny."
+      <div class="quote-attribution">— ESMA supervisory guidance to NCAs [paraphrased — ESMA MiCA hub, 2026]</div>
+    </div>
+
+    <div class="story-body">
+      <p>With <strong>86 days</strong> remaining until the EU's MiCA grandfathering deadline (<strong>June 30, 2026</strong>), the European regulatory enforcement posture has shifted from facilitative to adversarial. ESMA has formally warned that last-minute CASP authorisation applications will face heightened scrutiny — a signal that the window for rushed applications has effectively closed. National Competent Authorities in <strong>Germany (BaFin)</strong>, <strong>France (AMF)</strong>, and <strong>the Netherlands (AFM)</strong> are actively conducting supervisory reviews, spot checks, and investigations of crypto-asset service providers operating under transitional arrangements.</p>
+      <p>As of April 2026, only <strong>14 exchanges</strong> hold formal CASP authorisation across EU member states — a number that will need to grow substantially if the EU crypto sector is to maintain current activity levels post-June 30. The penalty framework is now fully operative: fines up to EUR 5,000,000 or 3%–12.5% of total annual turnover; licence revocation; asset freezing; personal executive liability. CASPs that have not obtained authorisation by July 1, 2026 must cease providing regulated crypto-asset services in the EU — any operator currently accepting EU client deposits, facilitating EU trades, or providing EU custody services without authorisation is accumulating enforcement exposure daily.</p>
+      <p>The MiCA enforcement trajectory intersects directly with Australia's six-month AFSL deadline (Story #1), creating a simultaneous compliance crunch across two major jurisdictions both converging on a June 30, 2026 date. Exchanges that have been managing both compliance processes simultaneously — Kraken, Binance (EU entity), OKX — face compounded resource demands.</p>
+    </div>
+
+    <div class="precedent-block">📎 <strong>Historical Precedent:</strong> The EU's 5AMLD crypto AML transitional deadline (January 10, 2020) saw significant enforcement activity against unlicensed operators within 90 days of expiry — ESMA's current posture mirrors that enforcement ramp-up pattern exactly.
+    </div>
+
+    <div class="analysis-block">
+      <div class="block-label">⚖️ Practitioner Analysis</div>
+      <p>The 14-authorised-CASP figure is the key data point. The EU has approximately 400+ registered crypto entities operating under transitional provisions across the bloc. The delta between 14 authorised and 400+ registered is the enforcement backlog waiting to materialise after July 1. BaFin is likely to move first — its enforcement style is procedurally rigorous and administratively efficient. <strong>Winners:</strong> The 14 authorised CASPs who face dramatically reduced competition post-July 1 if enforcement is effective. <strong>Losers:</strong> Smaller EU-focused exchanges that cannot afford the authorisation process; institutional clients of those exchanges who face asset custody uncertainty.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#MiCA</span>
+      <span class="tag">#ESMA</span>
+      <span class="tag">#CASP</span>
+      <span class="tag">#BaFin</span>
+      <span class="tag">#AMF</span>
+      <span class="tag">#EU</span>
+      <span class="tag">#enforcement</span>
+    </div>
+  </div>
+
+  <!-- BRIEF NOTES -->
+  <div class="section-header">Brief Notes</div>
+  <div class="brief-notes-card">
+    <div class="card-title">Low-Tier Developments</div>
+    <div class="brief-note-item"><strong>IRS Form 1099-DA Effective 2026:</strong> US brokers and exchanges must now document digital asset transactions linked to taxpayer addresses for 2026 tax year reporting. The compliance burden is substantial — exchanges must implement blockchain address tracking and taxpayer identification matching for all customer transactions. Expect significant operational cost increases and potential client friction for privacy-focused users.</div>
+    <hr style="border-color: var(--border); margin: 2px 0;">
+    <div class="brief-note-item"><strong>MAS 2026 CBDC Tokenized Bills Pilot:</strong> MAS is piloting tokenized Singapore government bills settled via wholesale CBDC (the BLOOM initiative), distributed to primary dealers. The pilot tests sovereign digital asset infrastructure for eventual stablecoin settlement — a model that FCA (UK) and BIS are watching closely for potential replication.</div>
+    <hr style="border-color: var(--border); margin: 2px 0;">
+    <div class="brief-note-item"><strong>State Bitcoin Reserve Momentum Accelerating:</strong> Arizona (HB 2749) and New Hampshire (HB 302) have both signed Bitcoin reserve legislation into law. Florida (HB 1039) and Texas have active bills. At least 15 states have active or enacted reserve legislation — the patchwork creates cross-border arbitrage for miners and institutional buyers seeking favorable tax treatment.</div>
+    <hr style="border-color: var(--border); margin: 2px 0;">
+    <div class="brief-note-item"><strong>Blockchain Regulatory Certainty Act (BRCA) Coalition:</strong> Blockchain Association, Coin Center, and DeFi Education Fund have jointly backed the BRCA, which would codify FinCEN's existing guidance exempting non-custodial software developers from money transmission licensing. The DOJ is currently prosecuting non-custodial developers under unlicensed money transmission theories despite the FinCEN guidance — the BRCA would resolve this tension by statute.</div>
+  </div>
+
+  <!-- CROSS-CUTTING IMPLICATIONS -->
+  <div id="cross-cutting" class="section-header">Cross-Cutting Implications</div>
+  <div class="cross-grid">
+    <div class="cross-card">
+      <div class="cross-card-title">Stablecoin Regulation</div>
+      <div class="cross-direction dir-green">⬆ Accelerating</div>
+      <p>The GENIUS Act NPRM, CLARITY Act yield debate, and OCC charter wave are converging simultaneously. Circle, Paxos, and Ripple face the most complex multi-regulator environment of any stablecoin issuers globally — OCC, FDIC, SEC taxonomy, and CLARITY Act provisions all interact. Resolution by Q4 2026 is likely.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">DeFi</div>
+      <div class="cross-direction dir-amber">↗ Mixed Signals</div>
+      <p>SEC/CFTC taxonomy (Story #4) removes the securities overhang from protocol staking and wrapping. CLARITY Act non-custodial developer safe harbour is positive but deadlocked. BRCA coalition advocacy is the near-term lever. Net: improving but contingent on CLARITY Act outcome.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">AI Governance</div>
+      <div class="cross-direction dir-amber">→ Pivoting</div>
+      <p>White House AI framework moves from executive to legislative — federal preemption push represents a fundamental shift in US AI governance architecture. EU AI Act August deadline maintains transatlantic divergence. Crypto-AI hybrid applications (on-chain agents, AI trading) navigate dual frameworks.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">UK / EU / US Regulatory Divergence</div>
+      <div class="cross-direction dir-gold">⚡ Widening</div>
+      <p>Australia's AFSL, EU's MiCA enforcement, US GENIUS Act, and UK's FCA gateway all have different architectures and timelines. Firms operating across all four jurisdictions face the most fragmented compliance matrix since 2019. No convergence mechanism is in sight for 2026.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">Singapore / APAC</div>
+      <div class="cross-direction dir-green">⬆ Quietly Advancing</div>
+      <p>MAS CBDC pilot, finalised stablecoin framework, and predictable Payment Services Act licensing create the most stable institutional entry point in APAC. With Australia's new AFSL regime creating near-term uncertainty, Singapore may capture institutional flow that was Australia-bound in the six-month transition window.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">Tokenization &amp; RWA</div>
+      <div class="cross-direction dir-green">⬆ Accelerating</div>
+      <p>$27.6 billion in RWA on-chain (rwa.xyz); SEC January 28 joint statement confirms securities law applies to tokenized securities on-chain. Securitize's BUIDL ($3.38B TVL) and the CLARITY Act safe harbour for tokenized securities exchanges create the most supportive regulatory environment for institutional RWA tokenization yet seen.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">Institutional Crypto Infrastructure</div>
+      <div class="cross-direction dir-green">⬆ Accelerating</div>
+      <p>OCC charter wave (11 companies in 83 days) plus SEC/CFTC taxonomy creates the infrastructure layer for institutional crypto market structure. The combined effect: regulated custody, clear asset classification, and stablecoin banking rails are simultaneously being constructed. 2026 is the infrastructure build year; institutional adoption follows in 2027.</p>
+    </div>
+    <div class="cross-card">
+      <div class="cross-card-title">Enforcement Trajectory (Global)</div>
+      <div class="cross-direction dir-amber">↗ Mixed Signals</div>
+      <p>US: enforcement pivoting from SEC-led adversarial to facilitative/guidance-based (taxonomy replaces lawsuits). EU: MiCA enforcement ramp beginning post-June 30. Australia: ASIC no-action until June 30 — enforcement begins H2 2026. UK: FCA enforcement authority operational from October 2027 commencement. Net: enforcement softening in US, hardening in EU/AU.</p>
+    </div>
+  </div>
+
+  <!-- TONE BAROMETER -->
+  <div id="tone-barometer" class="section-header">Tone Barometer</div>
+  <div class="generic-card">
+    <div class="tone-row">
+      <span class="flag-badge flag-us">US</span>
+      <span class="tone-signal">🟢 Loosening</span>
+      <span>SEC/CFTC taxonomy, OCC charter wave, and GENIUS Act rulemaking signal a pivot from enforcement-led regulation to facilitative framework-building under the Atkins-Selig regime.</span>
+    </div>
+    <div class="tone-row">
+      <span class="flag-badge flag-eu">EU</span>
+      <span class="tone-signal">🔴 Tightening</span>
+      <span>MiCA grandfathering window closes June 30; BaFin, AMF, and AFM conducting active spot checks — enforcement ramp is underway with 86 days remaining and only 14 CASPs authorised.</span>
+    </div>
+    <div class="tone-row">
+      <span class="flag-badge flag-uk">UK</span>
+      <span class="tone-signal">🟡 Holding</span>
+      <span>FCA CP26/4 closed; final policy statements due summer 2026; authorisation gateway opens September 30 — the UK is in deliberate policy drafting mode with enforcement deferred until October 2027 commencement.</span>
+    </div>
+    <div class="tone-row">
+      <span class="flag-badge flag-sg">SG</span>
+      <span class="tone-signal">🟢 Loosening</span>
+      <span>MAS CBDC pilot and BLOOM initiative signal Singapore's commitment to being the institutional digital asset hub of choice for APAC; stablecoin framework stable and predictable.</span>
+    </div>
+    <div class="tone-row">
+      <span class="flag-badge flag-au">AU</span>
+      <span class="tone-signal">🟡 Holding</span>
+      <span>Digital Assets Framework Bill passed but ASIC no-action until June 30 — Australia is in its six-month transition window; enforcement posture will shift materially in H2 2026 as AFSL applications close.</span>
+    </div>
+  </div>
+
+  <!-- REGULATORY COUNTDOWN -->
+  <div id="countdown" class="section-header">Regulatory Countdown</div>
+  <table class="countdown-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Date</th>
+        <th>Days</th>
+        <th>Context</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>CLARITY Act Senate Markup Window</td>
+        <td>Late Apr 2026</td>
+        <td><span class="days-pill days-urgent">~20 days</span></td>
+        <td>Miss this window = post-midterm delay. Senator Moreno's deadline warning is operative.</td>
+      </tr>
+      <tr>
+        <td>OCC GENIUS Act NPRM Comment Deadline</td>
+        <td>01 May 2026</td>
+        <td><span class="days-pill days-urgent">26 days</span></td>
+        <td>211 questions; Circle, Paxos, Ripple, and banks must file substantive responses to shape final rule.</td>
+      </tr>
+      <tr>
+        <td>ASIC No-Action Period Ends (AU AFSL)</td>
+        <td>30 Jun 2026</td>
+        <td><span class="days-pill days-normal">86 days</span></td>
+        <td>Exchanges not applying for AFSL must cease AU regulated services. Six-month transition from Royal Assent.</td>
+      </tr>
+      <tr>
+        <td>MiCA Grandfathering Deadline</td>
+        <td>30 Jun 2026</td>
+        <td><span class="days-pill days-normal">86 days</span></td>
+        <td>Final transitional period ends. Unauthorised CASPs must cease EU crypto-asset services immediately.</td>
+      </tr>
+      <tr>
+        <td>California DFPI Digital Asset Compliance</td>
+        <td>01 Jul 2026</td>
+        <td><span class="days-pill days-normal">87 days</span></td>
+        <td>DFPI registration, disclosure requirements, and surety bond standards take effect for CA digital asset businesses.</td>
+      </tr>
+      <tr>
+        <td>GENIUS Act OCC Rules Due</td>
+        <td>18 Jul 2026</td>
+        <td><span class="days-pill days-normal">104 days</span></td>
+        <td>Implementing regulations for stablecoin licensing, capital, custody, and AML required by this date.</td>
+      </tr>
+      <tr>
+        <td>EU AI Act Full Application</td>
+        <td>02 Aug 2026</td>
+        <td><span class="days-pill days-normal">119 days</span></td>
+        <td>High-risk AI system rules and national AI regulatory sandbox requirements fully operative across EU27.</td>
+      </tr>
+      <tr>
+        <td>FCA Authorisation Gateway Opens</td>
+        <td>30 Sep 2026</td>
+        <td><span class="days-pill days-normal">178 days</span></td>
+        <td>Application window opens September 30, 2026 and closes February 28, 2027. Regime commencement: October 25, 2027.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PIPELINE TRACKER -->
+  <div id="pipeline" class="section-header">Regulatory Pipeline Tracker</div>
+  <table class="pipeline-table">
+    <thead>
+      <tr>
+        <th>Bill / Rule</th>
+        <th>Jurisdiction</th>
+        <th>Stage</th>
+        <th>Movement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Digital Assets Framework Bill 2025</td>
+        <td>Australia</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+          </div>
+          <small style="color:var(--accent-green);font-family:'Courier New',monospace;font-size:10px;">ENACTED — April 1, 2026</small>
+        </td>
+        <td class="movement-up">▲ Advanced</td>
+      </tr>
+      <tr>
+        <td>GENIUS Act (Stablecoin) — OCC NPRM</td>
+        <td>USA (Federal)</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Comment Period — closes May 1</small>
+        </td>
+        <td class="movement-up">▲ Advanced</td>
+      </tr>
+      <tr>
+        <td>Digital Asset Market CLARITY Act (H.R.3633)</td>
+        <td>USA (Federal)</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Senate Committee — markup pending</small>
+        </td>
+        <td class="movement-down">▼ Stalled</td>
+      </tr>
+      <tr>
+        <td>UK FSM Act 2026 — Cryptoassets Regime</td>
+        <td>United Kingdom</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Final Rule in Preparation — PS due Summer 2026</small>
+        </td>
+        <td class="movement-flat">▬ No change</td>
+      </tr>
+      <tr>
+        <td>MiCA — CASP Supervisory Convergence</td>
+        <td>European Union</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+          </div>
+          <small style="color:var(--accent-green);font-family:'Courier New',monospace;font-size:10px;">Effective — enforcement phase underway</small>
+        </td>
+        <td class="movement-up">▲ Advanced</td>
+      </tr>
+      <tr>
+        <td>BITCOIN Act (S.954) — Treasury BTC purchases</td>
+        <td>USA (Federal)</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Senate — committee stage</small>
+        </td>
+        <td class="movement-flat">▬ No change</td>
+      </tr>
+      <tr>
+        <td>Mined in America Act — Senate introduced</td>
+        <td>USA (Federal)</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Introduced March 30, 2026</small>
+        </td>
+        <td class="movement-up">▲ Advanced</td>
+      </tr>
+      <tr>
+        <td>White House AI National Policy Framework</td>
+        <td>USA (Federal)</td>
+        <td>
+          <div class="pipeline-progress">
+            <div class="progress-seg enacted"></div>
+            <div class="progress-seg active"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+            <div class="progress-seg"></div>
+          </div>
+          <small style="color:var(--text-muted);font-family:'Courier New',monospace;font-size:10px;">Recommendations sent to Congress — March 20, 2026</small>
+        </td>
+        <td class="movement-up">▲ Advanced</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- OPEN SUBMISSIONS -->
+  <div id="submissions" class="section-header">Open Submissions &amp; Consultations</div>
+  <table class="submissions-table">
+    <thead>
+      <tr>
+        <th>Consultation</th>
+        <th>Body</th>
+        <th>Jurisdiction</th>
+        <th>Deadline</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>OCC GENIUS Act NPRM — New Part 15, 12 CFR</strong> (stablecoin reserve, capital, redemption)</td>
+        <td>OCC</td>
+        <td>USA</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--accent-gold);">01 May 2026</td>
+        <td><span class="sub-closing">🟡 CLOSING SOON — 26 days</span></td>
+      </tr>
+      <tr>
+        <td><strong>SEC Crypto Task Force — Written Input</strong> (classification, enforcement priorities)</td>
+        <td>SEC</td>
+        <td>USA</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">Rolling</td>
+        <td><span class="sub-ongoing">🔵 ONGOING</span></td>
+      </tr>
+      <tr>
+        <td><strong>FCA GC26/2</strong> — Consumer Duty application to cryptoasset firms</td>
+        <td>FCA</td>
+        <td>UK</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">Mid-2026</td>
+        <td><span class="sub-open">🟢 OPEN</span></td>
+      </tr>
+      <tr>
+        <td><strong>FCA SM&amp;CR Industry Webinar</strong> — Senior Managers &amp; Certification Regime for crypto firms</td>
+        <td>FCA</td>
+        <td>UK</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">29 Apr 2026</td>
+        <td><span class="sub-closing">🟡 CLOSING SOON — 24 days</span></td>
+      </tr>
+      <tr>
+        <td><strong>MAS Prudential Treatment of Crypto Exposures</strong> (Basel III alignment)</td>
+        <td>MAS</td>
+        <td>Singapore</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;">Processing</td>
+        <td><span class="sub-ongoing">🔵 ONGOING (processing responses)</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-muted);text-decoration:line-through;">FCA CP26/4 — Application of Handbook Part 2 to cryptoasset activities</td>
+        <td style="color:var(--text-muted);">FCA</td>
+        <td style="color:var(--text-muted);">UK</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text-muted);">12 Mar 2026</td>
+        <td><span class="sub-closed">🔴 CLOSED</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-muted);text-decoration:line-through;">ESMA — Crypto knowledge and competence guidelines (MiCA)</td>
+        <td style="color:var(--text-muted);">ESMA</td>
+        <td style="color:var(--text-muted);">EU</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text-muted);">Jan 2026</td>
+        <td><span class="sub-closed">🔴 CLOSED — finalised</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--text-muted);text-decoration:line-through;">EU AI Act — GPAI copyright &amp; AI sandboxes consultations</td>
+        <td style="color:var(--text-muted);">EU Commission</td>
+        <td style="color:var(--text-muted);">EU</td>
+        <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text-muted);">Jan 2026</td>
+        <td><span class="sub-closed">🔴 CLOSED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-tier"><strong style="color:var(--accent-gold);">Tier 1 — Regulators:</strong> SEC, OCC, CFTC, FDIC, FCA, ESMA, ASIC, MAS, Treasury.gov.au, Congress.gov</div>
+    <div class="footer-tier"><strong style="color:var(--accent-blue);">Tier 2 — Law Firms:</strong> Alston &amp; Bird, Gibson Dunn, Goodwin, Jenner &amp; Block, Jones Day, K&amp;L Gates, Latham &amp; Watkins, Norton Rose Fulbright, Perkins Coie, Ropes &amp; Gray, Sidley, WilmerHale</div>
+    <div class="footer-tier"><strong style="color:var(--accent-purple);">Tier 3 — Industry:</strong> Blockchain Association, Coin Center, DeFi Education Fund, Gilbert + Tobin, rwa.xyz, Securitize</div>
+    <div class="footer-tier"><strong style="color:var(--accent-green);">Tier 4 — Intelligence:</strong> Bitcoin Reserve Monitor, InnReg, Kroll, Merkle Science</div>
+    <div class="footer-tier"><strong style="color:var(--text-muted);">Tier 5 — Media:</strong> Banking Dive, CoinDesk, CryptoSlate, DL News, FinTech Weekly, The Block, 247 Wall St.</div>
+    <div class="footer-disclaimer">
+      The Brief is an intelligence report for informational purposes only. Nothing herein constitutes legal advice. All analysis reflects publicly available information as of the publication date. Consult qualified legal counsel before taking action based on any content herein. Signal confidence ratings reflect the author's assessment of source reliability and are not guarantees of accuracy.
+    </div>
+    <div style="margin-top:12px;color:var(--text-muted);font-size:10px;">THE BRIEF — Legal Intelligence Report · Sunday, 5 April 2026 · 8 Stories · 45+ Sources</div>
+  </div>
+
+</main>
+
+<script>
+// IntersectionObserver for sidebar active state
+const storyLinks = document.querySelectorAll('.sidebar-story[href^="#story-"]');
+const storyCards = document.querySelectorAll('[id^="story-"]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      storyLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector('.sidebar-story[href="#' + entry.target.id + '"]');
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+storyCards.forEach(card => observer.observe(card));
+</script>
+</body>
+</html>
