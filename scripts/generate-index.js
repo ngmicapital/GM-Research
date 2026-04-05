@@ -372,7 +372,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .filter-chip.c-b{color:var(--teal);border-color:rgba(45,212,191,0.2)}.filter-chip.c-b:hover{background:var(--teal-dim)}
 .filter-chip.c-p{color:#DC3545;border-color:rgba(220,53,69,0.2)}.filter-chip.c-p:hover{background:rgba(220,53,69,0.1)}
 .filter-chip.c-r{color:var(--brown);border-color:rgba(146,64,14,0.2)}.filter-chip.c-r:hover{background:var(--brown-dim)}
-.filter-chip.c-t{color:var(--amber);border-color:rgba(245,158,11,0.2);margin-left:auto}.filter-chip.c-t:hover{background:var(--amber-dim)}
+.filter-chip.c-t{color:var(--amber);border-color:rgba(245,158,11,0.2)}.filter-chip.c-t:hover{background:var(--amber-dim)}
 .filter-count{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:8px;margin-left:4px}
 .feed{padding:0}.date-group{border-bottom:1px solid var(--border)}
 .date-header{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:2px;padding:20px 40px 12px;display:flex;justify-content:space-between;align-items:center}
@@ -517,8 +517,8 @@ body{overflow-x:hidden}
   <div class="filter-chip c-a">AI<span class="filter-count">${cc['ai-briefing']}</span></div>
   <div class="filter-chip c-b">Biohacker<span class="filter-count">${cc['biohacker-report']}</span></div>
   <div class="filter-chip c-p">Praxis<span class="filter-count">${cc['praxis-brief']}</span></div>
-  <div class="filter-chip c-r">Recipes<span class="filter-count">1</span></div>
   <div class="filter-chip c-t">Transcripts<span class="filter-count">${totalTranscripts}</span></div>
+  <div class="filter-chip c-r">Recipes<span class="filter-count">1</span></div>
 </div>
 <div class="feed">
 ${feedHTML||'<div class="empty"><p class="empty-h">No briefings yet</p></div>'}
