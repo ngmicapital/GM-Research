@@ -54,15 +54,17 @@ function extractBriefingMeta(filePath, key) {
     const tldrMatch = tldrTextMatch || tldrPMatch;
     if (tldrMatch) {
       let text = stripHtml(tldrMatch[1]);
-      // Find sentence boundary (". " followed by uppercase) — avoids splitting on "$99.64"
-      const sentEnd = text.search(/\.\s+[A-Z]/);
+      // Find sentence boundary (". " followed by uppercase, or "; " as separator)
+      let sentEnd = text.search(/\.\s+[A-Z]/);
+      if (sentEnd < 15) sentEnd = text.search(/;\s+/);  // fallback: semicolon split
       if (sentEnd > 15) {
         let h = text.slice(0, sentEnd + 1);
         if (h.length > 90) h = h.slice(0, h.lastIndexOf(' ', 87) || 87) + '...';
         headline = h;
         let rest = text.slice(sentEnd + 2).trim();
         // Second sentence for preview
-        const sent2 = rest.search(/\.\s+[A-Z]/);
+        let sent2 = rest.search(/\.\s+[A-Z]/);
+        if (sent2 < 10) sent2 = rest.search(/;\s+/);
         if (sent2 > 10) rest = rest.slice(0, sent2 + 1);
         if (rest.length > 120) rest = rest.slice(0, 117) + '...';
         preview = rest;
@@ -372,6 +374,7 @@ body{background:var(--bg-0);color:var(--text-1);font-family:'Inter',-apple-syste
 .filter-chip.c-l{color:var(--blue);border-color:rgba(96,165,250,0.2)}.filter-chip.c-l:hover{background:var(--blue-dim)}
 .filter-chip.c-a{color:var(--purple);border-color:rgba(167,139,250,0.2)}.filter-chip.c-a:hover{background:var(--purple-dim)}
 .filter-chip.c-b{color:var(--teal);border-color:rgba(45,212,191,0.2)}.filter-chip.c-b:hover{background:var(--teal-dim)}
+.filter-chip.c-rh{color:#eab308;border-color:rgba(234,179,8,0.2)}.filter-chip.c-rh:hover{background:rgba(234,179,8,0.1)}
 .filter-chip.c-p{color:#DC3545;border-color:rgba(220,53,69,0.2)}.filter-chip.c-p:hover{background:rgba(220,53,69,0.1)}
 .filter-chip.c-r{color:var(--brown);border-color:rgba(146,64,14,0.2)}.filter-chip.c-r:hover{background:var(--brown-dim)}
 .filter-chip.c-t{color:var(--amber);border-color:rgba(245,158,11,0.2)}.filter-chip.c-t:hover{background:var(--amber-dim)}
@@ -471,6 +474,8 @@ body{overflow-x:hidden}
     <a href="index.html" class="mob-menu-item" style="color:#60a5fa"><span class="mob-menu-icon">&#x2696;&#xFE0F;</span>Legal Briefs</a>
     <a href="index.html" class="mob-menu-item" style="color:#a78bfa"><span class="mob-menu-icon">&#x1F916;</span>AI Updates</a>
     <a href="index.html" class="mob-menu-item" style="color:#2dd4bf"><span class="mob-menu-icon">&#x1F9EC;</span>Biohacker Reports</a>
+    <a href="index.html" class="mob-menu-item" style="color:#eab308"><span class="mob-menu-icon">&#x1F573;&#xFE0F;</span>Rabbit Hole</a>
+    <a href="index.html" class="mob-menu-item" style="color:#DC3545"><span class="mob-menu-icon">&#x1F4A1;</span>Praxis</a>
     <a href="index.html" class="mob-menu-item" style="color:#f97316"><span class="mob-menu-icon">&#x1F3A5;</span>Transcripts</a>
     <a href="recipes/ultimate-chewy-brownies/index.html" class="mob-menu-item" style="color:#92400e"><span class="mob-menu-icon">&#x1F36B;</span>Recipes</a>
   </div>
@@ -518,6 +523,7 @@ body{overflow-x:hidden}
   <div class="filter-chip c-l">Legal<span class="filter-count">${cc['legal-brief']}</span></div>
   <div class="filter-chip c-a">AI<span class="filter-count">${cc['ai-briefing']}</span></div>
   <div class="filter-chip c-b">Biohacker<span class="filter-count">${cc['biohacker-report']}</span></div>
+  <div class="filter-chip c-rh">Rabbit Hole<span class="filter-count">${cc['rabbit-hole']}</span></div>
   <div class="filter-chip c-p">Praxis<span class="filter-count">${cc['praxis-brief']}</span></div>
   <div class="filter-chip c-t">Transcripts<span class="filter-count">${totalTranscripts}</span></div>
   <div class="filter-chip c-r">Recipes<span class="filter-count">1</span></div>
