@@ -99,7 +99,9 @@ function extractBriefingMeta(filePath, key) {
     // Strategy 3a: Praxis / card-title based extraction
     // Reads the first card-title as headline and subsequent card-titles as preview.
     // Avoids the section-title fallback which only yields generic section names.
-    if (!headline && key === 'praxis-brief') {
+    // Also runs when headline was set by Strategy 1 (tldr-text) but preview is still empty,
+    // e.g. when the tldr-text uses semicolons rather than ". Capital" sentence boundaries.
+    if ((!headline || !preview) && key === 'praxis-brief') {
       const cardTitles = [];
       const re = /card-title"[^>]*>([\s\S]*?)<\/div>/g;
       let m;
