@@ -20,7 +20,7 @@ const BRIEFING_META = {
   'rabbit-hole':       { title:'Rabbit Hole',        subtitle:'Deep Dive',             icon:'&#x1F573;&#xFE0F;', accent:'#eab308', accentDim:'#eab30818', typeLabel:'Rabbit Hole',  filename:'rabbit-hole.html', preview:'One topic, explored with depth and narrative momentum' },
   'praxis-brief':      { title:'Praxis',              subtitle:'Ideas In Practice',      icon:'&#x1F4A1;',         accent:'#DC3545', accentDim:'#DC354518', typeLabel:'Praxis',        filename:'praxis-brief.html', preview:'Philosophy, strategy, tools & emerging ideas' },
 };
-const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'rabbit-hole', 'praxis-brief'];
+const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'praxis-brief', 'rabbit-hole'];
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function stripHtml(s) {
@@ -157,15 +157,24 @@ function extractBriefingMeta(filePath, key) {
       'legal-brief':      /\b(SEC|CFTC|ESMA|FCA|MAS|ASIC|OCC|MiCA|GENIUS|CLARITY|FIT21|Ripple|Coinbase|Binance)\b/g,
       'ai-briefing':      /\b(Claude|GPT|Gemini|DeepSeek|Mistral|NVIDIA|Llama|Anthropic|OpenAI|Google)\b/g,
       'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone)\b/g,
-      // Rabbit hole: use further-card-pill labels (Biography, Philosophy, etc.) — always present, always short
-      'rabbit-hole':      /<span class="further-card-pill">([^<]+)<\/span>/g,
+      // Rabbit hole: header-category first (new format: "History · Biography"), then further-card-pill (old format)
+      'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
       'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
     };
     const tagRe = tagPatterns[key];
     if (tagRe) {
       const found = new Set();
       let m;
-      while ((m = tagRe.exec(html))) found.add(m[1]);
+      while ((m = tagRe.exec(html))) {
+        const val = (m[1] || m[2] || '').trim();
+        if (!val) continue;
+        // header-category may be "History · Biography" — split into individual tags
+        if (val.includes('·')) {
+          val.split('·').map(s => s.trim()).filter(Boolean).forEach(t => found.add(t));
+        } else {
+          found.add(val);
+        }
+      }
       tags = [...found].slice(0, 3);
     }
   } catch(e) { /* file read error — use defaults */ }
