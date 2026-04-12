@@ -177,6 +177,19 @@ function extractBriefingMeta(filePath, key) {
       }
       tags = [...found].slice(0, 3);
     }
+    // Rabbit-hole fallback: if strict pattern found nothing, extract capitalised words from <strong> blocks
+    if (key === 'rabbit-hole' && tags.length === 0) {
+      const fallbackRe = /<strong>([A-Z][A-Za-z\u00C0-\u024F]{2,}(?:\s[A-Z][A-Za-z\u00C0-\u024F]{2,})?)/g;
+      const skipWords = new Set(['The','This','That','These','Those','When','What','Why','How','Who','Where','More','Less','Most','Just','Also','Only','Even','Very','Much','Many','Some','Other','Such','Each','Both','Then','They','With','From','Into','About','After','Before','During','Through','While','Which','Their','There']);
+      const fb = new Set();
+      let fm;
+      fallbackRe.lastIndex = 0;
+      while ((fm = fallbackRe.exec(html)) && fb.size < 10) {
+        const word = fm[1].split(/[\s:,–—]/)[0];
+        if (!skipWords.has(word) && word.length >= 3) fb.add(word);
+      }
+      tags = [...fb].slice(0, 3);
+    }
   } catch(e) { /* file read error — use defaults */ }
   return { headline, preview, tags };
 }
