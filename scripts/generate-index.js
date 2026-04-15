@@ -66,7 +66,7 @@ function extractBriefingMeta(filePath, key) {
         let sent2 = rest.search(/\.\s+[A-Z]/);
         if (sent2 < 10) sent2 = rest.search(/;\s+/);
         if (sent2 > 10) rest = rest.slice(0, sent2 + 1);
-        if (rest.length > 120) rest = rest.slice(0, 117) + '...';
+        if (rest.length > 180) rest = rest.slice(0, 177) + '...';
         preview = rest;
       } else {
         headline = text.length > 90 ? text.slice(0, text.lastIndexOf(' ', 87) || 87) + '...' : text;
@@ -76,7 +76,7 @@ function extractBriefingMeta(filePath, key) {
     // Strategy 2: Legal brief — use first story title as headline, second as preview
     if (!headline && key === 'legal-brief') {
       const storyTitles = [];
-      const re = /story-title">([^<]+)/g;
+      const re = /story-title"[^>]*>([^<]+)/g;
       let m;
       while ((m = re.exec(html)) && storyTitles.length < 3) {
         let t = stripHtml(m[1]);
@@ -93,7 +93,7 @@ function extractBriefingMeta(filePath, key) {
       if (storyTitles.length >= 1) headline = storyTitles[0];
       if (storyTitles.length >= 2) {
         let p = storyTitles.slice(1).join(' · ');
-        if (p.length > 120) p = p.slice(0, 117) + '...';
+        if (p.length > 180) p = p.slice(0, 177) + '...';
         preview = p;
       }
     }
@@ -118,7 +118,7 @@ function extractBriefingMeta(filePath, key) {
       }
       if (cardTitles.length >= 2) {
         let p = cardTitles.slice(1, 3).map(t => t.length > 55 ? t.slice(0, t.lastIndexOf(' ', 52) || 52) + '...' : t).join(' · ');
-        if (p.length > 120) p = p.slice(0, 117) + '...';
+        if (p.length > 180) p = p.slice(0, 177) + '...';
         preview = p;
       }
     }
@@ -605,7 +605,7 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
     if (!headline)                                    warn('EMPTY headline — falling back to default');
     if (headline.length < 15)                         warn(`SHORT headline (${headline.length} chars): "${headline}"`);
     if (!preview)                                     warn('EMPTY preview — card will show no description text');
-    if (preview.length > 130)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
+    if (preview.length > 190)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
     if (/&[a-zA-Z]+;/.test(headline))                warn(`RAW HTML ENTITY in headline: "${headline}"`);
     if (/&[a-zA-Z]+;/.test(preview))                 warn(`RAW HTML ENTITY in preview: "${preview}"`);
     SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
