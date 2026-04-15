@@ -281,8 +281,9 @@ function buildHTML(briefingEntries, transcriptsByDate) {
   const totalBriefings = briefingEntries.reduce((n,e) => n + e.briefings.length, 0);
   const totalTranscripts = Object.values(transcriptsByDate).reduce((n,arr) => n + arr.length, 0);
   const allDates = [...new Set([...briefingEntries.map(e=>e.date), ...Object.keys(transcriptsByDate)])].sort().reverse();
-  const today = new Date().toISOString().split('T')[0];
-  const todayDisplay = new Date().toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();
+  const aestNow = new Date(new Date().toLocaleString('en-US',{timeZone:'Australia/Sydney'}));
+  const today = aestNow.getFullYear()+'-'+String(aestNow.getMonth()+1).padStart(2,'0')+'-'+String(aestNow.getDate()).padStart(2,'0');
+  const todayDisplay = aestNow.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();
 
   const briefingMap = {};
   briefingEntries.forEach(e => { briefingMap[e.date] = e.briefings; });
