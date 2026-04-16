@@ -38,7 +38,8 @@ const TAG_PATTERNS = {
   'legal-brief':      /\b(SEC|CFTC|ESMA|FCA|MAS|ASIC|OCC|MiCA|GENIUS|CLARITY|FIT21|Ripple|Coinbase|Binance)\b/g,
   'ai-briefing':      /\b(Claude|GPT|Gemini|DeepSeek|Mistral|NVIDIA|Llama|Anthropic|OpenAI|Google)\b/g,
   'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone)\b/g,
-  'rabbit-hole':      /<span class="further-card-pill">([^<]+)<\/span>/g,
+  // Rabbit hole: header-category (new format: "History · Biography"), then further-card-pill (old format)
+  'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
   'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
 };
 
@@ -57,8 +58,31 @@ function extractTags(html, key) {
   tagRe.lastIndex = 0;
   const found = new Set();
   let m;
-  while ((m = tagRe.exec(html))) found.add(m[1]);
-  return [...found].slice(0, 3);
+  while ((m = tagRe.exec(html))) {
+    const val = (m[1] || m[2] || '').trim();
+    if (!val) continue;
+    // header-category may be "History · Biography" — split into individual tags
+    if (val.includes('·')) {
+      val.split('·').map(s => s.trim()).filter(Boolean).forEach(t => found.add(t));
+    } else {
+      found.add(val);
+    }
+  }
+  let tags = [...found].slice(0, 3);
+  // Rabbit-hole fallback: extract capitalised words from <strong> blocks
+  if (key === 'rabbit-hole' && tags.length === 0) {
+    const fallbackRe = /<strong>([A-Z][A-Za-z\u00C0-\u024F]{2,}(?:\s[A-Z][A-Za-z\u00C0-\u024F]{2,})?)/g;
+    const skipWords = new Set(['The','This','That','These','Those','When','What','Why','How','Who','Where','More','Less','Most','Just','Also','Only','Even','Very','Much','Many','Some','Other','Such','Each','Both','Then','They','With','From','Into','About','After','Before','During','Through','While','Which','Their','There']);
+    const fb = new Set();
+    let fm;
+    fallbackRe.lastIndex = 0;
+    while ((fm = fallbackRe.exec(html)) && fb.size < 10) {
+      const word = fm[1].split(/[\s:,\u2013\u2014]/)[0];
+      if (!skipWords.has(word) && word.length >= 3) fb.add(word);
+    }
+    tags = [...fb].slice(0, 3);
+  }
+  return tags;
 }
 
 function extractStrongCandidates(html) {
@@ -348,11 +372,15 @@ else pass('Table overflow wrappers OK — no bare tables found');
 if (imgsFixed > 0) pass(`Auto-fixed image max-width: ${imgsFixed} image(s) across affected files`);
 else pass('Image max-width OK — no unbound images found');
 
-// Systemic summary for back-links and meta descriptions (not per-file noise for old content)
-if (missingBacklinkCount > 0) {
+// Systemic summary for back-links and meta descriptions
+if (missingBacklinkCount === 0) {
+  pass(`Back-link check OK — all ${totalBriefings} briefings have back-link`);
+} else {
   report.checks_passed.push(`Back-link check: ${totalBriefings - missingBacklinkCount}/${totalBriefings} have back-link (${missingBacklinkCount} missing — recent files flagged above)`);
 }
-if (missingDescCount > 0) {
+if (missingDescCount === 0) {
+  pass(`Meta description check OK — all ${totalBriefings} briefings have og:description`);
+} else {
   report.checks_passed.push(`Meta description check: ${totalBriefings - missingDescCount}/${totalBriefings} have og:description (${missingDescCount} missing — recent files flagged above)`);
 }
 
