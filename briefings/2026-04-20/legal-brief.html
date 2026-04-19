@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence | 20 April 2026</title>
+<style>
+:root {
+  --bg-primary:#faf8f5;--bg-secondary:#f0ede8;--bg-sidebar:#e8e4dd;--bg-card:#ffffff;--bg-card-hover:#f5f3ee;
+  --text-primary:#1c1c1e;--text-secondary:#4a4a4f;--text-muted:#8a8a8e;--border:#d1c9be;
+  --accent-gold:#b8860b;--accent-gold-light:#8a6508;
+  --accent-blue:#1f6feb;--accent-purple:#8957e5;--accent-amber:#d29922;--accent-green:#3fb950;--accent-red:#f85149;--accent-teal:#3dc9b0;
+}
+body.dark-mode {
+  --bg-primary:#0d1117;--bg-secondary:#111827;--bg-sidebar:#0a0f16;--bg-card:#161d2b;--bg-card-hover:#1c2538;
+  --text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#21262d;
+  --accent-gold:#d4a017;--accent-gold-light:#f0c040;
+  --accent-blue:#1f6feb;--accent-purple:#8957e5;--accent-amber:#d29922;--accent-green:#3fb950;--accent-red:#f85149;--accent-teal:#3dc9b0;
+}
+html{scroll-behavior:smooth;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.7;transition:background 0.2s,color 0.2s;}
+a{color:var(--accent-gold);text-decoration:none;}a:hover{text-decoration:underline;}
+@media print{.sidebar,.theme-toggle,.hamburger{display:none!important;}.content{margin-left:0!important;}body{background:white!important;}.story-card{break-inside:avoid;}}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:20px 0;transition:transform 0.3s;}
+.sidebar-brand{padding:0 16px 16px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.sidebar-wordmark{font-family:'Courier New',monospace;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-gold);}
+.sidebar-date{font-family:'Courier New',monospace;font-size:10px;color:var(--text-muted);margin-top:3px;}
+.sidebar-section{padding:6px 16px 2px;font-family:'Courier New',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:8px;}
+.sidebar-link{display:flex;align-items:flex-start;gap:8px;padding:5px 16px;font-size:11px;font-family:'Courier New',monospace;color:var(--text-secondary);cursor:pointer;border-left:2px solid transparent;transition:all 0.15s;line-height:1.4;}
+.sidebar-link:hover,.sidebar-link.active{color:var(--text-primary);border-left-color:var(--accent-gold);}
+.sidebar-dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.dot-headline{background:var(--accent-gold);}
+.dot-high{background:var(--accent-blue);}
+.dot-medium{background:var(--accent-green);}
+.sidebar-link-plain{display:block;padding:5px 16px;font-size:11px;font-family:'Courier New',monospace;color:var(--text-muted);cursor:pointer;transition:color 0.15s;}
+.sidebar-link-plain:hover{color:var(--text-primary);}
+@media(max-width:1200px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}}
+
+/* Hamburger */
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;width:36px;height:36px;cursor:pointer;align-items:center;justify-content:center;font-size:16px;}
+@media(max-width:1200px){.hamburger{display:flex;}}
+
+/* Theme toggle */
+.theme-toggle{position:fixed;top:12px;right:16px;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;color:var(--text-secondary);transition:all 0.2s;}
+.theme-toggle:hover{border-color:var(--accent-gold);color:var(--accent-gold);}
+
+/* Content */
+.content{margin-left:220px;max-width:960px;padding:40px 40px 60px;}
+@media(max-width:1200px){.content{margin-left:0;padding:60px 20px 40px;}}
+
+/* Masthead */
+.masthead{text-align:center;padding:40px 0 30px;border-bottom:2px solid var(--border);margin-bottom:36px;}
+.masthead-title{font-family:Georgia,serif;font-size:3.2rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;}
+.masthead-bar{width:80px;height:3px;background:var(--accent-gold);margin:10px auto 12px;}
+.masthead-subtitle{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);}
+.masthead-date{font-family:'Courier New',monospace;font-size:13px;color:var(--text-secondary);margin-top:6px;}
+.masthead-meta{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+.meta-pill{display:inline-block;font-size:10px;font-family:'Courier New',monospace;padding:3px 12px;border-radius:12px;letter-spacing:0.5px;}
+.meta-pill-gold{background:rgba(184,134,11,0.15);color:var(--accent-gold);border:1px solid rgba(184,134,11,0.3);}
+.meta-pill-muted{background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);}
+.reading-time-pill{display:inline-block;font-size:10px;color:var(--text-muted);background:var(--bg-secondary);padding:3px 10px;border-radius:12px;font-family:'Courier New',monospace;letter-spacing:0.5px;}
+.masthead-gradient{height:2px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent);margin-top:20px;}
+
+/* Story cards */
+.story-card{background:var(--bg-card);border-radius:8px;padding:24px 28px;margin-bottom:28px;border:1px solid var(--border);transition:box-shadow 0.2s,transform 0.2s;}
+.story-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px);}
+.story-card.tier-headline{border-left:3px solid var(--accent-gold);}
+.story-card.tier-high{border-left:3px solid var(--accent-blue);}
+.story-card.tier-medium{border-left:3px solid var(--accent-green);}
+
+/* Tier badges */
+.tier-badge{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 9px;border-radius:4px;margin-right:8px;}
+.badge-headline{background:rgba(212,160,23,0.2);color:var(--accent-gold);border:1px solid rgba(212,160,23,0.4);}
+.badge-high{background:rgba(31,111,235,0.2);color:var(--accent-blue);border:1px solid rgba(31,111,235,0.3);}
+.badge-medium{background:rgba(63,185,80,0.15);color:var(--accent-green);border:1px solid rgba(63,185,80,0.3);}
+.new-badge{background:#dc3545;color:white;font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:3px;margin-left:6px;text-transform:uppercase;font-family:'Courier New',monospace;display:inline-block;}
+
+/* Meta row */
+.story-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;font-family:'Courier New',monospace;font-size:10px;}
+.source-tag{color:var(--text-muted);}
+.credibility-tag{padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:0.5px;}
+.cred-primary{background:rgba(63,185,80,0.15);color:var(--accent-green);border:1px solid rgba(63,185,80,0.3);}
+.cred-secondary{background:rgba(31,111,235,0.15);color:var(--accent-blue);border:1px solid rgba(31,111,235,0.3);}
+.cred-media{background:rgba(139,148,158,0.15);color:var(--text-muted);border:1px solid var(--border);}
+.category-tag{background:var(--bg-secondary);color:var(--text-muted);padding:2px 7px;border-radius:3px;font-size:9px;border:1px solid var(--border);}
+.signal-row{font-family:'Courier New',monospace;font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+
+/* Story title */
+.story-title{font-family:Georgia,serif;font-size:1.4rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;line-height:1.3;}
+
+/* Plain explainer */
+.plain-explainer{background:var(--bg-secondary);border-left:3px solid var(--accent-gold);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;color:var(--text-primary);}
+.explainer-icon{font-size:16px;margin-right:6px;}
+
+/* Golden quote */
+.golden-quote{border-left:3px solid var(--accent-gold);background:rgba(212,160,23,0.05);padding:12px 16px;margin-bottom:14px;border-radius:0 4px 4px 0;}
+body.dark-mode .golden-quote{background:rgba(212,160,23,0.12);}
+.golden-quote em{color:var(--accent-gold-light);font-style:italic;}
+
+/* Story summary */
+.story-summary{color:var(--text-secondary);margin-bottom:14px;}
+
+/* Analysis blocks */
+.analysis-block{padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-block p{color:var(--text-secondary);}
+.analysis-precedent{border-left:2px dashed var(--text-muted);padding:8px 14px;margin-bottom:12px;font-size:13px;color:var(--text-muted);}
+.analysis-practitioner{border-left:3px solid #1f6feb;background:var(--bg-secondary);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-practitioner p{color:var(--text-secondary);}
+.analysis-contrarian{border-left:3px solid #8957e5;background:var(--bg-secondary);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-contrarian p{color:var(--text-secondary);}
+.analysis-industry{border-left:3px solid #d29922;background:var(--bg-secondary);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-industry p{color:var(--text-secondary);}
+.analysis-portfolio{border-left:3px solid var(--accent-green);background:var(--bg-secondary);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-portfolio p{color:var(--text-secondary);}
+.analysis-whattodo{border-left:3px solid var(--accent-gold);background:var(--bg-secondary);padding:12px 16px;border-radius:4px;margin-bottom:12px;font-size:14px;}
+.analysis-whattodo p{color:var(--text-secondary);margin-bottom:6px;}
+.analysis-whattodo p:last-child{margin-bottom:0;}
+.role-label{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:700;text-transform:uppercase;border-radius:3px;padding:2px 7px;margin-right:8px;}
+.role-trader{background:rgba(248,81,73,0.2);color:#ff7b72;}
+.role-counsel{background:rgba(31,111,235,0.2);color:#79c0ff;}
+.role-compliance{background:rgba(137,87,229,0.2);color:#d2a8ff;}
+.role-founder{background:rgba(63,185,80,0.2);color:#7ee787;}
+.connected-card{background:var(--bg-secondary);border-radius:4px;padding:12px 16px;margin-bottom:12px;font-size:13px;}
+.connected-card-header{font-family:'Courier New',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent-blue);margin-bottom:8px;}
+.connected-card p{color:var(--text-secondary);margin-bottom:4px;}
+
+/* Tags */
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.tag-pill{display:inline-block;font-family:'Courier New',monospace;font-size:10px;background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);padding:2px 8px;border-radius:3px;}
+
+/* Section headers */
+.section-header{font-family:Georgia,serif;font-size:1.3rem;font-weight:700;color:var(--text-primary);margin:40px 0 20px;padding-bottom:8px;border-bottom:2px solid var(--border);}
+
+/* Cross-cutting grid */
+.cc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+@media(max-width:700px){.cc-grid{grid-template-columns:1fr;}}
+.cc-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;}
+.cc-title{font-family:'Courier New',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent-teal);margin-bottom:6px;}
+.cc-direction{font-family:'Courier New',monospace;font-size:11px;font-weight:700;margin-bottom:8px;}
+.cc-card p{font-size:13px;color:var(--text-secondary);}
+
+/* Tone barometer */
+.tone-table{width:100%;border-collapse:collapse;margin-bottom:32px;}
+.tone-table td,.tone-table th{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-secondary);}
+.tone-table th{font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);background:var(--bg-secondary);}
+.flag-badge{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;margin-right:8px;}
+.flag-us{background:#1f3a6e;color:#93b4f0;border:1px solid #2d5299;}
+.flag-eu{background:#1a1a5e;color:#a0a8f8;border:1px solid #2828a0;}
+.flag-uk{background:#3a1a1a;color:#f09090;border:1px solid #8b2020;}
+.flag-sg{background:#1a3a2a;color:#7fcca0;border:1px solid #1e6640;}
+.flag-au{background:#2a1a3a;color:#c0a0f0;border:1px solid #5e2a8b;}
+
+/* Countdown & pipeline tables */
+.data-table{width:100%;border-collapse:collapse;margin-bottom:32px;}
+.data-table td,.data-table th{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-secondary);}
+.data-table th{font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);background:var(--bg-secondary);}
+.data-table tr:hover td{background:var(--bg-card-hover);transition:background 0.15s;}
+.days-pill{display:inline-block;font-family:'Courier New',monospace;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.days-urgent{background:rgba(184,134,11,0.2);color:var(--accent-gold);border:1px solid rgba(184,134,11,0.4);}
+.days-muted{background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);}
+.stage-bar{display:flex;gap:2px;align-items:center;font-size:10px;font-family:'Courier New',monospace;}
+.stage-seg{padding:1px 5px;border-radius:2px;font-size:9px;}
+.stage-done{background:rgba(63,185,80,0.3);color:var(--accent-green);}
+.stage-active{background:rgba(184,134,11,0.3);color:var(--accent-gold);font-weight:700;}
+.stage-future{background:var(--bg-secondary);color:var(--text-muted);}
+.move-up{color:var(--accent-green);font-weight:700;}
+.move-flat{color:var(--text-muted);}
+.move-down{color:var(--accent-red);font-weight:700;}
+
+/* Submissions table */
+.status-open{background:rgba(63,185,80,0.15);color:var(--accent-green);border:1px solid rgba(63,185,80,0.3);display:inline-block;font-family:'Courier New',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;}
+.status-closing{background:rgba(184,134,11,0.15);color:var(--accent-gold);border:1px solid rgba(184,134,11,0.3);display:inline-block;font-family:'Courier New',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;}
+.status-ongoing{background:rgba(31,111,235,0.15);color:var(--accent-blue);border:1px solid rgba(31,111,235,0.3);display:inline-block;font-family:'Courier New',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;}
+.status-closed{background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);display:inline-block;font-family:'Courier New',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;}
+
+/* Brief notes */
+.brief-notes-card{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--text-muted);border-radius:8px;padding:20px 24px;margin-bottom:28px;}
+.brief-notes-title{font-family:'Courier New',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:14px;}
+.brief-note-item{padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-secondary);}
+.brief-note-item:last-child{border-bottom:none;padding-bottom:0;}
+.brief-note-item strong{color:var(--text-primary);}
+
+/* Footer */
+.footer{margin-top:40px;padding:24px;background:var(--bg-secondary);border-radius:8px;font-size:12px;color:var(--text-muted);font-family:'Courier New',monospace;}
+.footer-sources{margin-bottom:12px;}
+.footer-disclaimer{line-height:1.6;}
+</style>
+</head>
+<body>
+
+<!-- Hamburger -->
+<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<!-- Theme toggle -->
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-wordmark">The Brief</div>
+    <div class="sidebar-date">20 April 2026</div>
+  </div>
+  <div class="sidebar-section">Stories</div>
+  <a class="sidebar-link" onclick="scrollTo('story-1')">
+    <span class="sidebar-dot dot-headline"></span>UK Stablecoin U-Turn
+  </a>
+  <a class="sidebar-link" onclick="scrollTo('story-2')">
+    <span class="sidebar-dot dot-high"></span>SEC DeFi Safe Harbor
+  </a>
+  <a class="sidebar-link" onclick="scrollTo('story-3')">
+    <span class="sidebar-dot dot-high"></span>NYSE Tokenization Filing
+  </a>
+  <a class="sidebar-link" onclick="scrollTo('story-4')">
+    <span class="sidebar-dot dot-high"></span>FCA Crypto Consultation
+  </a>
+  <a class="sidebar-link" onclick="scrollTo('story-5')">
+    <span class="sidebar-dot dot-medium"></span>France Euro Stablecoin
+  </a>
+  <a class="sidebar-link" onclick="scrollTo('story-6')">
+    <span class="sidebar-dot dot-medium"></span>Kelp DAO $292M Hack
+  </a>
+  <div class="sidebar-section">Sections</div>
+  <a class="sidebar-link-plain" onclick="scrollTo('cross-cutting')">Cross-Cutting</a>
+  <a class="sidebar-link-plain" onclick="scrollTo('tone-barometer')">Tone Barometer</a>
+  <a class="sidebar-link-plain" onclick="scrollTo('countdown')">Countdown</a>
+  <a class="sidebar-link-plain" onclick="scrollTo('pipeline')">Pipeline Tracker</a>
+  <a class="sidebar-link-plain" onclick="scrollTo('submissions')">Open Submissions</a>
+  <a class="sidebar-link-plain" onclick="scrollTo('footer')">Sources</a>
+</nav>
+
+<!-- Main Content -->
+<div class="content">
+
+  <!-- Masthead -->
+  <div class="masthead">
+    <div class="masthead-title">The Brief</div>
+    <div class="masthead-bar"></div>
+    <div class="masthead-subtitle">Legal Intelligence Report</div>
+    <div class="masthead-date">Monday, 20 April 2026</div>
+    <div class="masthead-meta">
+      <span class="meta-pill meta-pill-gold">6 Stories</span>
+      <span class="meta-pill meta-pill-muted">45+ Sources</span>
+      <span class="meta-pill meta-pill-muted">Past 24–72 Hours</span>
+      <span class="reading-time-pill">~10 min read</span>
+    </div>
+    <div class="masthead-gradient"></div>
+  </div>
+
+  <!-- STORY 1: UK Stablecoin U-Turn — HEADLINE -->
+  <div class="story-card tier-headline" id="story-1">
+    <div class="story-meta">
+      <span class="tier-badge badge-headline">Headline</span>
+      <span class="source-tag">HM Treasury / Ledger Insights</span>
+      <span class="credibility-tag cred-primary">PRIMARY</span>
+      <span class="category-tag">UK · Stablecoins · Payments</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — Parliamentary statement by Economic Secretary to HM Treasury</div>
+    <h2 class="story-title">UK Reverses Labour Stablecoin Position — Payments Perimeter Inbound, Formal Consultation Due End-Q2 2026</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The UK government has done a complete 180 — after Labour decided in November 2024 not to regulate stablecoins in payments, Economic Secretary Lucy Rigby has announced they will now bring stablecoins into the payments regulatory perimeter. A "payments perimeter" is the legal boundary defining which payment activities require authorisation; inclusion means stablecoin issuers and service providers will need regulatory approval to operate in UK payment chains.
+    </div>
+    <div class="golden-quote">
+      <em>"We can have a payments framework that facilitates both traditional and tokenized payments in a coherent way."</em>
+      — HM Treasury official, April 2026 [paraphrased from Parliamentary statement]
+    </div>
+    <div class="story-summary">
+      <p>In a statement to the House of Lords, Economic Secretary to the Treasury Lucy Rigby announced that the government will reverse its November 2024 position and bring stablecoins within the UK payments regulatory perimeter. Rigby cited "potential benefits for consumers and businesses from a diversified payments landscape." A formal consultation is scheduled for the end of Q2 2026 — approximately late June — and will detail compliance requirements for stablecoin issuers and service providers operating in UK payment chains.</p>
+      <p>The reversal is striking in its speed. Labour took office in July 2024, and within four months Economic Secretary Tulip Siddiq had removed stablecoins from the payments framework on proportionality grounds. That position was then codified in a December 2025 cryptoasset statutory instrument. The new position — announced less than four months later under Rigby — effectively reopens a settled regulatory question, and industry participants who structured compliance around the December 2025 instrument will need to reassess.</p>
+      <p>The shift aligns with the FCA's April 15 consultation on cryptoasset activities (see Story 4), which separately addresses stablecoin issuance under the future crypto regime effective October 2027. Two regulatory tracks now apply to UK stablecoin issuers: the FCA's broader crypto authorisation regime (licensing gateway opens September 2026) and the payments-specific perimeter now under consultation. These tracks will need to cohere — or firms will face duplicative requirements.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> The EU's MiCA took a similarly bifurcated approach to stablecoins, treating e-money tokens (payments) and asset-referenced tokens (investment) under separate licensing regimes — a structure the UK may now mirror.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">This reversal creates a two-track compliance burden for UK stablecoin operators. The FCA's crypto regime (CP25-1 guidance) covers stablecoin issuance as one of five regulated activities under the Financial Services and Markets Act 2023; the forthcoming payments consultation will add a separate authorization layer under the Payment Services Regulations. Firms that obtained payment institution or e-money institution registration anticipating exclusion should immediately flag the Q2 consultation to compliance committees. The 18-month gap between the consultation and the October 2027 regime means there is a window to shape implementation — but the window closes fast once consultation opens.</p>
+    </div>
+    <div class="analysis-contrarian">
+      <strong style="font-size:13px;color:var(--accent-purple);">🔄 Contrarian Take</strong>
+      <p style="margin-top:8px;">Labour's policy reversal within four months of the December 2025 codification suggests regulatory opportunism rather than principled rethinking — the government is watching Circle's USD dominance in European payment rails and panicking. Stablecoin issuers who lobbied hard for inclusion may find that "inside the perimeter" means higher compliance costs and slower product iteration, not competitive advantage. The firms most disrupted will be small payment startups that structured their roadmaps around the December 2025 exclusion.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">Circle and Tether face mandatory regulatory engagement with the FCA on two tracks. UK-registered payment institutions (Modulr, Railsr, ClearBank) now see a potential competitive threat from licensed stablecoin issuers entering the payments stack — but also a potential partnership opportunity to become the settlement layer. SocGen FORGE's EURCV stablecoin and the Qivalis euro stablecoin consortium (see Story 5) will note this development as the UK positions itself to match EU tokenized payment infrastructure.</p>
+    </div>
+    <div class="analysis-portfolio">
+      <strong style="font-size:13px;color:var(--accent-green);">📊 Portfolio Impact</strong>
+      <p style="margin-top:8px;"><strong>Bullish</strong> [USDC, USDT, Circle-adjacent equities]: Regulatory clarity increases institutional appetite for stablecoin rails; UK market access becomes more definable. <strong>Bearish</strong> [Unregulated stablecoin projects]: Those who cannot meet FCA payments requirements will be squeezed out of UK market. <strong>Neutral</strong> [BTC, ETH]: No direct impact; broader regulatory legitimisation of stablecoins is incrementally positive for the asset class overall.</p>
+    </div>
+    <div class="analysis-whattodo">
+      <strong style="font-size:13px;color:var(--accent-gold);">📋 What To Do</strong>
+      <p style="margin-top:8px;"><span class="role-label role-trader">Trader</span> Monitor GBP stablecoin pairs for liquidity shifts as UK regulatory pathway clarifies; expect near-term volatility in UK-listed crypto equities.</p>
+      <p><span class="role-label role-counsel">Counsel</span> Brief payment institution and e-money institution clients immediately; begin gap analysis between their December 2025 compliance posture and the forthcoming payments perimeter requirements.</p>
+      <p><span class="role-label role-compliance">Compliance</span> Flag the end-Q2 consultation to board-level governance; begin mapping which stablecoin products in your payment stack will require re-authorisation.</p>
+      <p><span class="role-label role-founder">Founder</span> Engage FCA directly before the consultation opens — the comment period is your only formal channel to shape compliance requirements before they are locked in.</p>
+    </div>
+    <div class="connected-card">
+      <div class="connected-card-header">↔️ Connected Stories</div>
+      <p>↔️ Story #4 (FCA Consultation on UK Crypto Guidance) — The FCA's five-activity consultation runs in parallel; stablecoin issuers now face overlapping FCA crypto authorisation and HM Treasury payments perimeter requirements.</p>
+      <p>↔️ Story #5 (France Euro Stablecoin) — UK and EU both moving to create sovereign stablecoin frameworks simultaneously; cross-border stablecoin operators must now navigate two distinct regulatory tracks.</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#UK</span>
+      <span class="tag-pill">#stablecoin</span>
+      <span class="tag-pill">#payments</span>
+      <span class="tag-pill">#FCA</span>
+      <span class="tag-pill">#HMTreasury</span>
+    </div>
+  </div>
+
+  <!-- STORY 2: SEC DeFi Safe Harbor — HIGH -->
+  <div class="story-card tier-high" id="story-2">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">SEC Division of Trading and Markets / Ledger Insights</span>
+      <span class="credibility-tag cred-primary">PRIMARY</span>
+      <span class="category-tag">US · DeFi · Tokenization · Broker-Dealer</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — SEC staff statement, effective immediately, April 13 2026</div>
+    <h2 class="story-title">SEC Staff Carves Out Self-Custodial Wallets and DeFi Interfaces from Broker-Dealer Registration — 12-Condition Safe Harbor for Tokenized Securities</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The SEC's staff has confirmed that crypto wallet providers and DeFi interface developers do not need to register as broker-dealers (licensed financial intermediaries) even when they handle tokenized stocks and bonds — provided they meet 12 specific conditions. A "safe harbour" is a legal shield protecting companies from liability if they follow specific rules; in this case it creates a clear path for DeFi front-ends to operate without SEC broker-dealer licensing.
+    </div>
+    <div class="golden-quote">
+      <em>"No entity is accountable at the protocol level for trade execution"</em> — industry analysis of the SEC staff statement, noting the gap left by a disclosure-only framework [paraphrased from Ledger Insights, April 2026]
+    </div>
+    <div class="story-summary">
+      <p>The SEC's Division of Trading and Markets published a staff statement on April 13 establishing conditions under which crypto wallet providers and DeFi interface developers can operate without registering as broker-dealers, even when facilitating trades in tokenized equities, debt securities, and crypto-native tokens on automated market makers (AMMs). The 12-condition framework requires interface providers to avoid conflicts of interest, maintain fee neutrality, evaluate venues, provide disclosures, disclose cybersecurity controls, and protect user trading information from MEV front-running through disclosure obligations.</p>
+      <p>The statement excludes activities that would push a provider into broker-dealer territory: negotiating transaction terms, making investment recommendations, holding user funds, executing or settling trades, routing orders, or arranging financing. Critically, neither the interface provider nor the wallet provider may access users' private keys — self-custody is a hard requirement for the exemption to apply. Commissioner Hester Peirce supported the statement but publicly urged formal rulemaking, arguing existing law already permits these activities.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> The SEC's 2019 no-action letter to TurnKey Jet (tokenized jets) established the disclosure-first approach for novel token structures; the April 13 statement extends this architecture to wallet and interface providers at scale.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">This is a staff statement, not a final rule — it carries no legal force and can be withdrawn without notice-and-comment. SIFMA's opposition signals that the traditional brokerage industry (Fidelity, Schwab, Goldman) will push for notice-and-comment rulemaking that may tighten the 12 conditions significantly. The disclosure-without-accountability gap is the structural vulnerability: front-ends have disclosure obligations, but underlying AMM protocols remain unaddressed. Firms relying on the exemption should immediately map their workflows against all 12 conditions, document the analysis, and prepare for the exemption to be formalised — or rescinded — in 2026.</p>
+    </div>
+    <div class="analysis-contrarian">
+      <strong style="font-size:13px;color:var(--accent-purple);">🔄 Contrarian Take</strong>
+      <p style="margin-top:8px;">Peirce's call for formal rulemaking may actually create more risk than the staff statement resolves. A notice-and-comment rulemaking invites SIFMA to introduce conditions that incumbents can meet and DeFi protocols structurally cannot — potentially using the formal rule to regulate out the most disruptive competitors. The Atkins SEC's preference for guidance over rules is deliberate: it preserves flexibility while signalling direction. DeFi builders should engage with the rulemaking process aggressively rather than passively welcoming the statement.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">Uniswap, Coinbase's Base ecosystem, and MetaMask are the immediate beneficiaries — the statement directly addresses their core value proposition. RWA tokenisation platforms (Securitize, Backed, Ondo Finance) now have a clearer path to build compliant DeFi interfaces for tokenized equities. Traditional custodians (BNY Mellon, State Street) who have been slow to engage tokenized markets face accelerating pressure as the regulatory runway for DeFi competitors extends.</p>
+    </div>
+    <div class="analysis-portfolio">
+      <strong style="font-size:13px;color:var(--accent-green);">📊 Portfolio Impact</strong>
+      <p style="margin-top:8px;"><strong>Bullish</strong> [UNI, DeFi index tokens, RWA protocols]: Direct regulatory clarity removes the largest structural risk for DeFi platforms touching tokenized securities. <strong>Bearish</strong> [Traditional broker-dealer equities, SIFMA members]: Competitive moat narrows as DeFi interfaces gain clearer pathway to tokenized equity markets. <strong>Neutral</strong> [BTC]: No direct impact.</p>
+    </div>
+    <div class="analysis-whattodo">
+      <strong style="font-size:13px;color:var(--accent-gold);">📋 What To Do</strong>
+      <p style="margin-top:8px;"><span class="role-label role-trader">Trader</span> Watch UNI and RWA protocol tokens — this statement is a structural tailwind but is staff guidance, not law; position sizing should reflect rescission risk.</p>
+      <p><span class="role-label role-counsel">Counsel</span> Map every client's wallet/interface product against all 12 conditions immediately; document the analysis; prepare a rulemaking comment for when — not if — the SEC opens formal notice-and-comment.</p>
+      <p><span class="role-label role-compliance">Compliance</span> Conduct a self-custody audit: does your interface at any point access user private keys? If yes, you are outside the exemption and broker-dealer analysis is mandatory.</p>
+      <p><span class="role-label role-founder">Founder</span> Engage SEC's Office of Innovation to confirm your specific architecture qualifies; staff statements create safe harbours but contested architectures need formal confirmation before you build compliance roadmaps around them.</p>
+    </div>
+    <div class="connected-card">
+      <div class="connected-card-header">↔️ Connected Stories</div>
+      <p>↔️ Story #3 (NYSE Tokenized Securities Filing) — Both stories accelerate the tokenized equity infrastructure; the SEC safe harbor and NYSE rule change together signal a coherent regulatory architecture for on-chain equity trading.</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#SEC</span>
+      <span class="tag-pill">#DeFi</span>
+      <span class="tag-pill">#broker-dealer</span>
+      <span class="tag-pill">#tokenization</span>
+      <span class="tag-pill">#safeHarbour</span>
+    </div>
+  </div>
+
+  <!-- STORY 3: NYSE Tokenization — HIGH -->
+  <div class="story-card tier-high" id="story-3">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">NYSE / SEC / Ledger Insights</span>
+      <span class="credibility-tag cred-primary">PRIMARY</span>
+      <span class="category-tag">US · Tokenization · Market Structure</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — NYSE rule change filed with SEC April 17, 2026; mirrors approved Nasdaq precedent</div>
+    <h2 class="story-title">NYSE Files First SEC Rule Change to Enable Tokenized Stock Trading on Its Main Order Book — Mirrors Nasdaq's March Approval</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The New York Stock Exchange has filed the paperwork to allow tokenized versions of stocks (shares represented as blockchain tokens) to trade on its main exchange alongside conventional shares — using the exact same order book, price priority, and settlement infrastructure. This is a milestone because it means blockchain-based and traditional shares become fungible on the world's largest exchange, removing the "parallel market" friction that has hampered institutional tokenisation adoption.
+    </div>
+    <div class="golden-quote">
+      <em>"Tokenized and conventional shares trade on the same order book with the same execution priority, share the same CUSIP, and settle T+1 through existing NSCC/DTC post trade rails."</em>
+      — NYSE rule change filing, April 17, 2026 [verbatim from filing as cited by Ledger Insights]
+    </div>
+    <div class="story-summary">
+      <p>The NYSE filed a rule change with the SEC on April 17 to enable tokenized securities — initially covering Russell 1000 stocks and major index ETFs tokenised by the DTC — to trade on its primary order book under identical execution priority to conventional shares. The filing mirrors a Nasdaq rule change approved in March 2026, and builds on the DTC's December 2025 SEC no-action letter permitting tokenized stock entitlements. Member firms specify blockchain preferences at order entry, with the DTC tokenising or de-tokenising entitlements post-settlement; trades default to conventional settlement if eligibility or blockchain issues arise.</p>
+      <p>NYSE is simultaneously pursuing a separate dedicated tokenisation venue designed for instant settlement using stablecoins — a multi-pronged strategy to capture both the retrofit-to-existing-infrastructure market and the greenfield next-generation settlement architecture. The combination of the SEC staff's April 13 wallet/DeFi safe harbor (Story 2) and the NYSE filing on April 17 suggests a coordinated regulatory-market architecture is materialising around tokenized equity infrastructure faster than most practitioners anticipated.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> Nasdaq's approval of a materially identical rule change in March 2026 is the direct precedent; SEC approval of the NYSE filing is procedurally straightforward unless new objections emerge from SIFMA or investor protection advocates.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">NYSE and Nasdaq tokenised order books create a two-exchange competitive dynamic that will pressure remaining holdouts (CBOE, IEX) to file equivalent rule changes within 12 months. The same-CUSIP, same-order-book structure eliminates the most significant friction point for institutional on-chain settlement — arbitrage between tokenized and conventional share prices — but creates new compliance questions around cross-chain wallet custody, AML obligations for on-chain addresses, and FinCEN Travel Rule applicability to blockchain settlement legs. Counsel advising prime brokers and custodians should begin scoping those frameworks now; the technology will be live before the compliance frameworks catch up.</p>
+    </div>
+    <div class="analysis-contrarian">
+      <strong style="font-size:13px;color:var(--accent-purple);">🔄 Contrarian Take</strong>
+      <p style="margin-top:8px;">The "same CUSIP, same settlement" architecture is additive complexity masquerading as simplification. Institutional prime brokers will need to maintain dual clearing workflows for the foreseeable future, increasing operational risk rather than reducing it. The real beneficiaries are the exchanges themselves, who gain a technology narrative that attracts venture capital and fintech partnerships — not retail or institutional investors who bear the transition cost.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">DTCC/DTC and NSCC are the critical infrastructure beneficiaries — their existing rails become the settlement backbone for on-chain equity trading, extending their franchise rather than disrupting it. Tokenisation platforms (Securitize, Backed, Ondo) now have a live exchange venue for their products. Stablecoin issuers (Circle, Paxos, Tether) are well-positioned for NYSE's second-phase dedicated venue targeting instant stablecoin settlement. TradeWeb and Bloomberg, who provide price discovery for institutional bond trading, face displacement risk if the tokenized equity model extends to fixed income.</p>
+    </div>
+    <div class="analysis-portfolio">
+      <strong style="font-size:13px;color:var(--accent-green);">📊 Portfolio Impact</strong>
+      <p style="margin-top:8px;"><strong>Bullish</strong> [ICE (NYSE parent), Nasdaq equities, USDC/USDT on stablecoin settlement phase]: Exchange-level infrastructure validates tokenization; stablecoin issuers are the payment rail for phase-two settlement. <strong>Bearish</strong> [Crypto-native OTC desks, off-exchange tokenized equity venues]: Competing venues lose first-mover advantage as NYSE/Nasdaq establish regulatory primacy. <strong>Neutral</strong> [BTC, ETH]: No direct impact but broader tokenization narrative supports sentiment.</p>
+    </div>
+    <div class="analysis-whattodo">
+      <strong style="font-size:13px;color:var(--accent-gold);">📋 What To Do</strong>
+      <p style="margin-top:8px;"><span class="role-label role-trader">Trader</span> Position in ICE (NYSE parent) and Nasdaq equities as the exchange infrastructure play on tokenization; monitor SEC approval timeline as the catalyst event.</p>
+      <p><span class="role-label role-counsel">Counsel</span> Begin scoping AML/FinCEN Travel Rule applicability to blockchain settlement legs with prime broker clients — this is the compliance gap the industry is not yet discussing.</p>
+      <p><span class="role-label role-compliance">Compliance</span> Update custodian and prime broker workflow diagrams to reflect dual clearing path; identify where tokenized and conventional settlement diverge in your current documentation.</p>
+      <p><span class="role-label role-founder">Founder</span> If you are building tokenized equity infrastructure, the NYSE filing is your greenlight — engage DTCC/DTC on connectivity requirements before the rule is approved to avoid a 6-month integration backlog.</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#NYSE</span>
+      <span class="tag-pill">#tokenization</span>
+      <span class="tag-pill">#SEC</span>
+      <span class="tag-pill">#RWA</span>
+      <span class="tag-pill">#marketStructure</span>
+    </div>
+  </div>
+
+  <!-- STORY 4: FCA Consultation — HIGH -->
+  <div class="story-card tier-high" id="story-4">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">FCA</span>
+      <span class="credibility-tag cred-primary">PRIMARY</span>
+      <span class="category-tag">UK · Crypto · Authorisation</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — FCA press release and official consultation paper, April 15, 2026</div>
+    <h2 class="story-title">FCA Opens Guidance Consultation on UK Crypto Regime — Five Activities, June 3 Deadline, Authorization Gateway Opens September 2026</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The FCA is asking industry to comment on its interpretation of five types of crypto activities that will require FCA authorisation from October 2027. This is the primary practical guidance document firms need to understand what they must do to legally operate in the UK crypto market. Missing the June 3 deadline to respond means your firm's specific concerns may not be reflected in the final rules.
+    </div>
+    <div class="golden-quote">
+      <em>"An open, sustainable and competitive crypto market people can trust."</em>
+      — FCA, statement of objective for the UK cryptoasset regulatory regime, April 2026 [paraphrased]
+    </div>
+    <div class="story-summary">
+      <p>The FCA published a guidance consultation on April 15 covering its interpretation of five regulated cryptoasset activities under the future UK regime: issuing qualifying stablecoin; operating trading platforms; dealing and arranging deals in qualifying cryptoassets; safeguarding cryptoassets; and staking. The consultation closes June 3, 2026. The FCA's authorisation gateway opens September 30, 2026, and the full regulatory regime goes live October 2027. Final rules will be published separately this summer, with a policy statement on perimeter guidance due in autumn 2026.</p>
+      <p>The consultation is interpretive guidance, not the rules themselves — it explains how the FCA will apply the statutory framework that has already been enacted under the Financial Services and Markets Act 2023. Firms need to understand both tracks: the rules (coming summer 2026) and this interpretive guidance (final autumn 2026). The FCA is hosting webinars, including a session on April 29, to support industry engagement. Notably, the UK's stablecoin payments reversal (Story 1) adds a third compliance layer on top of this framework for stablecoin issuers.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> The FCA's crypto financial promotions regime (October 2023) followed an almost identical consultation-to-implementation timeline; firms that engaged early shaped the final "direct offer financial promotion" thresholds.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">The June 3 consultation deadline is 44 days away. For firms with existing FCA registrations (approx. 45 registered crypto firms as of early 2026), this consultation is the roadmap to full authorisation under the new regime. Critical questions include whether the FCA's interpretation of "operating a trading platform" captures DeFi aggregator interfaces (connecting the dots to Story 2's SEC safe harbor), and how the FCA will treat staking rewards for regulatory classification purposes. Perkins Coie, Ashurst, and Linklaters are all likely to publish client alerts within the week.</p>
+    </div>
+    <div class="analysis-contrarian">
+      <strong style="font-size:13px;color:var(--accent-purple);">🔄 Contrarian Take</strong>
+      <p style="margin-top:8px;">The October 2027 go-live date is further away than it appears. The FCA must still publish final rules (summer 2026), open authorizations (September 2026), process what could be hundreds of applications, and produce a final policy statement — all while managing Consumer Duty implementation, its AI regulatory agenda, and a thin staffing complement. The realistic risk is authorizations being processed too slowly, creating a de facto extension of the transitional period that leaves the market in limbo into 2028.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">Binance, OKX, Kraken, and Coinbase all have UK operations that will need full FCA authorisation by October 2027 — the consultation guidance on "operating trading platforms" is central to their compliance roadmaps. UK-headquartered crypto firms (Mode, Ziglu, Copper) are better positioned than global exchanges to shape the consultation outcome. Staking-as-a-service providers (Kiln, Figment, Lido's UK operations) face the most ambiguous regulatory treatment of the five activities and should engage most urgently.</p>
+    </div>
+    <div class="analysis-portfolio">
+      <strong style="font-size:13px;color:var(--accent-green);">📊 Portfolio Impact</strong>
+      <p style="margin-top:8px;"><strong>Bullish</strong> [UK-headquartered crypto service providers, regulated staking providers]: Clarity accelerates institutional capital deployment to UK-regulated venues. <strong>Bearish</strong> [Non-compliant offshore platforms targeting UK users]: FCA authorisation requirement from October 2027 will force exit or costly compliance upgrades. <strong>Neutral</strong> [BTC, ETH]: Broader regulatory legitimisation incrementally positive; no direct price catalyst.</p>
+    </div>
+    <div class="analysis-whattodo">
+      <strong style="font-size:13px;color:var(--accent-gold);">📋 What To Do</strong>
+      <p style="margin-top:8px;"><span class="role-label role-trader">Trader</span> No immediate portfolio action required; flag this as a September 2026 catalyst for UK crypto exchange equities and tokens.</p>
+      <p><span class="role-label role-counsel">Counsel</span> Read the FCA consultation paper before April 29 webinar; prepare client-specific questions for the webinar and submit substantive consultation responses by June 3 — the FCA has historically used consultation feedback to narrow interpretive ambiguity on trading platform scope.</p>
+      <p><span class="role-label role-compliance">Compliance</span> Begin internal mapping of your UK-facing activities against the five regulated categories; identify which require authorisation and which may qualify for exclusions or exemptions.</p>
+      <p><span class="role-label role-founder">Founder</span> Attend the April 29 FCA webinar; prepare to file an authorisation application from September 2026 — early applications receive faster processing based on FCA's historical pattern.</p>
+    </div>
+    <div class="connected-card">
+      <div class="connected-card-header">↔️ Connected Stories</div>
+      <p>↔️ Story #1 (UK Stablecoin U-Turn) — Stablecoin issuers now face overlapping FCA crypto authorisation and HM Treasury payments perimeter requirements; both timelines need to be tracked simultaneously.</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#FCA</span>
+      <span class="tag-pill">#UK</span>
+      <span class="tag-pill">#cryptoRegulation</span>
+      <span class="tag-pill">#authorisation</span>
+      <span class="tag-pill">#staking</span>
+    </div>
+  </div>
+
+  <!-- STORY 5: France Euro Stablecoin — MEDIUM -->
+  <div class="story-card tier-medium" id="story-5">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">Ledger Insights / SG FORGE Conference</span>
+      <span class="credibility-tag cred-secondary">SECONDARY</span>
+      <span class="category-tag">EU · Stablecoins · France</span>
+    </div>
+    <div class="signal-row">🟡 Medium confidence — ministerial statement at industry conference; no formal legislative proposal yet</div>
+    <h2 class="story-title">France Finance Minister Backs Euro Stablecoin Consortium as Dollar Dominance Concern Grows — Qivalis 12-Bank Group Targets H2 2026 Launch</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> France's Finance Minister has publicly endorsed a 12-bank European consortium's plan to launch a euro-denominated stablecoin in H2 2026, signalling a shift from French government opposition to active support. This is significant because France previously resisted private stablecoins; the reversal reflects concern that US dollar stablecoins (USDC, USDT) are capturing the global stablecoin market that MiCA was supposed to help Europe compete in.
+    </div>
+    <div class="golden-quote">
+      <em>"That is what we need and that is what we want."</em>
+      — Finance Minister Roland Lescure, on the Qivalis euro stablecoin consortium, Paris conference hosted by Societe Generale FORGE, April 17, 2026
+    </div>
+    <div class="story-summary">
+      <p>Speaking at a Paris crypto conference hosted by Societe Generale's SG FORGE on April 17, Finance Minister Roland Lescure called the current imbalance between euro and dollar stablecoins "not satisfactory" and endorsed the Qivalis consortium — 12 European banks including BNP Paribas — in its plans to launch a euro stablecoin in H2 2026. Lescure also backed the ECB's digital euro as "the right balance" and foundational anchor for broader tokenisation efforts. SocGen FORGE, which issued the EURCV euro stablecoin in 2023, hosted the event.</p>
+      <p>The statement represents a meaningful policy shift. France had previously been among the more sceptical EU governments on privately-issued stablecoins, viewing them as competitors to the ECB's digital euro project. The Qivalis consortium represents the largest coordinated European banking effort to create a euro stablecoin competitor under MiCA's e-money token framework — the same framework that Circle and Tether must also comply with to operate euro stablecoins in EU markets.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> The Libra/Diem project (2019–2021) collapsed partly due to French and European government opposition; Lescure's statement marks a deliberate reversal of that posture, framing the issue now as competitiveness rather than risk.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">Ministerial statements at industry conferences are not legislative proposals. The Qivalis euro stablecoin must still qualify as an e-money token under MiCA Articles 48–55, obtain ESMA-registered issuer status, and maintain 1:1 euro reserve requirements — a compliance pathway that Circle has already navigated with EURC. The real competitive question is whether a bank-consortium stablecoin can achieve network effects fast enough to compete with Circle's EURC, which has a three-year head start in the MiCA-compliant euro stablecoin market.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">Circle (EURC) faces its most credible EU competitor yet. BNP Paribas and the Qivalis consortium have sovereign distribution networks that Circle cannot match. Tether has no MiCA-compliant euro stablecoin. SocGen FORGE's EURCV and the new Qivalis product will compete for institutional DeFi liquidity on Ethereum and Solana. For crypto traders, a more liquid euro stablecoin market reduces basis risk on EUR/crypto pairs on European venues (Bitstamp, Kraken EU).</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#France</span>
+      <span class="tag-pill">#EU</span>
+      <span class="tag-pill">#stablecoin</span>
+      <span class="tag-pill">#MiCA</span>
+      <span class="tag-pill">#Qivalis</span>
+    </div>
+  </div>
+
+  <!-- STORY 6: Kelp DAO $292M Hack — MEDIUM -->
+  <div class="story-card tier-medium" id="story-6">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">CoinDesk</span>
+      <span class="credibility-tag cred-media">MEDIA</span>
+      <span class="category-tag">DeFi · Security · Enforcement Risk</span>
+    </div>
+    <div class="signal-row">🟡 Medium confidence — breaking as of April 19, 2026; technical details unconfirmed by primary sources</div>
+    <h2 class="story-title">Kelp DAO $292M Exploit Becomes 2026's Largest Crypto Hack — Aave Loses $6B in Deposits as DeFi Contagion Spreads Across 20 Chains</h2>
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> A major DeFi protocol (Kelp DAO) was exploited for $292 million, with wrapped Ether (wETH) now stranded across 20 different blockchains — making recovery difficult. The hack triggered a crisis of confidence in Aave, the largest DeFi lending protocol, which saw $6 billion withdrawn as users rushed for the exits. This is the largest DeFi exploit of 2026 and will intensify regulatory pressure for DeFi oversight globally.
+    </div>
+    <div class="golden-quote">
+      <em>"DeFi is dead: crypto community scrambles after this year's biggest hack exposes contagion risks."</em>
+      — CoinDesk headline, April 19, 2026 [verbatim]
+    </div>
+    <div class="story-summary">
+      <p>According to CoinDesk reporting on April 19, Kelp DAO — a liquid staking and DeFi protocol — was exploited for $292 million, with wrapped Ether (wETH) stranded across 20 separate chains. The exploit is the largest DeFi hack of 2026, surpassing the $285 million Drift Protocol attack by North Korean actors in April (see Brief Notes). Aave, the largest DeFi lending platform by TVL, saw $6 billion in deposits withdrawn in the immediate aftermath as users feared contagion exposure through shared liquidity pools or collateral dependencies. CoinDesk separately reported that exchange probes have widened around the RaveDAO RAVE token, which collapsed 90% in a single day on April 19, suggesting multiple coordinated DeFi stresses occurring simultaneously.</p>
+      <p>Note: full technical details of the Kelp DAO exploit mechanism have not been confirmed by primary sources as of publication. The $292 million figure and cross-chain scope are drawn from CoinDesk's April 19 reporting.</p>
+    </div>
+    <div class="analysis-precedent">📎 <strong>Historical Precedent:</strong> The March 2022 Ronin Bridge hack ($625M) similarly triggered multi-protocol contagion and resulted in direct OFAC sanctions action against Lazarus Group mixer addresses — the regulatory template for state-actor DeFi attacks is well established.
+    </div>
+    <div class="analysis-practitioner">
+      <strong style="font-size:13px;color:var(--accent-blue);">⚖️ Practitioner Analysis</strong>
+      <p style="margin-top:8px;">Two sequential nine-figure DeFi hacks in April 2026 (Drift $285M + Kelp $292M) will significantly accelerate legislative pressure for DeFi oversight in the CLARITY Act markup window (see Countdown). CFTC Chairman Selig has already stated multiple crypto investigations are underway. The Aave $6B deposit flight demonstrates that DeFi contagion is now systemic — regulators will point to this as evidence that "DeFi is too big to self-regulate." Enforcement trajectory: expect FBI/CISA joint advisories on DeFi protocol security standards and potential executive order on DeFi vulnerability disclosure within 60 days.</p>
+    </div>
+    <div class="analysis-industry">
+      <strong style="font-size:13px;color:var(--accent-amber);">🏗️ Industry Implications</strong>
+      <p style="margin-top:8px;">Aave's $6B withdrawal signals that even blue-chip DeFi protocols are not immune to contagion from peripheral protocol failures. Institutional DeFi allocators (Grayscale, a16z portfolio, Galaxy Digital) will face LP pressure to reduce DeFi exposure. On-chain insurance protocols (Nexus Mutual, Sherlock) face largest-ever claim pressure. The wrench attack article CoinDesk published simultaneously (about physical attacks on crypto holders in France) suggests a broader narrative forming around crypto's security risks that regulators will exploit.</p>
+    </div>
+    <div class="tags-row">
+      <span class="tag-pill">#DeFi</span>
+      <span class="tag-pill">#hack</span>
+      <span class="tag-pill">#Aave</span>
+      <span class="tag-pill">#KelpDAO</span>
+      <span class="tag-pill">#enforcement</span>
+    </div>
+  </div>
+
+  <!-- Brief Notes -->
+  <div class="brief-notes-card" id="brief-notes">
+    <div class="brief-notes-title">Brief Notes — Low-Tier Updates</div>
+    <div class="brief-note-item">
+      <strong>Drift Protocol $148M Tether Recovery — Circle Sidelined After North Korean Attack.</strong> The $285M Drift Protocol hack (April 1, attributed with medium-high confidence to North Korean group UNC4736/AppleJeus) now has a partial recovery framework: Tether committed $127.5M with $20M from partners in a revenue-linked credit structure announced April 16. Notably, Drift is shifting away from Circle's USDC — during the 6-hour window when $230M in USDC crossed chains via Circle's CCTP, Circle froze nothing, despite having the capability. The contrast with Circle's freezing of 16 unrelated wallets nine days prior has drawn significant industry criticism. Source: Decrypt, April 16.
+    </div>
+    <div class="brief-note-item">
+      <strong>CFTC Chairman Selig: AI Compensating for Staffing Cuts as Crypto Investigations Mount.</strong> Speaking publicly on April 16, CFTC Chairman Mike Selig confirmed the agency has deployed AI tools to offset reduced headcount and stated "numerous investigations" are underway in crypto and prediction markets. The agency's April 10 TRO blocking Arizona's criminal enforcement against prediction markets remains in effect, with multi-state jurisdictional litigation ongoing (CFTC v. Arizona and two other states). Source: CoinDesk, April 16.
+    </div>
+    <div class="brief-note-item">
+      <strong>Elizabeth Warren Formally Challenges SEC Chair Atkins' Testimony on Enforcement Numbers.</strong> Senator Warren sent a letter to SEC Chair Paul Atkins challenging the accuracy of his congressional testimony regarding the number of crypto enforcement actions taken or dropped under his tenure. The specific factual dispute has not been independently resolved; if Atkins' testimony is confirmed inaccurate, this creates institutional credibility risk for the SEC's pro-industry stance and could trigger Senate oversight hearings. Source: Decrypt, April 17. [Unconfirmed — primary SEC/Senate sources not yet available.]
+    </div>
+    <div class="brief-note-item">
+      <strong>South Korea to Pilot Government Blockchain Deposit Tokens in Q4 2026.</strong> South Korea's Ministry of Economy and Finance will pilot programmable blockchain deposit tokens for government procurement expenditure in Sejong City under a 2026 regulatory sandbox program, replacing conventional purchasing card infrastructure. Tokens carry programmable spending limits and merchant restrictions, enabling automated audit without manual review. Source: CoinDesk, April 16.
+    </div>
+    <div class="brief-note-item">
+      <strong>Canada's First Major Privacy Act Overhaul in 43 Years.</strong> Canada's comprehensive Privacy Act review introduces mandatory breach notification, necessity-and-proportionality standards, and Indigenous data sovereignty protections — the first major overhaul since 1983. For crypto firms processing Canadian user data, the necessity-and-proportionality standard (requiring documented justification for every data collection category) will require significant compliance uplift. Source: IAPP, April 17.
+    </div>
+  </div>
+
+  <!-- Cross-Cutting Implications -->
+  <div id="cross-cutting">
+    <div class="section-header">Cross-Cutting Implications</div>
+    <div class="cc-grid">
+      <div class="cc-card">
+        <div class="cc-title">Stablecoin Regulation</div>
+        <div class="cc-direction" style="color:var(--accent-green);">⬆ Accelerating</div>
+        <p>UK U-turn brings stablecoins into payments perimeter; France backs euro stablecoin consortium; GENIUS Act FDIC rules live. Three major jurisdictions moving simultaneously to regulate stablecoin infrastructure — Circle, Tether, and Qivalis are all affected.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">DeFi Regulation</div>
+        <div class="cc-direction" style="color:var(--accent-amber);">↗ Mixed Signals</div>
+        <p>SEC staff safe harbor for wallets/DeFi interfaces expands runway, but $577M in DeFi hacks across two protocols in April alone will intensify CFTC/legislative pressure. The regulatory reprieve and enforcement pressure are running in opposite directions simultaneously.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">AI Governance</div>
+        <div class="cc-direction" style="color:var(--accent-green);">⬆ Quietly Advancing</div>
+        <p>Stanford HAI's 2026 AI Index flags a widening governance gap; EU AI Act literacy requirements driving 80%+ training completion across large organisations; CFTC using AI to compensate for staffing cuts. AI-assisted enforcement is the emerging supervision model across financial regulators.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">Tokenization &amp; RWA</div>
+        <div class="cc-direction" style="color:var(--accent-green);">⬆ Accelerating</div>
+        <p>NYSE tokenized stock rule filing + SEC DeFi safe harbor + Nasdaq March approval form a coherent US architecture for on-chain equity trading. Russell 1000 stocks now have a compliant on-chain trading pathway at both major US exchanges. European exchanges expected to file equivalent changes within 12 months.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">UK/EU/US Regulatory Divergence</div>
+        <div class="cc-direction" style="color:var(--accent-gold-light);">⚡ Widening</div>
+        <p>UK's double stablecoin track (FCA crypto + HM Treasury payments) diverges from EU's single MiCA e-money token regime. US broker-dealer safe harbor for DeFi has no EU equivalent under MiCA. Three distinct regulatory architectures now applying to the same stablecoin and DeFi products globally.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">Singapore / APAC</div>
+        <div class="cc-direction" style="color:var(--accent-amber);">↗ Mixed Signals</div>
+        <p>South Korea advancing blockchain government payments pilot; MAS website in maintenance with no new guidance this week. APAC regulatory momentum remains uneven — South Korea and Japan moving faster than Singapore on practical tokenisation experiments.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">Institutional Crypto Infrastructure</div>
+        <div class="cc-direction" style="color:var(--accent-green);">⬆ Accelerating</div>
+        <p>NYSE + Nasdaq tokenized order books; OCC Coinbase national trust charter (prior brief); DTC as settlement backbone. The on-ramp for institutional capital to crypto markets has materially improved in April 2026 alone — a structural shift that will take 12–18 months to fully price in.</p>
+      </div>
+      <div class="cc-card">
+        <div class="cc-title">Privacy &amp; Data Governance</div>
+        <div class="cc-direction" style="color:var(--accent-green);">⬆ Quietly Advancing</div>
+        <p>Canada's 43-year privacy overhaul, EU Digital Omnibus deidentification standards, and EU Commission's Digital Fairness Act draft all advancing simultaneously. Crypto firms processing user data across Canada/EU face the most significant compliance uplift of any sector outside Big Tech.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tone Barometer -->
+  <div id="tone-barometer">
+    <div class="section-header">Tone Barometer</div>
+    <table class="tone-table">
+      <thead>
+        <tr>
+          <th>Jurisdiction</th>
+          <th>Signal</th>
+          <th>Read</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="flag-badge flag-us">US</span></td>
+          <td>🟢 Loosening</td>
+          <td>SEC broker-dealer safe harbor for DeFi, NYSE tokenization filing, and OCC Coinbase charter signal a broadly permissive Atkins-era stance — but sequential nine-figure DeFi hacks may prompt Congressional pushback in CLARITY Act markup.</td>
+        </tr>
+        <tr>
+          <td><span class="flag-badge flag-uk">UK</span></td>
+          <td>🟡 Cautiously Loosening</td>
+          <td>FCA crypto guidance consultation and HM Treasury stablecoin U-turn both signal intent to build a permissive but regulated market; the dual-track compliance burden for stablecoin issuers may dampen enthusiasm for UK market entry until rules are final.</td>
+        </tr>
+        <tr>
+          <td><span class="flag-badge flag-eu">EU</span></td>
+          <td>🟡 Holding</td>
+          <td>ESMA published no MiCA-specific guidance this week; French ministerial backing for a bank-consortium euro stablecoin reflects competitiveness anxiety, not regulatory shift — MiCA framework unchanged. ECB digital euro project continues as foundational anchor.</td>
+        </tr>
+        <tr>
+          <td><span class="flag-badge flag-sg">SG</span></td>
+          <td>🟡 Holding</td>
+          <td>MAS website in maintenance; no new crypto guidance or enforcement this week. Singapore maintaining steady-state supervision posture while watching US tokenization architecture developments.</td>
+        </tr>
+        <tr>
+          <td><span class="flag-badge flag-au">AU</span></td>
+          <td>🟡 Holding</td>
+          <td>ASIC issued no crypto-specific guidance or enforcement this week. Treasury digital asset consultation framework remains open; watch for Australian Payments Plus tokenized payment developments in Q2.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Regulatory Countdown -->
+  <div id="countdown">
+    <div class="section-header">Regulatory Countdown</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Date</th>
+          <th>Days</th>
+          <th>Context</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CLARITY Act — May Markup Window Opens</strong></td>
+          <td style="font-family:'Courier New',monospace;">~1 May 2026</td>
+          <td><span class="days-pill days-urgent">~11 days</span></td>
+          <td>Last realistic window for Senate committee markup before August recess; $577M April DeFi hacks may add urgency or complexity to debate.</td>
+        </tr>
+        <tr>
+          <td><strong>FCA Crypto Guidance Consultation Closes</strong></td>
+          <td style="font-family:'Courier New',monospace;">3 Jun 2026</td>
+          <td><span class="days-pill days-muted">44 days</span></td>
+          <td>FCA's interpretive guidance on five regulated activities — five-week window to shape final requirements for authorization applicants.</td>
+        </tr>
+        <tr>
+          <td><strong>UK Stablecoin Payments Consultation Opens</strong></td>
+          <td style="font-family:'Courier New',monospace;">Late Jun 2026</td>
+          <td><span class="days-pill days-muted">~65 days</span></td>
+          <td>HM Treasury consultation on bringing stablecoins into UK payments perimeter; shapes compliance requirements for issuers and service providers.</td>
+        </tr>
+        <tr>
+          <td><strong>SEC "Regulation Crypto Assets" — OIRA Review Completion</strong></td>
+          <td style="font-family:'Courier New',monospace;">Est. Q2 2026</td>
+          <td><span class="days-pill days-muted">~40–70 days</span></td>
+          <td>Three-part SEC rulemaking near Federal Register publication; establishes statutory framework for digital asset broker-dealer and exchange regulation.</td>
+        </tr>
+        <tr>
+          <td><strong>FCA Authorisation Gateway Opens</strong></td>
+          <td style="font-family:'Courier New',monospace;">30 Sep 2026</td>
+          <td><span class="days-pill days-muted">163 days</span></td>
+          <td>Firms seeking UK crypto authorisation can begin filing applications; early submissions prioritised for processing under FCA's stated approach.</td>
+        </tr>
+        <tr>
+          <td><strong>FCA UK Crypto Regulatory Regime Goes Live</strong></td>
+          <td style="font-family:'Courier New',monospace;">Oct 2027</td>
+          <td><span class="days-pill days-muted">~547 days</span></td>
+          <td>Full authorisation required for all five regulated cryptoasset activities in the UK; unauthorised operation after this date is a criminal offence.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pipeline Tracker -->
+  <div id="pipeline">
+    <div class="section-header">Regulatory Pipeline Tracker</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Bill / Rule</th>
+          <th>Jurisdiction</th>
+          <th>Stage</th>
+          <th>Movement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CLARITY Act</strong></td>
+          <td>US Federal</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Introduced</span>
+              <span class="stage-seg stage-done">Committee</span>
+              <span class="stage-seg stage-active">Markup</span>
+              <span class="stage-seg stage-future">Floor Vote</span>
+              <span class="stage-seg stage-future">Enacted</span>
+            </div>
+          </td>
+          <td><span class="move-flat">▬ No change</span></td>
+        </tr>
+        <tr>
+          <td><strong>GENIUS Act — Implementation</strong></td>
+          <td>US Federal</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Enacted</span>
+              <span class="stage-seg stage-active">FDIC Rules</span>
+              <span class="stage-seg stage-active">FinCEN/OFAC</span>
+              <span class="stage-seg stage-future">Effective</span>
+            </div>
+          </td>
+          <td><span class="move-up">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>SEC "Regulation Crypto Assets"</strong></td>
+          <td>US Federal</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Proposed</span>
+              <span class="stage-seg stage-done">Comment</span>
+              <span class="stage-seg stage-active">OIRA Review</span>
+              <span class="stage-seg stage-future">Final Rule</span>
+              <span class="stage-seg stage-future">Effective</span>
+            </div>
+          </td>
+          <td><span class="move-flat">▬ No change</span></td>
+        </tr>
+        <tr>
+          <td><strong>FCA UK Crypto Regime (CP25-1)</strong></td>
+          <td>UK</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Rules Proposed</span>
+              <span class="stage-seg stage-active">Guidance Consult.</span>
+              <span class="stage-seg stage-future">Auth. Gateway</span>
+              <span class="stage-seg stage-future">Regime Live</span>
+            </div>
+          </td>
+          <td><span class="move-up">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>UK Stablecoin Payments Perimeter</strong></td>
+          <td>UK</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Policy Reversed</span>
+              <span class="stage-seg stage-active">Consult. Prep</span>
+              <span class="stage-seg stage-future">Formal Consult.</span>
+              <span class="stage-seg stage-future">Enacted</span>
+            </div>
+          </td>
+          <td><span class="move-up">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>NYSE Tokenized Stock Rule Change</strong></td>
+          <td>US Federal</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">Filed</span>
+              <span class="stage-seg stage-active">SEC Review</span>
+              <span class="stage-seg stage-future">Approved</span>
+              <span class="stage-seg stage-future">Live</span>
+            </div>
+          </td>
+          <td><span class="move-up">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>EU MiCA — ESMA Supervision Consolidation</strong></td>
+          <td>EU</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">ECB Opinion</span>
+              <span class="stage-seg stage-active">ESMA Consult.</span>
+              <span class="stage-seg stage-future">Final Standard</span>
+              <span class="stage-seg stage-future">Effective</span>
+            </div>
+          </td>
+          <td><span class="move-flat">▬ No change</span></td>
+        </tr>
+        <tr>
+          <td><strong>CFTC Prediction Markets Jurisdiction</strong></td>
+          <td>US Federal</td>
+          <td>
+            <div class="stage-bar">
+              <span class="stage-seg stage-done">TRO Issued</span>
+              <span class="stage-seg stage-active">Litigation</span>
+              <span class="stage-seg stage-future">Judgment</span>
+              <span class="stage-seg stage-future">Appeal</span>
+            </div>
+          </td>
+          <td><span class="move-flat">▬ No change</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Open Submissions -->
+  <div id="submissions">
+    <div class="section-header">Open Submissions &amp; Consultations</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Consultation</th>
+          <th>Body</th>
+          <th>Jurisdiction</th>
+          <th>Deadline</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cryptoasset Guidance Consultation (CP25-1)</strong> — guidance on five regulated activities: stablecoin issuance, trading platforms, dealing/arranging, safeguarding, staking</td>
+          <td>FCA</td>
+          <td>UK</td>
+          <td style="font-family:'Courier New',monospace;">3 Jun 2026</td>
+          <td><span class="status-open">🟢 OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>SEC Crypto Task Force — Digital Asset Broker-Dealer and Exchange Regulation</strong> — soliciting public input on implementation of crypto securities rules under FSMA framework</td>
+          <td>SEC</td>
+          <td>US</td>
+          <td style="font-family:'Courier New',monospace;">Ongoing</td>
+          <td><span class="status-ongoing">🔵 ONGOING</span></td>
+        </tr>
+        <tr>
+          <td><strong>ESMA MiCA Supervisory Convergence</strong> — consultation on standards for ESMA's consolidated oversight role across 27 national regulators before MiCA transitional period expires</td>
+          <td>ESMA</td>
+          <td>EU</td>
+          <td style="font-family:'Courier New',monospace;">Ongoing</td>
+          <td><span class="status-ongoing">🔵 ONGOING</span></td>
+        </tr>
+        <tr>
+          <td><strong>UK Stablecoin Payments Perimeter Consultation</strong> — HM Treasury consultation on bringing stablecoins within UK payments regulatory framework (announced April 2026, not yet open)</td>
+          <td>HM Treasury</td>
+          <td>UK</td>
+          <td style="font-family:'Courier New',monospace;">Late Jun 2026 (est.)</td>
+          <td><span class="status-ongoing">🔵 ANNOUNCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>Australian Digital Asset Framework</strong> — Treasury consultation on digital asset service provider licensing requirements and custody standards</td>
+          <td>Treasury AU</td>
+          <td>Australia</td>
+          <td style="font-family:'Courier New',monospace;">TBC 2026</td>
+          <td><span class="status-ongoing">🔵 ONGOING</span></td>
+        </tr>
+        <tr>
+          <td><strong>CFTC Digital Asset Derivatives Rules</strong> — comment period on derivatives clearing and margin requirements for crypto assets following CFTC jurisdictional expansion under CLARITY Act (pending)</td>
+          <td>CFTC</td>
+          <td>US</td>
+          <td style="font-family:'Courier New',monospace;">TBC post-CLARITY Act</td>
+          <td><span class="status-ongoing">🔵 PENDING</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer" id="footer">
+    <div class="footer-sources">
+      <strong>Sources by Tier:</strong><br>
+      <strong>Tier 1 — Regulators:</strong> FCA (fca.org.uk, primary press release April 15), CFTC (PressRoom April 2026), SEC Division of Trading and Markets (staff statement April 13), HM Treasury (Parliamentary statement).<br>
+      <strong>Tier 2 — Law Firms:</strong> Not directly cited this edition; Ashurst, Linklaters, Perkins Coie alerts expected on FCA consultation.<br>
+      <strong>Tier 3 — Industry:</strong> Societe Generale FORGE, NYSE (rule change filing), Qivalis consortium.<br>
+      <strong>Tier 4 — Intelligence:</strong> Ledger Insights (ledgerinsights.com — primary source for Stories 2, 3, 5), rekt.news (Drift Protocol detail).<br>
+      <strong>Tier 5 — Media:</strong> CoinDesk (coindesk.com — Stories 5, 6, Brief Notes), Decrypt (decrypt.co — Drift recovery), IAPP (iapp.org — Canada privacy).
+    </div>
+    <div class="footer-disclaimer">
+      <strong>Disclaimer:</strong> The Brief is an intelligence digest for informational purposes only. Nothing herein constitutes legal advice, regulatory guidance, or an investment recommendation. Verify all regulatory positions with primary sources before acting. Signal confidence indicators reflect source quality and corroboration at time of publication — breaking stories carry higher uncertainty. Consult qualified legal counsel for jurisdiction-specific compliance questions.<br><br>
+      <strong>The Brief</strong> · Legal Intelligence Report · 20 April 2026 · 45+ sources monitored
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// Theme toggle
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  document.getElementById('themeToggle').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('brief-theme', isDark ? 'dark' : 'light');
+}
+// Restore theme preference
+(function() {
+  const pref = localStorage.getItem('brief-theme');
+  if (pref === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeToggle').textContent = '☀️ Light';
+  }
+})();
+
+// Smooth scroll helper
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// IntersectionObserver for active sidebar links
+const stories = document.querySelectorAll('.story-card[id], [id="cross-cutting"], [id="tone-barometer"], [id="countdown"], [id="pipeline"], [id="submissions"]');
+const sidebarLinks = document.querySelectorAll('.sidebar-link');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      sidebarLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-link[onclick*="${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+stories.forEach(s => obs.observe(s));
+
+// Close sidebar on mobile when link clicked
+sidebarLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth < 1200) {
+      document.querySelector('.sidebar').classList.remove('open');
+    }
+  });
+});
+</script>
+</body>
+</html>
