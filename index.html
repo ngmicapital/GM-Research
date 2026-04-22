@@ -1553,13 +1553,13 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     if(cd.ethereum){setTk('[data-tk="eth"]',fmtN(cd.ethereum.usd),cd.ethereum.usd_24h_change);}
     if(cd.solana){setTk('[data-tk="sol"]',fmtN(cd.solana.usd),cd.solana.usd_24h_change);}
   }catch(e){}
-  // Equities / macro: Yahoo Finance
+  // Equities / macro: Yahoo Finance via corsproxy.io (bypasses CORS restriction on browser requests)
   try{
-    var yUrl='https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC%2CCL%3DF%2CGC%3DF%2C%5EVIX%2CDX-Y.NYB&fields=regularMarketPrice%2CregularMarketChangePercent';
-    var yr=await fetch(yUrl,{headers:{'Accept':'application/json'}});
+    var yfDirect='https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC%2CCL%3DF%2CGC%3DF%2C%5EVIX%2CDX-Y.NYB&fields=regularMarketPrice%2CregularMarketChangePercent';
+    var yr=await fetch('https://corsproxy.io/?'+encodeURIComponent(yfDirect));
     var yd=await yr.json();
     var qs=(yd.quoteResponse&&yd.quoteResponse.result)||[];
-    var ym={'^GSPC':['tk-spx','tk-spx-d'],'^GSPC':['tk-spx','tk-spx-d'],'CL=F':['tk-wti','tk-wti-d'],'GC=F':['tk-gold','tk-gold-d'],'^VIX':['tk-vix','tk-vix-d'],'DX-Y.NYB':['tk-dxy','tk-dxy-d']};
+    var ym={'^GSPC':['tk-spx','tk-spx-d'],'CL=F':['tk-wti','tk-wti-d'],'GC=F':['tk-gold','tk-gold-d'],'^VIX':['tk-vix','tk-vix-d'],'DX-Y.NYB':['tk-dxy','tk-dxy-d']};
     qs.forEach(function(q){
       var ids=ym[q.symbol];
       if(ids&&q.regularMarketPrice!=null){setById(ids[0],ids[1],fmtN(q.regularMarketPrice),q.regularMarketChangePercent||0);}
