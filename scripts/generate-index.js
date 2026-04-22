@@ -338,19 +338,19 @@ function buildHTML(briefingEntries, transcriptsByDate) {
 
   const totalEntries = Object.values(catCounts).reduce((a,b)=>a+b,0);
   const filterCats = [
-    {key:'all',    label:'All',        count: totalEntries},
-    {key:'market', label:'Market',     count: catCounts.market},
-    {key:'legal',  label:'Legal',      count: catCounts.legal},
-    {key:'ai',     label:'AI',         count: catCounts.ai},
-    {key:'bio',    label:'Biohacker',  count: catCounts.bio},
-    {key:'rh',     label:'Rabbit Hole',count: catCounts.rh},
-    {key:'prx',    label:'Praxis',     count: catCounts.prx},
-    {key:'tx',     label:'Transcripts',count: catCounts.tx},
-    {key:'rec',    label:'Recipes',    count: catCounts.rec},
+    {key:'all',    label:'All',        count: totalEntries,       cat: null},
+    {key:'market', label:'Market',     count: catCounts.market,   cat: 'market'},
+    {key:'legal',  label:'Legal',      count: catCounts.legal,    cat: 'legal'},
+    {key:'ai',     label:'AI',         count: catCounts.ai,       cat: 'ai'},
+    {key:'bio',    label:'Biohacker',  count: catCounts.bio,      cat: 'bio'},
+    {key:'rh',     label:'Rabbit Hole',count: catCounts.rh,       cat: 'rh'},
+    {key:'prx',    label:'Praxis',     count: catCounts.prx,      cat: 'prx'},
+    {key:'tx',     label:'Transcripts',count: catCounts.tx,       cat: 'tx'},
+    {key:'rec',    label:'Recipes',    count: catCounts.rec,      cat: 'rec'},
   ].filter(c => c.key === 'all' || c.count > 0);
   const filterBarHTML = `
 <div class="filter-bar">
-  ${filterCats.map((c,i) => `<button class="f-chip${i===0?' active':''}" data-filter="${c.key}">${c.label} <span>${c.count}</span></button>`).join('')}
+  ${filterCats.map((c,i) => `<button class="f-chip${i===0?' active':''}" data-filter="${c.key}"${c.cat?` data-cat="${c.cat}"`:''}>${c.label} <span>${c.count}</span></button>`).join('')}
 </div>`;
 
   const heroHTML = leadStoryHTML(today, briefingEntries);
@@ -472,9 +472,9 @@ a{color:inherit;text-decoration:none}
 /* Filter chips */
 .filter-bar{padding:10px 40px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
 .filter-bar::-webkit-scrollbar{display:none}
-.f-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;background:transparent;white-space:nowrap;transition:all .15s;flex-shrink:0}
-.f-chip:hover{color:var(--ink);border-color:var(--muted)}
-.f-chip.active{color:#000;background:var(--ink);border-color:var(--ink)}
+.f-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;border:1px solid color-mix(in oklab,var(--cat,var(--rule)) 35%,var(--rule));font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cat,var(--muted));cursor:pointer;background:transparent;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.f-chip:hover{border-color:var(--cat,var(--muted));background:color-mix(in oklab,var(--cat,var(--ink)) 10%,transparent)}
+.f-chip.active{background:color-mix(in oklab,var(--cat,var(--ink)) 22%,var(--paper-2));border-color:var(--cat,var(--ink));color:var(--cat,var(--ink));font-weight:600}
 .f-chip span{opacity:.55;font-size:9px}
 .f-hide{display:none!important}
 
@@ -697,15 +697,17 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     if(cd.ethereum){setTk('[data-tk="eth"]',fmtN(cd.ethereum.usd),cd.ethereum.usd_24h_change);}
     if(cd.solana){setTk('[data-tk="sol"]',fmtN(cd.solana.usd),cd.solana.usd_24h_change);}
   }catch(e){}
-  // Equities: load from data/ticker.json (written by market briefing skill)
+  // Equities / macro: Yahoo Finance
   try{
-    var er=await fetch('data/ticker.json');
-    var ed=await er.json();
-    if(ed.SPX){setById('tk-spx','tk-spx-d',fmtN(ed.SPX.price),ed.SPX.change);}
-    if(ed.WTI){setById('tk-wti','tk-wti-d',fmtN(ed.WTI.price),ed.WTI.change);}
-    if(ed.Gold){setById('tk-gold','tk-gold-d',fmtN(ed.Gold.price),ed.Gold.change);}
-    if(ed.VIX){setById('tk-vix','tk-vix-d',fmtN(ed.VIX.price),ed.VIX.change);}
-    if(ed.DXY){setById('tk-dxy','tk-dxy-d',fmtN(ed.DXY.price),ed.DXY.change);}
+    var yUrl='https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC%2CCL%3DF%2CGC%3DF%2C%5EVIX%2CDX-Y.NYB&fields=regularMarketPrice%2CregularMarketChangePercent';
+    var yr=await fetch(yUrl,{headers:{'Accept':'application/json'}});
+    var yd=await yr.json();
+    var qs=(yd.quoteResponse&&yd.quoteResponse.result)||[];
+    var ym={'^GSPC':['tk-spx','tk-spx-d'],'^GSPC':['tk-spx','tk-spx-d'],'CL=F':['tk-wti','tk-wti-d'],'GC=F':['tk-gold','tk-gold-d'],'^VIX':['tk-vix','tk-vix-d'],'DX-Y.NYB':['tk-dxy','tk-dxy-d']};
+    qs.forEach(function(q){
+      var ids=ym[q.symbol];
+      if(ids&&q.regularMarketPrice!=null){setById(ids[0],ids[1],fmtN(q.regularMarketPrice),q.regularMarketChangePercent||0);}
+    });
   }catch(e){}
 })();
 // Filter chips + keyword pills
