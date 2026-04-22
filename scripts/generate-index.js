@@ -532,7 +532,6 @@ a{color:inherit;text-decoration:none}
         <span class="top">GM</span>
         <span class="bot">RSRCH</span>
       </span>
-      <span class="logo-wm">~ngmi/research</span>
     </a>
     <nav class="topbar-nav">
       <a href="index.html" class="active">~/archive</a>
