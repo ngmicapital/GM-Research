@@ -19,8 +19,9 @@ const BRIEFING_META = {
   'biohacker-report':  { title:'Biohacker Report',  subtitle:'Health & Longevity',    icon:'&#x1F9EC;',         accent:'#2dd4bf', accentDim:'#2dd4bf18', typeLabel:'Biohacker',    filename:'biohacker-report.html', preview:'Longevity science, training protocols & daily wisdom', slug:'BIO', cat:'bio' },
   'rabbit-hole':       { title:'Rabbit Hole',        subtitle:'Deep Dive',             icon:'&#x1F573;&#xFE0F;', accent:'#eab308', accentDim:'#eab30818', typeLabel:'Rabbit Hole',  filename:'rabbit-hole.html', preview:'One topic, explored with depth and narrative momentum', slug:'RH',  cat:'rh' },
   'praxis-brief':      { title:'Praxis',              subtitle:'Ideas In Practice',      icon:'&#x1F4A1;',         accent:'#DC3545', accentDim:'#DC354518', typeLabel:'Praxis',        filename:'praxis-brief.html', preview:'Philosophy, strategy, tools & emerging ideas', slug:'PRX', cat:'prx' },
+  'trading-concept':   { title:'Alpha',               subtitle:'Trading Mechanics',      icon:'&#x1F3AF;',         accent:'#a3e635', accentDim:'#a3e63518', typeLabel:'Alpha',         filename:'trading-concept.html', preview:'One trading concept per day — with visuals, quotes & live examples', slug:'ALF', cat:'trade' },
 };
-const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'praxis-brief', 'rabbit-hole'];
+const ORDER = ['market-briefing', 'legal-brief', 'ai-briefing', 'biohacker-report', 'praxis-brief', 'trading-concept', 'rabbit-hole'];
 
 function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function stripHtml(s) {
@@ -160,6 +161,7 @@ function extractBriefingMeta(filePath, key) {
       // Rabbit hole: header-category first (new format: "History · Biography"), then further-card-pill (old format)
       'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
       'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
+      'trading-concept':  /\b(Order Flow|Liquidations|CVD|Funding|Absorption|Wyckoff|FVG|Order Block|Liquidity|Open Interest|Spring|Upthrust|Accumulation|Distribution|Squeeze|Sweep|MSS|CHoCH|POC|Volume Profile|Delta|Gamma|GEX|Basis|MVRV|SOPR)\b/g,
     };
     const tagRe = tagPatterns[key];
     if (tagRe) {
@@ -301,7 +303,7 @@ function leadStoryHTML(today, briefingEntries) {
 
 function collectStats(briefingEntries, transcriptsByDate) {
   const kwCounts = {};
-  const catCounts = { market:0, legal:0, ai:0, bio:0, rh:0, prx:0, tx:0, rec:0 };
+  const catCounts = { market:0, legal:0, ai:0, bio:0, rh:0, prx:0, trade:0, tx:0, rec:0 };
   briefingEntries.forEach(e => {
     e.briefings.forEach(key => {
       const m = BRIEFING_META[key];
@@ -345,6 +347,7 @@ function buildHTML(briefingEntries, transcriptsByDate) {
     {key:'bio',    label:'Biohacker',  count: catCounts.bio,      cat: 'bio'},
     {key:'rh',     label:'Rabbit Hole',count: catCounts.rh,       cat: 'rh'},
     {key:'prx',    label:'Praxis',     count: catCounts.prx,      cat: 'prx'},
+    {key:'trade',  label:'Alpha',      count: catCounts.trade,    cat: 'trade'},
     {key:'tx',     label:'Transcripts',count: catCounts.tx,       cat: 'tx'},
     {key:'rec',    label:'Recipes',    count: catCounts.rec,      cat: 'rec'},
   ].filter(c => c.key === 'all' || c.count > 0);
@@ -390,6 +393,7 @@ a{color:inherit;text-decoration:none}
   --c-bio:#2dd4bf;
   --c-rh:#eab308;
   --c-prx:#DC3545;
+  --c-trade:#a3e635;
   --c-tx:#f97316;
   --c-rec:#92400e;
   --hl-font:'Fraunces',serif;
@@ -410,6 +414,7 @@ a{color:inherit;text-decoration:none}
 [data-cat="bio"]{--cat:var(--c-bio)}
 [data-cat="rh"]{--cat:var(--c-rh)}
 [data-cat="prx"]{--cat:var(--c-prx)}
+[data-cat="trade"]{--cat:var(--c-trade)}
 [data-cat="tx"]{--cat:var(--c-tx)}
 [data-cat="rec"]{--cat:var(--c-rec)}
 
@@ -698,16 +703,15 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     if(cd.ethereum){setTk('[data-tk="eth"]',fmtN(cd.ethereum.usd),cd.ethereum.usd_24h_change);}
     if(cd.solana){setTk('[data-tk="sol"]',fmtN(cd.solana.usd),cd.solana.usd_24h_change);}
   }catch(e){}
-  // Equities / macro: Yahoo Finance via corsproxy.io (bypasses CORS restriction on browser requests)
+  // Equities / macro: same-origin data/ticker.json (baked hourly by .github/workflows/update-ticker.yml)
   try{
-    var yfDirect='https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC%2CCL%3DF%2CGC%3DF%2C%5EVIX%2CDX-Y.NYB&fields=regularMarketPrice%2CregularMarketChangePercent';
-    var yr=await fetch('https://corsproxy.io/?'+encodeURIComponent(yfDirect));
+    var yr=await fetch('data/ticker.json',{cache:'no-store'});
     var yd=await yr.json();
-    var qs=(yd.quoteResponse&&yd.quoteResponse.result)||[];
-    var ym={'^GSPC':['tk-spx','tk-spx-d'],'CL=F':['tk-wti','tk-wti-d'],'GC=F':['tk-gold','tk-gold-d'],'^VIX':['tk-vix','tk-vix-d'],'DX-Y.NYB':['tk-dxy','tk-dxy-d']};
-    qs.forEach(function(q){
-      var ids=ym[q.symbol];
-      if(ids&&q.regularMarketPrice!=null){setById(ids[0],ids[1],fmtN(q.regularMarketPrice),q.regularMarketChangePercent||0);}
+    var qs=yd.quotes||{};
+    var ym={'spx':['tk-spx','tk-spx-d'],'wti':['tk-wti','tk-wti-d'],'gold':['tk-gold','tk-gold-d'],'vix':['tk-vix','tk-vix-d'],'dxy':['tk-dxy','tk-dxy-d']};
+    Object.keys(ym).forEach(function(k){
+      var q=qs[k]; if(!q) return;
+      setById(ym[k][0],ym[k][1],fmtN(q.price),q.pct||0);
     });
   }catch(e){}
 })();
