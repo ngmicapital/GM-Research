@@ -209,8 +209,9 @@ function briefingCard(date, key) {
   const { headline, preview, tags } = extractBriefingMeta(filePath, key);
   const title = headline || m.preview;
   const tagsHTML = tags.slice(0,2).map(t => `<span>${escapeHtml(t)}</span>`).join('');
+  const tagsAttr = tags.join(',').toLowerCase();
   return `
-    <a href="briefings/${date}/${m.filename}" class="tline" data-cat="${m.cat}">
+    <a href="briefings/${date}/${m.filename}" class="tline" data-cat="${m.cat}" data-tags="${escapeHtml(tagsAttr)}">
       <div class="t-bar"></div>
       <div class="t-ic">${m.icon}</div>
       <div class="t-name">${m.typeLabel}</div>
@@ -266,7 +267,7 @@ function leadStoryHTML(today, briefingEntries) {
   const { headline, preview, tags } = extractBriefingMeta(fp, leadKey);
   if (!headline) return '';
 
-  const alsoKeys = todayEntry.briefings.slice(1, 4);
+  const alsoKeys = todayEntry.briefings.slice(1, 5);
   const alsoHTML = alsoKeys.map(key => {
     const am = BRIEFING_META[key];
     const af = path.join(BRIEFINGS_DIR, today, am.filename);
@@ -296,6 +297,25 @@ function leadStoryHTML(today, briefingEntries) {
   </section>`;
 }
 
+// ─── Stats collector ─────────────────────────────────────────────────────────
+
+function collectStats(briefingEntries, transcriptsByDate) {
+  const kwCounts = {};
+  const catCounts = { market:0, legal:0, ai:0, bio:0, rh:0, prx:0, tx:0, rec:0 };
+  briefingEntries.forEach(e => {
+    e.briefings.forEach(key => {
+      const m = BRIEFING_META[key];
+      catCounts[m.cat]++;
+      const fp = path.join(BRIEFINGS_DIR, e.date, m.filename);
+      const { tags } = extractBriefingMeta(fp, key);
+      tags.forEach(t => { kwCounts[t] = (kwCounts[t] || 0) + 1; });
+    });
+  });
+  Object.values(transcriptsByDate).forEach(ts => { catCounts.tx += ts.length; });
+  catCounts.rec = 1; // hardcoded recipe row
+  return { kwCounts, catCounts };
+}
+
 // ─── Build full HTML ─────────────────────────────────────────────────────────
 
 function buildHTML(briefingEntries, transcriptsByDate) {
@@ -306,6 +326,32 @@ function buildHTML(briefingEntries, transcriptsByDate) {
 
   const briefingMap = {};
   briefingEntries.forEach(e => { briefingMap[e.date] = e.briefings; });
+
+  // Stats for keywords bar + filter chips
+  const { kwCounts, catCounts } = collectStats(briefingEntries, transcriptsByDate);
+  const topKws = Object.entries(kwCounts).sort((a,b) => b[1]-a[1]).slice(0,24);
+  const kwBarHTML = topKws.length ? `
+<div class="kw-bar">
+  <span class="kw-label">TRENDING</span>
+  ${topKws.map(([kw,cnt]) => `<a class="kw-pill" href="#" data-kw="${escapeHtml(kw)}">${escapeHtml(kw)} <span>${cnt}</span></a>`).join('')}
+</div>` : '';
+
+  const totalEntries = Object.values(catCounts).reduce((a,b)=>a+b,0);
+  const filterCats = [
+    {key:'all',    label:'All',        count: totalEntries},
+    {key:'market', label:'Market',     count: catCounts.market},
+    {key:'legal',  label:'Legal',      count: catCounts.legal},
+    {key:'ai',     label:'AI',         count: catCounts.ai},
+    {key:'bio',    label:'Biohacker',  count: catCounts.bio},
+    {key:'rh',     label:'Rabbit Hole',count: catCounts.rh},
+    {key:'prx',    label:'Praxis',     count: catCounts.prx},
+    {key:'tx',     label:'Transcripts',count: catCounts.tx},
+    {key:'rec',    label:'Recipes',    count: catCounts.rec},
+  ].filter(c => c.key === 'all' || c.count > 0);
+  const filterBarHTML = `
+<div class="filter-bar">
+  ${filterCats.map((c,i) => `<button class="f-chip${i===0?' active':''}" data-filter="${c.key}">${c.label} <span>${c.count}</span></button>`).join('')}
+</div>`;
 
   const heroHTML = leadStoryHTML(today, briefingEntries);
 
@@ -331,8 +377,8 @@ a{color:inherit;text-decoration:none}
 
 :root{
   --ink:#f2ede0;
-  --paper:#111110;
-  --paper-2:#1a1917;
+  --paper:#080808;
+  --paper-2:#111110;
   --rule:rgba(242,237,224,0.12);
   --muted:#8f887a;
   --accent:#f59e0b;
@@ -409,6 +455,29 @@ a{color:inherit;text-decoration:none}
 .tkd.up{color:var(--pos)}
 .tkd.dn{color:var(--neg)}
 
+/* Section header */
+.section-hdr{padding:28px 40px 22px;border-bottom:1px solid var(--rule)}
+.section-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:8px}
+.section-title{font-family:'Fraunces',serif;font-size:clamp(28px,4vw,52px);font-weight:700;letter-spacing:-0.02em;color:var(--ink);line-height:1}
+.section-title em{font-style:italic;color:var(--accent)}
+
+/* Keywords / Trending bar */
+.kw-bar{padding:10px 40px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px;overflow-x:auto;scrollbar-width:none}
+.kw-bar::-webkit-scrollbar{display:none}
+.kw-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);flex-shrink:0;opacity:.7}
+.kw-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;white-space:nowrap;text-decoration:none;transition:all .15s;background:transparent;flex-shrink:0}
+.kw-pill:hover,.kw-pill.active{color:var(--ink);border-color:var(--muted);background:color-mix(in oklab,var(--ink) 8%,transparent)}
+.kw-pill span{opacity:.55;font-size:9px}
+
+/* Filter chips */
+.filter-bar{padding:10px 40px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.f-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;background:transparent;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.f-chip:hover{color:var(--ink);border-color:var(--muted)}
+.f-chip.active{color:#000;background:var(--ink);border-color:var(--ink)}
+.f-chip span{opacity:.55;font-size:9px}
+.f-hide{display:none!important}
+
 /* Lead Story Hero */
 .lead-story{display:grid;grid-template-columns:1.7fr 1fr;gap:32px;padding:32px 40px;border-bottom:1px solid var(--rule);border-left:4px solid var(--cat,var(--accent));background:linear-gradient(90deg,color-mix(in oklab,var(--cat,var(--accent)) 6%,var(--paper)),var(--paper))}
 @media(max-width:800px){.lead-story{grid-template-columns:1fr}}
@@ -481,6 +550,9 @@ a{color:inherit;text-decoration:none}
   .topbar-nav,.logo-wm{display:none}
   .topbar-meta span.topbar-date-str{display:none}
   .ticker{display:none}
+  .section-hdr{padding:20px 16px 16px}
+  .kw-bar{padding:8px 16px;gap:8px}
+  .filter-bar{padding:8px 16px;gap:6px}
   .lead-story{padding:20px 16px;grid-template-columns:1fr}
   .ls-right{border-left:0;border-top:1px dashed var(--rule);padding:12px 0 0;margin-top:4px}
   .tsec-hdr{padding:12px 16px 8px}
@@ -561,8 +633,18 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- Section header -->
+<div class="section-hdr">
+  <span class="section-eyebrow">DAILY INTELLIGENCE</span>
+  <h2 class="section-title"><em>GM</em> Research</h2>
+</div>
+
 <!-- Lead story -->
 ${heroHTML}
+
+<!-- Keywords + Filter -->
+${kwBarHTML}
+${filterBarHTML}
 
 <!-- Feed -->
 <div class="feed">
@@ -625,6 +707,37 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     if(ed.VIX){setById('tk-vix','tk-vix-d',fmtN(ed.VIX.price),ed.VIX.change);}
     if(ed.DXY){setById('tk-dxy','tk-dxy-d',fmtN(ed.DXY.price),ed.DXY.change);}
   }catch(e){}
+})();
+// Filter chips + keyword pills
+(function(){
+  function applyFilter(type,value){
+    document.querySelectorAll('.f-chip').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.kw-pill').forEach(function(b){b.classList.remove('active');});
+    if(type==='cat'){
+      var btn=document.querySelector('.f-chip[data-filter="'+value+'"]');
+      if(btn)btn.classList.add('active');
+      document.querySelectorAll('.tline').forEach(function(row){
+        row.classList.toggle('f-hide',value!=='all'&&row.dataset.cat!==value);
+      });
+    } else {
+      var kw=value.toLowerCase();
+      var btn2=document.querySelector('.kw-pill[data-kw="'+value+'"]');
+      if(btn2)btn2.classList.add('active');
+      document.querySelectorAll('.tline').forEach(function(row){
+        var tags=(row.dataset.tags||'').toLowerCase().split(',');
+        row.classList.toggle('f-hide',!tags.some(function(t){return t.trim()===kw;}));
+      });
+    }
+    document.querySelectorAll('.tsec').forEach(function(sec){
+      sec.classList.toggle('f-hide',sec.querySelectorAll('.tline:not(.f-hide)').length===0);
+    });
+  }
+  document.querySelectorAll('.f-chip').forEach(function(btn){
+    btn.addEventListener('click',function(){applyFilter('cat',btn.dataset.filter);});
+  });
+  document.querySelectorAll('.kw-pill').forEach(function(btn){
+    btn.addEventListener('click',function(e){e.preventDefault();applyFilter('kw',btn.dataset.kw);});
+  });
 })();
 </script>
 </body>
