@@ -213,7 +213,7 @@ function briefingCard(date, key) {
     <a href="briefings/${date}/${m.filename}" class="tline" data-cat="${m.cat}">
       <div class="t-bar"></div>
       <div class="t-ic">${m.icon}</div>
-      <div class="t-name">${m.slug}</div>
+      <div class="t-name">${m.typeLabel}</div>
       <div class="t-ttl">${escapeHtml(title)}${preview ? `<small>${escapeHtml(preview)}</small>` : ''}</div>
       <div class="t-tags">${tagsHTML}</div>
     </a>`;
@@ -226,7 +226,7 @@ function transcriptCard(t) {
     <a href="transcripts/${t.slug}/index.html" class="tline" data-cat="tx">
       <div class="t-bar"></div>
       <div class="t-ic">&#x1F3A5;</div>
-      <div class="t-name">TX</div>
+      <div class="t-name">Transcript</div>
       <div class="t-ttl">${escapeHtml(t.title)}${t.source ? `<small>${escapeHtml(t.source)}</small>` : ''}</div>
       <div class="t-tags">${tagsHTML}</div>
     </a>`;
@@ -236,14 +236,14 @@ const RECIPE_ROW = `
     <a href="recipes/ultimate-chewy-brownies/index.html" class="tline" data-cat="rec">
       <div class="t-bar"></div>
       <div class="t-ic">&#x1F36B;</div>
-      <div class="t-name">REC</div>
+      <div class="t-name">Recipe</div>
       <div class="t-ttl">The Ultimate Chewy Brownie<small>Brown butter + oil, dual sugars, 2+2 egg ratio. Science-backed.</small></div>
       <div class="t-tags"><span>Baking</span><span>Brownies</span></div>
     </a>`;
 
 function dateGroupHTML(date, briefings, transcripts, isToday) {
   const d = new Date(`${date}T12:00:00Z`);
-  const dow = d.toLocaleDateString('en-US',{weekday:'short',timeZone:'UTC'}).toUpperCase();
+  const dow = d.toLocaleDateString('en-US',{weekday:'long',timeZone:'UTC'}).toUpperCase();
   const total = briefings.length + transcripts.length + (date === RECIPE_DATE ? 1 : 0);
   return `
   <section class="tsec">
