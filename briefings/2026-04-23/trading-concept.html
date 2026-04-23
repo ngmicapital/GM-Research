@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidations | April 23, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:180px;flex-shrink:0}
+.toc-sticky{position:sticky;top:24px}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%;position:static}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc">
+  <div class="toc-sticky">
+    <div class="toc-label">Contents</div>
+    <a href="#s01"><span class="num">§01</span>What It Is</a>
+    <a href="#s02"><span class="num">§02</span>Mechanics</a>
+    <a href="#s03"><span class="num">§03</span>Visual</a>
+    <a href="#s04"><span class="num">§04</span>In Practice</a>
+    <a href="#s05"><span class="num">§05</span>Live Tape</a>
+    <a href="#s06"><span class="num">§06</span>Quotes</a>
+    <a href="#s07"><span class="num">§07</span>Common Traps</a>
+    <a href="#s08"><span class="num">§08</span>Further Reading</a>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidations</h1>
+  <div class="meta">
+    <span>Thursday · 23 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #1</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Liquidations are forced position closures triggered when a leveraged trader's margin balance falls below the maintenance threshold</strong>; they're the involuntary selling (or buying) engine behind every violent crypto candle. The practical edge: treat the liquidation heatmap as a gravity map — price tends to run toward clustered stops, so place yours outside the cluster, never inside it.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Plain-English definition · why perps are different</div>
+    </div>
+  </div>
+
+  <div class="skim">A liquidation is what happens when the exchange pulls the plug on a leveraged trade because the collateral can no longer cover the open loss — it's not a suggestion, it's automatic and final.</div>
+
+  <p>Every leveraged position in crypto perps has two prices that matter: the one you entered at, and the one at which the exchange will involuntarily close you out. That second price is your <strong>liquidation price</strong> — the point where your posted margin has been fully consumed by unrealised losses and the exchange must close the position to protect itself from your going negative.</p>
+
+  <p>Unlike a stop-loss, which you set yourself and can cancel, a liquidation is a pure function of collateral math. The exchange's risk engine watches the <strong>mark price</strong> (an aggregate, manipulation-resistant reference — not the last trade on one venue) against your <strong>maintenance margin</strong> (the minimum equity required to keep the position open). The moment mark crosses your liq price, the engine fires a market order to close you, takes its fees, and whatever's left goes back to you. Often that's zero.</p>
+
+  <p>The reason liquidations dominate crypto tape in a way they don't dominate equities: perps let retail run 10–100× leverage, 24/7, with no circuit breakers, on instruments that sometimes move 5% in an hour. When a cluster of 20× longs all share a similar liq price, crossing it doesn't just close one trader — it fires a fresh wave of market sells into the book, which moves price further, which liquidates the next cluster. That's the cascade.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>MARK PRICE</b><span>Aggregated reference used for liq checks — not last trade</span></span>
+    <span class="pill-term"><b>INITIAL MARGIN</b><span>Upfront collateral required to open the position</span></span>
+    <span class="pill-term"><b>MAINT. MARGIN</b><span>Minimum equity before liq — typically 0.4–2%</span></span>
+    <span class="pill-term"><b>ISOLATED</b><span>Only the position's margin is at risk</span></span>
+    <span class="pill-term"><b>CROSS</b><span>Entire wallet backs the position — larger cushion, bigger blowup</span></span>
+    <span class="pill-term"><b>ADL</b><span>Auto-deleveraging — counterparty gets force-closed when insurance fund can't absorb</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Your liquidation price is not determined by your stop — it's determined by your leverage. The higher the leverage, the closer liq sits to entry, no matter what you do with TP/SL.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">The math · isolated vs cross · what actually triggers the engine</div>
+    </div>
+  </div>
+
+  <div class="skim">Liquidation fires the moment your margin balance divided by maintenance margin requirement hits 100% — and that ratio is eroded by price moves, funding drags, and fees, in that order.</div>
+
+  <p>The exchange's risk engine runs one check, continuously: <strong>Margin Balance ÷ Maintenance Margin Requirement</strong>. When that ratio hits 100%, you're liquidated. Your margin balance is wallet collateral plus unrealised PnL minus accrued funding and fees. Maintenance margin is set by tier — bigger positions require a higher %.</p>
+
+  <div class="formula">
+<b>Long liquidation price (isolated):</b>
+Liq Price = Entry × (1 − Initial Margin Ratio + Maintenance Margin Ratio)
+
+<b>Short liquidation price (isolated):</b>
+Liq Price = Entry × (1 + Initial Margin Ratio − Maintenance Margin Ratio)
+
+<b>Leverage → cushion heuristic:</b>
+Cushion to liquidation ≈ 1 / Leverage − Maintenance Margin %
+
+    <div class="note">Formulas ignore fees and funding. Real liq prices are ~0.1–0.5% tighter than the naive calc. Cross-margin accounts use the entire wallet as collateral, so the effective liq price moves as other positions' PnL changes.</div>
+  </div>
+
+  <table class="cmp">
+    <tr><th>Margin mode</th><th>Collateral at risk</th><th>When to use</th></tr>
+    <tr><td>Isolated</td><td>Only the margin allocated to that position</td><td>Directional trades where you want a hard ring-fence; size the risk at entry, walk away</td></tr>
+    <tr><td>Cross</td><td>Entire wallet balance (and PnL of other positions)</td><td>Market-neutral or hedged books where one leg's unrealised gains cushion the other leg; never for single-ticker retail punts</td></tr>
+  </table>
+
+  <p><strong>What erodes your cushion besides price:</strong> funding rate debits (on a 50% annualised funding, you bleed ~0.14%/day against you on the wrong side), fees (round-trip ~0.1%), and — on cross — losses from unrelated positions. In a trending market with extreme funding, a leveraged position can be liquidated <em>without price moving adversely</em> simply from funding drag over time.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — leverage cushion + the cascade loop</div>
+    </div>
+  </div>
+
+  <div class="skim">The first chart shows how vicious the leverage curve gets past 20×; the second shows why a single liq rarely stays a single liq.</div>
+
+  <!-- SVG 1 — Leverage × Cushion -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Leverage vs cushion to liquidation bar chart">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635"/>
+          <stop offset="1" stop-color="#65a30d"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fbbf24"/>
+          <stop offset="1" stop-color="#d97706"/>
+        </linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ef4444"/>
+          <stop offset="1" stop-color="#991b1b"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="30" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#1c1917">Leverage × Cushion to Liquidation</text>
+      <text x="400" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">APPROX. ADVERSE PRICE MOVE TO LIQ (MM ~0.5%)</text>
+
+      <!-- Y-axis -->
+      <line x1="90" y1="80" x2="90" y2="360" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="45" y="220" font-family="JetBrains Mono,monospace" font-size="11" fill="#57534e" transform="rotate(-90 45 220)" text-anchor="middle">% move to liquidation</text>
+
+      <!-- Gridlines + Y-labels -->
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">
+        <line x1="90" y1="360" x2="760" y2="360" stroke="#e7e5e4" stroke-width="1"/>
+        <line x1="90" y1="304" x2="760" y2="304" stroke="#e7e5e4" stroke-dasharray="2,3"/>
+        <line x1="90" y1="248" x2="760" y2="248" stroke="#e7e5e4" stroke-dasharray="2,3"/>
+        <line x1="90" y1="192" x2="760" y2="192" stroke="#e7e5e4" stroke-dasharray="2,3"/>
+        <line x1="90" y1="136" x2="760" y2="136" stroke="#e7e5e4" stroke-dasharray="2,3"/>
+        <line x1="90" y1="80"  x2="760" y2="80"  stroke="#e7e5e4" stroke-dasharray="2,3"/>
+        <text x="82" y="363" text-anchor="end">0%</text>
+        <text x="82" y="307" text-anchor="end">10%</text>
+        <text x="82" y="251" text-anchor="end">20%</text>
+        <text x="82" y="195" text-anchor="end">30%</text>
+        <text x="82" y="139" text-anchor="end">40%</text>
+        <text x="82" y="83"  text-anchor="end">50%</text>
+      </g>
+
+      <!-- Bars: 2x=49.5%, 5x=19.5%, 10x=9.5%, 20x=4.5%, 50x=1.5%, 100x=0.5% -->
+      <!-- bar height = (pct/50)*280, baseline 360 -->
+      <g>
+        <!-- 2x -->
+        <rect x="130" y="80"  width="70" height="280" fill="url(#g1)" rx="3"/>
+        <text x="165" y="73"  font-family="JetBrains Mono,monospace" font-size="12" fill="#3f6212" text-anchor="middle" font-weight="700">49.5%</text>
+        <text x="165" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">2×</text>
+
+        <!-- 5x -->
+        <rect x="230" y="251" width="70" height="109" fill="url(#g1)" rx="3"/>
+        <text x="265" y="244" font-family="JetBrains Mono,monospace" font-size="12" fill="#3f6212" text-anchor="middle" font-weight="700">19.5%</text>
+        <text x="265" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">5×</text>
+
+        <!-- 10x -->
+        <rect x="330" y="307" width="70" height="53" fill="url(#g2)" rx="3"/>
+        <text x="365" y="300" font-family="JetBrains Mono,monospace" font-size="12" fill="#78350f" text-anchor="middle" font-weight="700">9.5%</text>
+        <text x="365" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">10×</text>
+
+        <!-- 20x -->
+        <rect x="430" y="335" width="70" height="25" fill="url(#g2)" rx="3"/>
+        <text x="465" y="328" font-family="JetBrains Mono,monospace" font-size="12" fill="#78350f" text-anchor="middle" font-weight="700">4.5%</text>
+        <text x="465" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">20×</text>
+
+        <!-- 50x -->
+        <rect x="530" y="351" width="70" height="9" fill="url(#g3)" rx="3"/>
+        <text x="565" y="344" font-family="JetBrains Mono,monospace" font-size="12" fill="#991b1b" text-anchor="middle" font-weight="700">1.5%</text>
+        <text x="565" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">50×</text>
+
+        <!-- 100x -->
+        <rect x="630" y="357" width="70" height="3" fill="url(#g3)" rx="3"/>
+        <text x="665" y="350" font-family="JetBrains Mono,monospace" font-size="12" fill="#991b1b" text-anchor="middle" font-weight="700">0.5%</text>
+        <text x="665" y="380" font-family="JetBrains Mono,monospace" font-size="13" fill="#1c1917" text-anchor="middle" font-weight="600">100×</text>
+      </g>
+
+      <!-- Annotations -->
+      <g font-family="Inter,sans-serif" font-size="11" fill="#57534e">
+        <text x="400" y="405" text-anchor="middle" font-style="italic">Leverage</text>
+      </g>
+
+      <!-- Zone divider -->
+      <line x1="410" y1="80" x2="410" y2="360" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="415" y="100" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">↓ single-candle-kill zone</text>
+    </svg>
+    <div class="svg-caption">At 20× and above, a single 5% adverse candle is terminal. BTC has moved 5% in under an hour on ~14 trading days this year.</div>
+  </div>
+
+  <!-- SVG 2 — Cascade loop -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Liquidation cascade doom loop diagram">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#3f6212"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="30" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#1c1917">The Cascade — How One Liq Becomes a Thousand</text>
+      <text x="400" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">EACH STEP FEEDS THE NEXT · SECONDS, NOT MINUTES</text>
+
+      <!-- Circular loop: 5 nodes -->
+      <!-- center (400,230), radius 140 -->
+      <!-- Node 1: top (400, 90) -->
+      <!-- Node 2: top-right (530, 170) -->
+      <!-- Node 3: bottom-right (490, 320) -->
+      <!-- Node 4: bottom-left (310, 320) -->
+      <!-- Node 5: top-left (270, 170) -->
+
+      <!-- Arrows between nodes (clockwise) -->
+      <g stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arrow)">
+        <path d="M 453 100 Q 515 120 520 158"/>
+        <path d="M 537 193 Q 540 275 503 310"/>
+        <path d="M 475 335 Q 400 355 325 335"/>
+        <path d="M 297 310 Q 260 275 263 193"/>
+        <path d="M 280 158 Q 295 120 347 100"/>
+      </g>
+
+      <!-- Nodes -->
+      <g font-family="Inter,sans-serif" text-anchor="middle">
+        <!-- 1 -->
+        <circle cx="400" cy="90" r="46" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+        <text x="400" y="83" font-size="10" font-family="JetBrains Mono,monospace" fill="#78350f" letter-spacing="1">STEP 1</text>
+        <text x="400" y="99" font-size="12" font-weight="700" fill="#1c1917">Price drops 3%</text>
+        <text x="400" y="114" font-size="10" fill="#57534e">macro headline · whale dump</text>
+
+        <!-- 2 -->
+        <circle cx="545" cy="175" r="46" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+        <text x="545" y="168" font-size="10" font-family="JetBrains Mono,monospace" fill="#991b1b" letter-spacing="1">STEP 2</text>
+        <text x="545" y="184" font-size="12" font-weight="700" fill="#1c1917">20× longs hit liq</text>
+        <text x="545" y="199" font-size="10" fill="#57534e">first cluster forced out</text>
+
+        <!-- 3 -->
+        <circle cx="490" cy="330" r="46" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+        <text x="490" y="323" font-size="10" font-family="JetBrains Mono,monospace" fill="#991b1b" letter-spacing="1">STEP 3</text>
+        <text x="490" y="339" font-size="12" font-weight="700" fill="#1c1917">Forced market sells</text>
+        <text x="490" y="354" font-size="10" fill="#57534e">bids thin, spread widens</text>
+
+        <!-- 4 -->
+        <circle cx="310" cy="330" r="46" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+        <text x="310" y="323" font-size="10" font-family="JetBrains Mono,monospace" fill="#991b1b" letter-spacing="1">STEP 4</text>
+        <text x="310" y="339" font-size="12" font-weight="700" fill="#1c1917">Price drops 3% more</text>
+        <text x="310" y="354" font-size="10" fill="#57534e">in seconds, not minutes</text>
+
+        <!-- 5 -->
+        <circle cx="255" cy="175" r="46" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+        <text x="255" y="168" font-size="10" font-family="JetBrains Mono,monospace" fill="#991b1b" letter-spacing="1">STEP 5</text>
+        <text x="255" y="184" font-size="12" font-weight="700" fill="#1c1917">10× cluster hit</text>
+        <text x="255" y="199" font-size="10" fill="#57534e">next layer vaporised</text>
+
+        <!-- center label -->
+        <text x="400" y="225" font-size="12" font-family="JetBrains Mono,monospace" fill="#57534e" letter-spacing="1">AUTO · RECURSIVE</text>
+        <text x="400" y="248" font-size="22" font-family="DM Serif Display,serif" fill="#ef4444" font-style="italic">feedback</text>
+      </g>
+
+      <!-- Break-out arrow showing "until insurance fund catches or short-side is exhausted" -->
+      <g>
+        <path d="M 620 330 Q 680 300 720 250" stroke="#3f6212" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+        <text x="720" y="240" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" text-anchor="end" letter-spacing="0.5">exit:</text>
+        <text x="720" y="254" font-family="Inter,sans-serif" font-size="11" fill="#3f6212" text-anchor="end" font-weight="600">insurance fund</text>
+        <text x="720" y="268" font-family="Inter,sans-serif" font-size="11" fill="#3f6212" text-anchor="end" font-weight="600">absorbs · ADL · bid</text>
+      </g>
+    </svg>
+    <div class="svg-caption">The October 2025 flash crash did $3.21B of this in sixty seconds. Bots don't pause to reconsider.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">How this actually lives in a P&amp;L · four real uses</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: price hunts clustered stops, so put yours where the herd isn't — and size so a 2× ATR move can't touch liq.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Read the heatmap as a gravity map, not a forecast</h4>
+        <p>On Coinglass, bright yellow clusters are concentrated liq exposure, not predictions of where price will go. But price gravitates to them — magnet zones exist because exchanges and MMs profit from filling those orders. Use them to anticipate <em>where</em> moves extend, not whether.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Place stops outside the visible cluster</h4>
+        <p>If the heatmap shows dense longs at $82.1K and you're long BTC, a stop at $82.05K is the worst possible location — you'll be the first hit and the first refilled. Either stop above the cluster (tighter risk, cleaner invalidation) or well below (survive the sweep, wider R).</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Fade the flush — but only when OI drops hard</h4>
+        <p>A liquidation cascade that vaporises Open Interest (e.g. −15% in an hour) is a real cleanse and often marks a short-term bottom/top. A cascade that doesn't drop OI means new shorts piled in — more downside likely. Always check OI delta alongside the liq print.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Size to survive 2× ATR, then ignore leverage</h4>
+        <p>Forget the leverage number on the ticker. Pick a stop based on invalidation (structure/ATR), pick a risk-per-trade (say 1R = 0.5% account), and solve for position size. Your effective leverage is whatever that math produces — it could be 3× or 17×, doesn't matter. What matters is that a 2× ATR move against you is ≤1R, not liquidation.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example · Long BTC at $87,400</h5>
+    <table>
+      <tr><td>Setup</td><td>Long BTC spot-backed perp, 4H structure reclaim above $86,800</td></tr>
+      <tr><td>Invalidation</td><td>$85,900 (below the reclaim wick) — 1.72% stop</td></tr>
+      <tr><td>Risk tolerance</td><td>1R = 0.5% of account</td></tr>
+      <tr><td>Implied size</td><td>Account × 0.5% ÷ 1.72% = 29% of account notional = ~0.29× account leverage</td></tr>
+      <tr><td>Effective leverage</td><td>If posting 5% of account as isolated margin: 5.8× on the position, liq ~$73.2K — miles below stop ✓</td></tr>
+      <tr><td>Target</td><td>$89,900 = +2.86% = 1.67R · Add at $88,800 reclaim, trail stop to $87,300 on 1H close</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> Liquidation heatmap reads best on 1H–4H for execution timing; 12H–1D for regime/cluster positioning. Ignore 1m/5m heatmap noise — too shallow to matter.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Liquidations on today's BTC chart</div>
+    </div>
+  </div>
+
+  <div class="skim">This month's $820M cascade that broke BTC's 7-month downtrend is the cleanest recent teaching example — a doom-loop flush on the downside, then a reflex squeeze on the upside off the same thinned book.</div>
+
+  <div class="tape">
+    <div class="tape-label">BTCUSDT.P · Late-April 2026 · Cascade → reclaim</div>
+    <h4>$820M wiped, 7-month downtrend snapped</h4>
+    <p>Earlier this month BTC traced out the exact two-sided pattern that liquidation concentration produces: first a one-way cascade down into a clustered long wall in the high-$60Ks, then — after shorts piled in at the lows assuming continuation — a violent upside squeeze that reclaimed $78K. Both legs were mechanical, not fundamental.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>Cascade window</td><td>Early April 2026 — ~90 mins of sustained forced selling</td></tr>
+        <tr><td>Total liquidations</td><td>≈ $820M across BTC/ETH/majors · longs dominant</td></tr>
+        <tr><td>Whale long anchor</td><td>April 15 · BTC long opened, liq price ~$71,506 · ETH long liq ~$2,258</td></tr>
+        <tr><td>Reflex top</td><td>$78K (approx.) — 10-week high, ETF inflows flipped positive</td></tr>
+        <tr><td>OI delta</td><td>Sharp drop during cascade (confirms genuine deleveraging, not new-short piling)</td></tr>
+      </table>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%5D" style="width:100%;height:420px;border:0;" loading="lazy" title="BTCUSDT.P 4H chart"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The cascade broke the downtrend precisely because it was exhaustive — OI collapsed alongside price, meaning leverage was actually purged (not rotated). That's when a move stops being "another leg lower" and starts being a base. The reclaim to $78K was the market paying off the shorts who assumed continuation. Check the current heatmap — if dense long clusters are now building in the $82–84K band, that's the next magnet.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Voices worth internalising · classical and current</div>
+    </div>
+  </div>
+
+  <div class="skim">The best descriptions of liquidation behaviour pre-date perps by 80 years — institutions have been manufacturing stop runs since Livermore.</div>
+
+  <div class="quote">
+    <p>"The stops of the public, once located, become the target. Markets are not pushed by accident — they are pushed precisely to where the liquidity sits."</p>
+    <div class="attr"><b>Richard Wyckoff</b> · paraphrased from <i>The Richard D. Wyckoff Method of Trading and Investing in Stocks</i> · 1931</div>
+  </div>
+
+  <div class="quote">
+    <p>"The spring serves one function above all others: liquidity capture. Triggered stops are absorbed at bargain prices by whoever engineered the sweep."</p>
+    <div class="attr"><b>Rubén Villahermosa</b> · <i>The Wyckoff Methodology in Depth</i> · 2019 · <a href="https://tradingwyckoff.com/en/wyckoff-method/" target="_blank" rel="noopener">tradingwyckoff.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Cascades don't require fundamentals. They require only clustered leverage and a book that can't absorb the first order."</p>
+    <div class="attr"><b>Amberdata research</b> · <i>Leverage &amp; Liquidations: The $31B Deleveraging</i> · 2025 · <a href="https://blog.amberdata.io/leverage-liquidations-the-31b-deleveraging" target="_blank" rel="noopener">blog.amberdata.io</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Liquidations: a complete guide — once you see how stop hunts actually work, you stop volunteering to be the liquidity."</p>
+    <div class="attr"><b>@Luckshuryy</b> · X/Twitter thread · January 2026 · <a href="https://x.com/Luckshuryy/status/2008983149347574214" target="_blank" rel="noopener">x.com</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where most traders lose unnecessary money on this</div>
+    </div>
+  </div>
+
+  <div class="skim">The most expensive misconception: "low leverage is automatically safe" — funding drag and cross-margin entanglement kill accounts that never see a 1% adverse move.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Confusing liquidation price with stop-loss</h5>
+      <p>A stop-loss is discretionary, cancellable, and typically placed at a structural invalidation. A liquidation is automatic and determined by margin math. If your stop is <em>past</em> your liq price, you don't have a stop — you have a ceremony. Always verify liq sits well beyond your stop.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Running cross-margin on a directional punt</h5>
+      <p>Cross is for market-neutral books or delta-hedged plays. On a single-ticker leveraged bet, cross exposes your entire wallet to one bad candle. The "bigger cushion" isn't a feature — it's a longer fuse on a bigger bomb.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring funding drag on the liq price</h5>
+      <p>At 50%+ annualised funding (normal in euphoric tops/bottoms), a leveraged position bleeds ~0.14%/day against it. Hold a 20× long through a week of extreme funding and your effective cushion shrinks by ~1% with zero price movement. Recalculate liq daily in extreme funding regimes.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Treating the heatmap as predictive</h5>
+      <p>It's reactive. The heatmap tells you where concentrated stops currently sit, not that price will go there. It's a probability shader on top of your thesis, not a substitute for one. Heatmap-only trading is a faster route to becoming the liquidity than reading no data at all.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Anti-hype: "liquidation hunting" as an edge is mostly overfitted</h5>
+      <p>A lot of the "liquidity grab / stop hunt" lore on crypto Twitter is just after-the-fact rationalisation of normal swing-point behaviour. Real liquidity sweeps exist at obvious prior highs/lows with visible cluster density; most "the whales ran the stops" claims are noise. Be honest about the signal-to-noise ratio before you build a system around it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Primary sources used + go-deeper material</div>
+    </div>
+  </div>
+
+  <div class="skim">Four sources, no filler — start with Coinglass for the tool, Amberdata for the forensics, Villahermosa for the theory, Luckshuryy for the thread.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body"><a href="https://x.com/Luckshuryy/status/2008983149347574214" target="_blank" rel="noopener">Liquidations: a complete guide — @Luckshuryy</a><span>The canonical X thread that triggered this brief. Walks the mechanics and shows real heatmap reads.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body"><a href="https://www.coinglass.com/learn/how-to-use-liqmap-to-assist-trading-en" target="_blank" rel="noopener">How to use liquidation heatmaps — CoinGlass</a><span>First-party explainer from the heatmap provider itself. Covers magnet zones, stop placement, position sizing.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body"><a href="https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts" target="_blank" rel="noopener">How $3.21B vanished in 60 seconds — Amberdata</a><span>Minute-by-minute forensic on the October 2025 cascade. Seven charts that show exactly how the doom loop propagates.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body"><a href="https://tradingwyckoff.com/en/wyckoff-method/" target="_blank" rel="noopener">The Wyckoff Method — Rubén Villahermosa</a><span>Why institutions engineer liquidation sweeps as part of accumulation/distribution. Chapter on the Spring is the directly relevant section.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Explainer</div>
+      <div class="fr-body"><a href="https://metamask.io/news/perpetual-futures-liquidation-mechanics" target="_blank" rel="noopener">Perpetual futures liquidation explained — MetaMask</a><span>Clean primer on the math: initial margin, maintenance margin, mark price, fees, funding. Use this to verify your exchange's specific formula.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────── -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources cited</b>
+    <a href="https://x.com/Luckshuryy/status/2008983149347574214" target="_blank" rel="noopener">x.com/Luckshuryy</a>
+    <a href="https://www.coinglass.com/learn/how-to-use-liqmap-to-assist-trading-en" target="_blank" rel="noopener">coinglass.com/learn</a>
+    <a href="https://blog.amberdata.io/how-3.21b-vanished-in-60-seconds-october-2025-crypto-crash-explained-through-7-charts" target="_blank" rel="noopener">blog.amberdata.io</a>
+    <a href="https://metamask.io/news/perpetual-futures-liquidation-mechanics" target="_blank" rel="noopener">metamask.io</a>
+    <a href="https://tradingwyckoff.com/en/wyckoff-method/" target="_blank" rel="noopener">tradingwyckoff.com</a>
+    <a href="https://www.bybit.com/en/help-center/article/Liquidation-Process-USDC-Contract" target="_blank" rel="noopener">bybit.com/help</a>
+    <a href="https://www.mexc.com/learn/article/what-is-liquidation-a-complete-guide-to-its-mechanism-price-calculation-and-risk-management/1" target="_blank" rel="noopener">mexc.com/learn</a>
+    <a href="https://yield.app/blog/what-are-liquidation-cascades-in-crypto" target="_blank" rel="noopener">yield.app/blog</a>
+  </div>
+  <div>Alpha · Issue #1 · 23 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /outer -->
+
+</body>
+</html>
