@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence | April 23, 2026</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  --bg-primary:#faf8f5;--bg-secondary:#f0ede8;--bg-sidebar:#e8e4dd;--bg-card:#ffffff;--bg-card-hover:#f5f3ee;
+  --text-primary:#1c1c1e;--text-secondary:#4a4a4f;--text-muted:#8a8a8e;--border:#d1c9be;
+  --accent-gold:#b8860b;--accent-gold-light:#8a6508;--accent-blue:#1f6feb;--accent-purple:#8957e5;
+  --accent-amber:#d29922;--accent-green:#3fb950;--accent-red:#f85149;--accent-teal:#3dc9b0;
+  font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.7;
+  background:var(--bg-primary);color:var(--text-primary);transition:background 0.3s,color 0.3s;
+}
+body.dark-mode {
+  --bg-primary:#0d1117;--bg-secondary:#111827;--bg-sidebar:#0a0f16;--bg-card:#161d2b;--bg-card-hover:#1c2538;
+  --text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#21262d;
+  --accent-gold:#d4a017;--accent-gold-light:#f0c040;--accent-blue:#1f6feb;--accent-purple:#8957e5;
+  --accent-amber:#d29922;--accent-green:#3fb950;--accent-red:#f85149;--accent-teal:#3dc9b0;
+}
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--bg-sidebar);border-right:1px solid var(--border);overflow-y:auto;z-index:100;transition:transform 0.3s,background 0.3s;padding:24px 0;}
+.sidebar-brand{padding:0 18px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sidebar-brand .wordmark{font-family:'Courier New',monospace;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent-gold);}
+.sidebar-brand .sidebar-date{font-family:'Courier New',monospace;font-size:10px;color:var(--text-muted);margin-top:2px;}
+.sidebar-section-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);padding:0 18px;margin-bottom:6px;}
+.sidebar-nav a{display:flex;align-items:flex-start;gap:8px;padding:5px 18px;text-decoration:none;font-family:'Courier New',monospace;font-size:11px;color:var(--text-secondary);transition:color 0.15s;line-height:1.4;}
+.sidebar-nav a:hover{color:var(--text-primary);}
+.sidebar-nav a.active{color:var(--accent-gold);border-left:2px solid var(--accent-gold);padding-left:16px;}
+.sidebar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.dot-headline{background:var(--accent-gold);}
+.dot-high{background:var(--accent-blue);}
+.dot-medium{background:var(--accent-green);}
+.sidebar-section-links{padding:4px 18px;}
+.sidebar-section-links a{display:block;padding:3px 0;text-decoration:none;font-family:'Courier New',monospace;font-size:10px;color:var(--text-muted);transition:color 0.15s;}
+.sidebar-section-links a:hover{color:var(--accent-gold);}
+.content{margin-left:240px;max-width:960px;padding:40px 32px 80px;}
+.hamburger{display:none;position:fixed;top:14px;left:14px;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;width:36px;height:36px;cursor:pointer;align-items:center;justify-content:center;font-size:16px;color:var(--text-primary);}
+.theme-toggle{position:fixed;top:14px;right:14px;z-index:200;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;font-family:'Courier New',monospace;color:var(--text-secondary);transition:background 0.2s;}
+.theme-toggle:hover{background:var(--bg-secondary);}
+.masthead{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--border);margin-bottom:36px;}
+.masthead h1{font-size:3.2rem;font-weight:800;font-family:Georgia,serif;letter-spacing:-0.5px;color:var(--text-primary);}
+.gold-bar{width:80px;height:3px;background:var(--accent-gold);margin:12px auto 14px;}
+.masthead-subtitle{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.masthead-date{font-family:'Courier New',monospace;font-size:12px;color:var(--text-secondary);margin-bottom:16px;}
+.masthead-meta{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.meta-pill{display:inline-block;font-size:10px;font-family:'Courier New',monospace;letter-spacing:0.5px;padding:4px 12px;border-radius:12px;background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);}
+.meta-pill.gold{background:rgba(184,134,11,0.12);color:var(--accent-gold);border-color:rgba(184,134,11,0.3);}
+.masthead-separator{background:linear-gradient(90deg,transparent,var(--accent-gold),transparent);height:2px;width:100%;}
+.reading-time-pill{display:inline-block;font-size:10px;color:var(--text-muted);background:var(--bg-secondary);padding:3px 10px;border-radius:12px;font-family:'Courier New',monospace;letter-spacing:0.5px;}
+.story-card{background:var(--bg-card);border-radius:8px;border:1px solid var(--border);padding:28px 28px 24px;margin-bottom:28px;transition:box-shadow 0.2s,transform 0.2s;}
+.story-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px);}
+.tier-headline{border-left:3px solid var(--accent-gold);}
+.tier-high{border-left:3px solid var(--accent-blue);}
+.tier-medium{border-left:3px solid var(--accent-green);}
+.story-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
+.tier-badge{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:4px;border:1px solid;}
+.badge-headline{background:rgba(212,160,23,0.2);color:var(--accent-gold);border-color:rgba(212,160,23,0.4);}
+.badge-high{background:rgba(31,111,235,0.2);color:var(--accent-blue);border-color:rgba(31,111,235,0.4);}
+.badge-medium{background:rgba(63,185,80,0.15);color:var(--accent-green);border-color:rgba(63,185,80,0.3);}
+.source-tag{font-family:'Courier New',monospace;font-size:10px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:3px;}
+.category-tag{font-family:'Courier New',monospace;font-size:10px;color:var(--text-secondary);}
+.signal-row{font-family:'Courier New',monospace;font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+h2.story-title{font-size:1.4rem;font-weight:700;line-height:1.35;color:var(--text-primary);margin-bottom:14px;}
+.plain-explainer{background:var(--bg-secondary);border-left:3px solid var(--accent-gold);padding:12px 16px;border-radius:4px;margin-bottom:14px;font-size:14px;color:var(--text-primary);}
+.explainer-icon{font-size:16px;margin-right:6px;}
+.golden-quote{border-left:3px solid var(--accent-gold);background:rgba(212,160,23,0.05);padding:14px 18px;margin-bottom:16px;border-radius:0 4px 4px 0;}
+body.dark-mode .golden-quote{background:rgba(212,160,23,0.12);}
+.golden-quote p{font-style:italic;color:var(--accent-gold-light);font-size:14px;line-height:1.6;}
+.golden-quote cite{display:block;margin-top:6px;font-style:normal;font-size:12px;font-family:'Courier New',monospace;color:var(--text-muted);}
+.story-summary{color:var(--text-secondary);margin-bottom:16px;}
+.story-summary p{margin-bottom:10px;}
+.story-summary p:last-child{margin-bottom:0;}
+.precedent-block{border-left:2px dashed var(--text-muted);padding:8px 14px;margin-bottom:14px;font-size:13px;color:var(--text-muted);}
+.analysis-block{background:var(--bg-secondary);border-left:3px solid var(--accent-blue);padding:14px 18px;margin-bottom:12px;border-radius:0 4px 4px 0;}
+.analysis-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-blue);margin-bottom:6px;}
+.analysis-block p{font-size:14px;color:var(--text-secondary);}
+.contrarian-block{background:var(--bg-secondary);border-left:3px solid var(--accent-purple);padding:14px 18px;margin-bottom:12px;border-radius:0 4px 4px 0;}
+.contrarian-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-purple);margin-bottom:6px;}
+.contrarian-block p{font-size:14px;color:var(--text-secondary);}
+.industry-block{background:var(--bg-secondary);border-left:3px solid var(--accent-amber);padding:14px 18px;margin-bottom:12px;border-radius:0 4px 4px 0;}
+.industry-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-amber);margin-bottom:6px;}
+.industry-block p{font-size:14px;color:var(--text-secondary);}
+.portfolio-block{background:var(--bg-secondary);border:1px solid var(--accent-green);border-radius:6px;padding:14px 18px;margin-bottom:12px;}
+.portfolio-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-green);margin-bottom:8px;}
+.portfolio-block p{font-size:13px;color:var(--text-secondary);margin-bottom:4px;}
+.whatdo-block{background:var(--bg-secondary);border:1px solid var(--accent-gold);border-radius:6px;padding:14px 18px;margin-bottom:12px;}
+.whatdo-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-gold);margin-bottom:10px;}
+.whatdo-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13px;}
+.whatdo-row:last-child{margin-bottom:0;}
+.role-label{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;flex-shrink:0;margin-top:2px;}
+.label-trader{background:rgba(248,81,73,0.2);color:#ff7b72;}
+.label-counsel{background:rgba(31,111,235,0.2);color:#79c0ff;}
+.label-compliance{background:rgba(137,87,229,0.2);color:#d2a8ff;}
+.label-founder{background:rgba(63,185,80,0.2);color:#7ee787;}
+.whatdo-text{color:var(--text-secondary);}
+.connected-block{background:var(--bg-secondary);border-radius:6px;padding:14px 18px;margin-bottom:12px;}
+.connected-block h4{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-blue);margin-bottom:8px;}
+.connected-block p{font-size:13px;color:var(--text-secondary);margin-bottom:4px;}
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}
+.tag-pill{font-family:'Courier New',monospace;font-size:10px;background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);padding:2px 9px;border-radius:12px;}
+.section-header{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.brief-notes-card{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--text-muted);border-radius:8px;padding:24px 28px;margin-bottom:28px;}
+.brief-notes-card h3{font-family:'Courier New',monospace;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:16px;}
+.brief-note-item{padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-secondary);}
+.brief-note-item:last-child{border-bottom:none;padding-bottom:0;}
+.brief-note-item strong{color:var(--text-primary);}
+.cross-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.cross-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:18px;}
+.cross-title{font-family:'Courier New',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-teal);margin-bottom:6px;}
+.direction-indicator{font-size:12px;font-weight:700;font-family:'Courier New',monospace;margin-bottom:8px;}
+.cross-desc{font-size:13px;color:var(--text-secondary);}
+.tone-table{width:100%;border-collapse:collapse;margin-bottom:28px;}
+.tone-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-secondary);}
+.tone-table tr:last-child td{border-bottom:none;}
+.flag-badge{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:3px;margin-right:8px;}
+.flag-us{background:#1f3a6e;color:#93b4f0;border:1px solid #2d5299;}
+.flag-eu{background:#1a1a5e;color:#a0a8f8;border:1px solid #2828a0;}
+.flag-uk{background:#3a1a1a;color:#f09090;border:1px solid #8b2020;}
+.flag-sg{background:#1a3a2a;color:#7fcca0;border:1px solid #1e6640;}
+.flag-au{background:#2a1a3a;color:#c0a0f0;border:1px solid #5e2a8b;}
+.flag-hk{background:#3a2a1a;color:#f0c090;border:1px solid #8b6020;}
+.countdown-table,.pipeline-table,.submissions-table{width:100%;border-collapse:collapse;margin-bottom:28px;}
+.countdown-table th,.pipeline-table th,.submissions-table th{font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:8px 12px;border-bottom:2px solid var(--border);text-align:left;}
+.pipeline-table th,.submissions-table th{background:var(--bg-secondary);}
+.countdown-table td,.pipeline-table td,.submissions-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-secondary);vertical-align:top;}
+.days-pill{display:inline-block;font-family:'Courier New',monospace;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;}
+.days-urgent{background:rgba(212,160,23,0.2);color:var(--accent-gold);border:1px solid rgba(212,160,23,0.4);}
+.days-normal{background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);}
+.movement-up{color:var(--accent-green);font-weight:700;}
+.movement-none{color:var(--text-muted);}
+.movement-down{color:var(--accent-red);font-weight:700;}
+.progress-bar{display:flex;gap:2px;align-items:center;font-family:'Courier New',monospace;font-size:10px;flex-wrap:wrap;}
+.stage-seg{padding:2px 6px;border-radius:3px;font-size:9px;font-family:'Courier New',monospace;font-weight:600;}
+.seg-done{background:rgba(63,185,80,0.2);color:var(--accent-green);}
+.seg-active{background:rgba(212,160,23,0.3);color:var(--accent-gold);font-weight:800;}
+.seg-pending{background:var(--bg-secondary);color:var(--text-muted);}
+.status-open{color:var(--accent-green);font-weight:700;font-family:'Courier New',monospace;font-size:11px;}
+.status-soon{color:var(--accent-gold);font-weight:700;font-family:'Courier New',monospace;font-size:11px;}
+.status-ongoing{color:var(--accent-blue);font-family:'Courier New',monospace;font-size:11px;}
+.new-badge{background:#dc3545;color:white;font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:3px;margin-left:6px;text-transform:uppercase;}
+.footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);font-family:'Courier New',monospace;}
+.footer-section{margin-bottom:12px;}
+.footer-tier{color:var(--text-secondary);margin-bottom:4px;}
+.persistent-section{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px 28px;margin-bottom:28px;}
+.persistent-section h3{font-family:'Courier New',monospace;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-primary);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+@media (max-width:1200px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.content{margin-left:0;padding:60px 20px 60px;}.hamburger{display:flex;}.cross-grid{grid-template-columns:1fr;}}
+@media (max-width:600px){.masthead h1{font-size:2.2rem;}.content{padding:60px 14px 60px;}}
+@media print{.sidebar,.theme-toggle,.hamburger{display:none !important;}.content{margin-left:0 !important;}body{background:white !important;}.story-card{break-inside:avoid;}}
+</style>
+</head>
+<body>
+<button class="hamburger" id="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><div class="wordmark">The Brief</div><div class="sidebar-date">April 23, 2026</div></div>
+  <div class="sidebar-section-label">Stories</div>
+  <div class="sidebar-nav" id="sidebarNav">
+    <a href="#story-1"><span class="sidebar-dot dot-headline"></span>Atkins: Tokenization "Innovation Exemption"</a>
+    <a href="#story-2"><span class="sidebar-dot dot-high"></span>ECB: Digital Euro Vote Delayed to June</a>
+    <a href="#story-3"><span class="sidebar-dot dot-high"></span>CLARITY: 2 Days to Scott Deadline</a>
+    <a href="#story-4"><span class="sidebar-dot dot-high"></span>FinCEN AML Overhaul NPRM</a>
+    <a href="#story-5"><span class="sidebar-dot dot-medium"></span>Nebraska LB525 Chatbot Law Signed</a>
+    <a href="#story-6"><span class="sidebar-dot dot-medium"></span>Hong Kong SFC Staking Green Light</a>
+  </div>
+  <div class="sidebar-section-label" style="margin-top:16px;">Sections</div>
+  <div class="sidebar-section-links">
+    <a href="#brief-notes">Brief Notes</a>
+    <a href="#cross-cutting">Cross-Cutting</a>
+    <a href="#tone-barometer">Tone Barometer</a>
+    <a href="#countdown">Countdown</a>
+    <a href="#pipeline">Pipeline Tracker</a>
+    <a href="#submissions">Open Submissions</a>
+  </div>
+</nav>
+<div class="content">
+  <div class="masthead">
+    <h1>The Brief</h1>
+    <div class="gold-bar"></div>
+    <div class="masthead-subtitle">Legal Intelligence Report</div>
+    <div class="masthead-date">Thursday, April 23, 2026</div>
+    <div class="masthead-meta">
+      <span class="meta-pill gold">6 Stories</span>
+      <span class="meta-pill">50+ Sources</span>
+      <span class="meta-pill">Past 48 Hours</span>
+      <span class="reading-time-pill">~13 min read</span>
+    </div>
+    <div class="masthead-separator"></div>
+  </div>
+
+  <!-- STORY 1: HEADLINE — Atkins Tokenization Innovation Exemption -->
+  <div class="story-card tier-headline" id="story-1">
+    <div class="story-meta">
+      <span class="tier-badge badge-headline">Headline</span>
+      <span class="source-tag">Economic Club of Washington / The Block [SECONDARY]</span>
+      <span class="category-tag">Tokenization / Securities</span>
+    </div>
+    <div class="signal-row">🟡 Medium confidence — Chair statement signals imminent release; formal rule not yet published</div>
+
+    <h2 class="story-title">Atkins Tells Economic Club SEC Is "On the Cusp" of Tokenization Innovation Exemption — Apple Shares on Uniswap as Stated Example</h2>
+
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> SEC Chair Paul Atkins told a Washington business audience on April 21 that the agency is about to release an "innovation exemption" that would let tokenized stocks, bonds, and other securities trade directly on public blockchains — including decentralized exchanges like Uniswap — without the issuer, platform, or AMM registering under existing broker-dealer or exchange rules. Atkins specifically named tokenized Apple shares trading on permissionless DeFi as a scenario the exemption is designed to enable.
+    </div>
+
+    <div class="golden-quote">
+      <p>"The Commission's head-in-the-sand posture and its shoot-first, ask-questions-later approach are days of the past."</p>
+      <cite>— SEC Chair Paul Atkins, Economic Club of Washington, April 21, 2026</cite>
+    </div>
+
+    <div class="story-summary">
+      <p>Chair Atkins used a high-visibility Economic Club of Washington appearance on April 21 to preview the forthcoming tokenization "innovation exemption" — a time-limited framework the SEC intends to publish that would let tokenized securities trade on blockchain rails outside the traditional broker-dealer and exchange-registration regime. The exemption is the second major prong of what Atkins has branded "Regulation Crypto": the first (startup and fundraising safe harbor) is currently sitting at OIRA for White House pre-publication review; the tokenization exemption is being prepared for separate public release, timing "imminent."</p>
+      <p>Atkins drew an explicit picture in his remarks: a retail investor buying tokenized Apple shares on a decentralized automated market maker, settling in seconds, with no broker intermediary. That scenario is today clearly illegal under Sections 5 and 6 of the Exchange Act. The exemption is designed to tolerate that activity on a transitional basis while the Commission develops a permanent framework. This pairs with the April 13 Division of Trading and Markets staff statement declining to object to non-custodial DeFi front-end operators acting without broker-dealer registration, provided the interface is strictly non-custodial, non-discretionary, non-solicitation, and connects only to public permissionless protocols.</p>
+      <p>Commissioner Hester Peirce, speaking alongside Atkins in prior remarks, framed the path as "incremental" — a deliberate signal that the exemption will be conditional, narrow, and probably include sunset provisions. Market observers read the speech as calibrated pressure: Atkins is telegraphing the rule's direction to lock in political support before the text drops.</p>
+    </div>
+
+    <div class="precedent-block">
+      📎 <strong>Historical Precedent:</strong> The SEC's 2012 JOBS Act "testing the waters" provisions similarly created a time-limited exemption to enable a structurally novel capital-raising mechanism (equity crowdfunding) while a permanent regime was built. That exemption went through five years of incremental refinement before stabilizing.
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>The real question is whether the exemption will cover secondary-market trading of conventionally issued securities that have been wrapped into token form (the Apple-on-Uniswap case) or only primary-offering tokenized instruments issued natively on chain. The first is vastly more commercially significant and vastly more legally contentious — it cuts against NMS plan mechanics, FINRA's best-execution regime, and the national market system architecture built since 1975. Expect the exemption to include: (i) a size cap per issuer/per platform; (ii) mandatory on-chain disclosure hooks; (iii) a sunset clause of 3–5 years; (iv) explicit fraud-rule preservation under Section 17(a) and Rule 10b-5. The Section 36 exemptive authority Atkins is relying on has not previously been used at this scale — expect litigation from incumbent exchanges (NYSE, Nasdaq) arguing the SEC has exceeded delegated authority.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <h4>🔄 Contrarian Take</h4>
+      <p>The tokenization exemption looks like a gift to DeFi but may actually be a trap. If tokenized equities can trade on Uniswap, the SEC is effectively pulling retail securities trading into a venue where price discovery, surveillance, and investor protection mechanisms are materially weaker than traditional markets. One hostile tape event — a flash crash in tokenized Tesla, or a front-running scandal involving an AMM's mempool — could produce a regulatory reversal sharper than the current opening. The exemption's sunset clause is the tell: the SEC is reserving the right to pull the framework if a disaster occurs. Firms building on the exemption should price in reversal risk.</p>
+    </div>
+
+    <div class="industry-block">
+      <h4>🏗️ Industry Implications</h4>
+      <p>Coinbase, Robinhood, and Kraken benefit directly — all three have been pushing for a tokenization framework and have prepared tokenized-equity product lines. Ondo Finance, Backed Finance, and Dinari (the leading tokenized-equity issuers) gain the regulatory predicate their product needs to scale US distribution. Uniswap Labs and 1inch benefit asymmetrically: AMMs specifically named as a permitted venue convert from "regulatory risk" to "regulatory feature." NYSE and Nasdaq — already challenging the SEC's authority to permit on-chain equity trading in separate rulemaking comments — face the commercial reality that their 24/5 trading monopoly is about to have a 24/7 DeFi parallel. BlackRock, which has built the BUIDL tokenized Treasury fund to scale, gets the permission slip for tokenized equity ETFs it has been telegraphing since Q4 2025.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <h4>📊 Portfolio Impact</h4>
+      <p><strong>Bullish [COIN, HOOD, tokenized RWA governance tokens (ONDO), UNI, DEX governance tokens]:</strong> Exemption pulls on-chain equity trading from black-market to blessed-venue status; commercial catalyst is the publication of the rule text.</p>
+      <p><strong>Bearish [NYSE/Intercontinental Exchange (ICE), Nasdaq (NDAQ), incumbent broker-dealers whose moat is regulatory]:</strong> Long-term displacement risk from AMM-based tokenized equity venues.</p>
+      <p><strong>Neutral [BTC, ETH]:</strong> Base layers benefit from the increased securities activity on chain but pricing is already calibrated for tokenization growth.</p>
+    </div>
+
+    <div class="whatdo-block">
+      <h4>📋 What To Do</h4>
+      <div class="whatdo-row"><span class="role-label label-trader">Trader</span><span class="whatdo-text">Build a tokenization-exemption catalyst basket: long ONDO, UNI, COIN, HOOD; pair-trade against short NDAQ/ICE on any rule-publication catalyst. Watch OIRA's public docket daily for rule-release signals.</span></div>
+      <div class="whatdo-row"><span class="role-label label-counsel">Counsel</span><span class="whatdo-text">Draft comment-letter template now — the exemption's comment period will be short (likely 30 days). Focus arguments on scope (secondary vs. primary), sunset duration, and the Section 36 authority question to pre-empt NYSE/Nasdaq litigation.</span></div>
+      <div class="whatdo-row"><span class="role-label label-compliance">Compliance</span><span class="whatdo-text">Prepare tokenized-equity venue risk assessment covering AML, market manipulation surveillance on AMMs, and best-execution obligations. Section 10b-5 fraud liability is not exempted — your surveillance architecture must cover on-chain venues.</span></div>
+      <div class="whatdo-row"><span class="role-label label-founder">Founder</span><span class="whatdo-text">If you are building on-chain equity infrastructure, move your go-to-market window forward — first-mover advantage in the exemption window is material. Engage SEC staff through the Crypto Task Force channel before the rule publishes to shape interpretation.</span></div>
+    </div>
+
+    <div class="connected-block">
+      <h4>↔️ Connected Stories</h4>
+      <p>↔️ Story #3 (CLARITY Act) — Tokenized securities exemption can proceed with or without CLARITY, but CLARITY's commodity-vs-security taxonomy interacts with tokenization scope.</p>
+      <p>↔️ Brief Note (SEC DeFi front-end safe harbor, April 13) — Staff statement on non-custodial DeFi interfaces is the structural predicate for the Apple-on-Uniswap scenario Atkins described.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#Tokenization</span><span class="tag-pill">#SEC</span><span class="tag-pill">#DeFi</span><span class="tag-pill">#Atkins</span><span class="tag-pill">#InnovationExemption</span><span class="tag-pill">#Securities</span>
+    </div>
+  </div>
+
+  <!-- STORY 2: HIGH — ECB Digital Euro Parliament Vote Delay -->
+  <div class="story-card tier-high" id="story-2">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">Bloomberg [SECONDARY]</span>
+      <span class="category-tag">CBDC / Digital Euro</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — on-record ECB Executive Board member statement</div>
+
+    <h2 class="story-title">ECB's Cipollone Says Parliament's Digital Euro Vote Slipping to Mid-June Is "Not a Concern" — 2029 Launch Target Preserved</h2>
+
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The European Parliament was expected to hold a plenary vote on the Digital Euro Regulation in early May; that vote now looks likely to slip to mid-June. ECB Executive Board member Piero Cipollone told Bloomberg on April 22 the delay does not threaten the 2029 launch timeline — but only if Parliament adopts the regulation during 2026. The statement is being read as the ECB's attempt to pre-empt narratives that the project is losing political momentum.
+    </div>
+
+    <div class="golden-quote">
+      <p>"It's not a concern."</p>
+      <cite>— Piero Cipollone, ECB Executive Board, on the digital euro vote delay, Bloomberg interview, April 22, 2026</cite>
+    </div>
+
+    <div class="story-summary">
+      <p>ECB Executive Board member Piero Cipollone told Bloomberg on April 22 that the prospect of a delay to the European Parliament's digital euro vote — originally targeted for early May, now expected around mid-June — does not jeopardize the project's 2029 launch timetable. Parliament's Economic and Monetary Affairs Committee (ECON), led by rapporteur Fernando Navarrete Rojas, has struggled to unify centre-left, liberal, centre-right (EPP), and ECR groups around a single text. Centre-left and liberal groups support the regulation but are reportedly more than 40 votes short of an absolute majority; the far right opposes outright; EPP and ECR are split.</p>
+      <p>The ECB's position is that if Parliament and Council adopt the regulation at any point during 2026, the pilot exercise can begin in 2027 with selected payment service providers entering the third development round in Q3 2026. The digital euro issuance date of 2029 holds provided the 2026 legislative deadline is met. Cipollone's public stance is designed to forestall speculation that the project is being quietly buried.</p>
+    </div>
+
+    <div class="precedent-block">
+      📎 <strong>Historical Precedent:</strong> The Single Supervisory Mechanism Regulation (2013) similarly slipped its Parliament timeline by two months without affecting the underlying supervisory architecture rollout — ECB projects with clear timeline flexibility routinely absorb 30–60 day legislative slippage without structural impact.
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>The practitioner question is whether a mid-June vote allows Council trilogue to conclude before the 2026 Parliamentary recess — a realistic endgame requires co-decision completion by Q4 2026. If the Parliament vote moves to mid-June, the Council (likely Hungarian or Irish presidency) has approximately 4–5 months of active legislative time to reach agreement. That is tight but workable. The actual risk is holder-limit treatment: Parliament's draft capped individual digital euro holdings at €3,000, which the ECB views as compatible with financial stability; Council versions have floated €5,000 and €2,000. Bank lobby groups (European Banking Federation) want the lower cap to minimize deposit migration. The trilogue fight on holder caps is more consequential than the vote-date delay.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <h4>🔄 Contrarian Take</h4>
+      <p>Cipollone's public calm may be tactical. ECB insiders have privately acknowledged that any slip past the 2026 adoption deadline cascades the 2029 launch target by 12–18 months, because the pilot procurement process has hard sequencing dependencies on the legislative basis being fixed. The real deadline is not mid-June Parliament — it is Council trilogue conclusion. If trilogue stalls on holder caps or PSP compensation, the ECB loses the 2027 pilot start, and the 2029 launch window becomes 2031. Markets should not take Cipollone's "not a concern" at face value.</p>
+    </div>
+
+    <div class="industry-block">
+      <h4>🏗️ Industry Implications</h4>
+      <p>European banks (BNP Paribas, Santander, Deutsche Bank, ING) benefit from any delay that tightens the holder cap — every €1,000 of cap compression reduces projected deposit migration materially. Payment service providers (Wise, Revolut, Adyen) watch the PSP compensation framework closely — the ECB has signaled PSPs will be compensated per-transaction but the scale and mechanism remain unsettled. Stablecoin issuers (Circle, Tether, Societe Generale's EURCV) gain indirectly: every month the digital euro delays is another month euro-stablecoin products can establish network effects. MiCA-authorized e-money tokens (EURC, EURI, EURCV) are the de facto digital euro until the ECB product ships.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <h4>📊 Portfolio Impact</h4>
+      <p><strong>Bullish [euro stablecoin issuers, EU fintech with settlement layer exposure]:</strong> Delay creates additional runway for private euro-denominated digital money to build network share before official CBDC launch.</p>
+      <p><strong>Bearish [EU retail banks dependent on deposit float economics]:</strong> Digital euro, when launched, structurally compresses net interest margin; delay is temporary relief, not removal of the risk.</p>
+    </div>
+
+    <div class="whatdo-block">
+      <h4>📋 What To Do</h4>
+      <div class="whatdo-row"><span class="role-label label-trader">Trader</span><span class="whatdo-text">Short-duration exposure to EU bank NIM compression can be rolled forward; digital euro is not an imminent 2026 catalyst on current trajectory. Euro-stablecoin adoption metrics (EURC, EURI volume) are the nearer-term signal.</span></div>
+      <div class="whatdo-row"><span class="role-label label-counsel">Counsel</span><span class="whatdo-text">Advise PSP clients to engage the ECB's Market Advisory Group on compensation framework now — the trilogue phase closes the window for commercial input. Holder-cap advocacy should go through EBF.</span></div>
+      <div class="whatdo-row"><span class="role-label label-compliance">Compliance</span><span class="whatdo-text">Defer digital-euro compliance architecture build until Q3 2026 when Council position clarifies. Monitor ECON committee reports and rapporteur Navarrete Rojas's amendment filings for scope-defining details.</span></div>
+      <div class="whatdo-row"><span class="role-label label-founder">Founder</span><span class="whatdo-text">Euro stablecoin founders have a clear 18–30 month competitive runway before digital euro launch. Use this window to establish MiCA-authorized issuance, bank distribution partnerships, and DeFi integration liquidity.</span></div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#DigitalEuro</span><span class="tag-pill">#CBDC</span><span class="tag-pill">#ECB</span><span class="tag-pill">#EU</span><span class="tag-pill">#Cipollone</span>
+    </div>
+  </div>
+
+  <!-- STORY 3: HIGH — CLARITY Act Scott Deadline T-2 Days -->
+  <div class="story-card tier-high" id="story-3">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">CoinDesk / FinTech Weekly [SECONDARY]</span>
+      <span class="category-tag">Market Structure Legislation</span>
+    </div>
+    <div class="signal-row">🟡 Medium confidence — legislative outcome probabilistic, deadline mechanically driven</div>
+
+    <h2 class="story-title">CLARITY Act Countdown: T-2 Days to Lummis's April 25 Cliff, Scott Still Not Announcing a Markup Date</h2>
+
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> The Digital Asset Market Clarity Act is structurally out of time. Senator Cynthia Lummis publicly named April 25 as the hard deadline for Senate Banking Committee Chair Tim Scott to schedule a markup session. As of today, Scott has not named a date. Coinbase CPO Faryar Shirzad told DisruptionBanking on April 17 the Senate floor vote realistically slips to May. Three obstacles remain: stablecoin yield language, DeFi provisions, and Republican committee unity.
+    </div>
+
+    <div class="golden-quote">
+      <p>"The Banking Committee must clear the bill by mid-May at the latest for a floor vote to be possible before the calendar closes."</p>
+      <cite>— FinTech Weekly analysis citing Senator Bernie Moreno, April 2026 [paraphrased from reported remarks]</cite>
+    </div>
+
+    <div class="story-summary">
+      <p>Senator Cynthia Lummis (R-WY) has publicly named April 25, 2026, as the deadline for Senate Banking Committee Chair Tim Scott (R-SC) to schedule markup of the Digital Asset Market Clarity Act; without it, she has warned the bill cannot complete its remaining legislative steps before the 2026 midterm calendar consumes Senate floor time. On April 14, Scott told Fox Business the markup might not happen in April and named three unresolved issues: stablecoin yield language (the Tillis-Alsobrooks compromise), DeFi provisions, and securing all Republican committee votes. The Senate returned from Easter recess on April 13 and the committee has held no procedural vote.</p>
+      <p>Coinbase Chief Policy Officer Faryar Shirzad told DisruptionBanking on April 17 that a Senate floor vote in May is now more realistic than April, implicitly accepting the Banking markup will slip past the Lummis deadline. The political signal is that industry lobbying has pivoted from pressing for April markup to preserving the bill's viability through May — a material softening of the schedule.</p>
+      <p>White House Crypto Czar David Sacks completed his 130-day term on March 26 and was not replaced; Treasury Secretary Bessent has filled the coordination vacuum but has less bandwidth to break factional deadlocks. The April 21 CEA report arguing the yield ban costs $800M for trivial lending benefit (see yesterday's Brief) is the Administration's counter-offering on the yield fight; Brian Armstrong withdrew Coinbase's conditional support on March 23 over yield language specifically.</p>
+    </div>
+
+    <div class="precedent-block">
+      📎 <strong>Historical Precedent:</strong> The Dodd-Frank Wall Street Reform Act missed three preliminary deadlines between December 2009 and May 2010 before clearing committee in June 2010. A missed markup deadline is not automatically terminal — but it is a meaningful negative signal.
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>The bill now has two mechanical paths: (1) Scott markup between April 28 and mid-May, floor vote end-May, enactment Q3 2026; or (2) markup slips to June, floor vote merges with the appropriations calendar, and enactment becomes probabilistic — possibly sliding to 2027. Path 2 probability has risen substantially in the past ten days. Polymarket's 2026 passage probability has traded between 67–72% throughout April; without markup announcement in the next 14 days, that number will break sharply. Counsel advising commodity-classified token issuers should not defer build timelines on CLARITY — the bill has already functioned as a de facto standard that SEC and CFTC are implementing through the March MOU and March 17 joint interpretation regardless of whether it formally enacts.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <h4>🔄 Contrarian Take</h4>
+      <p>CLARITY may already be structurally redundant. The SEC-CFTC MOU (March 11) and the SEC-CFTC joint interpretation on crypto asset taxonomy (March 17) establish a working classification framework that delivers most of CLARITY's practical benefits — commodity classification for most tokens, SEC/CFTC coordination on dual-registered platforms, a fit-for-purpose digital asset framework. If CLARITY fails to enact in 2026, the agencies will continue implementing the joint-interpretation architecture. The bill's commercial value was highest when it was the only path to regulatory clarity; with the agencies now moving independently, CLARITY's passage is a confirmatory event, not a structural one.</p>
+    </div>
+
+    <div class="industry-block">
+      <h4>🏗️ Industry Implications</h4>
+      <p>Coinbase (COIN) faces the worst structural position: it opposes the yield ban but needs the jurisdictional clarity CLARITY provides on spot commodity oversight. Ripple (RLUSD, XRP) benefits from any outcome — enactment confirms commodity status, non-enactment leaves the existing March 17 joint interpretation in place (which also classifies XRP as a commodity). Circle (USDC) gains from enactment if the yield ban is softened; loses if the Tillis-Alsobrooks language passes. DeFi protocols (Uniswap, Aave) need enactment because the joint interpretation alone doesn't resolve spot-market oversight ambiguity. Binance US watches passively.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <h4>📊 Portfolio Impact</h4>
+      <p><strong>Bullish [XRP, DEX governance tokens, COIN if yield-ban-free]:</strong> Enactment is net-positive regardless of specific text.</p>
+      <p><strong>Bearish [COIN if yield ban survives, USDC yield products]:</strong> The Tillis-Alsobrooks compromise, if passed, directly targets Coinbase's USDC reward program.</p>
+      <p><strong>Neutral [BTC, ETH]:</strong> Already classified commodities under the March 17 joint interpretation; CLARITY confirms rather than changes status.</p>
+    </div>
+
+    <div class="whatdo-block">
+      <h4>📋 What To Do</h4>
+      <div class="whatdo-row"><span class="role-label label-trader">Trader</span><span class="whatdo-text">Watch Scott's communications office for markup announcement through April 25. Absence of announcement by Monday April 27 is mildly negative for COIN, XRP, and DEX tokens; affirmative announcement is a 3–5% intraday catalyst.</span></div>
+      <div class="whatdo-row"><span class="role-label label-counsel">Counsel</span><span class="whatdo-text">Maintain side-by-side Senate Agriculture and Banking text comparisons; plan for enactment and non-enactment regulatory scenarios. The SEC-CFTC joint interpretation is the fallback framework — build compliance architecture to that baseline.</span></div>
+      <div class="whatdo-row"><span class="role-label label-compliance">Compliance</span><span class="whatdo-text">Assume CLARITY enactment is not a 2026 planning variable. GENIUS Act obligations (PPSI prudential rules, FinCEN/OFAC AML/sanctions framework) are live now and must be the compliance baseline.</span></div>
+      <div class="whatdo-row"><span class="role-label label-founder">Founder</span><span class="whatdo-text">Stablecoin-yield product founders must lobby through the week — the window to influence the Tillis-Alsobrooks compromise text closes the moment markup schedules. Engage Blockchain Association and Chamber of Digital Commerce directly.</span></div>
+    </div>
+
+    <div class="connected-block">
+      <h4>↔️ Connected Stories</h4>
+      <p>↔️ Story #1 (Tokenization Exemption) — Proceeds independent of CLARITY on SEC administrative authority alone.</p>
+      <p>↔️ Story #4 (FinCEN AML Overhaul) — Represents the other live federal rulemaking in the crypto space; operates independently of CLARITY.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#CLARITY-Act</span><span class="tag-pill">#MarketStructure</span><span class="tag-pill">#Senate</span><span class="tag-pill">#Lummis</span><span class="tag-pill">#Scott</span><span class="tag-pill">#Stablecoin</span>
+    </div>
+  </div>
+
+  <!-- STORY 4: HIGH — FinCEN AML Overhaul NPRM -->
+  <div class="story-card tier-high" id="story-4">
+    <div class="story-meta">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">FinCEN / Federal Register [PRIMARY]</span>
+      <span class="category-tag">AML/BSA / Virtual Assets</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — published NPRM, comment period running</div>
+
+    <h2 class="story-title">FinCEN Publishes Sweeping AML Program Overhaul NPRM — Banks, MSBs, Crypto Exchanges All Inside the Perimeter, Comments Due June 9</h2>
+
+    <div class="plain-explainer">
+      <span class="explainer-icon">⚡</span>
+      <strong>What this means:</strong> Treasury's FinCEN published a Notice of Proposed Rulemaking on April 7 that would fundamentally restructure Bank Secrecy Act AML program requirements for banks, money services businesses, casinos, credit card issuers, and — relevant here — virtual asset service providers. The rule explicitly covers unhosted wallet transactions above defined thresholds. The 60-day comment window runs until June 9.
+    </div>
+
+    <div class="golden-quote">
+      <p>"Banks and MSBs will have 15 days from the date on which a reportable transaction occurs to file a report with FinCEN."</p>
+      <cite>— FinCEN NPRM, April 7, 2026, on proposed CVC/LTDA transaction reporting requirements</cite>
+    </div>
+
+    <div class="story-summary">
+      <p>FinCEN on April 7, 2026 published an NPRM that Treasury described as a fundamental reform of AML program requirements under the Bank Secrecy Act. The rule covers banks, money services businesses, credit card issuers, casinos, loan and finance companies, and certain insurance companies — and, structurally, crypto exchanges registered as MSBs. Key crypto provisions: reports, records, and identity verification requirements for CVC/LTDA (convertible virtual currency / legal tender digital asset) transactions above defined thresholds involving unhosted wallets; reporting for transactions exceeding $10,000 in value (15-day filing window); recordkeeping for counterparty transactions above $3,000 where unhosted wallets are involved.</p>
+      <p>The NPRM is distinct from the FinCEN/OFAC joint stablecoin sanctions NPRM published April 10 (that rule targets Permitted Payment Stablecoin Issuers under the GENIUS Act). These are two parallel Treasury rulemakings running on the same 60-day comment clock, both ending approximately June 9, 2026. Crypto exchanges are directly in scope of both frameworks — any firm operating as an MSB plus issuing or handling PPSI stablecoins faces stacked obligations.</p>
+    </div>
+
+    <div class="precedent-block">
+      📎 <strong>Historical Precedent:</strong> FinCEN's December 2020 unhosted wallet NPRM (the "Mnuchin midnight rule") proposed comparable $3,000/$10,000 thresholds on CVC transactions involving unhosted wallets. That rule was withdrawn by the Biden Administration in 2021 after industry litigation threats. The April 2026 version is structurally similar with materially different political and regulatory context behind it.</p>
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>The structural question is whether the unhosted wallet reporting requirement is workable for a crypto exchange when the counterparty wallet is, by definition, not subject to KYC. The 2020 version of this rule was criticized as imposing an impossible verification burden; the 2026 version appears to attempt a reduced scope via threshold calibration. Counsel should focus comment letters on: (i) the identity verification mechanism for unhosted counterparties (fingerprinting addresses via chain analytics vs. KYC of the customer only); (ii) the 15-day filing window feasibility; (iii) safe harbors for good-faith compliance where counterparty identity is technically unknowable. Expect industry to coordinate a comment strategy through the Blockchain Association and Chamber of Digital Commerce.</p>
+    </div>
+
+    <div class="contrarian-block">
+      <h4>🔄 Contrarian Take</h4>
+      <p>The 2020 unhosted wallet rule was withdrawn because of political change, not because it was unworkable. With industry now more mature, chain analytics tooling (Chainalysis, Elliptic, TRM Labs) materially better, and the Trump Administration broadly pro-crypto but strongly anti-illicit-finance, this rule may actually finalize — and industry may accept it as preferable to sanctions-enforcement-via-criminal-prosecution. Firms resisting the rule may be fighting the wrong battle.</p>
+    </div>
+
+    <div class="industry-block">
+      <h4>🏗️ Industry Implications</h4>
+      <p>Chainalysis, Elliptic, and TRM Labs benefit directly — the rule creates structural demand for chain-analytics identity attribution. Coinbase, Kraken, and Gemini face direct MSB compliance cost increases; their bank partners (Cross River, Sutton, Metropolitan Commercial) will pass through enhanced due diligence costs. DeFi protocols without MSB obligations remain outside scope but face pressure through their front-end access points (see SEC DeFi front-end safe harbor conditions — non-custodial and non-solicitation). Self-custody wallet providers (Ledger, Trezor) are not directly regulated but their users transacting through regulated exchanges hit the threshold triggers.</p>
+    </div>
+
+    <div class="portfolio-block">
+      <h4>📊 Portfolio Impact</h4>
+      <p><strong>Bullish [chain-analytics vendors (private), compliance-tech providers]:</strong> Regulatory demand creates sustained revenue growth.</p>
+      <p><strong>Bearish [retail-focused crypto exchanges with thin margins]:</strong> Compliance costs scale faster than retail transaction revenue; margin compression.</p>
+      <p><strong>Neutral [institutional custody providers — BitGo, Anchorage, Fireblocks]:</strong> Already operating under heavy compliance overhead; marginal burden is lower.</p>
+    </div>
+
+    <div class="whatdo-block">
+      <h4>📋 What To Do</h4>
+      <div class="whatdo-row"><span class="role-label label-trader">Trader</span><span class="whatdo-text">Watch unhosted-wallet volume on centralized exchange deposits as a leading indicator — if the rule is finalized with the proposed thresholds, expect a wave of customer migration away from deposit/withdrawal patterns that trip the reporting triggers.</span></div>
+      <div class="whatdo-row"><span class="role-label label-counsel">Counsel</span><span class="whatdo-text">Draft comment letters before May 15 to participate in the substantive comment cycle. Focus on safe-harbor scope, not threshold challenges — Treasury is committed to the thresholds. Coordinate with Blockchain Association and Chamber of Digital Commerce working groups.</span></div>
+      <div class="whatdo-row"><span class="role-label label-compliance">Compliance</span><span class="whatdo-text">Begin operational design work now on the 15-day SAR/CTR filing window for CVC transactions. Assume final rule by Q3 2026 with 12-month implementation runway; that means build must be scoped by August.</span></div>
+      <div class="whatdo-row"><span class="role-label label-founder">Founder</span><span class="whatdo-text">If building a crypto MSB, bake the FinCEN NPRM obligations into your current architecture now — retrofitting unhosted-wallet reporting into a live exchange is vastly more expensive than designing for it pre-launch.</span></div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#FinCEN</span><span class="tag-pill">#AML</span><span class="tag-pill">#BSA</span><span class="tag-pill">#UnhostedWallets</span><span class="tag-pill">#Treasury</span>
+    </div>
+  </div>
+
+  <!-- STORY 5: MEDIUM — Nebraska LB525 Chatbot Law -->
+  <div class="story-card tier-medium" id="story-5">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">Troutman Pepper Locke / Nebraska Legislature [SECONDARY/PRIMARY]</span>
+      <span class="category-tag">AI Governance / State Law</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — signed into law</div>
+
+    <h2 class="story-title">Nebraska Signs LB525 Chatbot Law — Mandatory AI Disclosure to Minors and Adults Where "Reasonable Person" Would Be Confused</h2>
+
+    <div class="story-summary">
+      <p>Nebraska Governor Jim Pillen signed LB525 on April 14, 2026, establishing state-level regulation of conversational AI services with specific protections for minor users. Operators of conversational AI services must disclose to minors that the service is AI and must disclose to persons generally that the service is not human where a reasonable person would not understand the service is not human. The law adds Nebraska to the growing cohort of states — California, Colorado, Utah, Virginia — regulating AI-human interaction at the consumer level.</p>
+      <p>Parallel state activity: Florida Governor DeSantis issued a proclamation on April 15 calling a special legislative session April 28–May 1 that includes an "AI Bill of Rights" on the agenda. California's SB 947 (automated decision systems in employment) and AB 2027 (worker data / AI prohibitions) cleared committee stages in mid-April. The White House National Policy Framework on AI (March 20) recommends federal preemption of state AI laws that "impose undue burdens" — Nebraska's law will test that preemption intent when federal legislation moves.</p>
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>The "reasonable person" trigger in LB525 is the latent enforcement hook — it effectively requires AI service operators to run a usability assessment against a notional average user, which in practice means every conversational interface deployed to Nebraska residents needs a persistent "I am an AI" disclosure or risk enforcement. The minor-specific provisions overlap with the FTC's ongoing COPPA rulemaking on AI companions and the EU AI Act's Article 50 transparency obligations. Multi-state compliance architecture for conversational AI is now required — single-state exemptions are no longer workable. The preemption question depends on whether federal AI legislation this Congress includes explicit preemption language; Speaker Johnson's framework draft (April) does.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#AI</span><span class="tag-pill">#StateLaw</span><span class="tag-pill">#Nebraska</span><span class="tag-pill">#Chatbot</span><span class="tag-pill">#Preemption</span>
+    </div>
+  </div>
+
+  <!-- STORY 6: MEDIUM — Hong Kong SFC Staking Approval -->
+  <div class="story-card tier-medium" id="story-6">
+    <div class="story-meta">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">SFC Hong Kong / The Block [PRIMARY/SECONDARY]</span>
+      <span class="category-tag">Virtual Asset / Staking</span>
+    </div>
+    <div class="signal-row">🟢 High confidence — SFC circular and market confirmations</div>
+
+    <h2 class="story-title">Hong Kong SFC Greenlights Staking for Licensed VATPs and Authorized Crypto Funds — Strict Asset Control and Risk Disclosure Required</h2>
+
+    <div class="story-summary">
+      <p>The Hong Kong Securities and Futures Commission has, in April 2026, authorized staking services at licensed Virtual Asset Trading Platforms (VATPs) and SFC-authorized crypto funds, subject to strict asset-control and risk-disclosure requirements. The move follows the March 2026 framework allowing 24/7 trading of authorized tokenized investment products; 13 tokenized products were publicly offered in Hong Kong as of March. The SFC has also launched a one-month consultation on regulating virtual asset advisory and asset management services, targeting legislative introduction to LegCo in 2026. Separately, the SFC and FSTB are targeting 2026 legislation on virtual asset dealers and custodians — the final architectural pillar of the Hong Kong regime.</p>
+      <p>Hong Kong is now running a coordinated three-pillar expansion: tokenized product 24/7 markets, staking authorization, and dealer/custodian licensing — positioning the jurisdiction as a regional counterweight to Singapore's more cautious prudential posture (see MAS P009-2026 consultation with reduced 2% Tier 1 crypto exposure cap, implementation delayed to January 2027).</p>
+    </div>
+
+    <div class="analysis-block">
+      <h4>⚖️ Practitioner Analysis</h4>
+      <p>Hong Kong's staking authorization is more commercially permissive than the SEC's position (no retail staking permitted absent registration) and broadly parallel to the EU's MiCA framework. The asset-control requirement — VATPs must retain direct custody of staked assets rather than delegating to protocol-native validators — is a material operational constraint but allows a supervisory perimeter the SEC currently lacks. Expect Hong Kong-domiciled institutional investors to use this framework to build staking-yield products that US issuers cannot replicate. Counsel advising APAC family offices should consider Hong Kong VATP allocations as the jurisdiction-of-choice for staking exposure.</p>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag-pill">#HongKong</span><span class="tag-pill">#SFC</span><span class="tag-pill">#Staking</span><span class="tag-pill">#VATP</span><span class="tag-pill">#Tokenization</span>
+    </div>
+  </div>
+
+  <!-- BRIEF NOTES -->
+  <div class="brief-notes-card" id="brief-notes">
+    <h3>Brief Notes — Low Priority Items</h3>
+    <div class="brief-note-item"><strong>SEC DeFi Front-End Staff Statement (April 13):</strong> SEC Division of Trading and Markets staff stated it would not object to non-custodial, non-discretionary DeFi interface providers operating without broker-dealer registration, provided the interface does not take custody, does not exercise discretion, does not solicit, and connects only to public permissionless smart contracts. Operates as structural predicate for Atkins tokenization exemption.</div>
+    <div class="brief-note-item"><strong>SEC–CFTC Joint Interpretation (March 17, confirmed trajectory):</strong> Five-category crypto asset taxonomy — digital commodities, digital collectibles, digital tools, stablecoins, digital securities — continues to operate as the de facto classification framework pending CLARITY Act. Formal rulemaking expected "within weeks" per SEC Chair Atkins.</div>
+    <div class="brief-note-item"><strong>CFTC DCO Staff Guidance on Crypto Margin (CFTC Staff Letter 26-05):</strong> Derivatives Clearing Organizations may accept crypto assets including payment stablecoins as initial margin for cleared transactions if they meet Regulation 39.13(g)(10) credit, market, and liquidity risk requirements. Opens the door for BTC and ETH as CFTC-cleared derivatives collateral.</div>
+    <div class="brief-note-item"><strong>MAS Consultation P009-2026 (Closing May 18):</strong> Singapore's prudential treatment of cryptoasset exposures consultation runs to May 18. Rule implementation pushed to January 1, 2027 from original January 2026 target. 2% Tier 1 capital cap on bank crypto exposure, 5% ceiling for crypto-linked products.</div>
+    <div class="brief-note-item"><strong>ASIC Digital Assets Framework Implementation (Royal Assent April 8, roadmap April 20):</strong> 18-month transition period with three phases; full enforcement expected October 2027. ASIC class no-action letter expires June 30, 2026 — platforms must file AFSL applications by that date to retain protection.</div>
+  </div>
+
+  <!-- CROSS-CUTTING -->
+  <div class="persistent-section" id="cross-cutting">
+    <h3>Cross-Cutting Implications</h3>
+    <div class="cross-grid">
+      <div class="cross-card">
+        <div class="cross-title">On-Chain Securities Legitimization</div>
+        <div class="direction-indicator" style="color:var(--accent-green);">▲ ACCELERATING</div>
+        <div class="cross-desc">Atkins tokenization exemption + April 13 DeFi front-end safe harbor + CFTC DCO stablecoin margin guidance are converging to create a regulated on-chain securities infrastructure. The three pieces individually each permit one layer of activity; together they describe an end-to-end regulated tokenized-equity stack.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">US Market Structure Legislative Path</div>
+        <div class="direction-indicator" style="color:var(--accent-amber);">◆ MIXED</div>
+        <div class="cross-desc">CLARITY Act is losing altitude — Scott hasn't moved, Coinbase is now planning for May floor vote. Administrative pathways (SEC/CFTC MOU, joint interpretation, innovation exemption) are filling the regulatory clarity gap without legislation, reducing CLARITY's incremental value.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">Illicit-Finance Programmability</div>
+        <div class="direction-indicator" style="color:var(--accent-gold);">▲ WIDENING</div>
+        <div class="cross-desc">FinCEN AML overhaul + FinCEN/OFAC PPSI sanctions compliance NPRM together signal a Treasury doctrine of "programmable financial enforcement" — compliance obligations embedded directly in protocol code and smart contract logic rather than layered on after the fact.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">US-Hong Kong Institutional Yield Competition</div>
+        <div class="direction-indicator" style="color:var(--accent-amber);">◆ PIVOTING</div>
+        <div class="cross-desc">Hong Kong SFC staking authorization + 24/7 tokenized markets vs. SEC non-registration of retail staking creates a clear jurisdictional arbitrage. Singapore's more cautious prudential regime (MAS P009-2026) cedes regional yield-product leadership to Hong Kong.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">EU Digital-Euro Political Drift</div>
+        <div class="direction-indicator" style="color:var(--accent-red);">▼ DECELERATING</div>
+        <div class="cross-desc">Parliament vote sliding from early May to mid-June, trilogue window tightening against 2026 adoption deadline. Euro stablecoins (EURC, EURI, EURCV) gain runway; ECB's 2029 issuance target becomes probabilistic rather than planned.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">US State AI Preemption Fight</div>
+        <div class="direction-indicator" style="color:var(--accent-gold);">▲ WIDENING</div>
+        <div class="cross-desc">Nebraska LB525 signed, Florida special session on AI Bill of Rights called, California SB 947 / AB 2027 advancing, Colorado AI Act effective later 2026. White House AI Policy Framework recommends federal preemption — collision unavoidable.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TONE BAROMETER -->
+  <div class="persistent-section" id="tone-barometer">
+    <h3>Tone Barometer</h3>
+    <table class="tone-table">
+      <tr><td><span class="flag-badge flag-us">US</span> 🟢 <strong>Loosening.</strong> Atkins signaling imminent tokenization exemption; SEC/CFTC MOU producing joint interpretations; enforcement dismissals continue. Senate legislative deadlock offset by administrative action.</td></tr>
+      <tr><td><span class="flag-badge flag-eu">EU</span> 🟡 <strong>Holding.</strong> MiCA transitional period expiring July 1; digital euro Parliament vote slipping; MiCA 2.0 preparation underway. Regulatory posture stable but implementation cliffs approaching.</td></tr>
+      <tr><td><span class="flag-badge flag-uk">UK</span> 🟡 <strong>Holding.</strong> FCA CP26/13 crypto perimeter consultation running to June 3; authorization gateway opens September 30, 2026; full regime October 2027. Steady execution, no recent posture shift.</td></tr>
+      <tr><td><span class="flag-badge flag-sg">SG</span> 🔴 <strong>Tightening.</strong> MAS P009-2026 consultation on prudential treatment (2% Tier 1 bank cap, 5% product ceiling) closes May 18. Implementation delayed to 2027 but framework is structurally restrictive.</td></tr>
+      <tr><td><span class="flag-badge flag-au">AU</span> 🟡 <strong>Holding.</strong> Digital Assets Framework Act received Royal Assent April 8; ASIC 18-month implementation roadmap published April 20. Firm trajectory, restrictive destination.</td></tr>
+      <tr><td><span class="flag-badge flag-hk">HK</span> 🟢 <strong>Loosening.</strong> Staking authorization for licensed VATPs, 24/7 tokenized products, advisory consultation open. Proactively expanding licensed activity scope.</td></tr>
+    </table>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="persistent-section" id="countdown">
+    <h3>Regulatory Countdown</h3>
+    <table class="countdown-table">
+      <thead><tr><th>Event</th><th>Jurisdiction</th><th>Date</th><th>Days</th></tr></thead>
+      <tbody>
+        <tr><td>Lummis CLARITY Act markup cliff</td><td>US / Senate Banking</td><td>April 25, 2026</td><td><span class="days-pill days-urgent">2 days</span></td></tr>
+        <tr><td>MAS Consultation P009-2026 close (crypto prudential treatment)</td><td>Singapore / MAS</td><td>May 18, 2026</td><td><span class="days-pill days-urgent">25 days</span></td></tr>
+        <tr><td>ASIC class no-action letter expiry for unlicensed crypto platforms</td><td>Australia / ASIC</td><td>June 30, 2026</td><td><span class="days-pill days-normal">68 days</span></td></tr>
+        <tr><td>FinCEN AML Overhaul NPRM comment close</td><td>US / Treasury</td><td>June 9, 2026</td><td><span class="days-pill days-normal">47 days</span></td></tr>
+        <tr><td>FinCEN/OFAC PPSI Sanctions Compliance NPRM comment close</td><td>US / Treasury</td><td>June 9, 2026</td><td><span class="days-pill days-normal">47 days</span></td></tr>
+        <tr><td>FCA CP26/13 Crypto Perimeter Guidance close</td><td>UK / FCA</td><td>June 3, 2026</td><td><span class="days-pill days-normal">41 days</span></td></tr>
+        <tr><td>MiCA transitional period ends (EU CASP wind-down hard deadline)</td><td>EU / ESMA</td><td>July 1, 2026</td><td><span class="days-pill days-normal">69 days</span></td></tr>
+        <tr><td>EU AI Act GPAI enforcement powers enter application</td><td>EU / AI Office</td><td>August 2, 2026</td><td><span class="days-pill days-normal">101 days</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="persistent-section" id="pipeline">
+    <h3>Regulatory Pipeline Tracker</h3>
+    <table class="pipeline-table">
+      <thead><tr><th>Bill / Rule</th><th>Jurisdiction</th><th>Stage</th><th>Movement</th></tr></thead>
+      <tbody>
+        <tr><td>CLARITY Act (H.R. 3633)</td><td>US Senate</td><td><div class="progress-bar"><span class="stage-seg seg-done">House</span><span class="stage-seg seg-done">S-Ag</span><span class="stage-seg seg-active">S-Bank</span><span class="stage-seg seg-pending">Floor</span><span class="stage-seg seg-pending">Sig</span></div></td><td><span class="movement-down">▼</span></td></tr>
+        <tr><td>SEC "Reg Crypto" (Fundraising Safe Harbor)</td><td>US SEC</td><td><div class="progress-bar"><span class="stage-seg seg-done">Draft</span><span class="stage-seg seg-active">OIRA</span><span class="stage-seg seg-pending">NPRM</span><span class="stage-seg seg-pending">Final</span></div></td><td><span class="movement-up">▲</span></td></tr>
+        <tr><td>SEC Tokenization Innovation Exemption</td><td>US SEC</td><td><div class="progress-bar"><span class="stage-seg seg-active">Chair Signaling</span><span class="stage-seg seg-pending">NPRM</span><span class="stage-seg seg-pending">Final</span></div></td><td><span class="movement-up">▲</span></td></tr>
+        <tr><td>FDIC GENIUS Act PPSI Prudential Rule</td><td>US FDIC</td><td><div class="progress-bar"><span class="stage-seg seg-done">Draft</span><span class="stage-seg seg-active">NPRM</span><span class="stage-seg seg-pending">Final</span></div></td><td><span class="movement-none">▬</span></td></tr>
+        <tr><td>FinCEN AML Program Overhaul</td><td>US FinCEN</td><td><div class="progress-bar"><span class="stage-seg seg-done">Draft</span><span class="stage-seg seg-active">NPRM</span><span class="stage-seg seg-pending">Final</span></div></td><td><span class="movement-up">▲</span></td></tr>
+        <tr><td>FinCEN/OFAC PPSI AML/Sanctions Rule</td><td>US Treasury</td><td><div class="progress-bar"><span class="stage-seg seg-done">Draft</span><span class="stage-seg seg-active">NPRM</span><span class="stage-seg seg-pending">Final</span></div></td><td><span class="movement-up">▲</span></td></tr>
+        <tr><td>FCA CP26/13 Cryptoasset Perimeter</td><td>UK FCA</td><td><div class="progress-bar"><span class="stage-seg seg-active">Consultation</span><span class="stage-seg seg-pending">Final Guidance</span><span class="stage-seg seg-pending">Oct 2027</span></div></td><td><span class="movement-none">▬</span></td></tr>
+        <tr><td>Digital Euro Regulation</td><td>EU Parliament</td><td><div class="progress-bar"><span class="stage-seg seg-done">Proposal</span><span class="stage-seg seg-active">ECON</span><span class="stage-seg seg-pending">Plenary</span><span class="stage-seg seg-pending">Trilogue</span><span class="stage-seg seg-pending">Adoption</span></div></td><td><span class="movement-down">▼</span></td></tr>
+        <tr><td>MAS Prudential Treatment of Cryptoasset Exposures</td><td>Singapore MAS</td><td><div class="progress-bar"><span class="stage-seg seg-active">Consultation</span><span class="stage-seg seg-pending">Final</span><span class="stage-seg seg-pending">Jan 2027</span></div></td><td><span class="movement-none">▬</span></td></tr>
+        <tr><td>Corporations Amendment (Digital Assets Framework) Act</td><td>Australia</td><td><div class="progress-bar"><span class="stage-seg seg-done">Royal Assent</span><span class="stage-seg seg-active">Implementation</span><span class="stage-seg seg-pending">Enforcement Oct 2027</span></div></td><td><span class="movement-up">▲</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SUBMISSIONS -->
+  <div class="persistent-section" id="submissions">
+    <h3>Open Submissions & Consultations</h3>
+    <table class="submissions-table">
+      <thead><tr><th>Consultation</th><th>Body</th><th>Jurisdiction</th><th>Deadline</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>FDIC GENIUS Act Prudential Requirements NPRM</strong><br/><span style="color:var(--text-muted);font-size:12px;">Reserve, capital, redemption rules for FDIC-supervised PPSIs. Pass-through deposit insurance denial. <a href="https://www.federalregister.gov/documents/2026/04/10/2026-06974/genius-act-requirements-and-standards-for-fdic-supervised-permitted-payment-stablecoin-issuers-and" style="color:var(--accent-blue);">Federal Register NPRM</a>. Why it matters: any IDI planning PPSI issuance must comment or lose voice on liquidity scoping.</span></td>
+          <td>FDIC</td><td>US</td><td>June 9, 2026</td><td><span class="status-open">OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>FinCEN/OFAC PPSI AML/CFT and Sanctions Program Rule</strong><br/><span style="color:var(--text-muted);font-size:12px;">AML program, SAR filing, OFAC sanctions compliance for PPSIs. <a href="https://www.federalregister.gov/documents/2026/04/10/2026-06963/permitted-payment-stablecoin-issuer-anti-money-launderingcountering-the-financing-of-terrorism" style="color:var(--accent-blue);">Federal Register NPRM</a>. Why it matters: secondary-market transaction obligations in smart-contract contexts.</span></td>
+          <td>FinCEN / OFAC</td><td>US</td><td>June 9, 2026</td><td><span class="status-open">OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>FinCEN AML Program Overhaul NPRM</strong><br/><span style="color:var(--text-muted);font-size:12px;">BSA AML program modernization, CVC/LTDA thresholds for reporting/recordkeeping, unhosted wallet counterparty identity verification. Why it matters: structural reshape of every crypto MSB's AML program.</span></td>
+          <td>FinCEN</td><td>US</td><td>June 9, 2026</td><td><span class="status-open">OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>FCA CP26/13 Cryptoasset Perimeter Guidance</strong><br/><span style="color:var(--text-muted);font-size:12px;">Seven regulated activities: stablecoin issuance, safeguarding, trading platform, dealing principal/agent, arranging, staking arrangement. <a href="https://www.fca.org.uk/publication/consultation/cp26-13.pdf" style="color:var(--accent-blue);">CP26/13 PDF</a>. Why it matters: defines whether your UK activity falls inside the October 2027 regime.</span></td>
+          <td>FCA</td><td>UK</td><td>June 3, 2026</td><td><span class="status-open">OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAS Consultation P009-2026 — Prudential Treatment of Cryptoasset Exposures</strong><br/><span style="color:var(--text-muted);font-size:12px;">Capital adequacy, credit/liquidity risk treatment for permissionless blockchain assets. 2% Tier 1 bank cap, 5% product ceiling. Why it matters: sets Singapore's institutional crypto allocation ceiling.</span></td>
+          <td>MAS</td><td>Singapore</td><td>May 18, 2026</td><td><span class="status-soon">CLOSING SOON</span></td>
+        </tr>
+        <tr>
+          <td><strong>ASIC Digital Assets Framework Implementation — Phase 1 Roundtables</strong><br/><span style="color:var(--text-muted);font-size:12px;">18-month implementation roadmap, months 1–6 stakeholder input. Consultation on standards and guidance. Why it matters: window to shape DAP and TCP standards before Phase 2 rulemaking.</span></td>
+          <td>ASIC</td><td>Australia</td><td>Ongoing through Oct 2026</td><td><span class="status-ongoing">ONGOING</span></td>
+        </tr>
+        <tr>
+          <td><strong>SFC Hong Kong — Virtual Asset Advisory & Asset Management Consultation</strong><br/><span style="color:var(--text-muted);font-size:12px;">One-month consultation on regulating VA advisory and asset management services, leading to 2026 LegCo bill. Why it matters: third pillar of Hong Kong's expanded regulatory perimeter.</span></td>
+          <td>SFC</td><td>Hong Kong</td><td>May 2026 (est.)</td><td><span class="status-open">OPEN</span></td>
+        </tr>
+        <tr>
+          <td><strong>SEC Crypto Task Force — Ongoing Written Submissions</strong><br/><span style="color:var(--text-muted);font-size:12px;">Rolling comment channel on tokenization, safe harbor, DeFi exemption design. Craig Lewis (former SEC chief economist) and James Overdahl submissions recent. Why it matters: only direct SEC input channel before "Reg Crypto" NPRM publishes.</span></td>
+          <td>SEC Crypto Task Force</td><td>US</td><td>Rolling</td><td><span class="status-ongoing">ONGOING</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-section">
+      <div class="footer-tier"><strong>Tier 1 — Regulators:</strong></div>
+      SEC (sec.gov); CFTC (cftc.gov); FCA (fca.org.uk); ESMA (esma.europa.eu); MAS (mas.gov.sg); ASIC (asic.gov.au); OCC; FDIC; FinCEN; Treasury OFAC; SFC Hong Kong; ECB (ecb.europa.eu); Federal Register.
+    </div>
+    <div class="footer-section">
+      <div class="footer-tier"><strong>Tier 2 — Law Firms:</strong></div>
+      Sullivan & Cromwell; Sidley Austin; Cleary Gottlieb; Morgan Lewis; White & Case; Jones Day; Covington & Burling; Arnold & Porter; Holland & Knight; Pillsbury; Katten Muchin Rosenman; Troutman Pepper Locke; Norton Rose Fulbright; Ballard Spahr; Paul Hastings; Fenwick; Greenberg Traurig; Winston & Strawn; Goodwin Procter; Latham & Watkins; Baker McKenzie; Prokopiev Law.
+    </div>
+    <div class="footer-section">
+      <div class="footer-tier"><strong>Tier 3 — Industry & Policy:</strong></div>
+      Blockchain Association; Chamber of Digital Commerce; Coinbase; Ripple; Circle; BitGo; Fireblocks; Anchorage Digital; a16z Crypto; Elliptic.
+    </div>
+    <div class="footer-section">
+      <div class="footer-tier"><strong>Tier 4 — Research & Analytics:</strong></div>
+      Chainalysis; TRM Labs; The Block Research.
+    </div>
+    <div class="footer-section">
+      <div class="footer-tier"><strong>Tier 5 — Media & Commentary:</strong></div>
+      CoinDesk; The Block; Bloomberg; Bloomberg Law; Cointelegraph; DL News; FinTech Weekly; DisruptionBanking; Finance Magnates; Crowdfund Insider.
+    </div>
+    <div class="footer-section" style="margin-top:18px;color:var(--text-muted);">
+      <em>The Brief — Legal Intelligence Report. Thursday, April 23, 2026. Prepared 07:00 ET. Subject to revision on material developments through close of business. Not legal or investment advice.</em>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const btn = document.getElementById('themeToggle');
+  if (document.body.classList.contains('dark-mode')) {
+    btn.innerHTML = '☀️ Light';
+    localStorage.setItem('brief-theme','dark');
+  } else {
+    btn.innerHTML = '🌙 Dark';
+    localStorage.setItem('brief-theme','light');
+  }
+}
+if (localStorage.getItem('brief-theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+  document.getElementById('themeToggle').innerHTML = '☀️ Light';
+}
+const observerOptions = { root:null, rootMargin:'0px 0px -60% 0px', threshold:0 };
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      const link = document.querySelector('.sidebar-nav a[href="#' + entry.target.id + '"]');
+      if (link) link.classList.add('active');
+    }
+  });
+}, observerOptions);
+const stories = document.querySelectorAll('.story-card[id]');
+stories.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
