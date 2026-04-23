@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Cumulative Volume Delta (CVD) | April 24, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:180px;flex-shrink:0}
+.toc-sticky{position:sticky;top:24px}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%;position:static}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc">
+  <div class="toc-sticky">
+    <div class="toc-label">Contents</div>
+    <a href="#s01"><span class="num">§01</span>What It Is</a>
+    <a href="#s02"><span class="num">§02</span>Mechanics</a>
+    <a href="#s03"><span class="num">§03</span>Visual</a>
+    <a href="#s04"><span class="num">§04</span>In Practice</a>
+    <a href="#s05"><span class="num">§05</span>Live Tape</a>
+    <a href="#s06"><span class="num">§06</span>Quotes</a>
+    <a href="#s07"><span class="num">§07</span>Common Traps</a>
+    <a href="#s08"><span class="num">§08</span>Further Reading</a>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Cumulative Volume Delta</h1>
+  <div class="meta">
+    <span>Friday · 24 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #2</span>
+    <span class="pill">10-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Cumulative Volume Delta (CVD) is the running net of aggressive buying minus aggressive selling — the score of who is actually attacking the book, not just the result of where price ended up.</strong> The practical edge: when price makes a new high but CVD fails to confirm it, buyers are losing conviction; that divergence — especially with flat or negative spot CVD against rising perp CVD — is one of the cleanest early warnings of trend exhaustion available on any screen.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Effort vs result · aggression, not volume</div>
+    </div>
+  </div>
+
+  <div class="skim">CVD measures who is attacking the book — it's the running cumulative score of market buys minus market sells, stripped of every passive, resting order in between.</div>
+
+  <p>Standard volume is blind. It counts every trade the same — whether a 10 BTC buy order hit a passive limit-sell at the ask, or a 10 BTC sell order drove through a passive bid. CVD splits those apart. It adds volume when an aggressor crosses the spread to buy (market order hits the ask), and subtracts it when an aggressor sells (market order hits the bid). What remains is the <strong>net aggression balance</strong> — who wanted in or out badly enough to pay the spread to do it.</p>
+
+  <p>The reason CVD matters where raw volume doesn't: price is the <em>result</em> of order flow, but CVD approximates the <em>effort</em> behind it. A rally on rising CVD means buyers are actively attacking higher prices. A rally on flat or declining CVD means price is drifting up on low aggression — perhaps market makers repricing, perhaps stop-runs, perhaps a thin book absorbing size. Structurally different scenarios that look identical on a price chart but very different on CVD.</p>
+
+  <p>In crypto you work with two CVD streams simultaneously: <strong>spot CVD</strong> (real buying or selling of the asset) and <strong>perp CVD</strong> (leveraged futures aggression). The divergence between those two streams is often more informative than either one alone.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>AGGRESSOR</b><span>The party who crosses the spread — places a market order</span></span>
+    <span class="pill-term"><b>DELTA</b><span>Buy volume minus sell volume for a single candle or bar</span></span>
+    <span class="pill-term"><b>CVD</b><span>Running cumulative sum of all per-candle deltas from a reset point</span></span>
+    <span class="pill-term"><b>SPOT CVD</b><span>Net aggression in the underlying asset market</span></span>
+    <span class="pill-term"><b>PERP CVD</b><span>Net aggression in perpetual futures — leveraged, speculative</span></span>
+    <span class="pill-term"><b>DIVERGENCE</b><span>Price and CVD disagree about trend direction or strength</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    CVD shows effort; price shows result. When effort and result diverge, the trend is under stress — someone is running out of ammunition.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Tick-level calculation · divergence types · spot vs perp split</div>
+    </div>
+  </div>
+
+  <div class="skim">CVD is computed at the tick level: every trade classified as buy-aggressor adds its volume, every sell-aggressor subtracts it — cumulated from a chosen start point.</div>
+
+  <p>At the raw feed level, every exchange trade record carries a side flag (or can be inferred from whether the execution price matches the prevailing ask or bid). Trades at or above the ask are classified as <strong>aggressive buys</strong>; trades at or below the bid are <strong>aggressive sells</strong>. Ambiguous mid-point fills are treated as neutral in most professional implementations.</p>
+
+  <div class="formula">
+<b>Per-candle delta:</b>
+Δ = Σ(volume of buys at ask) − Σ(volume of sells at bid)
+
+<b>Cumulative Volume Delta:</b>
+CVD(t) = CVD(t−1) + Δ(t)
+
+<b>Divergence signal (bearish):</b>
+Price(t) &gt; Price(t−n)  AND  CVD(t) &lt; CVD(t−n)
+→ buyer exhaustion: effort declining into higher prices
+
+<b>Divergence signal (bullish):</b>
+Price(t) &lt; Price(t−n)  AND  CVD(t) &gt; CVD(t−n)
+→ seller exhaustion: effort declining into lower prices
+
+    <div class="note">Note: Most TradingView Pine Script CVD indicators use price-direction approximation (×+1 up bar, ×−1 down bar) — NOT true tick classification. True CVD requires direct exchange websocket tick data (Binance, Bybit trade streams) or platforms like ATAS, Bookmap, or Hyblock. The approximation is directionally useful but will miss intra-candle aggression reversals.</div>
+  </div>
+
+  <p>The <strong>Spot vs Perp CVD divergence</strong> is uniquely powerful in crypto. When perp CVD is aggressively positive (longs piling in via market orders) but spot CVD is flat or negative, the price is being driven by leveraged speculation — not real demand. Historically this is the setup preceding sharp corrections: the speculative bid exhausts itself, funding spikes, and price drops back toward where real spot buyers are sitting. <strong>CryptoCred</strong> calls this the "paper bull" setup.</p>
+
+  <table class="cmp">
+    <tr><th>Divergence type</th><th>Signal</th><th>What it means</th></tr>
+    <tr><td>Bearish classic</td><td>Price HH, CVD LH or flat</td><td>Buyer aggression declining into higher prices — trend exhaustion</td></tr>
+    <tr><td>Bullish classic</td><td>Price LL, CVD HL or flat</td><td>Seller aggression declining into lower prices — absorption underway</td></tr>
+    <tr><td>Perp bull / spot flat</td><td>Perp CVD ↑, Spot CVD flat/↓</td><td>Leveraged speculation driving price — real demand absent</td></tr>
+    <tr><td>Absorption</td><td>CVD spikes hard one way, price barely moves</td><td>Large passive order absorbing aggression — institutional size working</td></tr>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — bearish divergence + spot vs perp split</div>
+    </div>
+  </div>
+
+  <div class="skim">The first chart shows a textbook bearish CVD divergence; the second shows the spot/perp split that flagged BTC's late-2025 top.</div>
+
+  <!-- SVG 1 — CVD Bearish Divergence -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="CVD bearish divergence diagram — price higher high, CVD lower high">
+
+      <defs>
+        <linearGradient id="cvdGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.4"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.05"/>
+        </linearGradient>
+        <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#22c55e"/>
+        </marker>
+        <marker id="arrowWarn" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#fbbf24"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">CVD Bearish Divergence</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE MAKES HIGHER HIGH · CVD MAKES LOWER HIGH</text>
+
+      <!-- ── PRICE PANEL (top half, y 60-230) ── -->
+      <text x="36" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE</text>
+      <line x1="60" y1="75" x2="60" y2="230" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="230" x2="760" y2="230" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Grid lines price -->
+      <line x1="60" y1="100" x2="760" y2="100" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="130" x2="760" y2="130" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="160" x2="760" y2="160" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="190" x2="760" y2="190" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Price candles approximating a rally with lower high on divergence leg -->
+      <!-- candles: x, top, bottom, open, close (green=close>open, red=close<open) -->
+      <!-- First leg up -->
+      <rect x="85"  y="200" width="14" height="12" fill="#22c55e"/>
+      <rect x="120" y="185" width="14" height="18" fill="#22c55e"/>
+      <rect x="155" y="168" width="14" height="20" fill="#22c55e"/>
+      <rect x="190" y="150" width="14" height="22" fill="#22c55e"/>
+      <rect x="225" y="135" width="14" height="18" fill="#22c55e"/>
+      <!-- Peak 1 -->
+      <rect x="260" y="108" width="14" height="30" fill="#22c55e"/>
+      <line x1="267" y1="100" x2="267" y2="108" stroke="#22c55e" stroke-width="2"/>
+      <line x1="267" y1="138" x2="267" y2="148" stroke="#22c55e" stroke-width="2"/>
+      <!-- Pullback -->
+      <rect x="295" y="130" width="14" height="20" fill="#ef4444"/>
+      <rect x="330" y="148" width="14" height="18" fill="#ef4444"/>
+      <rect x="365" y="162" width="14" height="15" fill="#ef4444"/>
+      <!-- Second rally leg (higher price) -->
+      <rect x="400" y="152" width="14" height="14" fill="#22c55e"/>
+      <rect x="435" y="135" width="14" height="20" fill="#22c55e"/>
+      <rect x="470" y="118" width="14" height="20" fill="#22c55e"/>
+      <rect x="505" y="100" width="14" height="22" fill="#22c55e"/>
+      <!-- Peak 2 — higher high -->
+      <rect x="540" y="90" width="14" height="14" fill="#22c55e"/>
+      <line x1="547" y1="82" x2="547" y2="90" stroke="#22c55e" stroke-width="2"/>
+      <line x1="547" y1="104" x2="547" y2="114" stroke="#22c55e" stroke-width="2"/>
+      <!-- Reversal -->
+      <rect x="575" y="110" width="14" height="22" fill="#ef4444"/>
+      <rect x="610" y="130" width="14" height="25" fill="#ef4444"/>
+      <rect x="645" y="150" width="14" height="22" fill="#ef4444"/>
+      <rect x="680" y="168" width="14" height="18" fill="#ef4444"/>
+      <rect x="715" y="188" width="14" height="22" fill="#ef4444"/>
+
+      <!-- Peak 1 label -->
+      <text x="267" y="95" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">P1</text>
+      <!-- Peak 2 label -->
+      <text x="547" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">P2 (HH)</text>
+
+      <!-- Price trendline connecting P1 and P2 (higher high) -->
+      <line x1="267" y1="100" x2="547" y2="82" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.7"/>
+
+      <!-- ── CVD PANEL (bottom half, y 255-410) ── -->
+      <text x="36" y="267" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">CVD</text>
+      <line x1="60" y1="270" x2="60" y2="415" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="415" x2="760" y2="415" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- CVD zero line -->
+      <line x1="60" y1="345" x2="760" y2="345" stroke="#78716c" stroke-dasharray="2,4" stroke-width="1"/>
+      <text x="56" y="348" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">0</text>
+
+      <!-- CVD curve — strong rise to peak, weaker rise on second leg = lower high -->
+      <!-- First leg: rises strongly -->
+      <polyline points="92,400 127,385 162,368 197,348 232,330 267,305" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+      <!-- CVD peak 1 at ~y=305 (well above zero) -->
+      <polyline points="267,305 302,320 337,330 372,325" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+      <!-- Second leg: rises but peaks lower (higher price, lower CVD) -->
+      <polyline points="372,325 407,315 442,310 477,312 512,316 547,318" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+      <!-- After P2: CVD drops sharply as reversal confirms -->
+      <polyline points="547,318 582,335 617,355 652,372 687,388 722,405" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+
+      <!-- CVD fill under first leg -->
+      <polygon points="92,345 92,400 127,385 162,368 197,348 267,305 267,345" fill="url(#cvdGrad)" opacity="0.5"/>
+
+      <!-- CVD peak 1 marker -->
+      <circle cx="267" cy="305" r="5" fill="#a3e635" stroke="#3f6212" stroke-width="1.5"/>
+      <text x="267" y="298" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">C1</text>
+
+      <!-- CVD peak 2 marker — lower high -->
+      <circle cx="547" cy="318" r="5" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+      <text x="547" y="311" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78350f" font-weight="700">C2 (LH)</text>
+
+      <!-- CVD trendline connecting C1 and C2 (lower high) -->
+      <line x1="267" y1="305" x2="547" y2="318" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.9"/>
+
+      <!-- Divergence zone highlight -->
+      <rect x="255" y="75" width="305" height="355" fill="#fbbf24" opacity="0.04" rx="4"/>
+      <rect x="255" y="75" width="305" height="355" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4" rx="4"/>
+      <text x="408" y="440" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">DIVERGENCE ZONE</text>
+
+      <!-- Divergence annotation lines -->
+      <line x1="267" y1="95" x2="267" y2="230" stroke="#78716c" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+      <line x1="547" y1="78" x2="547" y2="230" stroke="#78716c" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+      <line x1="267" y1="255" x2="267" y2="270" stroke="#78716c" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+      <line x1="547" y1="255" x2="547" y2="270" stroke="#78716c" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+
+    </svg>
+    <div class="svg-caption">Textbook bearish divergence: price prints a higher high (P2 above P1) while CVD peaks lower (C2 below C1) — aggressive buying is declining even as price is still being marked up. The red CVD drop after P2 confirms the reversal.</div>
+  </div>
+
+  <!-- SVG 2 — Spot vs Perp CVD -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spot CVD vs Perpetual CVD divergence — paper bull setup">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Spot CVD vs Perp CVD — The Paper Bull</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PERP AGGRESSION RISING · SPOT DEMAND ABSENT</text>
+
+      <!-- Axes -->
+      <line x1="70" y1="60" x2="70" y2="310" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="70" y1="310" x2="750" y2="310" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Grid -->
+      <line x1="70" y1="100" x2="750" y2="100" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="145" x2="750" y2="145" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="190" x2="750" y2="190" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="235" x2="750" y2="235" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="280" x2="750" y2="280" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Zero CVD line -->
+      <line x1="70" y1="190" x2="750" y2="190" stroke="#78716c" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <text x="62" y="193" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">0</text>
+      <text x="62" y="105" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">+</text>
+      <text x="62" y="280" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">−</text>
+
+      <!-- Phase dividers -->
+      <line x1="280" y1="60" x2="280" y2="310" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="530" y1="60" x2="530" y2="310" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+      <!-- Phase labels -->
+      <text x="175" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">HEALTHY BULL</text>
+      <text x="405" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">PAPER BULL</text>
+      <text x="640" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" letter-spacing="0.5">UNWIND</text>
+
+      <!-- Perp CVD line (blue/teal — speculative) -->
+      <!-- Healthy bull phase: both rising together -->
+      <polyline points="80,260 130,240 180,215 230,195 280,160" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+      <!-- Paper bull phase: perp keeps rising, spot flattens/drops -->
+      <polyline points="280,160 330,130 380,105 430,90 480,80 530,78" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+      <!-- Unwind: perp CVD collapses -->
+      <polyline points="530,78 580,120 630,175 680,225 740,270" fill="none" stroke="#38bdf8" stroke-width="2.5" opacity="0.6"/>
+
+      <!-- Spot CVD line (green — real demand) -->
+      <!-- Healthy bull: rising in line with perp -->
+      <polyline points="80,265 130,248 180,225 230,205 280,175" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+      <!-- Paper bull: spot CVD flattens, turns slightly negative -->
+      <polyline points="280,175 330,182 380,188 430,192 480,197 530,205" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+      <!-- Unwind: spot CVD stays weak/negative -->
+      <polyline points="530,205 580,215 630,225 680,235 740,248" fill="none" stroke="#22c55e" stroke-width="2.5" opacity="0.6"/>
+
+      <!-- Price line (white/dark — just to show price moving up) -->
+      <polyline points="80,280 130,262 180,240 230,218 280,195 330,170 380,148 430,132 480,118 530,108 580,140 630,175 680,210 740,250" fill="none" stroke="#1c1917" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.45"/>
+
+      <!-- Labels on lines -->
+      <text x="170" y="208" font-family="JetBrains Mono,monospace" font-size="11" fill="#38bdf8" font-weight="700">PERP CVD</text>
+      <text x="172" y="233" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">SPOT CVD</text>
+      <text x="180" y="258" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">PRICE —</text>
+
+      <!-- Paper bull annotation -->
+      <rect x="285" y="84" width="240" height="130" fill="#fbbf24" opacity="0.05" rx="4"/>
+      <text x="405" y="340" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">PERP PUMPS · SPOT ABSENT → "PAPER BULL"</text>
+
+      <!-- Divergence arrow annotation in paper bull zone -->
+      <line x1="390" y1="105" x2="390" y2="188" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="396" y="150" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">gap = risk</text>
+
+    </svg>
+    <div class="svg-caption">The "paper bull" setup: during a healthy rally both spot and perp CVD rise together (real demand + speculative demand aligned). When perp CVD keeps climbing while spot CVD flattens or turns negative, price is rising on leverage alone — the gap between the two lines is the embedded risk. When perp longs unwind, price finds no real-demand floor.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">The setup · entry process · worked example</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: divergence without a price action trigger is just noise — wait for structure to confirm before entering.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Context First — Higher Timeframe CVD Direction</h4>
+        <p>Always establish the 4h or daily CVD trend before reading 5m signals. A 5m bullish CVD divergence inside a daily CVD downtrend is fighting the tide — valid for a scalp only, never a position. The higher timeframe CVD is the bias; the lower timeframe is the entry tool.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Anchor to a Level, Not Just a Divergence</h4>
+        <p>CVD divergences at random prices are noise. CVD divergences at a prior swing high/low, a VWAP, a volume POC, or a liquidation cluster carry real weight. The level gives you the structural reason; CVD divergence gives you the timing signal. Both must be present.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Wait for a Price-Side Trigger</h4>
+        <p>Do not enter on divergence alone. Wait for price to print a clear structural signal: break of the most recent swing high/low, a failed breakout with close back inside the level, or a series of lower highs on the 5m after a double-top at the divergence point. CVD divergence is the warning; the trigger is the entry.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Check the OI Matrix Before Sizing</h4>
+        <p>Overlay open interest direction against CVD. OI rising + CVD falling into a high = new shorts entering into a potential reversal (confirms your short thesis). OI falling + CVD falling = longs covering (trend exhaustion rather than short attack). Different risk profiles — size accordingly. The <strong>@goldenpocketxbt OI × CVD matrix</strong> is a clean reference for this.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Short at Resistance</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC printing into the $95,400 session high. 4h CVD has been flat for 6 hours while price grinded +1.8%.</td></tr>
+      <tr><td>Divergence confirmation</td><td>Price prints a new 4h high at $95,420. CVD is ~12% below its prior peak at the same price zone — sellers absorbing with passive size at the ask.</td></tr>
+      <tr><td>Trigger</td><td>5m candle closes back below $95,200 — a failed breakout above prior resistance. Enter short at market ~$95,180.</td></tr>
+      <tr><td>Stop</td><td>Above the divergence high: $95,500. Risk = $320/BTC (~0.34%).</td></tr>
+      <tr><td>Target</td><td>Prior support at $94,100. R:R = ~3.4:1. Trail stop to entry once price clears $94,800.</td></tr>
+      <tr><td>Invalidation</td><td>CVD flips and starts rising with price — aggressive buyers taking over. Exit immediately.</td></tr>
+    </table>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> 15m–1h for divergence identification, 5m for entry trigger. 4h+ for bias direction. CVD resets matter — compare peaks within the same session window, not across daily resets.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">The late-2025 BTC top · spot CVD vs perp CVD in real time</div>
+    </div>
+  </div>
+
+  <div class="skim">CVD's clearest 2025 signal: BTC printed its all-time high near $117,000 while spot CVD turned decisively red — one of the cleanest "paper bull" setups on record.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 4H</div>
+    <h4>BTC $117K Peak — Spot CVD Turns Red (Late 2025)</h4>
+
+    <p>As BTC approached its then-ATH near <strong>$116,000–$117,000</strong> in late 2025, CryptoQuant's 90-day Spot Taker CVD flipped negative and stayed there. The structure was textbook: perpetual futures open interest surged to <strong>$34.3 billion</strong> with positive funding rates — leveraged longs were aggressively long. But spot CVD told the opposite story.</p>
+
+    <p><strong>CryptoQuant analyst Burak Kesmeci</strong> published the call directly: <em>"The red CVD in spot trading indicates a lack of conviction among buyers, forcing reliance on derivatives for any upside attempts."</em> The divergence between a $34B OI reading and a negative spot CVD was the tell. When the speculative bid exhausted itself, BTC corrected from ~$117K to ~$81K — a 31% drawdown with no real-demand floor to slow it.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>BTC ATH zone</td><td>~$116,500–$117,000 (late 2025)</td></tr>
+        <tr><td>Spot Taker CVD (90-day)</td><td>Negative / red — sell-dominant</td></tr>
+        <tr><td>Perp Open Interest</td><td>$34.3 billion — record high</td></tr>
+        <tr><td>Funding rate</td><td>Positive — longs paying shorts</td></tr>
+        <tr><td>CVD signal interpretation</td><td>Paper bull — leverage driving price, real demand absent</td></tr>
+        <tr><td>Subsequent move</td><td>~$117K → ~$81K (−31%) as OI unwound</td></tr>
+        <tr><td>Source</td><td>CryptoQuant / Burak Kesmeci (named analyst)</td></tr>
+      </table>
+    </div>
+
+    <p>The current BTC tape (April 2026) is worth watching the same lens. If BTC pushes into the $97K–$98K zone and perp CVD is running hot while spot CVD lags, the setup rhymes. Check <a href="https://cryptoquant.com/asset/btc/chart/market-indicator/spot-taker-cvdcumulative-volume-delta-cvd-90-day" style="color:#bef264;border-bottom-color:#bef264">CryptoQuant Spot Taker CVD</a> and <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd" style="color:#bef264;border-bottom-color:#bef264">Coinglass CVD</a> for the live read.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      When spot CVD is negative and perp OI is at elevated levels, BTC is being held up by speculative leverage rather than real demand — any negative catalyst that forces longs to cover will find no real-demand bid to slow the move.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Practitioners and classicists on reading flow</div>
+    </div>
+  </div>
+
+  <div class="skim">The most useful voices on CVD range from Richard Wyckoff's century-old effort/result law to current accounts publishing live divergence calls.</div>
+
+  <div class="quote">
+    <p>"CVD is essentially a visualisation of market buys minus market sells. CVD is typically used to infer aggressive participation — traders executing via market orders, crossing the spread. CVD is most interesting and relevant when some sort of divergence is visible."</p>
+    <div class="attr"><b>@CryptoCred (Cred)</b> · X · November 2023 · <a href="https://x.com/CryptoCred/status/1727996775930139028">thread</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"CVD (Cumulative Volume Delta) represents the net difference between market buy and market sell orders slamming into the order book — it tracks aggressive market orders interacting with passive limit orders, rather than just total volume."</p>
+    <div class="attr"><b>@goldenpocketxbt</b> · X · 2026 · <a href="https://x.com/goldenpocketxbt/status/2001643067699331469">OI × CVD matrix thread</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows a poor response to effort — a wide spread, heavy volume, and little price movement — the experienced tape reader recognises that the market is meeting with supply or demand that is stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · The original formulation of effort vs result</div>
+  </div>
+
+  <div class="quote">
+    <p>"When the price reaches a new high or low but CVD does not correspondingly reach a new high or low, it may be a signal that the market is about to reverse."</p>
+    <div class="attr"><b>CoinGlass</b> · CVD Educational Guide · 2025 · <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd">source</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways traders wreck themselves with CVD</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating CVD divergence as a reversal signal rather than an early warning — without a price-action trigger, divergences can run for hours.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Entering the Divergence, Not the Trigger</h5>
+      <p>CVD divergences are early warnings, not entry signals. A bearish divergence can run for 10 candles before price reverses — entering at the first divergence print means sitting through drawdown and often getting stopped before the actual reversal fires. Always wait for price to give you a structure-based trigger.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Using TradingView's Built-In CVD as "True" CVD</h5>
+      <p>Most TradingView CVD scripts use a price-direction approximation (volume × ±1 based on candle close direction) because true tick classification requires raw exchange data not available in Pine Script. This approximation misses intra-candle aggression reversals and can produce false divergences. For real CVD use Hyblock, Coinglass, ATAS, or direct exchange websocket data.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring Institutional Execution Methods on BTC/ETH</h5>
+      <p>Large operators use TWAP/VWAP algorithms and iceberg orders specifically designed to execute passively — they never appear as market-order aggression in CVD. As <strong>CryptoCred</strong> explicitly warned: BTC/ETH CVD "can get muddied" by sophisticated participants executing passively. CVD is more reliable on smaller venues and less sophisticated markets.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Using CVD in Strong Trending Markets</h5>
+      <p>CVD divergences fail most spectacularly in parabolic trends. When momentum traders are aggressively chasing, CVD can show apparent "exhaustion" divergences for sessions before price actually tops. Use CVD divergence primarily at structural levels and in ranging/transitioning markets, not inside confirmed trend legs.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Treating CVD as a Novel, Edge-Giving Tool in 2026</h5>
+      <p>CVD is now mainstream. Every serious crypto platform shows it; Coinglass, Hyblock, and CryptoQuant serve live CVD to hundreds of thousands of traders. When a signal is this widely watched, obvious divergences get front-run or faded by algos before retail can act on them. CVD remains useful — as a context filter and confluence tool, not as a standalone alpha generator. Pair it with structure, OI, and funding for an edge that's less crowded.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Threads, platforms, and deep dives — only verified sources</div>
+    </div>
+  </div>
+
+  <div class="skim">Five verified sources that go deeper — from the defining practitioner thread to tick-level implementation guides.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body">
+        <a href="https://x.com/CryptoCred/status/1727996775930139028">@CryptoCred — CVD Explained (X, Nov 2023)</a>
+        <span>The most-cited crypto-native CVD primer. Covers spot vs perp distinction, divergence logic, and a clear warning about BTC/ETH context limitations. Start here.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy">Bookmap — CVD Trading Strategy & CVD Divergence</a>
+        <span>Practitioner-grade walkthrough of the four divergence types, absorption setups, and the failed-breakout entry model. Strong on mechanics.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Live Data</div>
+      <div class="fr-body">
+        <a href="https://cryptoquant.com/asset/btc/chart/market-indicator/spot-taker-cvdcumulative-volume-delta-cvd-90-day">CryptoQuant — BTC Spot Taker CVD (90-day)</a>
+        <span>The institutional-grade spot CVD chart that flagged the late-2025 top. Watch the colour and slope — sustained red = sell-dominant regime. Pair with OI for the full picture.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body">
+        <a href="https://x.com/goldenpocketxbt/status/2001643067699331469">@goldenpocketxbt — OI × CVD Matrix (X, 2026)</a>
+        <span>The cleanest single reference for reading OI and CVD together. Four combinations that tell you whether new longs, new shorts, long covers, or short covers are driving price.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Platform</div>
+      <div class="fr-body">
+        <a href="https://atas.net/volume-analysis/basics-of-volume-analysis/cvd-pro/">ATAS — CVD Pro: How to Use Cumulative Volume Delta</a>
+        <span>The most technically rigorous implementation guide. Covers tick-level classification, the delta pressure concept, and how professional order-flow tools compute true CVD vs approximations.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://x.com/CryptoCred/status/1727996775930139028">@CryptoCred · X · Nov 2023</a>
+    <a href="https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy">Bookmap CVD Guide</a>
+    <a href="https://cryptoquant.com/asset/btc/chart/market-indicator/spot-taker-cvdcumulative-volume-delta-cvd-90-day">CryptoQuant Spot CVD</a>
+    <a href="https://x.com/goldenpocketxbt/status/2001643067699331469">@goldenpocketxbt OI × CVD</a>
+    <a href="https://atas.net/volume-analysis/basics-of-volume-analysis/cvd-pro/">ATAS CVD Pro</a>
+    <a href="https://phemex.com/academy/what-is-cumulative-delta-cvd-indicator">Phemex Academy CVD</a>
+    <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd">CoinGlass CVD</a>
+    <a href="https://www.luxalgo.com/blog/cumulative-volume-delta-explained/">LuxAlgo CVD Explained</a>
+    <a href="https://zitaplus.com/blog/analysis/cumulative-volume-delta-divergence-details--strategies/">Zitaplus CVD Divergence</a>
+    <a href="https://bitcoinethereumnews.com/bitcoin/bitcoin-correction-may-signal-rebound-amid-persistent-seller-dominance/">BTC CVD bearish regime analysis</a>
+  </div>
+  <div>Alpha · Issue #2 · 24 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
