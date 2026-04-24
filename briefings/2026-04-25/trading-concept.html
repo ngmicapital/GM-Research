@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Bid/Ask Imbalance | April 25, 2026</title>
+<meta property="og:description" content="Alpha — Bid/Ask Imbalance | April 25, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Bid/Ask Imbalance</h1>
+  <div class="meta">
+    <span>Saturday · 25 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #3</span>
+    <span class="pill">10-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Bid/Ask Imbalance — also called Order Book Imbalance (OBI) — is the real-time snapshot of asymmetric pressure sitting in the limit order book: how much resting volume is on the buy side versus the sell side, expressed as a ratio from −1 (pure ask dominance) to +1 (pure bid dominance).</strong> The practical edge: a heavy positive OBI at a known support level confirms that resting size is absorbing downside — the market is structurally resistant to selling. A negative OBI building at resistance tells you the book is fighting price before a single candle of rejection prints. With BTC grinding at $77,520 into the $79K–$80K resistance zone right now, the order book is already showing that story.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The pre-trade snapshot · resting volume asymmetry · structural lean</div>
+    </div>
+  </div>
+
+  <div class="skim">OBI is the book's opinion of value before anyone throws a punch — it measures the imbalance in resting limit orders, not what has already traded.</div>
+
+  <p>The order book at any given moment contains thousands of resting limit orders on both sides of the market. On the bid side: buyers willing to purchase at or below the current price. On the ask side: sellers willing to sell at or above it. <strong>Bid/Ask Imbalance (OBI)</strong> measures whether those two sides are in balance or whether one dramatically outweighs the other — and whether that asymmetry is concentrated at the top of the book (best bid/ask) or spread across deeper levels.</p>
+
+  <p>The critical distinction from CVD (yesterday's concept): CVD measures what has <em>already happened</em> — the running score of aggressive market orders crossing the spread. OBI measures what is <em>pending</em> — the structural weight of resting limit orders before any aggression occurs. CVD is the scoreboard; OBI is the crowd noise before the opening bell. You need both, and they tell different parts of the same story.</p>
+
+  <p>OBI is genuinely <strong>pre-trade information</strong>. It exists in the order book before a single transaction occurs at a price level. This makes it one of the few leading indicators that isn't derived from price action — it precedes the price action. Research across major equity markets has shown OBI explains ~65% of short-interval mid-price changes (Cont, Kukanov &amp; Stoikov, 2014) — a figure that is high for any single microstructure metric. In crypto, with thinner books and higher concentration of passive walls, the predictive window is often even shorter but more extreme in magnitude.</p>
+
+  <p>Practically: a deep bid wall at $77,000 doesn't guarantee that price won't go there. But it does tell you that if price visits $77,000, someone large has pre-committed to absorbing it. Whether that wall holds or gets pulled (spoofing) is a separate question — and one of the core traps covered in §07.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>OBI</b><span>Order Book Imbalance — the signed ratio of bid vs ask resting volume</span></span>
+    <span class="pill-term"><b>TOP-OF-BOOK</b><span>Best bid and best ask — the innermost resting orders, tightest to mid-price</span></span>
+    <span class="pill-term"><b>DEPTH</b><span>Total resting volume stacked across multiple price levels on each side</span></span>
+    <span class="pill-term"><b>MID-PRICE</b><span>(Best bid + Best ask) / 2 — the reference price between the two sides</span></span>
+    <span class="pill-term"><b>PASSIVE ORDER</b><span>A limit order sitting in the book, waiting — does not move price on its own</span></span>
+    <span class="pill-term"><b>SPOOFING</b><span>Placing large resting orders with intent to cancel before execution — manipulates OBI</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    OBI tells you which side of the market has pre-committed structural weight. It's the book's lean — a lean that can confirm, warn, or mislead you depending on whether the orders are real.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Formula · three measurement approaches · depth weighting</div>
+    </div>
+  </div>
+
+  <div class="skim">One formula, three flavours: top-of-book ratio, cumulative depth ratio, and distance-weighted ratio — each reading a different slice of structural pressure.</div>
+
+  <p>The base formula is straightforward: subtract ask-side volume from bid-side volume and normalize by total. This produces a value between −1 and +1 that can be applied to any depth window you choose.</p>
+
+  <div class="formula">
+<b>Order Book Imbalance (core):</b>
+OBI = (Bid Volume − Ask Volume) / (Bid Volume + Ask Volume)
+
+<b>Range:</b>
++1.0 → 100% bid dominance (no asks in window)
+ 0.0 → perfectly balanced
+−1.0 → 100% ask dominance (no bids in window)
+
+<b>Example — BTC/USDT.P top-of-book:</b>
+Best bid: 14.2 BTC at $77,400
+Best ask:  3.8 BTC at $77,450
+OBI = (14.2 − 3.8) / (14.2 + 3.8) = 10.4 / 18.0 = <b>+0.578</b>
+→ Strong bid lean at the top of book
+
+<b>Bearish signal threshold (common):</b>
+OBI &lt; −0.30 at a known resistance → ask side structural dominance
+OBI &gt; +0.30 at a known support → bid side structural dominance
+
+    <div class="note">Note: Some platforms and professional tools define OBI using queue-weighted depth (volumes weighted by their distance from mid-price, so inner levels count more). The basic formula above uses raw volume — most retail tools implement this version.</div>
+  </div>
+
+  <p>The <strong>three measurement approaches</strong> serve different purposes. Top-of-book OBI (best bid vs best ask only) is the most reactive — it changes in milliseconds and is what HFT algorithms read for short-horizon edge. Cumulative depth OBI averages across multiple levels (e.g. top 10 bids vs top 10 asks), smoothing out transient noise and better capturing structural walls. <strong>Weighted depth OBI</strong> discounts levels far from mid-price on the basis that volume sitting $500 away from current price is less immediately relevant than volume sitting $5 away.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Approach</th><th>What it measures</th><th>Time horizon</th><th>Crypto tool</th></tr>
+    <tr><td>Top-of-Book</td><td>Best bid vs best ask volume only</td><td>Seconds → 1 min</td><td>Binance order stream, ATAS</td></tr>
+    <tr><td>Cumulative Depth</td><td>Total resting volume across N levels each side</td><td>Minutes → 30 min</td><td>CoinGlass depth chart, Bookmap</td></tr>
+    <tr><td>Weighted Depth</td><td>Volume discounted by distance from mid-price</td><td>1 min → 1h structural</td><td>Hyblock, advanced DOM tools</td></tr>
+  </table>
+  </div>
+
+  <p>Research by Mastrolia and Ranaldo (2023) found something asymmetric and practically important: <strong>negative OBI (ask dominance) predicts downward price moves more reliably than positive OBI predicts upward moves.</strong> In other words, the book is better at telling you when to not be long than when to aggressively buy. This fits with crypto market structure — large passive sellers (exchanges, OTC desks, miners hedging) create visible order flow that absorbs rallies, while the bid side is more commonly spoofed by market-makers gaming the queue.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Diagram 1 — order book depth snapshot · Diagram 2 — OBI through a resistance test</div>
+    </div>
+  </div>
+
+  <div class="skim">Diagram 1 shows what a bid-heavy OBI looks like in the raw DOM — the signature of absorption at support. Diagram 2 shows OBI flipping from positive to negative as price grinds into resistance — the early warning.</div>
+
+  <!-- SVG 1 — Order Book Depth: Bid-Heavy at Support -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 400" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <rect width="800" height="400" fill="#ffffff" rx="4"/>
+
+      <!-- Title bar -->
+      <rect width="800" height="36" fill="#f3f0ea" rx="4"/>
+      <text x="400" y="23" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1.8" fill="#44403c">ORDER BOOK SNAPSHOT — BID-HEAVY AT SUPPORT  ·  BTC/USDT.P</text>
+
+      <!-- Column headers -->
+      <text x="200" y="54" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1" fill="#166534">← BID VOLUME</text>
+      <text x="600" y="54" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1" fill="#991b1b">ASK VOLUME →</text>
+
+      <!-- Center spine (mid-price) -->
+      <line x1="400" y1="42" x2="400" y2="370" stroke="#1c1917" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+      <!-- ── ASK ROWS (above mid, bars extend RIGHT from x=400) ── -->
+      <!-- $78,200 — ask 2.3 BTC → width=46 -->
+      <rect x="400" y="68" width="46" height="26" rx="2" fill="#ef4444" opacity="0.80"/>
+      <text x="392" y="85" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$78,200</text>
+      <text x="452" y="85" font-family="JetBrains Mono, monospace" font-size="10" fill="#b91c1c">2.3 BTC</text>
+
+      <!-- $77,900 — ask 4.4 BTC → width=88 -->
+      <rect x="400" y="108" width="88" height="26" rx="2" fill="#ef4444" opacity="0.80"/>
+      <text x="392" y="125" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$77,900</text>
+      <text x="494" y="125" font-family="JetBrains Mono, monospace" font-size="10" fill="#b91c1c">4.4 BTC</text>
+
+      <!-- $77,650 — ask 6.8 BTC → width=136 -->
+      <rect x="400" y="148" width="136" height="26" rx="2" fill="#ef4444" opacity="0.80"/>
+      <text x="392" y="165" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$77,650</text>
+      <text x="542" y="165" font-family="JetBrains Mono, monospace" font-size="10" fill="#b91c1c">6.8 BTC</text>
+
+      <!-- ── MID-PRICE ROW ── -->
+      <rect x="310" y="184" width="180" height="22" rx="3" fill="#1c1917"/>
+      <text x="400" y="199" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#fafaf9">$77,520  ·  MID</text>
+
+      <!-- ── BID ROWS (below mid, bars extend LEFT from x=400) ── -->
+      <!-- $77,400 — bid 9.5 BTC → width=190 → x=210 -->
+      <rect x="210" y="218" width="190" height="26" rx="2" fill="#22c55e" opacity="0.80"/>
+      <text x="408" y="235" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$77,400</text>
+      <text x="204" y="235" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#15803d">9.5 BTC</text>
+
+      <!-- $77,200 — bid 12.1 BTC → width=242 → x=158 -->
+      <rect x="158" y="258" width="242" height="26" rx="2" fill="#22c55e" opacity="0.80"/>
+      <text x="408" y="275" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$77,200</text>
+      <text x="152" y="275" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#15803d">12.1 BTC</text>
+
+      <!-- $77,000 — bid 14.5 BTC → width=290 → x=110 -->
+      <rect x="110" y="298" width="290" height="26" rx="2" fill="#22c55e" opacity="0.85"/>
+      <text x="408" y="315" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">$77,000</text>
+      <text x="104" y="315" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#15803d">14.5 BTC</text>
+
+      <!-- ABSORPTION label near big bid wall -->
+      <rect x="36" y="296" width="66" height="32" rx="3" fill="#f0fdf4" stroke="#22c55e" stroke-width="1"/>
+      <text x="69" y="309" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" font-weight="700" letter-spacing="0.8" fill="#166534">ABSORPTION</text>
+      <text x="69" y="321" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#166534">ZONE</text>
+      <line x1="102" y1="311" x2="110" y2="311" stroke="#22c55e" stroke-width="1" marker-end="url(#arr)"/>
+
+      <!-- Thin ask annotation -->
+      <text x="555" y="100" font-family="JetBrains Mono, monospace" font-size="9" fill="#9ca3af">THIN RESISTANCE</text>
+      <text x="555" y="112" font-family="JetBrains Mono, monospace" font-size="9" fill="#9ca3af">EASY TO ABSORB</text>
+
+      <!-- OBI Badge -->
+      <rect x="558" y="210" width="208" height="108" rx="6" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="662" y="232" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" letter-spacing="2" fill="#166534">ORDER BOOK IMBALANCE</text>
+      <text x="662" y="286" text-anchor="middle" font-family="DM Serif Display, serif" font-size="50" fill="#22c55e">+0.47</text>
+      <text x="662" y="308" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#166534">BID SIDE DOMINANT · BULLISH LEAN</text>
+
+      <!-- Totals footnote -->
+      <text x="400" y="358" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#78716c">Total bid: 36.1 BTC  ·  Total ask: 13.5 BTC  ·  OBI = (36.1 − 13.5) / (36.1 + 13.5) = +0.47</text>
+    </svg>
+    <p class="svg-caption">Diagram 1 — Bid-heavy order book at support. Bids extend left from mid-price (green); asks extend right (red). The structural weight is clearly on the bid side — total bid volume is 2.7× ask volume, producing OBI = +0.47. This is what absorption looks like in the DOM before price has moved.</p>
+  </div>
+
+  <!-- SVG 2 — OBI Through a Resistance Test -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <rect width="800" height="360" fill="#ffffff" rx="4"/>
+
+      <!-- Title bar -->
+      <rect width="800" height="36" fill="#f3f0ea" rx="4"/>
+      <text x="400" y="23" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1.8" fill="#44403c">OBI SIGNAL THROUGH A RESISTANCE TEST  ·  BEARISH FLIP AT $79K</text>
+
+      <!-- ── PRICE PANEL (top) y=50 to y=195 ── -->
+      <!-- Zone labels -->
+      <text x="18" y="52" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">PRICE</text>
+      <!-- Resistance line at y=72 -->
+      <line x1="50" y1="72" x2="750" y2="72" stroke="#ef4444" stroke-width="1" stroke-dasharray="5,4" opacity="0.6"/>
+      <text x="755" y="76" font-family="JetBrains Mono, monospace" font-size="9" fill="#ef4444">$79,000</text>
+      <!-- Support zone band y=158 to y=175 -->
+      <rect x="50" y="158" width="700" height="17" fill="#f0fdf4" opacity="0.6"/>
+      <text x="755" y="170" font-family="JetBrains Mono, monospace" font-size="9" fill="#22c55e">$77,000</text>
+
+      <!-- Price candles — rising from support, grinding into resistance, then stalling -->
+      <!-- Phase 1: Rising (x=50 to x=380) -->
+      <polyline points="50,168 90,162 130,155 170,148 210,138 250,124 290,112 330,98 370,80 410,75" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+      <!-- Phase 2: Grinding, stalling (x=410 to x=700) -->
+      <polyline points="410,75 450,78 490,72 530,80 570,76 610,82 650,79 690,85 730,90" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+
+      <!-- Arrow at resistance -->
+      <text x="490" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#ef4444" font-weight="700">SELL WALLS BUILDING — OBI GOING NEGATIVE</text>
+
+      <!-- Phase zone labels on price panel -->
+      <text x="200" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#166534" font-weight="700">SUPPORT ZONE · OBI POSITIVE</text>
+      <text x="560" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#991b1b" font-weight="700">RESISTANCE TEST · OBI FLIPPING</text>
+
+      <!-- Divider line between panels -->
+      <line x1="50" y1="210" x2="750" y2="210" stroke="#e7e5e4" stroke-width="1"/>
+      <text x="18" y="220" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">OBI</text>
+
+      <!-- ── OBI PANEL (bottom) y=210 to y=340 ── -->
+      <!-- Zero line at y=275 -->
+      <line x1="50" y1="275" x2="750" y2="275" stroke="#1c1917" stroke-width="1"/>
+      <text x="755" y="279" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">0</text>
+      <text x="755" y="243" font-family="JetBrains Mono, monospace" font-size="9" fill="#22c55e">+0.5</text>
+      <text x="755" y="313" font-family="JetBrains Mono, monospace" font-size="9" fill="#ef4444">−0.5</text>
+
+      <!-- OBI bars — Phase 1: Positive (green bars above zero) -->
+      <!-- Bar height: OBI value × 80px (so +0.5 = 40px above zero at y=275) -->
+      <rect x="55" y="242" width="28" height="33" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="93" y="238" width="28" height="37" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="131" y="234" width="28" height="41" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="169" y="240" width="28" height="35" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="207" y="236" width="28" height="39" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="245" y="244" width="28" height="31" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="283" y="248" width="28" height="27" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="321" y="252" width="28" height="23" rx="1" fill="#22c55e" opacity="0.75"/>
+      <rect x="359" y="258" width="28" height="17" rx="1" fill="#22c55e" opacity="0.60"/>
+
+      <!-- OBI flip marker at x=400 -->
+      <line x1="400" y1="215" x2="400" y2="340" stroke="#1c1917" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <text x="400" y="350" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" font-weight="700" fill="#1c1917">OBI CROSSES ZERO</text>
+
+      <!-- OBI bars — Phase 2: Negative (red bars below zero) -->
+      <rect x="410" y="275" width="28" height="18" rx="1" fill="#ef4444" opacity="0.60"/>
+      <rect x="448" y="275" width="28" height="26" rx="1" fill="#ef4444" opacity="0.70"/>
+      <rect x="486" y="275" width="28" height="32" rx="1" fill="#ef4444" opacity="0.75"/>
+      <rect x="524" y="275" width="28" height="38" rx="1" fill="#ef4444" opacity="0.80"/>
+      <rect x="562" y="275" width="28" height="42" rx="1" fill="#ef4444" opacity="0.80"/>
+      <rect x="600" y="275" width="28" height="36" rx="1" fill="#ef4444" opacity="0.75"/>
+      <rect x="638" y="275" width="28" height="40" rx="1" fill="#ef4444" opacity="0.75"/>
+      <rect x="676" y="275" width="28" height="35" rx="1" fill="#ef4444" opacity="0.75"/>
+      <rect x="714" y="275" width="28" height="30" rx="1" fill="#ef4444" opacity="0.70"/>
+    </svg>
+    <p class="svg-caption">Diagram 2 — OBI through a resistance test. As price (top panel) grinds from support toward the $79,000 resistance wall, OBI (bottom panel) flips from clearly positive to clearly negative — ask-side dominance building before price has made any visible rejection. The OBI flip precedes the candle-by-candle stall. This is the early warning signal.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Four rules · worked entry · timeframe fit</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: OBI is a confirmation tool, not an entry trigger — it grades the context, not the candle.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Confirm Entries at Known Support</h4>
+        <p>Before taking a long at a structural level, check whether cumulative depth OBI is positive. A positive OBI at a Wyckoff spring or Value Area Low tells you the book agrees with your thesis — resting size is there absorbing. Negative OBI at "support" is a red flag: the bid walls may be thin or manufactured.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Fade Entries Into Negative OBI at Resistance</h4>
+        <p>When price approaches a known resistance zone and top-of-book OBI is running below −0.25, the ask side has pre-loaded structural pressure. This is not the moment to chase long. Research consistently shows negative OBI predicts downward mid-price moves more reliably than positive OBI predicts upward — so the asymmetry favours fading resistance into a negative book.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Watch for the OBI Flip Intraday</h4>
+        <p>An OBI flip from positive to negative at a key level is higher-signal than OBI in either direction independently. The flip means the market-making community has rotated: they're now leaning short. On a 5m chart, three consecutive negative OBI readings into resistance is a clean short trigger with a stop above the wall. Reverse for flip from negative to positive at support.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Layer OBI With CVD for the Full Flow Picture</h4>
+        <p>OBI (resting orders) + CVD (aggressive orders) together give you the complete state of market pressure: the snapshot <em>and</em> the running score. The highest-conviction setup is when both agree: positive OBI at support + rising CVD = buying pressure on both passive and aggressive sides. Divergence between the two (e.g. positive OBI but falling CVD) is a warning that the visible book may not reflect actual flow.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC/USDT.P, April 24 2026, Asian Session</h5>
+    <table>
+      <tr><td>SETUP</td><td>BTC pulling back into $77,000–$77,200 Wyckoff accumulation base after failed push to $78K</td></tr>
+      <tr><td>OBI READING</td><td>Cumulative depth OBI = +0.47 at $77,000–$77,200 (bid walls: 14.5 BTC at $77,000, 12.1 BTC at $77,200)</td></tr>
+      <tr><td>CVD CONTEXT</td><td>Spot CVD flat but stable — no aggressive sellers attacking the bid. Seller exhaustion.</td></tr>
+      <tr><td>ENTRY</td><td>Long $77,250 — OBI confirmed absorption active, CVD not deteriorating</td></tr>
+      <tr><td>STOP</td><td>$76,720 — below the $77,000 bid wall (if pulled, structure invalid)</td></tr>
+      <tr><td>TARGET 1</td><td>$79,000 — approach of resistance zone where OBI is expected to go negative</td></tr>
+      <tr><td>RISK / REWARD</td><td>Risk $530 · Reward $1,750 · R:R = 3.3R</td></tr>
+      <tr><td>EXIT NOTE</td><td>Monitor OBI at $78,500–$79,000 for flip to negative — that's the signal to exit or flip short</td></tr>
+    </table>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Top-of-book OBI — 30s to 3m execution timing. Cumulative depth OBI — 5m to 30m structural reads. OBI as a zone filter (is the book biased here?) — 1h to 4h context frame. Never use OBI as a standalone swing signal; it decays too fast.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC at $77,520 · ask walls at $79K–$80K · the book is already saying no</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is grinding at $77,520 into the $79K–$80K resistance zone. The CoinGlass depth chart shows ask-side dominance building at $79,000–$80,200 — OBI is already negative at the levels price hasn't reached yet.</div>
+
+  <div class="tape">
+    <div class="tape-label">Live Tape · April 25, 2026 · AEDT</div>
+    <h4>Ask Walls Building Above $79K — The Book Is Leaning Short</h4>
+    <p>BTC/USDT.P is trading at <strong>$77,520</strong> as of this morning's session (April 25). The tape narrative is simple but important: after a recovery from the April 8 Extreme Fear low of ~$65K, price has staged an impressive rally and is now grinding sideways in the <strong>$73K–$80K Wyckoff accumulation range</strong>. Fear &amp; Greed has recovered to <strong>60 (Greed)</strong> while price has barely moved — a classic sentiment/price divergence.</p>
+    <p>The order book structure: <strong>Binance shorts are crowded at 65.5% of positioning</strong>, meaning there are visible sell limit orders (both as delta hedges and outright shorts) sitting in the $79K–$80K zone. CoinGlass order book pressure shows the ask side building from $78,500 upward, with concentrated walls at <strong>$79,200 and $80,000</strong>. This is negative OBI territory — the book is fighting price before price has arrived.</p>
+    <p>Meanwhile, the bid side has structural support via <strong>5 consecutive days of spot ETF inflows ($1.48B weekly, $96.5B AUM)</strong> — that institutional demand is the positive OBI component sitting at the $73K–$77K zone. The result is a compressed range: bid walls under, ask walls above, OBI swinging from positive at support to negative at resistance.</p>
+    <p>The trigger the market is watching: <strong>daily close above $80K</strong> would force shorts to cover (pulling the ask walls), creating an OBI flip upward — that's the squeeze setup. Failure to push through $79K on sustained positive OBI keeps the range intact and sets up a retest of $73K–$75K support where OBI is strongly positive.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>BTC/USDT.P price</td><td>$77,520.70</td></tr>
+        <tr><td>Key resistance (OBI negative)</td><td>$79,200 and $80,000–$80,200</td></tr>
+        <tr><td>Key support (OBI positive)</td><td>$77,000–$77,200 and $73,500–$74,000</td></tr>
+        <tr><td>Binance positioning</td><td>34.5% long / 65.5% short (crowded short)</td></tr>
+        <tr><td>8h funding rate</td><td>0.0003% (near flat — no directional bias in futures)</td></tr>
+        <tr><td>Fear &amp; Greed</td><td>60 — Greed (recovered from 11 on April 8)</td></tr>
+        <tr><td>Spot ETF inflows</td><td>$1.48B weekly — 5 consecutive positive days</td></tr>
+        <tr><td>OBI read at $79K resistance</td><td>Negative (ask-heavy) — structural sell pressure pre-positioned</td></tr>
+      </table>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The order book at $79K–$80K says shorts have pre-committed — the question is whether the ETF bid is large enough to absorb them. OBI will flip sharply positive if the walls get eaten; until then, the book is calling this resistance legitimate.
+      → Cross-reference today's <a href="market-briefing.html" style="color:var(--terminal-accent);border-bottom-color:rgba(190,242,100,0.3)">Market Briefing</a> for the full positioning breakdown.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Classic principle + current practitioner</div>
+    </div>
+  </div>
+
+  <div class="skim">Wyckoff named the law; the order book is the instrument that measures it in real time.</div>
+
+  <div class="quote">
+    <p>"Supply and demand govern all price movements. When demand exceeds supply, prices advance; when supply exceeds demand, prices decline. The tape tells you, moment by moment, which force is winning."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · Studies in Tape Reading · 1910 · <a href="https://www.amazon.com/Studies-Tape-Reading-Rollo-Tape/dp/1614271291">Amazon</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The limit order book is just Wyckoff's law made visible in real time. It shows you where participants have <em>pre-committed</em> to buy or sell — before any trade has occurred."</p>
+    <div class="attr"><b>Jim Dalton</b> · Mind Over Markets (paraphrase of core AMT principle) · 2013 · <a href="https://www.amazon.com/Mind-Over-Markets-Dalton/dp/B088FWLZH5">Amazon</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Bid-ask imbalances are a very powerful tool when used correctly, effective across any market."</p>
+    <div class="attr"><b>@Exoticktrades</b> · X (Twitter) thread on bid-ask imbalances · February 2026 · <a href="https://x.com/Exoticktrades/status/1889739943653642586">Thread</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Asks stacked at $79.2K and $80K. Bids sit at $77K–$77.2K with deeper support near $73.5K. Bullish if the sell walls get eaten. Bearish if the lower bids get pulled or absorbed. Until then, chop."</p>
+    <div class="attr"><b>@coinglass_com</b> · BTC whale orderbook update · April 2026 · <a href="https://x.com/coinglass_com">CoinGlass X</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Spoofing · time horizon decay · snapshot vs flow confusion · hidden orders</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: treating OBI as a durable signal. It's a snapshot — it can disappear in milliseconds if the orders are fake.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Spoofing — The Bid Wall That Evaporates</h5>
+      <p>Large resting orders that appear before price approaches and vanish before they can be hit are common in crypto. A positive OBI of +0.80 driven by a 50 BTC bid wall that gets pulled when price gets close is not structural support — it's a market-maker or manipulator gaming the queue. The tell: watch whether the large order remains as price approaches it, or disappears. Persistent walls that hold under pressure are real; walls that vanish 20–50 ticks before price arrives are not.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Confusing OBI (Snapshot) with CVD (Flow)</h5>
+      <p>OBI measures resting orders; CVD measures executed orders. They describe completely different phenomena. A market with positive OBI but sharply declining CVD is telling a contradictory story — the visible book looks supportive but actual aggressive selling is overpowering it. That divergence is the real signal: someone is selling into the bid wall. Never treat OBI in isolation from what is actually trading through it.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>OBI Signals Decay Fast — Using Wrong Timeframes</h5>
+      <p>Research is consistent: top-of-book OBI has strong predictive power over seconds to a few minutes. It degrades rapidly beyond that. Using a 5-minute-old OBI reading to justify a 1-hour trade is applying the wrong tool to the wrong horizon. If you are swing trading, OBI is contextual colour (is the book structurally bid or ask heavy at this zone?), not a timing trigger. Don't take entries at H4 S/R solely because OBI looked good 20 minutes ago.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Ignoring Hidden and Iceberg Orders</h5>
+      <p>OBI only sees what is visible in the order book. Institutional participants routinely use iceberg orders (which show only a small slice of their full size) or dark pools and OTC venues (which are off-exchange entirely). A book that looks balanced or even ask-heavy can have a massive passive buyer sitting behind an iceberg at the bid. This is precisely why OBI needs context: volume profile, CVD, and tape speed together help reveal whether the visible book is complete or just a fragment of the real positioning.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Honest Callout: OBI Is Genuinely Powerful — But Only in Context</h5>
+      <p>Unlike some rebadged orderflow terminology that overpromises and underdelivers, OBI is academically robust (R² ~65% for short-interval price changes in equities) and practically useful in crypto. The anti-hype caveat is about application: OBI alone is not a trade. It is a grade of the context. Every high-conviction OBI-based entry also needs a structural level, a confirmation from flow (CVD), and a clear invalidation. Traders who use OBI without the other two layers get the right concept and still lose — because context is the concept.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Glossary · blog · research · thread · live data</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources: one clean definition, one practitioner guide, one academic grounding, one trader thread, one live tool.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Glossary</div>
+      <div class="fr-body">
+        <a href="https://questdb.com/glossary/order-book-imbalance/">QuestDB — Order Book Imbalance</a>
+        <span>Clean definition, formula variants, and measurement approaches. Best starting reference for the concept basics.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-order-flow-imbalance-can-boost-your-trading-success">Bookmap — How Order Flow Imbalance Can Boost Your Trading</a>
+        <span>Practical breakdown of OBI strategies (scalping, day trading, swing) with heatmap tool context. Bookmap's visualisation is the best in class for seeing OBI evolve in real time.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Research</div>
+      <div class="fr-body">
+        <a href="https://electronictradinghub.com/leveraging-limit-order-book-imbalances-for-profitable-trading-a-deep-dive-into-recent-research-and-practical-tools/">Electronic Trading Hub — OBI Research Deep Dive</a>
+        <span>Covers the Cont, Kukanov &amp; Stoikov linear price impact model and the Mastrolia/Ranaldo asymmetry finding. If you want to understand why OBI works, this is the source.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body">
+        <a href="https://x.com/Exoticktrades/status/1889739943653642586">@Exoticktrades — Bid-Ask Imbalances (Full Coverage)</a>
+        <span>Practitioner thread on how to read and apply bid-ask imbalances in live markets. High-signal, no filler.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Live Data</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/orderbook-pressure">CoinGlass — BTC Order Book Pressure</a>
+        <span>Real-time visualization of BTC order book imbalance across exchanges. The "Order Book Pressure" view colour-codes ask vs bid dominance by depth level — essential for reading current structure.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://questdb.com/glossary/order-book-imbalance/">QuestDB — OBI Definition</a>
+    <a href="https://bookmap.com/blog/how-order-flow-imbalance-can-boost-your-trading-success">Bookmap — OFI Guide</a>
+    <a href="https://electronictradinghub.com/leveraging-limit-order-book-imbalances-for-profitable-trading-a-deep-dive-into-recent-research-and-practical-tools/">Electronic Trading Hub — Research</a>
+    <a href="https://x.com/Exoticktrades/status/1889739943653642586">@Exoticktrades — Thread</a>
+    <a href="https://www.coinglass.com/orderbook-pressure">CoinGlass — Order Book Pressure</a>
+    <a href="https://x.com/coinglass_com">@coinglass_com — BTC orderbook updates</a>
+    <a href="https://www.coindesk.com/daybook-us/2026/04/21/bitcoin-trades-above-a-make-or-break-level-ahead-of-warsh-hearing">CoinDesk — BTC April 21 2026</a>
+  </div>
+  <div>Alpha · Issue #3 · 25 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- .content -->
+</div><!-- .outer -->
+</body>
+</html>
