@@ -135,6 +135,12 @@ If a concept is more hype than substance (e.g. some rebadged orderflow terminolo
 - **Inter** — body
 - **JetBrains Mono** — formulas, pills, data labels
 
+### CSS override: `.tape` text on dark background
+The global rule `p strong, li strong { color: var(--ink) }` (= `#1c1917`) bleeds into the dark `.tape` terminal card (bg also `#1c1917`), making bold text invisible. **Always include this override immediately after `.tape p`:**
+```css
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+```
+
 ### Layout
 - Max-width 1160px, centred
 - Left sticky TOC — **collapsed by default** (width 40px, shows only a `☰` toggle button). Click to expand to 188px. `id="toc"` on the `<aside>`; button uses `onclick="document.getElementById('toc').classList.toggle('toc-open')"`. TOC links live inside a `.toc-body` div (hidden until `.toc-open` is set). DM Mono 11px for links.
