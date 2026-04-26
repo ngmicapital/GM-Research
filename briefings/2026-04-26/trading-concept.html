@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Absorption | April 26, 2026</title>
+<meta property="og:description" content="Alpha — Absorption | April 26, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Absorption</h1>
+  <div class="meta">
+    <span>Sunday · 26 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #4</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Absorption is what happens when massive aggressive volume slams into a price level and price refuses to move — passive limit orders are silently eating every market order that hits them.</strong> It is Wyckoff's "effort vs result" inverted: huge effort, near-zero result, and the seller (or buyer) on the other side gets exhausted while the absorber accumulates inventory at one price. The practical edge: the strongest reversals don't start with bullish candles — they start with red candles that should have moved further than they did. Right now BTC is sitting at $78,126 because the $73K floor absorbed every wave of post-crash supply for two weeks straight.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Passive size eating aggressive flow · effort without result · the silent accumulator</div>
+    </div>
+  </div>
+
+  <div class="skim">Absorption is when one side keeps hitting the market with aggression and price won't move — the other side is quietly soaking up everything with passive orders.</div>
+
+  <p><strong>Absorption</strong> is the orderflow signature of one large participant standing in front of a wave of aggression and refusing to move. Aggressive market sellers are firing into the bid. Volume is enormous. The footprint is a red wash. And yet the candle barely closes lower — sometimes it closes flat, sometimes it closes <em>green</em>. The asymmetry between volume printed and price moved is the entire signal. Whoever is on the passive side has more size than the entire incoming wave, and they are buying every single contract at one price.</p>
+
+  <p>This is the mirror image of <strong>continuation</strong>. In a continuation, aggression hits a level and price moves through it — sellers want out, the bids are thin, distance is travelled. In absorption, identical (or larger) aggression produces no distance. The hidden variable is what is sitting passively at the level: in continuation, almost nothing; in absorption, an institution-sized wall, often refilling itself iceberg-style as it gets eaten. Same aggressive flow, opposite outcome — and that opposite outcome is the trade.</p>
+
+  <p>This is also the cleanest live expression of Wyckoff's <strong>Law of Effort vs Result</strong>: when effort (volume) is large and result (range) is small, the dominant force is shifting under the surface. Wyckoff wrote about this watching tape spool out of a ticker in 1910. The mechanic hasn't changed in 116 years; only the venue has — from the NYSE floor to the Binance matching engine. What used to look like a thick block print at the same price now looks like a stacked footprint cell with 4,000 contracts at the bid and 50 ticks of nothing.</p>
+
+  <p>Absorption shows up in three places that matter: at <strong>support and resistance levels</strong> where institutions have pre-planted size; at <strong>Wyckoff springs and upthrusts</strong> where the absorber is the smart money triggering the reversal; and at <strong>liquidity pockets</strong> — the air gaps between value zones where retail piles in and gets fed to the wall. In all three cases, the absorber's intent is the same: load inventory at one price without moving the price against themselves.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>AGGRESSIVE FLOW</b><span>Market orders that cross the spread — pay the offer or hit the bid, move price</span></span>
+    <span class="pill-term"><b>PASSIVE FLOW</b><span>Limit orders resting in the book — get filled when crossed, do not move price</span></span>
+    <span class="pill-term"><b>EFFORT vs RESULT</b><span>Wyckoff's law — high volume + small range = absorption underway</span></span>
+    <span class="pill-term"><b>ICEBERG</b><span>A large limit order showing only a small slice; refills itself as it gets eaten</span></span>
+    <span class="pill-term"><b>STOPPING VOLUME</b><span>Heavy volume that arrests the trend rather than extends it — Wyckoff's term</span></span>
+    <span class="pill-term"><b>EXHAUSTION</b><span>Aggression dries up after failing to break the absorber — the entry trigger</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Big volume + small range at a level you respect = someone is absorbing. The next move is rarely back into the absorber.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Four-stage process · effort:result formula · buy vs sell absorption</div>
+    </div>
+  </div>
+
+  <div class="skim">Absorption unfolds in four stages — aggression arrives, the wall holds, aggression exhausts, the reversal fires. Spotting it is a function of comparing volume printed to range travelled.</div>
+
+  <p>The mechanic is procedural, not magical. The same four phases play out whether you are watching BTC at the $73K floor or ES at a CME profile reference. Once you internalise the sequence, you stop chasing the entry candle and start waiting for the structure to complete.</p>
+
+  <div class="formula">
+<b>The Four Stages of Absorption (sell-side example):</b>
+
+  ① AGGRESSION ARRIVES
+     Aggressive market sellers fire into the bid at level L.
+     CVD prints sharply negative. Footprint cells fill with red.
+
+  ② THE WALL HOLDS
+     Bid size at L stays constant (or refills) despite being hit.
+     Price oscillates inside a 10–30 tick band — no follow-through.
+
+  ③ AGGRESSION EXHAUSTS
+     Sell market-order size shrinks. Tape pace slows.
+     CVD goes flat. Last sellers have fired their ammo.
+
+  ④ REVERSAL FIRES
+     Absorber lifts the offer (or new aggressors do).
+     Price snaps away from L. The trade is the snap.
+
+<b>Effort:Result Anomaly Detection:</b>
+  E:R = Volume traded at level / |Range moved at level|
+
+  Normal:     E:R ≈ 1.0 — volume produces proportional range
+  Absorption: E:R &gt;&gt; 5.0 — volume produces almost no range
+  Threshold:  Flag any 5m bar where E:R is &gt;3× the prior 20-bar median
+
+<b>Iceberg Detection (refilling order signature):</b>
+  IF best_bid_size remains ≥ X for N consecutive seconds
+     WHILE aggressive_sells &gt; X are firing into it
+  THEN passive bid is iceberg → absorption confirmed
+
+    <div class="note">In crypto, "X" depends on the symbol — for BTC perp on Binance, a refilling 8–15 BTC bid eating 50–100 BTC of aggressive market sells over 30–90 seconds is textbook iceberg absorption.</div>
+  </div>
+
+  <p>The directional flavour matters. <strong>Buy absorption</strong> (passive bidders eating aggressive sellers) typically produces a base and reversal upward — the absorber is loading long inventory cheaply. <strong>Sell absorption</strong> (passive sellers eating aggressive buyers) produces a cap and reversal downward — the absorber is loading short inventory or distributing existing inventory at a peak. In both cases the giveaway is the same: aggression in one direction, no movement in that direction, then movement in the other direction.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Variant</th><th>Aggressor side</th><th>Absorber side</th><th>Tape signature</th><th>Likely outcome</th></tr>
+    <tr><td>Buy Absorption</td><td>Aggressive sellers</td><td>Passive bidders</td><td>Heavy red volume, candle barely red or green</td><td>Reversal up — long entry</td></tr>
+    <tr><td>Sell Absorption</td><td>Aggressive buyers</td><td>Passive offerers</td><td>Heavy green volume, candle barely green or red</td><td>Reversal down — short entry</td></tr>
+    <tr><td>Failed Absorption</td><td>Either side</td><td>Wall pulled / overwhelmed</td><td>Heavy volume + sudden break</td><td>Continuation — no trade</td></tr>
+  </table>
+  </div>
+
+  <p>Absorption pairs naturally with the previous two concepts in this series. <strong>OBI</strong> (Issue #3) shows you the structural lean — where the absorber's wall is sitting before price arrives. <strong>CVD</strong> (Issue #2) shows you the running aggression score — divergence between CVD direction and price is often the absorption signature in chart form. The absorption itself is the moment those two cross paths: large negative CVD + flat price = buy absorption in progress.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Diagram 1 — footprint candle showing absorption · Diagram 2 — the four-stage sequence</div>
+    </div>
+  </div>
+
+  <div class="skim">Diagram 1 shows the footprint signature — heavy bid volume stacked at one price with a candle that refused to move. Diagram 2 walks through the four stages in chart form.</div>
+
+  <!-- SVG 1 — Footprint Absorption Candle -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <rect width="800" height="440" fill="#ffffff" rx="4"/>
+
+      <!-- Title bar -->
+      <rect width="800" height="36" fill="#f3f0ea" rx="4"/>
+      <text x="400" y="23" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1.8" fill="#44403c">FOOTPRINT — BUY ABSORPTION AT $73,120  ·  BTC/USDT.P  ·  5M</text>
+
+      <!-- ── LEFT: Three reference candles (normal / continuation context) ── -->
+      <text x="100" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" letter-spacing="1" fill="#78716c">NORMAL CONTEXT</text>
+
+      <!-- Candle 1: down candle, normal volume distribution -->
+      <line x1="60" y1="80" x2="60" y2="160" stroke="#44403c" stroke-width="1"/>
+      <rect x="50" y="90" width="20" height="60" fill="#ef4444" opacity="0.85"/>
+      <text x="78" y="100" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">412</text>
+      <text x="78" y="118" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">580</text>
+      <text x="78" y="136" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">624</text>
+      <text x="78" y="154" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">390</text>
+
+      <!-- Candle 2: down candle -->
+      <line x1="135" y1="100" x2="135" y2="180" stroke="#44403c" stroke-width="1"/>
+      <rect x="125" y="115" width="20" height="55" fill="#ef4444" opacity="0.85"/>
+      <text x="153" y="125" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">488</text>
+      <text x="153" y="143" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">612</text>
+      <text x="153" y="161" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">555</text>
+      <text x="153" y="179" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">472</text>
+
+      <!-- Candle 3: down candle, accelerating -->
+      <line x1="210" y1="125" x2="210" y2="220" stroke="#44403c" stroke-width="1"/>
+      <rect x="200" y="140" width="20" height="68" fill="#ef4444" opacity="0.85"/>
+      <text x="228" y="150" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">540</text>
+      <text x="228" y="168" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">720</text>
+      <text x="228" y="186" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">810</text>
+      <text x="228" y="204" font-family="JetBrains Mono, monospace" font-size="8" fill="#44403c">650</text>
+
+      <!-- ── DIVIDER ── -->
+      <line x1="290" y1="60" x2="290" y2="380" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="290" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" letter-spacing="1" fill="#166534">↓ ABSORPTION CANDLE ↓</text>
+
+      <!-- ── ABSORPTION CANDLE (large, centered) ── -->
+      <!-- Candle: barely moves, but huge volume at one price -->
+      <line x1="380" y1="170" x2="380" y2="280" stroke="#1c1917" stroke-width="1.5"/>
+      <!-- Body — flat doji-ish, slightly green -->
+      <rect x="365" y="218" width="30" height="14" fill="#22c55e" opacity="0.9" stroke="#166534" stroke-width="1"/>
+
+      <!-- Volume cells stacked beside candle — note the MASSIVE bottom cell -->
+      <!-- Top cell -->
+      <rect x="408" y="170" width="60" height="20" fill="#fef3c7" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="438" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">220</text>
+      <!-- Mid cell 1 -->
+      <rect x="408" y="190" width="60" height="20" fill="#fef3c7" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="438" y="204" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">385</text>
+      <!-- Mid cell 2 -->
+      <rect x="408" y="210" width="60" height="20" fill="#fed7aa" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="438" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">612</text>
+      <!-- THE BIG ABSORPTION CELL -->
+      <rect x="408" y="230" width="60" height="40" fill="#a3e635" stroke="#3f6212" stroke-width="2"/>
+      <text x="438" y="255" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#1c1917">3,840</text>
+      <!-- Lower cell -->
+      <rect x="408" y="270" width="60" height="20" fill="#fed7aa" stroke="#fbbf24" stroke-width="0.5"/>
+      <text x="438" y="284" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">498</text>
+
+      <!-- Annotation: pointing at the big cell -->
+      <line x1="475" y1="250" x2="540" y2="250" stroke="#3f6212" stroke-width="1.5"/>
+      <text x="548" y="246" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#3f6212">ABSORPTION CELL</text>
+      <text x="548" y="260" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">3,840 contracts at $73,120</text>
+      <text x="548" y="272" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">Bid kept refilling for 4m 50s</text>
+
+      <!-- Effort vs Result side panel -->
+      <rect x="540" y="150" width="240" height="64" rx="6" fill="#f7fee7" stroke="#a3e635" stroke-width="1.5"/>
+      <text x="660" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" letter-spacing="2" fill="#3f6212">EFFORT vs RESULT</text>
+      <text x="555" y="190" font-family="JetBrains Mono, monospace" font-size="10" fill="#1c1917">Vol:  <tspan font-weight="700">5,555</tspan>  contracts</text>
+      <text x="555" y="204" font-family="JetBrains Mono, monospace" font-size="10" fill="#1c1917">Range:  <tspan font-weight="700">14 ticks</tspan>  ·  E:R = <tspan font-weight="700" fill="#3f6212">8.7×</tspan> avg</text>
+
+      <!-- Price labels -->
+      <text x="358" y="183" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">$73,170</text>
+      <text x="358" y="227" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="8" fill="#1c1917" font-weight="700">$73,120 ←</text>
+      <text x="358" y="285" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">$73,070</text>
+
+      <!-- Bottom: post-absorption reversal candles -->
+      <text x="400" y="320" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" letter-spacing="1" fill="#15803d">POST-ABSORPTION REVERSAL — NEXT 3 BARS</text>
+
+      <line x1="320" y1="335" x2="320" y2="395" stroke="#44403c" stroke-width="1"/>
+      <rect x="310" y="345" width="20" height="40" fill="#22c55e" opacity="0.9"/>
+      <line x1="395" y1="320" x2="395" y2="385" stroke="#44403c" stroke-width="1"/>
+      <rect x="385" y="328" width="20" height="50" fill="#22c55e" opacity="0.9"/>
+      <line x1="470" y1="305" x2="470" y2="370" stroke="#44403c" stroke-width="1"/>
+      <rect x="460" y="312" width="20" height="55" fill="#22c55e" opacity="0.9"/>
+
+      <text x="400" y="418" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">After absorption exhausts at $73,120 → price snaps +180 ticks in 15 minutes</text>
+    </svg>
+    <p class="svg-caption">Diagram 1 — Footprint absorption candle. Three normal red candles trend down with proportional volume. The fourth candle prints 5,555 contracts (3,840 at the $73,120 bid alone) but moves only 14 ticks — Effort:Result of 8.7× the prior average. Bid kept refilling iceberg-style. Three green candles follow as the trapped sellers reverse.</p>
+  </div>
+
+  <!-- SVG 2 — Four Stages of Absorption -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <rect width="800" height="360" fill="#ffffff" rx="4"/>
+
+      <!-- Title bar -->
+      <rect width="800" height="36" fill="#f3f0ea" rx="4"/>
+      <text x="400" y="23" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" letter-spacing="1.8" fill="#44403c">THE FOUR STAGES OF ABSORPTION  ·  PRICE + CVD COMPOSITE</text>
+
+      <!-- Stage divider lines -->
+      <line x1="200" y1="50" x2="200" y2="340" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="400" y1="50" x2="400" y2="340" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="600" y1="50" x2="600" y2="340" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Stage labels -->
+      <text x="100" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#991b1b">① AGGRESSION</text>
+      <text x="100" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">Sellers attack</text>
+      <text x="300" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#3f6212">② WALL HOLDS</text>
+      <text x="300" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">Bid refills</text>
+      <text x="500" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#78350f">③ EXHAUSTION</text>
+      <text x="500" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">Aggression dries</text>
+      <text x="700" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#15803d">④ REVERSAL</text>
+      <text x="700" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#78716c">Price snaps</text>
+
+      <!-- ── PRICE PANEL (top half) y=90 to y=200 ── -->
+      <text x="18" y="98" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">PRICE</text>
+
+      <!-- Support level dashed line at y=170 -->
+      <line x1="40" y1="170" x2="780" y2="170" stroke="#22c55e" stroke-width="1" stroke-dasharray="5,3" opacity="0.6"/>
+      <text x="784" y="174" font-family="JetBrains Mono, monospace" font-size="9" fill="#15803d">$73,120</text>
+
+      <!-- Stage 1: dropping into level -->
+      <polyline points="40,110 70,118 100,128 130,140 160,155 190,168" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+      <!-- Stage 2: oscillating at level -->
+      <polyline points="200,170 220,167 240,172 260,168 280,171 300,166 320,170 340,168 360,171 380,168 400,170" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+      <!-- Stage 3: still flat, slight stabilization -->
+      <polyline points="400,170 420,168 440,167 460,165 480,163 500,162 520,160 540,158 560,156 580,154 600,150" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+      <!-- Stage 4: reversal -->
+      <polyline points="600,150 630,140 660,128 690,114 720,100 750,90 780,82" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+
+      <!-- ── CVD PANEL (bottom half) y=215 to y=340 ── -->
+      <line x1="40" y1="210" x2="780" y2="210" stroke="#e7e5e4" stroke-width="1"/>
+      <text x="18" y="222" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">CVD</text>
+
+      <!-- CVD zero line at y=260 -->
+      <line x1="40" y1="260" x2="780" y2="260" stroke="#1c1917" stroke-width="1"/>
+      <text x="784" y="264" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">0</text>
+
+      <!-- Stage 1: CVD diving (sellers aggressive) -->
+      <polyline points="40,235 70,245 100,258 130,272 160,290 190,310" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+      <!-- Stage 2: CVD continues falling — sellers still firing — but price flat -->
+      <polyline points="200,310 240,318 280,323 320,326 360,328 400,330" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+      <!-- Stage 3: CVD flattens — exhaustion -->
+      <polyline points="400,330 440,330 480,328 520,328 560,327 600,325" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+      <!-- Stage 4: CVD turns up — buyers active -->
+      <polyline points="600,325 650,310 700,288 750,260 780,238" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+
+      <!-- DIVERGENCE annotation in stage 2 -->
+      <rect x="218" y="120" width="160" height="34" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="298" y="134" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#78350f">CVD DIVERGENCE</text>
+      <text x="298" y="147" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#78350f">CVD ↓↓  but Price flat</text>
+
+      <!-- Entry trigger annotation -->
+      <circle cx="600" cy="150" r="6" fill="#22c55e" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="600" y1="156" x2="600" y2="200" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2"/>
+      <rect x="525" y="195" width="150" height="22" rx="3" fill="#f0fdf4" stroke="#22c55e" stroke-width="1"/>
+      <text x="600" y="210" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#166534">ENTRY: AGGRESSION DEAD</text>
+    </svg>
+    <p class="svg-caption">Diagram 2 — The four-stage absorption sequence. Price drops into the $73,120 level (Stage 1), oscillates flat for ~30 minutes while CVD continues to crash (Stage 2 — the divergence is the absorption). CVD flattens as sell aggression exhausts (Stage 3). Buyers take control and price snaps higher (Stage 4). The entry is at the start of Stage 4, not Stage 2.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Four rules · worked entry · timeframe fit</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never enter while aggression is still firing. Wait for exhaustion — Stage 3 — then enter on the first lift.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Wait for Stage 3 — Exhaustion — Before Entry</h4>
+        <p>The most common absorption mistake is entering during Stage 2 while sellers are still aggressive. The wall might hold, or it might break — you don't know yet. Wait for CVD to flatten and tape pace to slow. The signal is that the market-sell ammo has been spent. Now you have asymmetry: aggressive flow has stopped, passive size has accumulated, and the next aggressor will be on the other side.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Use the Absorbed Level as Your Stop — But Tight</h4>
+        <p>If you fade an absorption setup, your stop sits just beyond the level the wall defended. If $73,120 absorbed and you go long, your stop is $72,950 — close enough that if the wall fails, you're out cheap; far enough that normal noise doesn't tag you. The R is paid for by waiting until Stage 3: you skip the slop and enter at the highest-conviction moment, so the stop can be tight without being noise-prone.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Differentiate Absorption From Continuation Live</h4>
+        <p>Identical aggressive volume can produce reversal (absorption) or breakout (continuation). The live distinction is whether the resting size at the level holds or evaporates. Persistent bid size at one price as red prints fly is absorption. Bid size that thins out tick-by-tick as price approaches is the wall being pulled — that's continuation, do not fade it. Stand down rather than guess.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Layer With Wyckoff Structure for Conviction</h4>
+        <p>Absorption at a random price is suspicious; absorption at a Wyckoff Spring, Selling Climax, or Phase B trading-range edge is institutional. Tony — when you spot tape-level absorption, mark whether the level is also the SC, ST, Spring, or LPS. The double signal — orderflow absorption + Wyckoff event — is what separates a scalp from a structural entry. A spring without absorption is hopium; absorption without structure is luck.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC/USDT.P, April 8 2026, US Session (the $73K Floor)</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>SETUP</td><td>BTC selling off into the $73,120 zone after rejection from $76K — Wyckoff Selling Climax candidate</td></tr>
+      <tr><td>STAGE 1</td><td>Aggressive sell flow accelerates 14:00–14:15 ET. CVD prints −2,400 in 15 min. Price drops from $74,200 to $73,180.</td></tr>
+      <tr><td>STAGE 2</td><td>Price oscillates $73,090–$73,180 for 38 minutes. CVD continues to fall to −3,800. Bid at $73,120 keeps refilling. <strong>Divergence is screaming.</strong></td></tr>
+      <tr><td>STAGE 3</td><td>15:05 ET — sell aggression dies. Tape pace halves. CVD flattens. Footprint cells go from red-heavy to balanced.</td></tr>
+      <tr><td>ENTRY</td><td>Long $73,210 (first lift after exhaustion confirmation)</td></tr>
+      <tr><td>STOP</td><td>$72,890 — below the entire $73,090–$73,180 absorption zone</td></tr>
+      <tr><td>TARGET 1</td><td>$74,300 — top of prior 4h range (1.0R = $320)</td></tr>
+      <tr><td>TARGET 2</td><td>$76,000 — daily resistance (3.4R after T1 stop-to-BE)</td></tr>
+      <tr><td>RISK / REWARD</td><td>Risk $320 · Full target $2,790 · R:R = 8.7R</td></tr>
+      <tr><td>OUTCOME</td><td>Both targets hit within 96 hours; price ran to $78,126 by April 24 (ETF flow took over as the absorber)</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Footprint absorption setups fire on <b>1m to 15m</b> for the entry signal, with <b>1h to 4h structural levels</b> defining where to look. Don't hunt absorption on 1h candles — by the time a 1h candle confirms absorption, the move is half-done. Use higher timeframes to identify the level; use lower timeframes to time the entry.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC at $78,126 · the $73K floor was a two-week absorption pattern · ETF flows are the absorber</div>
+    </div>
+  </div>
+
+  <div class="skim">The entire April 2026 BTC bottoming process is one giant absorption case study — the $73,120 level absorbed every wave of post-crash supply, with spot ETFs as the structural bidder.</div>
+
+  <div class="tape">
+    <div class="tape-label">Live Tape · April 26, 2026 · AEST</div>
+    <h4>The $73K Floor: Two Weeks of Textbook Absorption</h4>
+    <p>BTC/USDT.P closed Friday at <strong>$78,126</strong>, up 7.4% from the April 8 low and up 0.4% on the day. But the more interesting story isn't where price is — it's <em>why</em> it's there. The $73,000–$73,500 zone has acted as the canonical buy-absorption setup since BTC first tagged it on April 8 at the Extreme Fear low.</p>
+    <p>Here's what played out: across the first two weeks of April, multiple aggressive selling waves hit the <strong>$73,120 zone</strong> — driven by miner sales, leveraged liquidations, and early-holder profit-taking. On every wave, price refused to break below ~$73K despite heavy aggressive sell flow. The absorber was identifiable in 13F-grade detail: <strong>U.S. spot Bitcoin ETFs absorbed $471M+ on a single day during the worst of the selling, then put together 8 consecutive days of net inflows totaling $1.48B by April 23</strong>. BlackRock's IBIT, Fidelity's FBTC and the cohort were the passive bidder eating every aggressive seller below $74K.</p>
+    <p>The Wyckoff overlay is clean. April 8 = Selling Climax (SC) at $73,120. April 9–14 = Automatic Rally to $75,000–$76,000. April 15–18 = Secondary Test (ST) back into the $73,500 zone — same absorbers, same result. April 19–24 = Phase B / sign of strength back to $78K. The structural read: this is accumulation, and the absorber is institutional, not retail.</p>
+    <p>What to watch from here: if BTC retests <strong>$76,000–$76,500</strong> from above, that becomes the next absorption test — if old resistance flips to support via a new round of passive bidding, the next leg is $80K+. If the $76K shelf fails to absorb a sell wave, expect a retest of the $73,120 SC level — and a chance to watch the entire pattern re-print.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC/USDT.P close (April 24)</td><td>$78,126.15 (+0.40% / +$316)</td></tr>
+        <tr><td>April 8 SC low</td><td>$73,120 (Wyckoff Selling Climax)</td></tr>
+        <tr><td>Absorption zone</td><td>$73,000–$73,500 (held 4× through April)</td></tr>
+        <tr><td>Single-day ETF inflow peak</td><td>$471M (mid-month sell-wave absorption)</td></tr>
+        <tr><td>8-day cumulative ETF inflows</td><td>$1.48B+ (through April 23)</td></tr>
+        <tr><td>Spot Bitcoin ETF AUM</td><td>~$96.5B</td></tr>
+        <tr><td>Distance off SC low</td><td>+6.8% in 16 days</td></tr>
+        <tr><td>Next absorption test</td><td>$76,000–$76,500 retest from above</td></tr>
+        <tr><td>Failure level</td><td>Sub-$72,890 closes invalidate the absorption thesis</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The $73K floor wasn't held by retail — the volume and persistence point to ETF-backed institutional absorption. That's the highest-quality version of this pattern: a passive buyer with effectively unlimited inventory sitting on one price. Until that bid disappears (track ETF flows daily), aggressive sells into $73K–$74K should be faded, not chased.
+      → Cross-reference today's <a href="market-briefing.html" style="color:var(--terminal-accent);border-bottom-color:rgba(190,242,100,0.3)">Market Briefing</a> for the full positioning, funding, and macro context.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Wyckoff named the law · modern orderflow shows it printing live</div>
+    </div>
+  </div>
+
+  <div class="skim">The same principle that Wyckoff identified by hand-reading tape in 1910 is what Bookmap and Bookmap-style heatmaps render in real time today.</div>
+
+  <div class="quote">
+    <p>"When large volume produces little price movement, something important is happening — often, professional absorption. Watch for shakeouts; they are often signs of strong hands absorbing shares before a move higher."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · Studies in Tape Reading · 1910 (collected principles) · <a href="https://traderlion.com/quotes/richard-wyckoff-quotes/">TraderLion</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"If we observe price-volume behavior in a reaction to support in an accumulation trading range where volume increases but price does not follow, this indicates absorption of supply by large interests, and is considered bullish."</p>
+    <div class="attr"><b>Rubén Villahermosa</b> · The Wyckoff Methodology in Depth · 2019 · <a href="https://www.goodreads.com/book/show/54632927-the-wyckoff-methodology-in-depth">Goodreads</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Heatmaps, absorption, and order book depth reveal the truth — they show where volume, liquidity, and big players leave their footprints behind the candles."</p>
+    <div class="attr"><b>@bookmap_pro</b> · X · 10 Order Flow Truths thread · 2025 · <a href="https://x.com/bookmap_pro/status/1963218207373677025">Thread</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Large absorption in BTC on this double bottom pattern — should be an easy trade to the upside. If the absorption fails, look out below for a beautiful squeeze the other way."</p>
+    <div class="attr"><b>@bookmap_pro</b> · X · BTC absorption call · 2020 (still applies) · <a href="https://x.com/bookmap_pro/status/1332021420445102081">Post</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Premature entries · iceberg illusions · absorption vs continuation · the rare-event problem</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: entering during Stage 2 while sellers are still firing. The signal is exhaustion, not the wall holding once.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Entering Before Exhaustion (Stage 2 Trap)</h5>
+      <p>You see the bid wall hold for one minute. CVD is still crashing. You go long anyway because "absorption is happening." Then the wall gets pulled — or simply overwhelmed — and you're stopped out at the breakdown. The wall holding for one minute is not the trade. The trade is when sellers stop firing. Wait for the tape pace to die and CVD to flatten before entry. Patience pays the R.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>The Iceberg Illusion — Visible Size Is Not Total Size</h5>
+      <p>What looks like 5 BTC at the bid that keeps getting refilled may actually be a 200 BTC iceberg with only the top showing. Conversely, what looks like 50 BTC at the bid may be spoofed and pulled the moment price approaches. The visible book is one signal; the question is whether what you see persists under fire. Use Bookmap, Cignals, or any heatmap tool that shows historical book state — refilling icebergs leave a clear trail; spoofs vanish.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing Absorption With Slow-Motion Continuation</h5>
+      <p>Heavy red volume + small range can be absorption, or it can be the early stage of a breakdown where the offer side is holding briefly before the floor caves. The differentiator: in absorption, the bid keeps refilling at the same price; in slow continuation, the bid drips lower, level by level, even if each level holds for a bit. Track the actual best-bid price, not just the volume. If best bid migrates downward = continuation, stand aside. If best bid stays parked = absorption candidate.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Ignoring the Hidden Side — OTC and ETF Authorized Participants</h5>
+      <p>In crypto, much of the "absorption" you see at major levels is the on-exchange visible footprint of off-exchange institutional positioning — ETF authorized participants buying spot BTC to deliver against creations, OTC desks unwinding hedges, miners using algorithmic sales programs. The visible bid wall is real, but it's a slice of a larger flow you can't see directly. Treat persistent absorption at major macro levels as a tell that something institutional is happening, even when you can't identify the participant directly.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Honest Callout: Textbook Absorption Is Rare — Most "Absorption" Is Noise</h5>
+      <p>Real absorption setups — the kind that produce the 8R reversals — print maybe a handful of times per month per liquid pair. The vast majority of "I see absorption" trader posts on X are misreads of normal-range tape, premature pattern recognition, or post-hoc rationalisation of a low that happened to hold. Don't force the pattern. If you can't articulate Stages 1, 2, 3, and 4 in real time with specific numbers, you're not looking at absorption — you're looking at chop. The discipline is in passing on the unclear setups, not in trading every wall that holds for two candles.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Foundational text · pro guide · live tool · X thread · Wyckoff context</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources: one foundational book, one pro orderflow guide, one heatmap tool, one X primer, one Wyckoff bridge.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.amazon.com/Studies-Tape-Reading-Rollo-Tape/dp/1614271291">Richard Wyckoff — Studies in Tape Reading (1910)</a>
+        <span>The original. Effort vs Result, stopping volume, professional absorption — every concept in this brief originated in Wyckoff's hand-read tape work over a century ago. Still the most useful trading book ever written.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.jigsawtrading.com/blog/order-flow-absorption-market-reversals">Jigsaw Trading — Order Flow Absorption &amp; Market Reversals (Axia Futures)</a>
+        <span>Practitioner walkthrough with concrete tape examples — bids replenishing as aggressive sells fire, the "stopping volume" signature, and entry timing. Closest to a live trader's mental model.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Tool</div>
+      <div class="fr-body">
+        <a href="https://cignals.io/">Cignals — Crypto Order Flow Charts</a>
+        <span>Footprint and heatmap views built specifically for crypto perp markets. Best entry-level tool for actually <em>seeing</em> absorption print on BTC and ETH live. Hyperliquid integration is particularly clean — fully transparent on-chain order book with no hidden orders.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body">
+        <a href="https://x.com/bookmap_pro/status/1963218207373677025">@bookmap_pro — 10 Order Flow Truths Every Trader Should Know</a>
+        <span>Compact thread covering absorption alongside the broader orderflow vocabulary — heatmaps, depth, tape pace. Good "one-screen" framing of how the concepts fit together.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.bydfi.com/en/cointalk/bitcoin-price-analysis-april-2026-institutional-inflow-resistance">BYDFi — Bitcoin Price Analysis April 2026 (Institutional Inflow Absorbing Supply)</a>
+        <span>Direct walkthrough of how spot ETF inflows have absorbed sell-side supply into the $73K floor through April. The macro overlay on what the tape was showing locally — same pattern, different lens.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.jigsawtrading.com/blog/order-flow-absorption-market-reversals">Jigsaw Trading — Absorption</a>
+    <a href="https://www.tradezella.com/blog/order-flow-secrets-how-to-catch-explosive-moves-using-order-flow">TradeZella — Order Flow Secrets</a>
+    <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/order-flow-trading-with-footprint-charts/">LiteFinance — Footprint Guide</a>
+    <a href="https://traderlion.com/quotes/richard-wyckoff-quotes/">TraderLion — Wyckoff Quotes</a>
+    <a href="https://www.bydfi.com/en/cointalk/bitcoin-price-analysis-april-2026-institutional-inflow-resistance">BYDFi — BTC April 2026 Analysis</a>
+    <a href="https://fortune.com/article/price-of-bitcoin-04-24-2026/">Fortune — BTC April 24 2026</a>
+    <a href="https://x.com/bookmap_pro/status/1963218207373677025">@bookmap_pro — 10 Truths</a>
+    <a href="https://x.com/bookmap_pro/status/1332021420445102081">@bookmap_pro — BTC Absorption</a>
+    <a href="https://cignals.io/">Cignals — Crypto Order Flow</a>
+  </div>
+  <div>Alpha · Issue #4 · 26 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- .content -->
+</div><!-- .outer -->
+</body>
+</html>
