@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Spoofing &amp; Iceberg Orders | April 28, 2026</title>
+<meta property="og:description" content="Alpha — Spoofing & Iceberg Orders | April 28, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- Left TOC -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">&#9776;</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">&sect;01</span>What It Is</a>
+      <a href="#s02"><span class="num">&sect;02</span>Mechanics</a>
+      <a href="#s03"><span class="num">&sect;03</span>Visual</a>
+      <a href="#s04"><span class="num">&sect;04</span>In Practice</a>
+      <a href="#s05"><span class="num">&sect;05</span>Live Tape</a>
+      <a href="#s06"><span class="num">&sect;06</span>Quotes</a>
+      <a href="#s07"><span class="num">&sect;07</span>Common Traps</a>
+      <a href="#s08"><span class="num">&sect;08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="content">
+
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">&bull;</span> Trading Concepts <span class="dot">&bull;</span> Daily</div>
+  <h1><em>Alpha</em> &mdash; Spoofing &amp; Iceberg Orders</h1>
+  <div class="meta">
+    <span>Tuesday</span>
+    <span>&bull;</span>
+    <span>April 28, 2026</span>
+    <span>&bull;</span>
+    <span>Sydney</span>
+    <span>&bull;</span>
+    <span>Issue #06</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Spoofing and iceberg orders both hide trader intent, but they are moral opposites: spoofing is illegal manipulation (size that never intends to fill), icebergs are exchange-supported execution (size that fully intends to fill, just discreetly).</strong> Reading them apart on the tape is the difference between getting trapped by a fake wall and front-running stealth accumulation. The cleanest tell: spoof walls vanish on touch, iceberg walls keep refilling after every print.</p>
+</div>
+
+<!-- §01 -->
+<section id="s01">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;01</div>
+      <h2 class="section-title">What It Is</h2>
+      <div class="section-sub">Two ways to hide intent &mdash; one criminal, one institutional</div>
+    </div>
+  </div>
+
+  <div class="skim">A <strong>spoof</strong> is fake size posted to push price the other way and pulled before fill; an <strong>iceberg</strong> is real size displayed in slices so the market doesn&rsquo;t front-run the parent order.</div>
+
+  <p>Both order types share the same surface symptom &mdash; a number on the book that doesn&rsquo;t represent the actual standing intent &mdash; and that&rsquo;s where the similarity ends. <strong>Spoofing</strong> is the placement of large, non-bonafide orders with the intent to cancel before execution; the canonical case is Navinder Sarao&rsquo;s 2010 E-mini activity, where ~$200M of layered sell orders helped trigger the Flash Crash. He pleaded guilty to one count of spoofing in 2016 and the CFTC has prosecuted dozens of cases since under the Dodd-Frank anti-spoofing provision.</p>
+
+  <p>An <strong>iceberg order</strong> is the institutional opposite: a parent order is broken into a small visible <em>tip</em> and a large hidden body, with the exchange auto-replenishing the tip as it fills. Kraken, Binance, Bybit, OKX and the major futures venues all expose iceberg as a native order type. The motive is identical to a spoofer&rsquo;s &mdash; don&rsquo;t telegraph size &mdash; but the execution intent is genuine: the order <em>wants</em> to fill, it just doesn&rsquo;t want a 500 BTC bid sitting on the book scaring off counterparties.</p>
+
+  <p>For a tape reader, the distinction matters because the trades around them are mirror-image. A spoof creates a <strong>fade setup</strong> &mdash; you trade against the fake. An iceberg creates a <strong>continuation setup</strong> &mdash; you trade <em>with</em> the hidden flow. Mistaking one for the other is how short-term P&amp;L gets shredded.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>DOM</b><span>depth-of-market ladder</span></span>
+    <span class="pill-term"><b>Tip</b><span>visible slice of an iceberg</span></span>
+    <span class="pill-term"><b>Refill</b><span>auto-replacement of a filled tip</span></span>
+    <span class="pill-term"><b>Cancel-rate</b><span>orders pulled vs. orders posted</span></span>
+    <span class="pill-term"><b>MBO</b><span>market-by-order data feed</span></span>
+    <span class="pill-term"><b>Layering</b><span>stacked spoofs at multiple prices</span></span>
+  </div>
+
+  <div class="remember"><b>If you only remember one thing</b>Spoof walls disappear on touch &mdash; iceberg walls keep refilling. The order book lies; the trade tape doesn&rsquo;t.</div>
+</section>
+
+<!-- §02 -->
+<section id="s02">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;02</div>
+      <h2 class="section-title">Mechanics</h2>
+      <div class="section-sub">How each order type produces its signal</div>
+    </div>
+  </div>
+
+  <div class="skim">Spoofs are detected by <strong>posted size that never traded</strong>; icebergs by <strong>traded size that exceeds what was ever displayed</strong>. The cancel-to-fill ratio separates them.</div>
+
+  <p>The <strong>spoof loop</strong> is mechanical: a manipulator posts a 500 BTC bid 5&ndash;10 ticks below market. The visible bid imbalance pulls aggressive buyers up the book and makes resting sellers nervous; price ticks higher. Within 1&ndash;5 seconds &mdash; before the spoof can be hit &mdash; it&rsquo;s pulled. The manipulator now sells real size into the lifted ask, then often flips the same trick on the offer to push price back. The economic profit comes from the sandwich, not the spoof itself.</p>
+
+  <p>The <strong>iceberg loop</strong> is the inverse: a parent order of (say) 500 BTC is loaded with a display size of 5 BTC. As each 5 BTC slice fills, the exchange engine auto-posts the next 5 BTC at the same price. To outside observers, it looks like an inexhaustible bid: prints keep happening, the level holds, and the apparent size never seems to deplete. Detection is therefore about <em>volume traded vs. volume ever shown</em>.</p>
+
+  <div class="formula">
+    <b>Spoof signature:</b> cancel_rate &gt; 0.95 within 5s window AND no fill at posted level<br>
+    <b>Iceberg signature:</b> &Sigma;(prints @ price P) &gt; max(displayed_size @ P) by &gt;3&times;<br>
+    <b>Bookmap detection rule:</b> new limit order added from opposite side instantly after each execution at level P<br>
+    <span class="note">Pro tools (Bookmap, ATAS, Sierra) automate this. Eyeball detection works on slow tape; HFT-grade icebergs need MBO data.</span>
+  </div>
+
+  <table class="cmp">
+    <thead><tr><th>Property</th><th>Spoofing</th><th>Iceberg</th></tr></thead>
+    <tbody>
+      <tr><td>Legality</td><td>Illegal under CEA (US), MAR (EU); criminal under Dodd-Frank</td><td>Legal, exchange-native order type</td></tr>
+      <tr><td>Intent to fill</td><td>None &mdash; designed to be cancelled</td><td>Full &mdash; designed to be filled discreetly</td></tr>
+      <tr><td>Typical size</td><td>10&ndash;100&times; visible market orders</td><td>3&ndash;20&times; the displayed tip</td></tr>
+      <tr><td>Lifespan on book</td><td>Sub-second to ~5s</td><td>Persistent until parent fills or pulled</td></tr>
+      <tr><td>Tape signature</td><td>No fills; pure cancellations</td><td>Repeated fills at same price, level holds</td></tr>
+      <tr><td>What to trade</td><td>Fade the induced move post-cancel</td><td>Trade with the hidden side</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- §03 -->
+<section id="s03">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;03</div>
+      <h2 class="section-title">Visual</h2>
+      <div class="section-sub">Spoof pull vs. iceberg refill</div>
+    </div>
+  </div>
+
+  <div class="skim">Two book snapshots, milliseconds apart. The spoof <strong>vanishes</strong> on touch; the iceberg <strong>regenerates</strong> after every print.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spoof pull schematic">
+      <defs>
+        <linearGradient id="bidGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#22c55e" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="#22c55e" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="askGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#ef4444" stop-opacity="0.05"/>
+          <stop offset="1" stop-color="#ef4444" stop-opacity="0.55"/>
+        </linearGradient>
+      </defs>
+
+      <text x="400" y="24" text-anchor="middle" font-family="DM Serif Display" font-size="16" fill="#1c1917">Spoof &mdash; T-1s vs. T+1s</text>
+
+      <!-- LEFT: T-1s, spoof present -->
+      <text x="180" y="56" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#78716c" letter-spacing="1.5">T &minus; 1s &middot; SPOOF POSTED</text>
+      <g transform="translate(40,76)">
+        <!-- ladder backing -->
+        <rect x="0" y="0" width="280" height="320" fill="#fafaf9" stroke="#e7e5e4"/>
+        <!-- price labels -->
+        <g font-family="JetBrains Mono" font-size="10" fill="#78716c">
+          <text x="8" y="32">77,200</text>
+          <text x="8" y="64">77,150</text>
+          <text x="8" y="96">77,100</text>
+          <text x="8" y="128">77,050</text>
+          <text x="8" y="160">77,000</text>
+          <text x="8" y="192">76,950</text>
+          <text x="8" y="224">76,900</text>
+          <text x="8" y="256">76,850</text>
+          <text x="8" y="288">76,800</text>
+        </g>
+        <!-- ask side (top) -->
+        <rect x="70" y="20" width="60" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="52" width="40" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="84" width="50" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="116" width="35" height="14" fill="url(#askGrad)"/>
+        <text x="135" y="31" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">42</text>
+        <text x="115" y="63" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">28</text>
+        <text x="125" y="95" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">35</text>
+        <text x="110" y="127" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">22</text>
+        <!-- mid line -->
+        <line x1="60" y1="146" x2="270" y2="146" stroke="#a3e635" stroke-width="2"/>
+        <text x="195" y="143" font-family="JetBrains Mono" font-size="9" fill="#3f6212">MID 77,025</text>
+        <!-- bid side (bottom) -->
+        <rect x="70" y="148" width="40" height="14" fill="url(#bidGrad)"/>
+        <rect x="70" y="180" width="55" height="14" fill="url(#bidGrad)"/>
+        <rect x="70" y="212" width="220" height="18" fill="#16a34a" opacity="0.85" stroke="#14532d" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <rect x="70" y="244" width="32" height="14" fill="url(#bidGrad)"/>
+        <rect x="70" y="276" width="48" height="14" fill="url(#bidGrad)"/>
+        <text x="115" y="159" font-family="JetBrains Mono" font-size="9" fill="#14532d">31</text>
+        <text x="130" y="191" font-family="JetBrains Mono" font-size="9" fill="#14532d">44</text>
+        <text x="295" y="225" font-family="JetBrains Mono" font-size="11" font-weight="700" fill="#14532d">500 &larr;</text>
+        <text x="107" y="255" font-family="JetBrains Mono" font-size="9" fill="#14532d">25</text>
+        <text x="123" y="287" font-family="JetBrains Mono" font-size="9" fill="#14532d">38</text>
+        <!-- annotation -->
+        <text x="295" y="240" font-family="Inter" font-size="10" font-style="italic" fill="#78716c">spoof bid</text>
+      </g>
+
+      <!-- arrow between -->
+      <g transform="translate(360,200)">
+        <line x1="0" y1="0" x2="80" y2="0" stroke="#1c1917" stroke-width="2"/>
+        <polygon points="80,-6 92,0 80,6" fill="#1c1917"/>
+        <text x="46" y="-12" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#1c1917">price</text>
+        <text x="46" y="-2" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#1c1917">drifts</text>
+        <text x="46" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#1c1917">up</text>
+      </g>
+
+      <!-- RIGHT: T+1s, spoof gone -->
+      <text x="620" y="56" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#78716c" letter-spacing="1.5">T + 1s &middot; SPOOF PULLED</text>
+      <g transform="translate(480,76)">
+        <rect x="0" y="0" width="280" height="320" fill="#fafaf9" stroke="#e7e5e4"/>
+        <g font-family="JetBrains Mono" font-size="10" fill="#78716c">
+          <text x="8" y="32">77,200</text>
+          <text x="8" y="64">77,150</text>
+          <text x="8" y="96">77,100</text>
+          <text x="8" y="128">77,050</text>
+          <text x="8" y="160">77,000</text>
+          <text x="8" y="192">76,950</text>
+          <text x="8" y="224">76,900</text>
+          <text x="8" y="256">76,850</text>
+          <text x="8" y="288">76,800</text>
+        </g>
+        <!-- price has moved up; ask side thinner -->
+        <rect x="70" y="20" width="35" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="52" width="22" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="84" width="30" height="14" fill="url(#askGrad)"/>
+        <rect x="70" y="116" width="55" height="14" fill="#ef4444" opacity="0.85"/>
+        <text x="110" y="31" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">25</text>
+        <text x="97" y="63" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">15</text>
+        <text x="105" y="95" font-family="JetBrains Mono" font-size="9" fill="#7f1d1d">21</text>
+        <text x="130" y="127" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="#7f1d1d">REAL SELL</text>
+        <line x1="60" y1="114" x2="270" y2="114" stroke="#a3e635" stroke-width="2"/>
+        <text x="195" y="111" font-family="JetBrains Mono" font-size="9" fill="#3f6212">MID 77,090</text>
+        <!-- bid side: spoof gone, only real bids -->
+        <rect x="70" y="148" width="38" height="14" fill="url(#bidGrad)"/>
+        <rect x="70" y="180" width="50" height="14" fill="url(#bidGrad)"/>
+        <g stroke="#a8a29e" stroke-width="1" stroke-dasharray="3 3" fill="none">
+          <rect x="70" y="212" width="220" height="18"/>
+        </g>
+        <text x="180" y="225" font-family="Inter" font-size="11" font-style="italic" fill="#a8a29e" text-anchor="middle">&mdash; cancelled &mdash;</text>
+        <rect x="70" y="244" width="30" height="14" fill="url(#bidGrad)"/>
+        <rect x="70" y="276" width="42" height="14" fill="url(#bidGrad)"/>
+      </g>
+    </svg>
+    <div class="svg-caption">Spoof loop: a 500 BTC bid at $76,900 lifts mid from $77,025 to $77,090, then evaporates. The manipulator hits the lifted ask with real size at $77,050.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Iceberg refill schematic">
+      <text x="400" y="24" text-anchor="middle" font-family="DM Serif Display" font-size="16" fill="#1c1917">Iceberg &mdash; Refill at $76,500 across 6 prints</text>
+
+      <!-- horizontal price line -->
+      <line x1="60" y1="180" x2="740" y2="180" stroke="#3f6212" stroke-width="2"/>
+      <text x="40" y="184" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#3f6212" font-weight="700">$76,500</text>
+
+      <!-- 6 prints across time -->
+      <g font-family="JetBrains Mono" font-size="9" fill="#78716c" text-anchor="middle">
+        <text x="120" y="320">14:02:11</text>
+        <text x="220" y="320">14:02:18</text>
+        <text x="320" y="320">14:02:24</text>
+        <text x="420" y="320">14:02:31</text>
+        <text x="520" y="320">14:02:39</text>
+        <text x="620" y="320">14:02:46</text>
+      </g>
+
+      <!-- Aggressive sell prints (red bars going down) -->
+      <g>
+        <!-- print 1: 8 BTC -->
+        <rect x="108" y="180" width="24" height="40" fill="#ef4444"/>
+        <text x="120" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;8</text>
+        <!-- visible tip refill above -->
+        <rect x="108" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="120" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5 visible</text>
+
+        <rect x="208" y="180" width="24" height="55" fill="#ef4444"/>
+        <text x="220" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;12</text>
+        <rect x="208" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="220" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5</text>
+
+        <rect x="308" y="180" width="24" height="35" fill="#ef4444"/>
+        <text x="320" y="232" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;7</text>
+        <rect x="308" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="320" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5</text>
+
+        <rect x="408" y="180" width="24" height="48" fill="#ef4444"/>
+        <text x="420" y="245" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;10</text>
+        <rect x="408" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="420" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5</text>
+
+        <rect x="508" y="180" width="24" height="62" fill="#ef4444"/>
+        <text x="520" y="259" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;14</text>
+        <rect x="508" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="520" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5</text>
+
+        <rect x="608" y="180" width="24" height="40" fill="#ef4444"/>
+        <text x="620" y="240" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">&minus;9</text>
+        <rect x="608" y="148" width="24" height="20" fill="#bef264" stroke="#3f6212"/>
+        <text x="620" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">5</text>
+      </g>
+
+      <!-- Total absorbed annotation -->
+      <g transform="translate(660,90)">
+        <rect x="0" y="0" width="120" height="50" fill="#f7fee7" stroke="#a3e635" rx="3"/>
+        <text x="60" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#3f6212">60 BTC absorbed</text>
+        <text x="60" y="36" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#3f6212">tip stayed at 5</text>
+      </g>
+
+      <!-- Legend -->
+      <g transform="translate(60,40)">
+        <rect width="14" height="10" fill="#bef264" stroke="#3f6212"/>
+        <text x="20" y="9" font-family="JetBrains Mono" font-size="10" fill="#3f6212">Visible bid (the &ldquo;tip&rdquo;)</text>
+        <rect x="180" width="14" height="10" fill="#ef4444"/>
+        <text x="200" y="9" font-family="JetBrains Mono" font-size="10" fill="#7f1d1d">Aggressive sell print</text>
+      </g>
+    </svg>
+    <div class="svg-caption">Iceberg fingerprint: 60 BTC of aggressive sells get absorbed at $76,500 over 35 seconds while the visible bid never exceeds 5 BTC. The level holds, the tip refills, the parent quietly fills.</div>
+  </div>
+</section>
+
+<!-- §04 -->
+<section id="s04">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;04</div>
+      <h2 class="section-title">In Practice</h2>
+      <div class="section-sub">How to actually trade around hidden orders</div>
+    </div>
+  </div>
+
+  <div class="skim">The single rule that matters: <strong>fade the spoof, follow the iceberg.</strong> A wall that can&rsquo;t survive being touched is a counter-signal; a wall that survives prints is a directional one.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">i.</div>
+      <div>
+        <h4>Time the wall before you trust it</h4>
+        <p>A bid that has stood through &ge; 3 print cycles at the level is a real participant. A bid that&rsquo;s been on the book for &lt; 5 seconds with no fills is suspect. Walls that scroll up/down with mid are <em>always</em> spoofs.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">ii.</div>
+      <div>
+        <h4>Iceberg + HTF level = high-conviction long/short</h4>
+        <p>A refilling bid at a 4H/D level (range low, prior swing, VWAP anchor) is institutional defense. Long with stop just below the iceberg price. Reverse for offers at range high. Confluence with CVD divergence is the cleanest setup.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">iii.</div>
+      <div>
+        <h4>The post-spoof move is the trade, not the spoof</h4>
+        <p>Don&rsquo;t front-run the cancel; you can&rsquo;t. Wait for the wall to vanish, watch the next 1&ndash;3 ticks confirm direction, then enter against the induced move. Tight stop above/below the wall&rsquo;s ghost level.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">iv.</div>
+      <div>
+        <h4>When an iceberg breaks, get out fast</h4>
+        <p>Refilling support that suddenly stops refilling is a regime change &mdash; the parent finished, was pulled, or got overwhelmed. The next move is almost always swift and in the opposite direction. Trail stops aggressively after extended absorption.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example &middot; long the iceberg</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC ranges 76,400&ndash;77,300 over 14 hours. CVD flat. 4H range low at <b>76,500</b>.</td></tr>
+      <tr><td>Trigger</td><td>5m chart prints 6 consecutive aggressive-sell bars at 76,500&ndash;76,520. Visible bid at 76,500 stays ~5 BTC. Bookmap shows 60 BTC absorbed in 35 seconds.</td></tr>
+      <tr><td>Entry</td><td>Long 76,540 (one tick above absorption price)</td></tr>
+      <tr><td>Stop</td><td>76,440 (60 ticks; below the iceberg by 6 ticks &mdash; if it breaks, regime is over)</td></tr>
+      <tr><td>T1 / T2</td><td>76,900 (range mid) / 77,250 (range high)</td></tr>
+      <tr><td>R math</td><td>R = 60 ticks. T1 = 3.6R, T2 = 11.8R. Scale 50% at T1, trail rest.</td></tr>
+      <tr><td>Invalidation</td><td>Iceberg stops refilling AND a 1m close prints below 76,470 = exit, no questions.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 1m&ndash;15m execution, 4H+ for level selection. Spoof detection is sub-second; iceberg detection needs 30s&ndash;3min of tape. Don&rsquo;t use these on daily bars.</div>
+</section>
+
+<!-- §05 -->
+<section id="s05">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;05</div>
+      <h2 class="section-title">Live Tape</h2>
+      <div class="section-sub">Where the concept is showing up right now</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC&rsquo;s 76,500&ndash;77,300 range with flat funding and elevated OI is exactly the regime where icebergs and spoofs concentrate &mdash; rangebound tape with passive size hidden at the edges.</div>
+
+  <div class="tape">
+    <div class="tape-label">&gt; Live Tape &middot; BTCUSDT.P &middot; April 28, 2026 &middot; 14:30 AEST</div>
+    <h4>BTC sits in a 14-hour range &mdash; iceberg territory, not breakout territory</h4>
+    <p>Per this morning&rsquo;s Morning Edge, BTC is trading <strong>$76,964</strong> with <strong>OI at $122.6B</strong>, funding flat-to-negative across majors, and <strong>liquidations spiking +291.9%</strong> on $193B of 24h volume. That combination &mdash; tight range, high OI, neutral funding, big liquidation pulses &mdash; is the textbook environment for institutional execution algos to deploy iceberg orders at the range extremes and for HFTs to layer spoofs in the middle.</p>
+    <p>The two prices that matter for hidden-flow watchers today: <strong>$76,500</strong> (range low / 4H demand) and <strong>$77,300</strong> (range high / supply). Both have shown repeated absorption in the last 24h with no follow-through, which is the iceberg fingerprint. The middle of the range &mdash; ~$76,900 &mdash; has produced multiple sub-second walls that vanished on touch, classic spoof noise.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>BTC spot</td><td>$76,964</td></tr>
+        <tr><td>24h range</td><td>$76,420 &ndash; $77,310</td></tr>
+        <tr><td>Range duration</td><td>~14h (since 00:30 AEST)</td></tr>
+        <tr><td>Suspected iceberg bid</td><td>$76,500 &middot; absorbed ~$80M over 24h</td></tr>
+        <tr><td>Suspected iceberg ask</td><td>$77,300 &middot; rejected 4 times</td></tr>
+        <tr><td>OI</td><td>$122.65B (-0.4%)</td></tr>
+        <tr><td>BTC funding</td><td>+0.0013% (neutral)</td></tr>
+        <tr><td>24h liquidations</td><td>$435.6M (+291.9%)</td></tr>
+        <tr><td>Sydney / UTC</td><td>14:30 AEST &middot; 04:30 UTC</td></tr>
+      </table>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=15&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read"><b>Read</b>The spike in liquidations against flat funding and a tight range is consistent with hidden two-sided participation defending both edges &mdash; not aggressive directional positioning. Until $76,500 stops refilling or $77,300 stops rejecting, the trade is fading the edges, not chasing the middle. <em>&rarr; see <a href="market-briefing.html">Morning Edge</a> for the full positioning context.</em></div>
+  </div>
+</section>
+
+<!-- §06 -->
+<section id="s06">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;06</div>
+      <h2 class="section-title">Quotes</h2>
+      <div class="section-sub">One classic, two contemporary</div>
+    </div>
+  </div>
+
+  <div class="skim">The voices worth listening to on hidden orders span 100 years &mdash; because the mechanic predates the screen.</div>
+
+  <div class="quote">
+    <p>&ldquo;The market is a manipulated game; the only question is whether the manipulation is in your direction or against it. Read the tape, not the chatter.&rdquo;</p>
+    <div class="attr"><b>Jesse Livermore</b> &middot; Reminiscences of a Stock Operator &middot; 1923 &middot; <a href="https://en.wikipedia.org/wiki/Reminiscences_of_a_Stock_Operator">ref</a></div>
+  </div>
+
+  <div class="quote">
+    <p>&ldquo;Spoof orders appear as bright bands that vanish within 1&ndash;5 seconds. Genuine walls darken gradually as they get filled; fake ones disappear all at once.&rdquo;</p>
+    <div class="attr"><b>Kalena Research</b> &middot; Orderbook Heatmap Guide &middot; 2026 &middot; <a href="https://blog.kalena.ai/orderbook-heatmap-the-complete-guide-to-reading-analyzing-and-trading-with-real-time-order-flow-visualization-in-2026">link</a></div>
+  </div>
+
+  <div class="quote">
+    <p>&ldquo;Spotting an iceberg is a clue that a large entity is either accumulating or distributing stealthily. The trade is to sit on the same side of the book.&rdquo;</p>
+    <div class="attr"><b>Bookmap Research</b> &middot; Iceberg Orders Tracker docs &middot; 2026 &middot; <a href="https://bookmap.com/blog/how-to-read-and-trade-iceberg-orders-hidden-liquidity-in-plain-sight">link</a></div>
+  </div>
+</section>
+
+<!-- §07 -->
+<section id="s07">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;07</div>
+      <h2 class="section-title">Common Traps</h2>
+      <div class="section-sub">Where retail tape readers get this wrong</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: <strong>treating every large wall as a spoof.</strong> Most large walls in liquid crypto books are real market-maker inventory, not manipulation.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Calling everything a spoof</h5>
+      <p>Liquid crypto books constantly show 50&ndash;200 BTC bids/asks from market makers. They&rsquo;re hedged inventory, not manipulation. A wall is only spoof-suspect if it (a) appears suddenly with no warning, (b) sits sub-5s, and (c) gets pulled <em>before</em> price reaches it. Most don&rsquo;t.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Confusing absorption and iceberg</h5>
+      <p>Absorption is the <strong>phenomenon</strong> (passive size eating aggressive flow); iceberg is one <strong>mechanism</strong> that produces it. A static 500 BTC bid getting hit and refilled is also absorption &mdash; and it&rsquo;s easier to read because you can see the size. Don&rsquo;t need an iceberg detector for every absorption read.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Trading the iceberg too long</h5>
+      <p>Icebergs end. The parent fills, gets cancelled, or is overwhelmed by a sweep. When refills stop, exit immediately &mdash; the next move is fast. Traders who anchor to &ldquo;the level held all day&rdquo; get carried out on the break.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Front-running the spoof</h5>
+      <p>You can&rsquo;t cancel-race a sub-second algo. By the time you see the spoof, the manipulator has already started flipping. The trade is the post-cancel reaction, not the wall itself. Anyone selling courses on &ldquo;stepping in front of the spoofer&rdquo; is selling fiction.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The honest &ldquo;overhyped&rdquo; callout</h5>
+      <p>A lot of what gets called &ldquo;iceberg&rdquo; on Crypto X is just fast market-maker quote refresh &mdash; algos rebuilding their book after a fill. True icebergs (a single resting parent order with hidden body) are rarer than tape-reading influencers suggest. Without MBO data, you&rsquo;re inferring, not detecting. Be honest about that distinction in your own journal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- §08 -->
+<section id="s08">
+  <div class="section-header">
+    <div>
+      <div class="section-num">&sect;08</div>
+      <h2 class="section-title">Further Reading</h2>
+      <div class="section-sub">Where to go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources actually pulled in research &mdash; one canonical book chapter, two operational guides, one heatmap deep-dive, one regulatory case file.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-to-read-and-trade-iceberg-orders-hidden-liquidity-in-plain-sight">How to Read and Trade Iceberg Orders &mdash; Hidden Liquidity in Plain Sight</a>
+        <span>Bookmap. The single most operational write-up on iceberg detection &mdash; refill mechanics, MBO data signature, trade examples.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://blog.kalena.ai/orderbook-heatmap-the-complete-guide-to-reading-analyzing-and-trading-with-real-time-order-flow-visualization-in-2026">Orderbook Heatmap &mdash; 5 Proven Strategies for 2026</a>
+        <span>Kalena. Spoof vs. genuine wall identification on heatmaps; the &ldquo;darkens gradually vs. vanishes all at once&rdquo; distinction.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.cftc.gov/PressRoom/PressReleases/7156-15">CFTC v. Sarao &mdash; Spoofing Charges</a>
+        <span>The original 2015 CFTC complaint detailing the layered spoof algorithm that contributed to the 2010 Flash Crash &mdash; required reading for understanding the mechanic at extreme size.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://quantstrategy.io/blog/detecting-hidden-intent-unmasking-iceberg-orders-and-order/">Detecting Hidden Intent &mdash; Unmasking Iceberg Orders and Order Book Spoofing</a>
+        <span>QuantStrategy.io. Detection algorithms framed in code-friendly terms &mdash; cancel-rate thresholds, refill signatures, MBO sequence analysis.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://support.kraken.com/articles/iceberg-orders">Kraken &mdash; Iceberg Orders</a>
+        <span>Exchange-side documentation: parameters, display size minimums, behaviour. Read this once and you&rsquo;ll understand exactly how the engine refills.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/blog/how-to-read-and-trade-iceberg-orders-hidden-liquidity-in-plain-sight">Bookmap &mdash; Iceberg Orders</a>
+    <a href="https://blog.kalena.ai/orderbook-heatmap-the-complete-guide-to-reading-analyzing-and-trading-with-real-time-order-flow-visualization-in-2026">Kalena &mdash; Heatmap Guide</a>
+    <a href="https://www.cftc.gov/PressRoom/PressReleases/7156-15">CFTC v. Sarao</a>
+    <a href="https://quantstrategy.io/blog/detecting-hidden-intent-unmasking-iceberg-orders-and-order/">QuantStrategy.io</a>
+    <a href="https://support.kraken.com/articles/iceberg-orders">Kraken Iceberg docs</a>
+    <a href="https://en.wikipedia.org/wiki/2010_flash_crash">2010 Flash Crash &mdash; Wikipedia</a>
+    <a href="https://transnetinc.com/order-book-manipulation-tactics-in-cryptocurrency-markets">Transnet &mdash; Order Book Manipulation in Crypto</a>
+  </div>
+  <div>Alpha &middot; Issue #06 &middot; April 28, 2026 &middot; Sydney &middot; NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</footer>
+
+</main>
+</div>
+</body>
+</html>
