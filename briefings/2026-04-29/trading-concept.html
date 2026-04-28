@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidity Heatmaps | April 29, 2026</title>
+<meta property="og:description" content="Alpha — Liquidity Heatmaps | April 29, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape a{color:var(--terminal-accent);border-bottom-color:rgba(190,242,100,0.4)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidity Heatmaps</h1>
+  <div class="meta">
+    <span>Wednesday · 29 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #7</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>A liquidity heatmap is the order book rendered over time as a thermal grid — bright zones are heavy resting limit orders or projected liquidation clusters; dim zones are voids price punches through.</strong> The practical edge: layer the <em>order-book</em> heatmap (Bookmap-style — what's actually resting right now) on top of the <em>liquidation</em> heatmap (Coinglass-style — projected forced exits) and you have the same map whales and HFT desks read to plan stop hunts. Trade rejections at walls that hold; trade through walls that pull; treat magnet zones as targets, never as entries.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Resting orders vs projected liquidations · two different maps, often confused</div>
+    </div>
+  </div>
+
+  <div class="skim">A liquidity heatmap is the limit-order book painted across time and price — colour intensity scales with size, so you can see walls form, hold, pull, or get eaten without reading a single number.</div>
+
+  <p>Standard candles tell you where price went. The heatmap tells you <strong>what was waiting at every price along the way</strong>. On the right edge of the screen sits the live order book, vertical: bids stacked below the last trade, asks stacked above. As time advances, that snapshot scrolls left, leaving a trail. The brighter a horizontal band, the more resting size sat there. Walls show up as horizontal yellow streaks. Voids show up as black gaps. Spoofs show up as flashes that vanish before price arrives.</p>
+
+  <p>Two distinct visualisations both go by the name "heatmap" and they are <strong>not the same instrument</strong> — confusing them is the first beginner mistake:</p>
+
+  <p><strong>Order-book heatmap</strong> (Bookmap, TradingLite, Hyblock, Multibook): renders <em>actual resting limit orders</em> from the live exchange feed. What you see is real, current liquidity. Walls can be pulled. Iceberg orders refill. This is the microstructure layer — what's being staged to defend or attack price <em>right now</em>.</p>
+
+  <p><strong>Liquidation heatmap</strong> (Coinglass, CoinAnk, CounterFlow): renders <em>projected liquidation prices</em> for outstanding leveraged positions. It's not orders sitting in the book — it's where forced market sells/buys will <em>fire</em> if price reaches them. Coinglass calls these <em>"magnetic zones"</em> because liquidations, unlike limit orders, cannot be cancelled — once the trigger price prints, the unwind is automatic. Whales and bots know exactly where these clusters sit.</p>
+
+  <p>Tony, you already trade Wyckoff supply/demand structure. Heatmaps are the microstructure receipts for that structure: they show you the actual size defending the springs and upthrusts you mark. The Trading Riot crew has a useful framing — <em>"the heatmap is a way to determine where liquidity is in the market and how liquidity-providers are behaving"</em>. That's the whole game in one sentence.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>RESTING LIQUIDITY</b><span>Limit orders sitting in the book waiting to be filled</span></span>
+    <span class="pill-term"><b>WALL</b><span>A bright cluster of resting orders large enough to cap a move</span></span>
+    <span class="pill-term"><b>VOID</b><span>A dim, thinly-quoted price zone where price travels fast</span></span>
+    <span class="pill-term"><b>MAGNET ZONE</b><span>A liquidation cluster that price tends to gravitate toward</span></span>
+    <span class="pill-term"><b>ABSORPTION</b><span>A wall that holds while aggressive size repeatedly tries to break it</span></span>
+    <span class="pill-term"><b>PULL</b><span>Resting size cancelled before it gets filled — typically a spoof</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    The heatmap is not a forecast. It's a vulnerability map. Bright bands mark where size is staged; voids mark where there's nothing to slow price down. Read it as terrain, not as a target.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How intensity is computed · time-decay · the three heatmap families</div>
+    </div>
+  </div>
+
+  <div class="skim">Each pixel = (price level × time bucket). Brightness = volume of resting orders at that level during that bucket; for liquidation maps, brightness = projected liquidation notional at the trigger price.</div>
+
+  <p>An order-book heatmap is built from one stream: the exchange's full L2 depth feed. For every snapshot (often 10–100 times per second), the engine maps each price level's resting size to a colour ramp. The ramp is usually logarithmic — without it, a single 500 BTC wall would saturate the screen and erase every smaller order.</p>
+
+  <div class="formula">
+<b>Order-book heatmap intensity:</b>
+I(p, t) = log( Σ V<sub>resting</sub>(p, t) ) × normalisation
+
+<b>Where:</b>
+p = price level (rounded to tick or visual bucket)
+t = time bucket (e.g. 100ms snapshot)
+V<sub>resting</sub> = sum of bid + ask size at that level
+
+<b>Liquidation heatmap intensity:</b>
+L(p) = Σ ( leverage × position_size )  for all open positions
+       whose liquidation price = p
+
+<b>Magnet pressure (Coinglass framing):</b>
+M(p) = L(p) × proximity_weight(price_now, p)
+     ↑ as price approaches a cluster, the magnet strengthens
+
+    <div class="note">Note: order-book maps decay forward in time — each pixel is fixed once written. A wall that existed at 14:00 stays in the historical strip even after it's pulled. Liquidation maps usually re-render daily because position turnover invalidates yesterday's projections; Coinglass explicitly warns "actual liquidation amounts may be lower than the levels shown" because positions can be closed or hedged before trigger.</div>
+  </div>
+
+  <p>The three families you'll actually use have different feeds, costs, and use-cases. Pick by what you're trying to see:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Family</th><th>Tool</th><th>Source</th><th>Best for</th></tr>
+    <tr><td>Order-book (real)</td><td>Bookmap, TradingLite</td><td>Live L2 feeds (Binance, Coinbase, CME)</td><td>Spotting walls, absorption, spoofs in real time</td></tr>
+    <tr><td>Aggregated spot</td><td>Hyblock, Multibook</td><td>Multiple exchanges combined</td><td>Reading total venue-wide liquidity at a level</td></tr>
+    <tr><td>Liquidation (projected)</td><td>Coinglass, CoinAnk</td><td>Derivatives open interest + leverage</td><td>Mapping where forced-flow magnets sit</td></tr>
+  </table>
+  </div>
+
+  <p>The two families do not contradict each other — they layer. A bright Bookmap wall at a price <em>plus</em> a bright Coinglass liquidation cluster at the same price is a <strong>conviction zone</strong>: real defenders are stacked exactly where forced flow will fire if they fail. That's the setup whales build their plays around. A bright cluster on Coinglass with a thin Bookmap profile around it is the inverse — a magnet with no defence, the kind of zone that gets visited fast and bounced from violently.</p>
+
+  <p>One subtlety on the order-book side: not all bright bands are honest. <strong>Spoofed</strong> walls bloom large, hold while price is far away, then pull the moment price approaches. <strong>Iceberg</strong> orders do the opposite — they look small but refill repeatedly as fills come in, leaving a horizontal smear of repeated reloads at the same price. Bookmap's iceberg tracker keys off exactly that signature: the Bookmap blog calls it <em>"the telltale pattern of repeated refills"</em>. You can read it by eye once you've seen it once.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — order-book heatmap dynamics + liquidation magnet map</div>
+    </div>
+  </div>
+
+  <div class="skim">First: a Bookmap-style time-price strip showing a wall holding, then thinning, then breaking. Second: a Coinglass-style liquidation map with magnet clusters either side of current price.</div>
+
+  <!-- SVG 1 — Bookmap-style order-book heatmap -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Order-book heatmap showing wall holding, thinning, and breaking through time">
+
+      <defs>
+        <linearGradient id="wallGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#fbbf24" stop-opacity="0.85"/>
+          <stop offset="0.55" stop-color="#fbbf24" stop-opacity="0.7"/>
+          <stop offset="0.78" stop-color="#fbbf24" stop-opacity="0.25"/>
+          <stop offset="1" stop-color="#fbbf24" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="bidGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#22c55e" stop-opacity="0.55"/>
+          <stop offset="1" stop-color="#22c55e" stop-opacity="0.15"/>
+        </linearGradient>
+        <linearGradient id="askGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ef4444" stop-opacity="0.45"/>
+          <stop offset="1" stop-color="#ef4444" stop-opacity="0.1"/>
+        </linearGradient>
+        <marker id="arrW" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L6,4 L0,8 z" fill="#fbbf24"/>
+        </marker>
+        <marker id="arrR" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="24" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Order-Book Heatmap — Wall, Hold, Break</text>
+
+      <!-- Dark background panel -->
+      <rect x="60" y="46" width="700" height="320" fill="#1c1917"/>
+
+      <!-- Y-axis price labels -->
+      <text x="54" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">77,800</text>
+      <text x="54" y="140" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">77,400</text>
+      <text x="54" y="200" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#fbbf24">77,000 ←</text>
+      <text x="54" y="260" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">76,600</text>
+      <text x="54" y="320" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">76,200</text>
+
+      <!-- Faint grid -->
+      <line x1="60" y1="80"  x2="760" y2="80"  stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="140" x2="760" y2="140" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="200" x2="760" y2="200" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="260" x2="760" y2="260" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="320" x2="760" y2="320" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+      <!-- Resting bid layer (below price) — green smear, fading right -->
+      <rect x="60" y="262" width="700" height="6" fill="url(#bidGrad)"/>
+      <rect x="60" y="278" width="700" height="6" fill="url(#bidGrad)" opacity="0.6"/>
+      <rect x="60" y="296" width="700" height="6" fill="url(#bidGrad)" opacity="0.4"/>
+
+      <!-- Resting ask layer (above price) — red smear -->
+      <rect x="60" y="158" width="700" height="6" fill="url(#askGrad)" opacity="0.5"/>
+      <rect x="60" y="138" width="700" height="6" fill="url(#askGrad)" opacity="0.4"/>
+      <rect x="60" y="118" width="700" height="6" fill="url(#askGrad)" opacity="0.3"/>
+
+      <!-- THE WALL at 77,000 — bright then thinning then breaking -->
+      <rect x="60" y="194" width="450" height="14" fill="url(#wallGrad)"/>
+      <rect x="510" y="196" width="120" height="10" fill="#fbbf24" fill-opacity="0.18"/>
+
+      <!-- Price path (white line) — riding under the wall, testing twice, then breaking -->
+      <path d="M70,290 Q120,250 170,230 T270,215 Q310,212 340,212 L380,212 Q420,212 460,210 L500,210 Q540,205 580,200 Q620,197 660,170 Q700,140 740,110"
+            stroke="#fafaf9" stroke-width="2.5" fill="none"/>
+
+      <!-- Aggressive buy print marks (red dots into wall = market buys hitting ask) -->
+      <circle cx="280" cy="212" r="3" fill="#22c55e"/>
+      <circle cx="350" cy="211" r="3" fill="#22c55e"/>
+      <circle cx="420" cy="211" r="3" fill="#22c55e"/>
+      <circle cx="480" cy="210" r="3.5" fill="#22c55e"/>
+      <circle cx="540" cy="205" r="4" fill="#22c55e"/>
+
+      <!-- Annotations -->
+      <line x1="200" y1="160" x2="200" y2="195" stroke="#fbbf24" stroke-width="1" marker-end="url(#arrW)"/>
+      <text x="200" y="148" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fbbf24" font-weight="700">SELL WALL</text>
+      <text x="200" y="135" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#fbbf24">~480 BTC resting ask</text>
+
+      <line x1="430" y1="248" x2="430" y2="220" stroke="#22c55e" stroke-width="1" marker-end="url(#arrR)"/>
+      <text x="430" y="262" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">ABSORPTION</text>
+      <text x="430" y="276" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#a8a29e">aggressive buys eaten</text>
+
+      <text x="555" y="240" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#fbbf24">WALL THINS</text>
+      <text x="555" y="253" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#a8a29e">size pulled</text>
+
+      <text x="700" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fafaf9" font-weight="700">BREAK</text>
+      <text x="700" y="115" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#bef264">price bursts through</text>
+
+      <!-- Time axis -->
+      <line x1="60" y1="366" x2="760" y2="366" stroke="#1c1917" stroke-width="1"/>
+      <text x="60"  y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">11:00 UTC</text>
+      <text x="400" y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="middle">12:30</text>
+      <text x="760" y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">14:00</text>
+
+      <!-- Legend -->
+      <rect x="60" y="404" width="14" height="6" fill="#fbbf24"/>
+      <text x="80" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Heavy resting size (wall)</text>
+      <rect x="270" y="404" width="14" height="6" fill="#22c55e" fill-opacity="0.55"/>
+      <text x="290" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Resting bids</text>
+      <rect x="400" y="404" width="14" height="6" fill="#ef4444" fill-opacity="0.45"/>
+      <text x="420" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Resting asks</text>
+      <line x1="540" y1="407" x2="560" y2="407" stroke="#1c1917" stroke-width="2"/>
+      <text x="566" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Last-trade price</text>
+    </svg>
+    <div class="svg-caption">A textbook order-book heatmap sequence: sell wall forms at 77,000, absorbs three rounds of aggressive buying, then size starts pulling — the wall thins, the defenders give up, and price punches through into the void above. The break is violent because the absorbing liquidity is gone.</div>
+  </div>
+
+  <!-- SVG 2 — Liquidation magnet map -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Liquidation heatmap showing magnet clusters above and below current BTC price">
+
+      <defs>
+        <linearGradient id="liqHi" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ef4444" stop-opacity="0.55"/>
+          <stop offset="0.7" stop-color="#fbbf24" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="#fef08a" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="liqLo" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#7c3aed" stop-opacity="0.4"/>
+          <stop offset="0.6" stop-color="#fbbf24" stop-opacity="0.85"/>
+          <stop offset="1" stop-color="#fef08a" stop-opacity="0.55"/>
+        </linearGradient>
+      </defs>
+
+      <text x="400" y="24" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Liquidation Heatmap — Magnet Zones</text>
+
+      <!-- Background panel (light) -->
+      <rect x="60" y="46" width="700" height="320" fill="#1c1917"/>
+
+      <!-- Y-axis price labels -->
+      <text x="54" y="78" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">82,000</text>
+      <text x="54" y="120" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#fef08a">80,500 ←</text>
+      <text x="54" y="170" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">78,000</text>
+      <text x="54" y="206" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#fafaf9" font-weight="700">76,300 ●</text>
+      <text x="54" y="248" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">75,000</text>
+      <text x="54" y="290" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#fef08a">74,200 ←</text>
+      <text x="54" y="332" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">72,500</text>
+
+      <!-- Light grid -->
+      <line x1="60" y1="78"  x2="760" y2="78"  stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="170" x2="760" y2="170" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="248" x2="760" y2="248" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+      <line x1="60" y1="332" x2="760" y2="332" stroke="#44403c" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+      <!-- SHORT-LIQ CLUSTER above (80,500) — bright orange/yellow band -->
+      <rect x="200" y="114" width="540" height="14" fill="url(#liqHi)"/>
+      <rect x="200" y="105" width="540" height="6" fill="#ef4444" fill-opacity="0.18"/>
+      <rect x="200" y="131" width="540" height="6" fill="#ef4444" fill-opacity="0.18"/>
+
+      <!-- Smaller short cluster at 78,500 -->
+      <rect x="200" y="158" width="540" height="6" fill="#ef4444" fill-opacity="0.35"/>
+
+      <!-- Current price line at 76,300 -->
+      <line x1="60" y1="206" x2="760" y2="206" stroke="#fafaf9" stroke-width="2" stroke-dasharray="6,4"/>
+
+      <!-- LONG-LIQ CLUSTER below (74,200) — bright magnet -->
+      <rect x="200" y="282" width="540" height="14" fill="url(#liqLo)"/>
+      <rect x="200" y="273" width="540" height="6" fill="#7c3aed" fill-opacity="0.25"/>
+      <rect x="200" y="299" width="540" height="6" fill="#7c3aed" fill-opacity="0.25"/>
+
+      <!-- Smaller long cluster at 75,000 -->
+      <rect x="200" y="244" width="540" height="6" fill="#7c3aed" fill-opacity="0.4"/>
+
+      <!-- Annotations -->
+      <text x="730" y="100" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#fef08a" font-weight="700">SHORT LIQS · ~$310M</text>
+      <text x="730" y="155" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#fca5a5">secondary cluster</text>
+      <text x="730" y="201" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#fafaf9" font-weight="700">PRICE 76,300</text>
+      <text x="730" y="240" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#c4b5fd">first defensive shelf</text>
+      <text x="730" y="312" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#fef08a" font-weight="700">LONG LIQS · ~$420M</text>
+      <text x="730" y="328" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#c4b5fd">primary downside magnet</text>
+
+      <text x="120" y="125" font-family="JetBrains Mono,monospace" font-size="10" fill="#fafaf9">UP MAGNET</text>
+      <text x="120" y="293" font-family="JetBrains Mono,monospace" font-size="10" fill="#fafaf9">DOWN MAGNET</text>
+
+      <!-- Time axis -->
+      <line x1="60" y1="366" x2="760" y2="366" stroke="#1c1917" stroke-width="1"/>
+      <text x="60"  y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">90D lookback</text>
+      <text x="760" y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">now</text>
+
+      <!-- Legend -->
+      <rect x="60" y="404" width="14" height="6" fill="#fef08a"/>
+      <text x="80" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Heavy liquidation cluster</text>
+      <rect x="280" y="404" width="14" height="6" fill="#7c3aed" fill-opacity="0.5"/>
+      <text x="300" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Long liqs</text>
+      <rect x="380" y="404" width="14" height="6" fill="#ef4444" fill-opacity="0.4"/>
+      <text x="400" y="410" font-family="JetBrains Mono,monospace" font-size="10" fill="#44403c">Short liqs</text>
+    </svg>
+    <div class="svg-caption">Stylised liquidation heatmap modelled on Coinglass: BTC at 76,300 sits between two magnets — a short-liquidation pool around 80,500 (~$310M, the unwind zone for shorts that pressed into last week's flush) and a long-liquidation pool at 74,200 (~$420M, the cluster from leveraged longs added on the dip). The brighter the band, the more forced flow waiting to fire if price arrives.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Four rules · one worked BTC short into the down magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">Trade rejections at walls that hold and breaks of walls that pull; treat magnet zones as targets, not entries; always verify the heatmap <em>at</em> the level, not just the projection toward it.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num"><em>1</em></div>
+      <div>
+        <h4>Trade rejections of walls that hold</h4>
+        <p>When price tags a bright wall and absorption begins (aggressive prints into the level, wall stays bright, CVD spikes but price doesn't move), fade <em>into</em> the wall on the next pullback. The Bookmap rule: <em>"large liquidity is repeatedly hit but still holds"</em> — that's your edge. Stop goes just past the wall; if it cracks, you're wrong fast.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>2</em></div>
+      <div>
+        <h4>Trade through walls that pull</h4>
+        <p>If the wall thins or vanishes as price approaches, you have a spoof, not a defence. Trade <em>with</em> the move once the size is gone — the void above (or below) means thin liquidity and outsized follow-through. The signal is the disappearance, not the original size.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>3</em></div>
+      <div>
+        <h4>Magnet zones are targets, never entries</h4>
+        <p>The biggest mistake on Coinglass is buying a long-liquidation cluster because it "looks like support". It is not support — it is forced selling waiting to fire. Use it as a target for shorts (or to scale longs out before the level), not as a long entry. The actual entry is the rejection structure that forms <em>after</em> price touches the magnet.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>4</em></div>
+      <div>
+        <h4>Verify at the level, not just toward it</h4>
+        <p>A wall that looks bright from far away may be entirely fake by the time price arrives. Don't pre-commit on what the heatmap shows from 2% out. Wait for price to get within tick range and re-check what's actually still resting. Resting size is a snapshot, not a contract.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — BTC short into the 74,200 long-liq magnet</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC 76,300, broke down through 77,400 sell wall on Tuesday's session — the wall pulled before price arrived (rule 2). Down magnet at 74,200 carries ~$420M in long liquidations from the late-April leverage build.</td></tr>
+      <tr><td>Entry</td><td>Short 76,400 on retest of broken wall (failed reclaim).</td></tr>
+      <tr><td>Stop</td><td>76,950 — above the failed-reclaim swing high.</td></tr>
+      <tr><td>Target 1</td><td>75,000 — first defensive shelf, scale 50% off.</td></tr>
+      <tr><td>Target 2</td><td>74,200 — primary magnet, scale remaining 50%, do <em>not</em> hold through; magnets bounce.</td></tr>
+      <tr><td>R:R</td><td>~1 : 4.0 to T2 (550 risk / 2,200 reward).</td></tr>
+      <tr><td>Invalidation</td><td>Reclaim of 77,000 with rebuilding wall above — short thesis is dead, wait for new structure.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> heatmaps are a 1m–1h execution tool layered over 4h–1D bias. Use the order-book heatmap for entries and stops; use the liquidation heatmap for targets and bias. Don't trade the heatmap on the daily — by then the levels have already played out.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC 76,300 · trapped between two magnets · FOMC tomorrow</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC sits exactly between a $420M long-liq magnet at 74,200 and a $310M short-liq magnet at 80,500 — the most magnet-symmetric setup of the cycle, and the FOMC catalyst lands inside this 36-hour window.</div>
+
+  <div class="tape">
+    <div class="tape-label">▮ Live Tape · BTC/USDT · 29 Apr 2026 · 09:00 AEST</div>
+    <h4>The squeeze setup is exposed on both sides</h4>
+    <p>This morning's <a href="market-briefing.html">Morning Edge</a> flagged the same range from a different angle — funding negative, F&amp;G at 29, ETF outflows, and short-term-holder liquidation running 3× the local-top threshold. The heatmap layer shows <em>where</em> that pressure resolves: a heavy long-liquidation pool at <strong>74,200</strong> ($420M, built from leveraged longs added between 28 Apr and this morning) and a short-liquidation pool at <strong>80,500</strong> ($310M, the unwind level for shorts pressed during last week's $77K break).</p>
+    <p>Coinglass framing: both are <em>magnetic zones</em>. The bigger one wins more often, but the catalyst (FOMC, Wednesday US session) decides direction. Until then, the order-book heatmap on Bookmap shows thin walls either side — meaning if the FOMC headline pushes price decisively, the closer magnet (74,200) is reachable in one move.</p>
+    <div class="nums">
+      <table>
+        <tr><td>Spot price</td><td>$76,300</td></tr>
+        <tr><td>Down magnet (longs)</td><td>$74,200 · ~$420M · 2.75% below</td></tr>
+        <tr><td>Up magnet (shorts)</td><td>$80,500 · ~$310M · 5.50% above</td></tr>
+        <tr><td>Order-book wall above</td><td>$77,400 · thin · pulled twice in 24h</td></tr>
+        <tr><td>Order-book wall below</td><td>$75,000 · ~120 BTC bid · holding</td></tr>
+        <tr><td>Funding (BTC perp)</td><td>−0.012% · short-skewed</td></tr>
+        <tr><td>FOMC release</td><td>Thu 30 Apr 04:00 AEST · 02:00 PM ET Wed 29 Apr</td></tr>
+      </table>
+    </div>
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+    <div class="read"><b>Read</b> The down magnet is bigger ($420M vs $310M) and closer (2.75% vs 5.50%) — base case is price visits 74,200 first, scoops the long liquidations, and only then attempts 80,500. Counter case: a hawkish-relief FOMC bid runs the closer side first, but you'd want to see the 75,000 bid wall pulled before believing it. Until then: the cleanest trade is a fade of the failed reclaim of 77,000 toward the down magnet, sized for FOMC vol.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">One classic on tape · two current voices on the magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">The same idea — that price is dragged toward where pressure concentrates — runs from Wyckoff in 1910 to Ted on X this week.</div>
+
+  <div class="quote">
+    <p>"Successful tape reading is a study of force; it requires the ability to judge which side has the greatest pulling power, and one must have the courage to go with that side."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · Studies in Tape Reading · 1910</div>
+  </div>
+
+  <div class="quote">
+    <p>"Most of the upside liquidity has been taken out. A decent cluster of liquidity is sitting between $117K and $120K. Late longs are now entering, and maybe they'll get flushed."</p>
+    <div class="attr"><b>Ted</b> · <a href="https://x.com/TedPillows/status/1974775393090752638">@TedPillows on X</a> · 2025</div>
+  </div>
+
+  <div class="quote">
+    <p>"Liquidity heatmaps show where the market may pause, reject, or move rapidly. When large liquidity is repeatedly hit but still holds, that can suggest absorption."</p>
+    <div class="attr"><b>Bookmap</b> · <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Heatmap Trading: Complete Guide</a> · 2026</div>
+  </div>
+
+  <div class="quote">
+    <p>"Magnetic zones refer to price ranges with high liquidation levels, where market prices tend to gravitate towards these areas. Once price approaches these zones, the probability of liquidation events occurring significantly increases."</p>
+    <div class="attr"><b>Coinglass</b> · <a href="https://www.coinglass.com/learn/how-to-use-liqmap-to-assist-trading-en">How to Use Liquidation Heatmaps</a> · 2026</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Four mistakes · one honest "overhyped" callout</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: confusing the liquidation heatmap with the order-book heatmap, and trading magnets as if they were resting limit orders.</div>
+
+  <div class="trap">
+    <div class="num"><em>1</em></div>
+    <div>
+      <h5>Treating the liquidation heatmap as a price prediction</h5>
+      <p>It is not a forecast. It is a vulnerability map. Price may visit the magnet today, in three weeks, or only after a structural shift. The Coinglass disclaimer is explicit — <em>"actual liquidation amounts may be lower than the levels shown"</em> — because positions can be closed or hedged before trigger. Don't size like the magnet is a guaranteed touch.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num"><em>2</em></div>
+    <div>
+      <h5>Trusting walls that haven't been tested</h5>
+      <p>A 500 BTC wall sitting 2% away looks impressive on Bookmap. Most pull. The wall is only meaningful if it has eaten aggressive flow and held. Until then, it's furniture. Wait for the test before you trade the wall.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num"><em>3</em></div>
+    <div>
+      <h5>Reading the heatmap projected, not at the level</h5>
+      <p>Order-book size is a real-time stream — what you see at distance is not what will be there on contact. Re-check liquidity in the final ~0.3% of approach. Pre-committing based on the projection is how traders get filled into walls that have already evaporated.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num"><em>4</em></div>
+    <div>
+      <h5>"Magnet certainty" is overhyped</h5>
+      <p>Be honest: the trader-X meme that "price always sweeps the liquidation cluster" is selectively remembered. Magnets are visited <em>often enough</em> to be tradable as targets, but the base rate is well below 100% on any given timeframe. Bigger and closer magnets resolve more reliably than smaller and farther ones — but plenty of clusters expire untouched when the regime changes. Treat magnets as probabilistic targets, not destinations.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Five sources actually fetched · one classic, four current</div>
+    </div>
+  </div>
+
+  <div class="skim">Start with the Bookmap guide for order-book heatmaps; pair it with the Coinglass learn doc for the liquidation side. Both are free.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Heatmap Trading: The Complete Guide to Market-Depth Visualization</a>
+        <span>Bookmap's canonical primer on reading the order-book heatmap — color intensity, walls, absorption, pulled liquidity.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/learn/how-to-use-liqmap-to-assist-trading-en">How to Use Liquidation Heatmaps to Assist Trading</a>
+        <span>Coinglass's own methodology doc — magnetic zones, time-frame selection, and an explicit warning about treating projected liquidation as if it were a target.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-to-read-and-trade-iceberg-orders-hidden-liquidity-in-plain-sight">How to Read and Trade Iceberg Orders</a>
+        <span>The hidden-size companion piece — how iceberg refills look on the heatmap and how to distinguish them from spoofs and real walls.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body">
+        <a href="https://x.com/TedPillows/status/1974775393090752638">Ted (@TedPillows) on the BTC liquidity heatmap</a>
+        <span>Concise example of a working trader reading the upside cluster as a flush target — same framing applied this week to the 74,200 / 80,500 setup.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/detecting-stop-runs-using-cvd-and-iceberg-absorption-for-strategic-trading"> Detecting Stop Runs with CVD &amp; Iceberg Absorption</a>
+        <span>Bridges Tuesday's CVD brief and today's heatmap brief: how the two layers combine to call stop-run completion in real time.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Bookmap Heatmap Guide</a>
+    <a href="https://www.coinglass.com/learn/how-to-use-liqmap-to-assist-trading-en">Coinglass Liq Heatmap</a>
+    <a href="https://www.coinglass.com/LiquidityHeatmap">Coinglass Liquidity Heatmap</a>
+    <a href="https://bookmap.com/blog/how-to-read-and-trade-iceberg-orders-hidden-liquidity-in-plain-sight">Bookmap Icebergs</a>
+    <a href="https://bookmap.com/blog/detecting-stop-runs-using-cvd-and-iceberg-absorption-for-strategic-trading">Bookmap Stop Runs</a>
+    <a href="https://x.com/TedPillows/status/1974775393090752638">Ted on X</a>
+    <a href="https://bitcoincounterflow.com/liquidation-heatmap/">CounterFlow Liq Map</a>
+  </div>
+  <div>Alpha · Issue #7 · 29 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /outer -->
+
+</body>
+</html>
