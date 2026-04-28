@@ -171,12 +171,15 @@ This applies to desktop AND mobile — no `@media (max-width: 1200px)` exception
   border-right: 1px solid var(--border); padding: 24px 16px; overflow-y: auto; z-index: 100;
   transform: translateX(-100%); transition: transform 0.2s; }
 .sidebar.open { transform: translateX(0); }
-.content { margin-left: 0; max-width: 960px; padding: 70px 40px 80px; }
+.content { margin: 0 auto; max-width: 960px; padding: 70px 40px 80px; }
 ```
 
 The hamburger is ALWAYS visible (no `display: none` rule). When sidebar is open, content stays in place
 (no margin shift) — sidebar overlays content like a drawer. Clicking outside the sidebar OR clicking
 a link inside should close it.
+
+**Content is HORIZONTALLY CENTERED** (`margin: 0 auto`, not `margin-left: 0`). Since the sidebar is hidden
+by default, the content block must be centered in the viewport — never anchored to the left edge.
 
 **Sticky sidebar (220px, drawer-style, full height) — content when opened:**
 - Brand: "The Brief" wordmark (gold, Courier New, uppercase) + today's date
