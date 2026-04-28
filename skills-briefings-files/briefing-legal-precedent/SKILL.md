@@ -24,6 +24,12 @@ Every story includes a practitioner analysis block + industry implications block
 intelligence. This is not a news summary. It's the kind of intelligence that changes what you do
 Monday morning.
 
+**BREVITY IS PARAMOUNT.** The brief must be scannable in 10 minutes. Every paragraph must earn its
+place. Headlines should be shorter (under 120 chars). Summaries are 2–3 paragraphs max (HEADLINE/HIGH)
+or 1–2 (MEDIUM). Analysis, contrarian, and industry blocks are 2–4 sentences each. "What To Do"
+entries are ONE sentence per role. Cut ruthlessly — if a detail doesn't change what the reader does
+today, drop it.
+
 ---
 
 ## Step 0: Deduplication Check (MANDATORY — DO NOT SKIP)
@@ -96,6 +102,27 @@ far stronger than media paraphrases.
 
 **Paywall bypass:** `https://pressreleased.alwaysdata.net/?url=ARTICLE_URL`
 Always cite the original publication, never the bypass tool.
+
+---
+
+## Step 1B: Fact-Check All Data Before Writing
+
+**Mandatory before drafting any HTML.** Spawn a fact-check agent (or run the checks inline) that verifies every key claim from Step 1 against at least one corroborating source.
+
+### What to verify:
+- **Enforcement actions and case names** — verify against the official regulator release (SEC.gov, CFTC.gov, FCA.org.uk, etc.) — never rely solely on a news paraphrase
+- **Regulatory document citations** — confirm rule numbers, docket numbers, and effective dates from primary sources
+- **Dollar amounts in fines/settlements** — cross-check against at least 2 sources; official press releases are authoritative
+- **Legislative status** — bills, amendments, and proposals change rapidly; confirm current status before reporting
+- **Quotes from officials** — must be verbatim from a named source; mark as [paraphrased] if not direct
+- **Jurisdiction accuracy** — confirm which jurisdiction's law applies; do not conflate US federal, state, EU, UK, or Singapore rules
+- **Company names in enforcement** — verify exact legal entity names from official documents
+
+### Conflict resolution rule:
+If two sources give conflicting data (e.g., different fine amounts, different effective dates), **flag the conflict inline** using `[Unconfirmed — sources conflict]`. Always use the official primary document as the authoritative source.
+
+### Hallucination check:
+Before writing, explicitly confirm: are there any claims that came only from a single LLM-generated summary, a paraphrased article, or a source you did not directly fetch? If yes, either fetch the primary source to verify or drop the claim. Never carry unverified single-source legal claims into the final brief.
 
 ---
 
