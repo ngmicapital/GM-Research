@@ -41,6 +41,7 @@ const TAG_PATTERNS = {
   // Rabbit hole: header-category (new format: "History · Biography"), then further-card-pill (old format)
   'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
   'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
+  'trading-concept':  /\b(Wyckoff|Accumulation|Distribution|Markup|Markdown|Spring|Upthrust|Upwave|Creek|Composite Man|Phase [ABCDE]|Support|Resistance|Breakout|Retest|Volume|BTC|ETH|SOL)\b/gi,
 };
 
 const BRIEFING_FILENAMES = {
@@ -50,6 +51,7 @@ const BRIEFING_FILENAMES = {
   'biohacker-report': 'biohacker-report.html',
   'rabbit-hole':      'rabbit-hole.html',
   'praxis-brief':     'praxis-brief.html',
+  'trading-concept':  'trading-concept.html',
 };
 
 function extractTags(html, key) {
