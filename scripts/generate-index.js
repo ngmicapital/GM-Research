@@ -74,6 +74,43 @@ function extractBriefingMeta(filePath, key) {
       }
     }
 
+    // Strategy 1b: TL;DR with bullet list (<ul><li> inside .tldr)
+    // Used by older market-briefing templates that put the thesis in <li> rather than <p>.
+    // First <li> becomes the headline, second <li> becomes the preview.
+    if (!headline) {
+      const tldrBlockMatch = html.match(/class="tldr"[\s\S]*?<ul>([\s\S]*?)<\/ul>/);
+      if (tldrBlockMatch) {
+        const liRe = /<li[^>]*>([\s\S]*?)<\/li>/g;
+        const items = [];
+        let lm;
+        while ((lm = liRe.exec(tldrBlockMatch[1])) && items.length < 3) {
+          const t = stripHtml(lm[1]);
+          if (t.length > 10) items.push(t);
+        }
+        if (items.length >= 1) {
+          let h = items[0];
+          // Trim at em-dash subhead separator if it appears mid-sentence
+          const dashIdx = h.indexOf(' — ');
+          if (dashIdx > 25 && dashIdx < 90) h = h.slice(0, dashIdx);
+          // Trim at first sentence boundary if long
+          if (h.length > 90) {
+            const sentEnd = h.search(/\.\s+[A-Z]/);
+            if (sentEnd > 25 && sentEnd < 90) h = h.slice(0, sentEnd + 1);
+            else h = h.slice(0, h.lastIndexOf(' ', 87) || 87) + '...';
+          }
+          headline = h;
+        }
+        if (items.length >= 2) {
+          let p = items[1];
+          // Trim at em-dash subhead separator
+          const dashIdx2 = p.indexOf(' — ');
+          if (dashIdx2 > 25 && dashIdx2 < 120) p = p.slice(0, dashIdx2);
+          if (p.length > 180) p = p.slice(0, p.lastIndexOf(' ', 177) || 177) + '...';
+          preview = p;
+        }
+      }
+    }
+
     // Strategy 2: Legal brief — use first story title as headline, second as preview
     if (!headline && key === 'legal-brief') {
       const storyTitles = [];
