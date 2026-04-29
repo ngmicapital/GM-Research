@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Footprint Charts | April 30, 2026</title>
+<meta property="og:description" content="Alpha — Footprint Charts | April 30, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape a{color:var(--terminal-accent);border-bottom-color:rgba(190,242,100,0.4)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Footprint Charts</h1>
+  <div class="meta">
+    <span>Thursday · 30 April 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #8</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>A footprint chart is a candle with the autopsy attached — every price level inside the bar shows bid volume on the left and ask volume on the right, so you read who actually traded where, not just OHLC.</strong> Stacked imbalances (3+ adjacent levels with one side ≥3× the other diagonally) mark conviction zones; absorption (heavy aggressive volume that fails to move price) marks reversals; delta-vs-price divergence inside a single candle is the cleanest exhaustion signal in any chart type. In a range like BTC's $76K–$78K week, footprint is the only tool that tells you whether the boundary holders are real or about to fold.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">A candle's autopsy report · bid volume left, ask volume right, every tick</div>
+    </div>
+  </div>
+
+  <div class="skim">A footprint chart explodes a single candle into a vertical stack of price levels and prints the bid-side and ask-side volume at each level — giving you the full record of aggression inside the bar instead of just the four OHLC values.</div>
+
+  <p>Standard candles compress every trade in a 5-minute window into four numbers. Footprint refuses the compression. For each candle, every price the tape touched gets its own row, and that row carries two numbers: <strong>volume traded at the bid</strong> (aggressive sellers hitting passive buyers) on the left, and <strong>volume traded at the ask</strong> (aggressive buyers lifting passive sellers) on the right. The candle becomes a stacked grid — a fingerprint, hence the name.</p>
+
+  <p>This is the closest a charting product gets to watching the tape directly. Where Cumulative Volume Delta gives you one summary line for the whole bar, footprint shows you <em>where inside the bar</em> the delta came from — and that location is everything. A +500 delta candle whose buying happened at the high (chasing) reads completely differently from a +500 delta candle whose buying happened at the low (defending). Both look identical on a CVD strip; they look opposite on a footprint.</p>
+
+  <p>The format originated in the futures pits — Trevor Harnett's <em>Market Delta</em> coined the term "footprint" in the early 2000s — and has migrated wholesale into crypto via Bookmap, Exocharts, ATAS, Cignals, TradingLite, Quantower, and TradingView's native cluster type. Bookmap's framing for the crypto desk is blunt: footprint lets you <em>"watch algo activity, spoofing orders, aggressive market buying and selling, and price absorption and exhaustion, in real-time"</em>. That's the whole pitch.</p>
+
+  <p>Tony, in your Wyckoff vocabulary: footprint is where you confirm or invalidate <em>effort vs result</em> at the bar level. A spring with heavy bid-side volume that fails to mark down price is the textbook absorption read; a markup that runs out of ask-side prints two ticks before the high is the textbook exhaustion read. The footprint puts the receipts on the candle.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>BID VOLUME</b><span>Aggressive sellers — market sells eating passive bids (left side)</span></span>
+    <span class="pill-term"><b>ASK VOLUME</b><span>Aggressive buyers — market buys lifting passive asks (right side)</span></span>
+    <span class="pill-term"><b>DELTA</b><span>Ask − Bid at a level (or summed for the whole candle)</span></span>
+    <span class="pill-term"><b>POC</b><span>Point of Control — price level inside the candle with the most volume</span></span>
+    <span class="pill-term"><b>IMBALANCE</b><span>One side ≥3× the diagonal opposite — flagged automatically</span></span>
+    <span class="pill-term"><b>STACKED IMB</b><span>Three or more imbalances on the same side at adjacent levels</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    OHLC tells you what happened. Footprint tells you who did it. The two sides of a price level are not symmetric — one is aggressive, the other passive — and that asymmetry, repeated across levels, is the signal everyone else's chart is hiding from them.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Bid-vs-ask classification · the imbalance ratio · four chart variants</div>
+    </div>
+  </div>
+
+  <div class="skim">Each trade is tagged bid-side or ask-side by the price it crossed; the engine bins those tags by candle and price level; an imbalance flag fires when one side hits a configurable multiple (default 300%) of the diagonal opposite on the next level up or down.</div>
+
+  <p>The classification is mechanical. When a market order crosses the spread upward, it lifts an existing limit ask — that volume is logged as <strong>ask-side</strong> (a buyer was the aggressor). When a market order crosses downward, it hits an existing limit bid — that volume is logged as <strong>bid-side</strong> (a seller was the aggressor). Trades that occur exactly at mid-price during fast tape (the "trade-at-mid" edge case) are usually classified by tick rule: same direction as the previous classified print.</p>
+
+  <p>Once classified, every trade lands in a bucket defined by (candle, price level). At end of bar — or in real time, refreshing tick-by-tick — the engine writes the two numbers into the row, computes the delta for the row, and sums the deltas for the bar.</p>
+
+  <div class="formula">
+<b>Per-level delta:</b>
+delta(p, c) = ask_volume(p, c) − bid_volume(p, c)
+
+<b>Bar delta:</b>
+delta(c) = Σ delta(p, c)  for all p in candle c
+
+<b>Imbalance flag (Trader Dale / industry default):</b>
+ASK imbalance at level p when:
+   ask_volume(p) ≥ R × bid_volume(p − 1 tick)
+
+BID imbalance at level p when:
+   bid_volume(p) ≥ R × ask_volume(p + 1 tick)
+
+  where R = 3.0 (300%) by default, often raised to 4.0 for HF crypto
+
+<b>Stacked imbalance:</b>
+≥ 3 imbalances on the same side at consecutive price levels
+  → marked as a strong support (BID stack) or resistance (ASK stack) zone
+
+    <div class="note">Note the diagonal: an aggressive buyer at price p has to compare to the seller one tick lower (where the chase started). Comparing same-level bid vs ask is the most common rookie misread — same level just tells you total trading at a price, not who pressed the gas.</div>
+  </div>
+
+  <p>Crypto presents two structural complications futures don't have. First, <strong>aggregated venues</strong>: the tape on Binance perp is not the tape on Coinbase spot, and most retail platforms either pick one or aggregate poorly. Cignals and Hyblock aggregate cleanly; Exocharts publishes per-venue. Second, <strong>tick granularity</strong>: BTC at $77K trades in $0.10 ticks on Coinbase but $1 ticks on Binance perp — the same footprint candle will look completely different depending on which side you're reading.</p>
+
+  <p>Four flavours dominate. Pick the one that matches what you're trying to see:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Variant</th><th>What it shows</th><th>Best for</th></tr>
+    <tr><td>Bid × Ask</td><td>Two numbers per row, side by side</td><td>Reading aggression at every level — the default</td></tr>
+    <tr><td>Delta</td><td>Single number per row (ask − bid)</td><td>Spotting per-level pressure; cleaner visual</td></tr>
+    <tr><td>Volume Profile</td><td>Total volume per row, no bid/ask split</td><td>Finding POC and high-volume nodes inside the bar</td></tr>
+    <tr><td>Imbalance-only</td><td>Highlights only flagged imbalance levels</td><td>Range-trading; isolating stacked-imbalance walls</td></tr>
+  </table>
+  </div>
+
+  <p>Under the hood the data feed has to be unaggregated trade prints with bid/ask flags — i.e. an L1 trade tape with quote context, not a 1-minute OHLCV bar. That's why footprint is unreliable on TradingView's free crypto feed (no quote context) and reliable on Bookmap/Exocharts (direct exchange WebSocket). [Sources differ] on whether Binance's public WebSocket reports the maker side accurately for every print — most desks treat it as ~95% reliable and worth using anyway.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — anatomy of a footprint candle + an absorption + stacked-imbalance setup</div>
+    </div>
+  </div>
+
+  <div class="skim">First: a single annotated footprint candle showing bid/ask columns, POC, delta, and an imbalance flag. Second: three sequential candles forming the textbook absorption-then-reversal pattern off a stacked-bid wall.</div>
+
+  <!-- SVG 1 — Anatomy of a footprint candle -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Anatomy of a footprint candle showing bid and ask volume at each price level, point of control, delta, and an imbalance flag">
+
+      <defs>
+        <linearGradient id="bidFill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ef4444" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="#ef4444" stop-opacity="0.12"/>
+        </linearGradient>
+        <linearGradient id="askFill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#22c55e" stop-opacity="0.12"/>
+          <stop offset="1" stop-color="#22c55e" stop-opacity="0.35"/>
+        </linearGradient>
+      </defs>
+
+      <!-- background -->
+      <rect x="0" y="0" width="800" height="460" fill="#faf8f5"/>
+
+      <!-- title -->
+      <text x="400" y="28" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#3f6212" letter-spacing="2">ANATOMY · ONE 5-MIN FOOTPRINT CANDLE · BTC · 77,180 → 77,260</text>
+
+      <!-- price axis labels -->
+      <g font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">
+        <text x="60" y="80">77,260</text>
+        <text x="60" y="118">77,250</text>
+        <text x="60" y="156">77,240</text>
+        <text x="60" y="194">77,230</text>
+        <text x="60" y="232">77,220</text>
+        <text x="60" y="270">77,210</text>
+        <text x="60" y="308">77,200</text>
+        <text x="60" y="346">77,190</text>
+        <text x="60" y="384">77,180</text>
+      </g>
+
+      <!-- column headers -->
+      <text x="240" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#ef4444" letter-spacing="1.5">BID VOL</text>
+      <text x="370" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#22c55e" letter-spacing="1.5">ASK VOL</text>
+      <text x="495" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1c1917" letter-spacing="1.5">Δ DELTA</text>
+
+      <!-- candle wick + body -->
+      <line x1="700" y1="80" x2="700" y2="384" stroke="#1c1917" stroke-width="1.5"/>
+      <rect x="690" y="118" width="20" height="228" fill="#22c55e" stroke="#15803d" stroke-width="1"/>
+
+      <!-- rows: each row 38px tall, centred on price label -->
+      <!-- row template: bid bg | ask bg | values | delta | flag -->
+      <g font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="600">
+
+        <!-- 77,260 (high, exhaustion) -->
+        <rect x="180" y="68" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="68" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="84" text-anchor="middle" fill="#1c1917">142</text>
+        <text x="370" y="84" text-anchor="middle" fill="#1c1917">38</text>
+        <text x="495" y="84" text-anchor="middle" fill="#ef4444">−104</text>
+
+        <!-- 77,250 -->
+        <rect x="180" y="106" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="106" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="122" text-anchor="middle" fill="#1c1917">88</text>
+        <text x="370" y="122" text-anchor="middle" fill="#1c1917">94</text>
+        <text x="495" y="122" text-anchor="middle" fill="#22c55e">+6</text>
+
+        <!-- 77,240 -->
+        <rect x="180" y="144" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="144" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="160" text-anchor="middle" fill="#1c1917">61</text>
+        <text x="370" y="160" text-anchor="middle" fill="#1c1917">228</text>
+        <text x="495" y="160" text-anchor="middle" fill="#22c55e">+167</text>
+        <!-- imbalance flag -->
+        <rect x="555" y="148" width="80" height="18" fill="#a3e635" rx="2"/>
+        <text x="595" y="161" text-anchor="middle" font-size="10" fill="#3f6212" letter-spacing="1">ASK IMB</text>
+
+        <!-- 77,230 -->
+        <rect x="180" y="182" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="182" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="198" text-anchor="middle" fill="#1c1917">52</text>
+        <text x="370" y="198" text-anchor="middle" fill="#1c1917">196</text>
+        <text x="495" y="198" text-anchor="middle" fill="#22c55e">+144</text>
+        <rect x="555" y="186" width="80" height="18" fill="#a3e635" rx="2"/>
+        <text x="595" y="199" text-anchor="middle" font-size="10" fill="#3f6212" letter-spacing="1">ASK IMB</text>
+
+        <!-- 77,220 — POC -->
+        <rect x="180" y="220" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="220" width="120" height="24" fill="url(#askFill)"/>
+        <rect x="178" y="218" width="254" height="28" fill="none" stroke="#fbbf24" stroke-width="2.5" rx="2"/>
+        <text x="240" y="236" text-anchor="middle" fill="#1c1917" font-weight="700">187</text>
+        <text x="370" y="236" text-anchor="middle" fill="#1c1917" font-weight="700">311</text>
+        <text x="495" y="236" text-anchor="middle" fill="#22c55e" font-weight="700">+124</text>
+        <text x="660" y="236" font-size="10.5" fill="#78350f" font-weight="700" letter-spacing="1">◀ POC</text>
+
+        <!-- 77,210 -->
+        <rect x="180" y="258" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="258" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="274" text-anchor="middle" fill="#1c1917">96</text>
+        <text x="370" y="274" text-anchor="middle" fill="#1c1917">158</text>
+        <text x="495" y="274" text-anchor="middle" fill="#22c55e">+62</text>
+
+        <!-- 77,200 -->
+        <rect x="180" y="296" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="296" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="312" text-anchor="middle" fill="#1c1917">73</text>
+        <text x="370" y="312" text-anchor="middle" fill="#1c1917">82</text>
+        <text x="495" y="312" text-anchor="middle" fill="#22c55e">+9</text>
+
+        <!-- 77,190 -->
+        <rect x="180" y="334" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="334" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="350" text-anchor="middle" fill="#1c1917">54</text>
+        <text x="370" y="350" text-anchor="middle" fill="#1c1917">41</text>
+        <text x="495" y="350" text-anchor="middle" fill="#ef4444">−13</text>
+
+        <!-- 77,180 (open / low) -->
+        <rect x="180" y="372" width="120" height="24" fill="url(#bidFill)"/>
+        <rect x="310" y="372" width="120" height="24" fill="url(#askFill)"/>
+        <text x="240" y="388" text-anchor="middle" fill="#1c1917">35</text>
+        <text x="370" y="388" text-anchor="middle" fill="#1c1917">29</text>
+        <text x="495" y="388" text-anchor="middle" fill="#ef4444">−6</text>
+      </g>
+
+      <!-- column dividers -->
+      <line x1="180" y1="60" x2="180" y2="400" stroke="#e7e5e4"/>
+      <line x1="305" y1="60" x2="305" y2="400" stroke="#e7e5e4"/>
+      <line x1="430" y1="60" x2="430" y2="400" stroke="#e7e5e4"/>
+      <line x1="555" y1="60" x2="555" y2="400" stroke="#e7e5e4"/>
+
+      <!-- bottom summary box -->
+      <rect x="60" y="416" width="680" height="36" fill="#f3f0ea" stroke="#e7e5e4" rx="3"/>
+      <text x="78" y="438" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1c1917" letter-spacing="0.5">BAR Δ +389</text>
+      <text x="200" y="438" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">VOL 1,989</text>
+      <text x="290" y="438" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">POC 77,220</text>
+      <text x="400" y="438" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">2× ASK IMB STACKED</text>
+      <text x="570" y="438" font-family="JetBrains Mono, monospace" font-size="11" fill="#ef4444">EXHAUSTION AT HIGH</text>
+    </svg>
+    <div class="svg-caption">Anatomy of a footprint candle. Bid volume left, ask volume right, delta column, POC highlighted in amber, ask-imbalance flags fired at 77,230 / 77,240 (ask ≥ 3× bid one tick lower). Bar closed strongly green with +389 delta — but the top tick already shows the exhaustion fingerprint: heavy bid-side prints, sellers stepping in to fade the buy chase.</div>
+  </div>
+
+  <!-- SVG 2 — Three-candle absorption / stacked-imbalance reversal -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three-candle sequence showing absorption at a range low followed by stacked bid imbalance reversal">
+
+      <!-- background -->
+      <rect x="0" y="0" width="800" height="440" fill="#faf8f5"/>
+
+      <text x="400" y="28" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#3f6212" letter-spacing="2">SEQUENCE · ABSORPTION → STACKED-IMB REVERSAL · BTC RANGE LOW</text>
+
+      <!-- price grid -->
+      <g font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">
+        <text x="44" y="82">76,300</text>
+        <text x="44" y="138">76,250</text>
+        <text x="44" y="194">76,200</text>
+        <text x="44" y="250">76,150</text>
+        <text x="44" y="306">76,100</text>
+        <text x="44" y="362">76,050</text>
+      </g>
+      <g stroke="#e7e5e4" stroke-dasharray="2 4">
+        <line x1="100" y1="78" x2="780" y2="78"/>
+        <line x1="100" y1="134" x2="780" y2="134"/>
+        <line x1="100" y1="190" x2="780" y2="190"/>
+        <line x1="100" y1="246" x2="780" y2="246"/>
+        <line x1="100" y1="302" x2="780" y2="302"/>
+        <line x1="100" y1="358" x2="780" y2="358"/>
+      </g>
+
+      <!-- range low support line -->
+      <line x1="100" y1="302" x2="780" y2="302" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="660" y="296" font-family="JetBrains Mono, monospace" font-size="10" fill="#ef4444" font-weight="700" letter-spacing="1">RANGE LOW 76,100</text>
+
+      <!-- ── Candle 1 — flush down, heavy red, bid absorption at low ── -->
+      <g transform="translate(140,0)">
+        <text x="60" y="52" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1c1917" letter-spacing="1">CANDLE 1 · FLUSH</text>
+        <line x1="60" y1="100" x2="60" y2="320" stroke="#1c1917" stroke-width="1.2"/>
+        <rect x="44" y="120" width="32" height="180" fill="#ef4444" stroke="#991b1b"/>
+        <!-- footprint cells: heavy bid-side at the low -->
+        <g font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">
+          <text x="44" y="130" text-anchor="middle" fill="#ef4444">88</text><text x="78" y="130" text-anchor="middle" fill="#22c55e">22</text>
+          <text x="44" y="170" text-anchor="middle" fill="#ef4444">141</text><text x="78" y="170" text-anchor="middle" fill="#22c55e">34</text>
+          <text x="44" y="210" text-anchor="middle" fill="#ef4444">187</text><text x="78" y="210" text-anchor="middle" fill="#22c55e">41</text>
+          <text x="44" y="250" text-anchor="middle" fill="#ef4444">244</text><text x="78" y="250" text-anchor="middle" fill="#22c55e">52</text>
+          <!-- absorption row -->
+          <rect x="20" y="284" width="80" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5" rx="2"/>
+          <text x="44" y="299" text-anchor="middle" fill="#ef4444" font-weight="700">412</text>
+          <text x="78" y="299" text-anchor="middle" fill="#22c55e" font-weight="700">395</text>
+        </g>
+        <text x="60" y="340" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#78350f" font-weight="700">ABSORPTION</text>
+        <text x="60" y="354" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">heavy bid + ask both</text>
+        <text x="60" y="367" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">price stops, no new low</text>
+      </g>
+
+      <!-- ── Candle 2 — small inside bar, low delta, base ── -->
+      <g transform="translate(340,0)">
+        <text x="60" y="52" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1c1917" letter-spacing="1">CANDLE 2 · BASE</text>
+        <line x1="60" y1="240" x2="60" y2="290" stroke="#1c1917" stroke-width="1.2"/>
+        <rect x="44" y="252" width="32" height="34" fill="#a8a29e" stroke="#57534e"/>
+        <g font-family="JetBrains Mono, monospace" font-size="9.5">
+          <text x="44" y="264" text-anchor="middle" fill="#ef4444">61</text><text x="78" y="264" text-anchor="middle" fill="#22c55e">68</text>
+          <text x="44" y="282" text-anchor="middle" fill="#ef4444">54</text><text x="78" y="282" text-anchor="middle" fill="#22c55e">59</text>
+        </g>
+        <text x="60" y="330" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#1c1917" font-weight="700">EQUILIBRIUM</text>
+        <text x="60" y="344" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">delta ≈ 0</text>
+        <text x="60" y="357" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#44403c">sellers exhausted</text>
+      </g>
+
+      <!-- ── Candle 3 — markup with stacked ask imbalance ── -->
+      <g transform="translate(540,0)">
+        <text x="60" y="52" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1c1917" letter-spacing="1">CANDLE 3 · MARKUP</text>
+        <line x1="60" y1="120" x2="60" y2="270" stroke="#1c1917" stroke-width="1.2"/>
+        <rect x="44" y="138" width="32" height="120" fill="#22c55e" stroke="#15803d"/>
+        <g font-family="JetBrains Mono, monospace" font-size="9.5">
+          <text x="44" y="148" text-anchor="middle" fill="#ef4444">29</text><text x="78" y="148" text-anchor="middle" fill="#22c55e">98</text>
+          <!-- stacked imbalances start -->
+          <rect x="20" y="160" width="80" height="20" fill="#a3e635" fill-opacity="0.35" stroke="#65a30d" stroke-width="1" rx="2"/>
+          <text x="44" y="174" text-anchor="middle" fill="#ef4444" font-weight="600">42</text>
+          <text x="78" y="174" text-anchor="middle" fill="#22c55e" font-weight="700">189</text>
+          <rect x="20" y="184" width="80" height="20" fill="#a3e635" fill-opacity="0.35" stroke="#65a30d" stroke-width="1" rx="2"/>
+          <text x="44" y="198" text-anchor="middle" fill="#ef4444" font-weight="600">38</text>
+          <text x="78" y="198" text-anchor="middle" fill="#22c55e" font-weight="700">231</text>
+          <rect x="20" y="208" width="80" height="20" fill="#a3e635" fill-opacity="0.35" stroke="#65a30d" stroke-width="1" rx="2"/>
+          <text x="44" y="222" text-anchor="middle" fill="#ef4444" font-weight="600">51</text>
+          <text x="78" y="222" text-anchor="middle" fill="#22c55e" font-weight="700">278</text>
+          <text x="44" y="246" text-anchor="middle" fill="#ef4444">66</text><text x="78" y="246" text-anchor="middle" fill="#22c55e">142</text>
+        </g>
+        <text x="60" y="330" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#3f6212" font-weight="700">3× STACKED ASK IMB</text>
+        <text x="60" y="344" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#3f6212">conviction breakout</text>
+        <text x="60" y="357" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#3f6212">entry trigger</text>
+      </g>
+
+      <!-- entry / stop annotations on right -->
+      <g font-family="JetBrains Mono, monospace" font-size="10">
+        <line x1="100" y1="246" x2="780" y2="246" stroke="#3f6212" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="694" y="242" fill="#3f6212" font-weight="700">ENTRY 76,160</text>
+        <text x="694" y="316" fill="#ef4444" font-weight="700">STOP 76,080</text>
+      </g>
+
+      <text x="400" y="425" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-style="italic" fill="#78716c">Three-bar reversal sequence: absorption candle (heavy two-sided volume, no new low), equilibrium pause, conviction markup with 3-row stacked ask imbalance. Stop sits below the absorption low.</text>
+    </svg>
+    <div class="svg-caption">The textbook range-low reversal. Bar 1's absorption row is the fingerprint everyone misses on a normal candle chart — it just looks like a long red bar that closed off the low.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">What to actually do with the bid/ask split during a session</div>
+    </div>
+  </div>
+
+  <div class="skim">Trade <strong>stacked imbalances</strong> as conviction zones, trade <strong>absorption</strong> as reversal evidence at structural levels, treat <strong>per-level delta divergence</strong> as the cleanest single-bar exhaustion signal, and ignore everything else as noise.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Stacked imbalances at structural levels = entries, not signals on their own</h4>
+        <p>Three or more imbalances stacked on the same side become a real S/R zone only when they print at a level you'd already drawn — range high, range low, prior POC, HTF Wyckoff event. Inside the noise zone of a range, stacked imbalances are just an algorithm pinging through thin liquidity. Combine them with structure or skip the trade.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Absorption at the extreme is the strongest reversal evidence on a chart</h4>
+        <p>If the candle that prints the new range low has both heavy bid-side (sellers) <em>and</em> heavy ask-side (passive buyers stepping in) volume, and price refuses to extend, that's absorption. Mind Math Money's framing: <em>"Large passive buyers are sitting at that level with size. They are accumulating without pushing price up."</em> Wait for the equilibrium bar then enter on the conviction-markup candle, stop just below the absorption low.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Delta-vs-price divergence inside one bar is the cleanest exhaustion read</h4>
+        <p>Bar makes a new high, but the top one or two ticks show negative per-level delta (heavy bid prints — sellers fading the chase). This is per-bar effort-vs-result: aggressive buyers pressed and got no new tick. Fade the next bar's open if HTF supports a turn. Works on both extremes.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>POC migration tells you who's winning the bar</h4>
+        <p>The Point of Control (highest-volume row inside the candle) usually sits near the open in continuation moves and migrates toward the close in conviction moves. A candle whose POC is at the high with positive delta is healthy bullish; a candle whose POC is at the low with positive delta is a chase about to fail. Read POC location before reading the colour of the bar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — the range-low fade</h5>
+    <table>
+      <tr><td>SETUP</td><td>BTC trades 76,140 within a multi-day range whose low is 76,100. ETF outflows dominate the wire, funding is negative, but realised vol is contracting.</td></tr>
+      <tr><td>FOOTPRINT TRIGGER</td><td>5-min bar prints 76,098 (one tick under the level). Bid volume at the low row is 412, ask volume 395, both extreme outliers vs the rest of the candle. No follow-through bar.</td></tr>
+      <tr><td>CONFIRMATION</td><td>Next bar prints inside, bar delta ≈ 0, range collapses. Third bar opens, prints 3× stacked ask imbalance from 76,170 to 76,200.</td></tr>
+      <tr><td>ENTRY</td><td>76,160 on the conviction bar (long).</td></tr>
+      <tr><td>STOP</td><td>76,070 (under the absorption low + buffer).</td></tr>
+      <tr><td>R DEFINITION</td><td>~$90 risk per coin. Target range mid 77,000 = ~$840 = ~9R if it pays in full.</td></tr>
+      <tr><td>FIRST PARTIAL</td><td>76,500 (4–5R) — VPOC of prior session.</td></tr>
+      <tr><td>WHAT KILLS IT</td><td>Two consecutive bars closing under 76,070 with positive bid-side delta. Cut and walk.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note">
+    <b>Timeframe fit:</b> 1m–5m for execution and trigger reads. 15m–1h to align with intraday structure. Higher than 1h dilutes the bid/ask asymmetry — by then the candle is too coarse and CVD is the better summary.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC trapped in $76K–$78K · footprint is the only tool that calls the breakout</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is sitting at 77,160 after a week of mean-reverting tape between $76K and $78.5K. ETF outflows on FBTC and GBTC are the structural seller, oil at $100 is the macro overhang, the Fed printed a four-way dissent yesterday — and the chart is doing nothing. This is exactly the regime footprint earns its subscription.</div>
+
+  <div class="tape">
+    <div class="tape-label">Live Tape · 30 Apr 2026 · BTC/USDT.P · Binance</div>
+    <h4>Range trade — read the boundary, not the body</h4>
+
+    <p>BTC is in its eighth straight day inside <strong>$76,000 – $78,500</strong>. CME futures basis has flattened, perp funding flipped slightly negative on Binance and Bybit, OI is unchanged on the week. The candles look indecisive; the order flow is not. This is the regime where footprint has its largest edge over normal candles: when a market is range-bound, the only question worth asking is <em>which boundary is being defended and which is being abandoned</em>, and only the bid/ask split inside the candle answers that.</p>
+
+    <div class="nums">
+    <table>
+      <tr><td>BTC last (00:30 UTC)</td><td>77,160 USD <span style="opacity:0.7">· −0.5% 1D</span></td></tr>
+      <tr><td>Range high (last 8 sessions)</td><td>78,520</td></tr>
+      <tr><td>Range low (last 8 sessions)</td><td>76,080</td></tr>
+      <tr><td>Range mid (mean-revert magnet)</td><td>77,300</td></tr>
+      <tr><td>BTC funding (8h, perps avg)</td><td>negative · ~−0.005%</td></tr>
+      <tr><td>BTC ETF flows (1d)</td><td>−$167M (FBTC −$150M lead) <span style="opacity:0.7">[EST]</span></td></tr>
+      <tr><td>WTI crude (macro overhang)</td><td>~$100 · 8th up day · Hormuz blockade</td></tr>
+      <tr><td>Fed (yesterday)</td><td>HOLD · 4-way dissent · Powell stayed</td></tr>
+    </table>
+    </div>
+
+    <p><strong>What to actually watch on footprint today (Sydney session into Asia open):</strong> at the <em>76,080 retest</em>, look for the absorption fingerprint from the diagram — both-sided heavy volume in the lowest row, no extension bar, then a stacked ask imbalance in the recovery candle. That's the long. At the <em>78,500 retest</em>, the inverse: heavy two-sided volume in the highest row, no extension, then stacked bid imbalance — that's the short. <strong>Inside the range</strong> (76,500–78,000), ignore footprint; you'll just churn fees on noise prints.</p>
+
+    <p>One macro overlay that matters: with WTI sustaining above $100 and the Fed boxed, any clean break of either range boundary is more likely to extend than retrace, because forced flow gets turned on. That makes the footprint trigger a higher-conviction one than usual — when the boundary defenders fold, there's no second wave of liquidity behind them.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=15&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Range tape kills the candle reader and rewards the footprint reader. Your job today is to do nothing inside 76.5k–78k, then read the boundary footprint with discipline. Cross-ref this morning's <a href="market-briefing.html">Morning Edge</a> — the Hormuz/oil thesis is the macro why; footprint is the microstructure how.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Effort vs result, cross-era · classics + working desks</div>
+    </div>
+  </div>
+
+  <div class="skim">A century-old Wyckoff principle and a current orderflow desk both arrive at the same conclusion: aggression that fails to move price is the strongest evidence the move is over.</div>
+
+  <div class="quote">
+    <p>"When effort and result are not in harmony, expect a change of trend."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · The Law of Effort vs Result · ca. 1931 · <a href="https://tradingwyckoff.com/en/effort-vs-result/">tradingwyckoff.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Volume footprint charts reveal buying and selling pressure at each price level within a candle."</p>
+    <div class="attr"><b>Mind Math Money</b> · Volume Footprint Ultimate Guide · 2025 · <a href="https://www.mindmathmoney.com/articles/volume-footprint-charts-the-ultimate-guide-to-reading-buying-and-selling-volume-in-2025">mindmathmoney.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Stacked Imbalances are three or more imbalances at top of each other — they represent strong Support and Resistance zones."</p>
+    <div class="attr"><b>Trader Dale</b> · Order Flow Day Trading Strategy · 2024 · <a href="https://www.trader-dale.com/order-flow-day-trading-strategy-stacked-imbalances/">trader-dale.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Watch algo activity, spoofing orders, aggressive market buying and selling, and price absorption and exhaustion, in real-time."</p>
+    <div class="attr"><b>Bookmap (crypto desk)</b> · Order Flow product page · 2026 · <a href="https://bookmap.com/en/crypto">bookmap.com/crypto</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where footprint readers actually lose money</div>
+    </div>
+  </div>
+
+  <div class="skim">Single imbalances are noise. Same-level bid-vs-ask comparison is the wrong axis. And the entire concept misfires on illiquid retail platforms with no real bid/ask classification.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Trading single imbalances as signals</h5>
+      <p>One row hitting the 3× ratio means almost nothing in crypto, where HFT can spoof a single level in 50ms. Wait for stacks (≥3 adjacent same-side imbalances) <strong>and</strong> a structural level. Single-imbalance trades are a 50/50 with extra steps.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Comparing same-level bid-vs-ask instead of diagonal</h5>
+      <p>The imbalance ratio is <strong>diagonal</strong> — ask at price p vs bid at price p−1tick. Aggressive buyers chase upward; the comparison has to track that. Same-level only tells you total trading at the price, which is a different question.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Using TradingView's free crypto footprint without verifying the data feed</h5>
+      <p>TradingView's native cluster works on futures (CME, Eurex) where there's a centralised tape, and on a few crypto venues with proper L1 quote feeds. Free tier on most spot crypto pairs is unreliable — the bid/ask classification is a tick-rule approximation, not a real maker/taker split. If your platform doesn't say <em>"trade-side classified"</em> in its docs, treat the numbers as advisory.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Worshipping bar delta and ignoring per-level location</h5>
+      <p>+500 delta at the high (chase) and +500 delta at the low (defence) are opposite trades. CVD averages them; footprint distinguishes them. If you're reading the delta number without checking <em>where in the bar</em> it came from, you've thrown away most of the information.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The honest "overhyped" callout — footprint sells better than it works on a chop day</h5>
+      <p>On low-volatility chop tape (~70% of crypto sessions outside London/NY overlap), footprint generates more false stacked-imbalance signals than real ones. The genuine edge is concentrated in <em>session opens, range boundaries, and post-news minutes</em>. The rest of the day, watching footprint will hurt you more than help. The platforms selling 24/7 footprint subscriptions don't advertise that.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Curated · only links actually fetched</div>
+    </div>
+  </div>
+
+  <div class="skim">One canonical guide, one platform reference, one Wyckoff bridge, one stacked-imbalance deep-dive, one absorption-and-exhaustion explainer.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.mindmathmoney.com/articles/volume-footprint-charts-the-ultimate-guide-to-reading-buying-and-selling-volume-in-2025">Volume Footprint Charts: The Ultimate Guide</a>
+        <span>Mind Math Money — the cleanest single explainer of bid/ask, delta, POC, absorption, and exhaustion. Read first if footprint is new.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/order-flow-trading-with-footprint-charts/">Order Flow Trading with Footprint Charts: Complete Guide 2026</a>
+        <span>LiteFinance — broad coverage of footprint variants and how delta divergences signal exhaustion. Worth skimming for the divergence taxonomy.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Strategy</div>
+      <div class="fr-body">
+        <a href="https://www.trader-dale.com/order-flow-day-trading-strategy-stacked-imbalances/">Order Flow Day Trading Strategy — Stacked Imbalances</a>
+        <span>Trader Dale — the canonical write-up of the stacked-imbalance setup, with the 300% default ratio and entry/stop logic. Mechanical and useful.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Wyckoff</div>
+      <div class="fr-body">
+        <a href="https://tradingwyckoff.com/en/effort-vs-result/">The Law of Effort vs Result</a>
+        <span>Rubén Villahermosa — bridges the Wyckoff effort-vs-result principle to volume/price reads. Useful framing for why absorption signals work.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Platform</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/en/crypto">Bookmap — Order Flow & Footprint for Crypto</a>
+        <span>Bookmap product reference; their crypto desk page is the cleanest summary of what live footprint plus heatmap looks like in real-time.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://www.tradingview.com/support/solutions/43000726164-volume-footprint-charts-a-complete-guide/">Volume Footprint Charts: A Complete Guide</a>
+        <span>TradingView's own documentation — useful if you're using TV's native cluster type and need to know exactly what it computes.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.mindmathmoney.com/articles/volume-footprint-charts-the-ultimate-guide-to-reading-buying-and-selling-volume-in-2025">Mind Math Money</a>
+    <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/order-flow-trading-with-footprint-charts/">LiteFinance</a>
+    <a href="https://www.trader-dale.com/order-flow-day-trading-strategy-stacked-imbalances/">Trader Dale</a>
+    <a href="https://tradingwyckoff.com/en/effort-vs-result/">Trading Wyckoff</a>
+    <a href="https://bookmap.com/en/crypto">Bookmap</a>
+    <a href="https://www.tradingview.com/support/solutions/43000726164-volume-footprint-charts-a-complete-guide/">TradingView Docs</a>
+    <a href="https://ninjatrader.com/futures/blogs/ninjatrader-order-flow/">NinjaTrader</a>
+    <a href="https://optimusfutures.com/blog/footprint-charts/">Optimus Futures</a>
+    <a href="https://quantower.medium.com/imbalance-on-footprint-chart-a0454368c909">Quantower</a>
+    <a href="https://gocharting.com/docs/charting/chart-types/cluster-aka-footprint-chart">GoCharting</a>
+  </div>
+  <div>Alpha · Issue #8 · 30 April 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /outer -->
+</body>
+</html>
