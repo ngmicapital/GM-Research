@@ -179,11 +179,24 @@ function extractBriefingMeta(filePath, key) {
     // Warn when the headline looks like it was lifted from a section header
     // rather than actual content (a sign that extraction failed).
     const GENERIC_SECTION_NAMES = [
+      // Generic / cross-briefing
       'key ideas', 'ideas & insights', 'ideas and insights',
       'strategy & practice', 'strategy and practice',
       'tools & resources', 'tools and resources',
       'on the horizon', 'watchlist', 'overview', 'summary',
       'top stories', 'highlights', 'the rundown',
+      // Morning Edge (market-briefing) section names
+      'global macro snapshot', 'equities & sector rotation', 'equities and sector rotation',
+      'bitcoin & crypto markets', 'bitcoin and crypto markets',
+      'regulatory & legal radar', 'regulatory and legal radar',
+      'ai & semiconductor watch', 'ai and semiconductor watch',
+      'prediction market intelligence', 'geopolitical calendar', "today's watchlist",
+      // AI briefing section names
+      'model releases', 'research papers', 'ai x crypto', 'ai and crypto',
+      // Legal brief section names
+      'court decisions', 'regulatory actions', 'enforcement actions', 'legislative tracker',
+      // Biohacker section names
+      'this week in longevity', 'training protocols', 'protocol of the week',
     ];
     if (headline && GENERIC_SECTION_NAMES.some(s => headline.toLowerCase().startsWith(s))) {
       console.warn(`⚠  [validator] ${key} @ ${filePath.split(/[\\/]/).slice(-2).join('/')}: headline looks like a section header ("${headline}"). Add a tldr-text element or card-title for better extraction.`);
