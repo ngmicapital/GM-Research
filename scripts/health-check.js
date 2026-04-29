@@ -19,7 +19,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 
 const ROOT            = path.join(__dirname, '..');
 const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
@@ -386,11 +386,22 @@ if (missingDescCount === 0) {
 
 // ── 4. Generate scripts run successfully ──────────────────────────────────────
 console.log('Running generate-index.js...');
-try {
-  execSync('node scripts/generate-index.js', { cwd: ROOT, stdio: 'pipe' });
-  pass('generate-index.js ran successfully');
-} catch (e) {
-  error(`generate-index.js failed: ${e.stderr ? e.stderr.toString() : e.message}`);
+{
+  // Use spawnSync so stderr is always accessible (execSync only surfaces stderr on non-zero exit)
+  const indexResult = spawnSync('node', ['scripts/generate-index.js'], { cwd: ROOT, encoding: 'utf8' });
+  const indexStderr = indexResult.stderr || '';
+  if (indexResult.status !== 0) {
+    error(`generate-index.js failed: ${indexStderr || (indexResult.error && indexResult.error.message) || 'unknown error'}`);
+  } else {
+    pass('generate-index.js ran successfully');
+  }
+  // Parse [validator] warnings — generate-index.js emits these for generic/fallback headlines
+  // e.g. "⚠  [validator] market-briefing @ briefings/2026-04-26/market-briefing.html: headline looks like a section header"
+  const validatorRe = /\[validator\]\s+(\S+)\s+@\s+([^:]+):\s+(.+)/g;
+  let vm;
+  while ((vm = validatorRe.exec(indexStderr))) {
+    needsAI({ type: 'index-headline-quality', key: vm[1], file: vm[2].trim(), message: vm[3].trim() });
+  }
 }
 
 console.log('Running generate-visualizations.js...');
