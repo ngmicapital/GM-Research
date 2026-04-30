@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Delta Divergence | May 1, 2026</title>
+<meta property="og:description" content="Alpha — Delta Divergence | May 1, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.header h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,5vw,3.4rem);line-height:1.1;color:var(--ink);margin-bottom:14px}
+.header h1 em{color:var(--accent-ink);font-style:italic}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.meta-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg-2);color:var(--muted);border:1px solid var(--rule)}
+.meta-pill.issue{background:var(--accent-dim);color:var(--accent-ink);border-color:var(--accent)}
+.meta-pill.time{background:var(--warn-dim);color:var(--warn-ink);border-color:var(--warn)}
+
+/* ── TOC (collapsed by default) ───────────────────────────────── */
+aside#toc{position:sticky;top:24px;align-self:flex-start;width:40px;min-width:40px;transition:width .2s ease;overflow:hidden;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:0}
+aside#toc.toc-open{width:188px;min-width:188px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;font-size:16px;color:var(--muted);flex-shrink:0;border:none;background:none;padding:0}
+.toc-body{display:none;flex-direction:column;gap:2px;padding:6px 10px 12px}
+aside#toc.toc-open .toc-body{display:flex}
+.toc-body a{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:none;padding:3px 4px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.toc-body a:hover{color:var(--accent-ink);background:var(--accent-dim)}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--rule);padding:4px 4px 2px;display:block}
+
+/* ── Main column ──────────────────────────────────────────────── */
+.main{flex:1;min-width:0}
+
+/* ── TL;DR ────────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border:1px solid var(--accent);border-radius:12px;padding:20px 24px;margin-bottom:32px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:8px}
+.tldr-text{color:var(--ink-2);font-size:15px;line-height:1.75}
+
+/* ── Sections ─────────────────────────────────────────────────── */
+section{margin-bottom:44px}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--rule)}
+.section-label span{flex-shrink:0}
+h2{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--ink);margin-bottom:6px;line-height:1.2}
+.skim{background:var(--ink);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;border-radius:6px;margin-bottom:18px;line-height:1.5}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink)}
+p:last-child{margin-bottom:0}
+ul,ol{padding-left:1.4em;margin-bottom:14px;color:var(--ink-2)}
+li{margin-bottom:6px}
+
+/* ── Glossary pills ───────────────────────────────────────────── */
+.glossary{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+.gterm{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.gpill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 10px;background:var(--bg-2);border:1px solid var(--rule);border-radius:20px;color:var(--ink);flex-shrink:0}
+.gdef{color:var(--muted);font-size:13px}
+
+/* ── Remember callout ─────────────────────────────────────────── */
+.remember{border-left:3px solid var(--accent);background:var(--accent-dim);padding:12px 16px;border-radius:0 8px 8px 0;margin-top:16px;font-size:14px;color:var(--ink-2)}
+.remember strong{color:var(--accent-ink)}
+
+/* ── Formula ──────────────────────────────────────────────────── */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:8px;padding:14px 18px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--warn-ink);line-height:1.8}
+.formula .comment{color:#a16207;font-style:italic;font-size:11px}
+
+/* ── Comparison table ─────────────────────────────────────────── */
+.cmp-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.cmp-table th{background:var(--bg-2);padding:8px 12px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--rule)}
+.cmp-table td{padding:9px 12px;border-bottom:1px solid var(--rule);color:var(--ink-2);vertical-align:top}
+.cmp-table tr:last-child td{border-bottom:none}
+.pos-text{color:var(--pos);font-weight:600}
+.neg-text{color:var(--neg);font-weight:600}
+
+/* ── SVG container ────────────────────────────────────────────── */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:16px;margin:16px 0;overflow:hidden}
+.svg-caption{text-align:center;font-size:12px;color:var(--muted);font-style:italic;margin-top:10px}
+
+/* ── Practice cards ───────────────────────────────────────────── */
+.practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.pcard{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:18px 16px;position:relative}
+.pcard .pnum{font-family:'DM Serif Display',serif;font-style:italic;font-size:2.8rem;color:var(--accent);line-height:1;margin-bottom:8px;display:block}
+.pcard h4{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.pcard p{font-size:13px;color:var(--ink-2);margin:0}
+
+.tf-note{background:var(--bg-2);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:16px}
+
+/* ── Worked example ───────────────────────────────────────────── */
+.worked{background:var(--card);border:2px solid var(--accent);border-radius:12px;padding:20px;margin:18px 0}
+.worked h4{font-size:14px;font-weight:700;color:var(--accent-ink);margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.worked table{width:100%;font-size:13px;border-collapse:collapse}
+.worked td{padding:7px 10px;border-bottom:1px solid var(--rule)}
+.worked tr:last-child td{border-bottom:none}
+.worked td:first-child{font-weight:600;color:var(--ink);width:110px}
+
+/* ── Live Tape (dark terminal card) ───────────────────────────── */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:14px;padding:24px;margin:16px 0}
+.tape p{color:var(--terminal-ink);margin-bottom:12px}
+.tape strong,.tape em,.tape b{color:var(--terminal-accent)}
+.tape h3{font-family:'DM Serif Display',serif;color:var(--terminal-accent);font-size:1.3rem;margin-bottom:14px}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#78716c;margin-bottom:12px}
+.tape-table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px;margin:14px 0}
+.tape-table th{padding:6px 10px;text-align:left;color:#78716c;font-size:10px;letter-spacing:.08em;border-bottom:1px solid #44403c}
+.tape-table td{padding:8px 10px;border-bottom:1px solid #292524;color:var(--terminal-ink)}
+.tape-table tr:last-child td{border-bottom:none}
+.tp{color:var(--pos)}
+.tn{color:var(--neg)}
+.read{background:#292524;border-left:3px solid var(--terminal-accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;margin-top:14px;color:var(--terminal-ink)}
+.read strong{color:var(--terminal-accent)}
+
+/* ── Quotes ───────────────────────────────────────────────────── */
+.quotes-grid{display:grid;gap:16px;margin:16px 0}
+blockquote.pquote{border-left:4px solid var(--accent);padding:14px 18px;background:var(--accent-dim);border-radius:0 10px 10px 0}
+blockquote.pquote p{font-style:italic;font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--ink);margin-bottom:8px;line-height:1.5}
+blockquote.pquote cite{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+blockquote.pquote cite a{font-size:11px}
+
+/* ── Traps ────────────────────────────────────────────────────── */
+.trap{border-left:4px solid var(--warn);background:var(--warn-dim);border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:12px}
+.trap h4{font-size:14px;font-weight:700;color:var(--warn-ink);margin-bottom:4px}
+.trap p{font-size:13px;color:var(--ink-2);margin:0}
+.trap.anti{border-left-color:#a8a29e;background:var(--bg-2)}
+.trap.anti h4{color:var(--ink-2)}
+
+/* ── Further reading ──────────────────────────────────────────── */
+.fr-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:flex-start}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;background:var(--bg-2);color:var(--muted);border:1px solid var(--rule);flex-shrink:0;align-self:flex-start;margin-top:3px;white-space:nowrap}
+.fr-body h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.fr-body p{font-size:13px;color:var(--muted);margin:0}
+
+/* ── Footer ───────────────────────────────────────────────────── */
+footer{border-top:1px solid var(--rule);margin-top:48px;padding-top:20px}
+.sources{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8}
+.sources a{font-size:12px}
+.footer-sig{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px}
+.disclaimer{font-size:11px;color:var(--muted);font-style:italic}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media(max-width:860px){
+  .outer{flex-direction:column;gap:0;padding:16px 14px 40px}
+  aside#toc{position:static;width:100%!important;min-width:unset!important;border-radius:8px;margin-bottom:20px}
+  .toc-toggle{display:none}
+  .toc-body{display:flex!important;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;padding:8px 10px;gap:6px}
+  .toc-body a{white-space:nowrap;font-size:11px}
+  .toc-label{display:none}
+  .practice-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="outer">
+
+  <!-- ── TOC ────────────────────────────────────────────────────── -->
+  <aside id="toc">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" aria-label="Toggle TOC">☰</button>
+    <div class="toc-body">
+      <span class="toc-label">Contents</span>
+      <a href="#s01">§01 What It Is</a>
+      <a href="#s02">§02 Mechanics</a>
+      <a href="#s03">§03 Visual</a>
+      <a href="#s04">§04 In Practice</a>
+      <a href="#s05">§05 Live Tape</a>
+      <a href="#s06">§06 Quotes</a>
+      <a href="#s07">§07 Traps</a>
+      <a href="#s08">§08 Further Reading</a>
+    </div>
+  </aside>
+
+  <!-- ── Main ───────────────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="pretitle">Alpha · Trading Concepts · Daily</div>
+      <h1><em>Alpha</em> — Delta Divergence</h1>
+      <div class="meta-row">
+        <span class="meta-pill">Thursday</span>
+        <span class="meta-pill">1 May 2026</span>
+        <span class="meta-pill">Sydney</span>
+        <span class="meta-pill issue">Issue #9</span>
+        <span class="meta-pill time">~10 min read</span>
+      </div>
+    </header>
+
+    <!-- TL;DR -->
+    <div class="tldr">
+      <div class="tldr-label">TL;DR</div>
+      <p class="tldr-text"><strong>Delta Divergence</strong> is when price makes a new high or low but the cumulative net aggression (delta) fails to confirm — a sign that the visible move is not backed by genuine conviction, and a potential reversal is building. The edge is simple: when price and delta disagree, trust the flow over the candle, and wait for the confirmation that confirms the divergence before taking a position.</p>
+    </div>
+
+    <!-- §01 — WHAT IT IS -->
+    <section id="s01">
+      <div class="section-label"><span>§01</span></div>
+      <h2>What It Is</h2>
+      <div class="skim">Delta Divergence = price makes a new extreme, delta refuses to confirm it. The visible move is lying.</div>
+
+      <p><strong>Delta</strong> is the single most important number in a footprint bar: the difference between volume that traded at the ask (aggressive buyers) and volume that traded at the bid (aggressive sellers). A green candle with negative delta means sellers were in control despite price moving up — the bulls were pushed higher by limit order resting below, not by aggressive buying. That contradiction is the seed of divergence.</p>
+
+      <p>Extend that idea across a session. <strong>Cumulative Volume Delta (CVD)</strong> tracks the running total of all deltas across bars, giving you a continuous line of net aggression. When price trends higher — making higher highs — but CVD is trending lower or failing to make its own higher highs, you have bearish delta divergence. The price rally is hollow. When price trends lower but CVD flattens or rises, sellers are capitulating and bullish divergence is forming.</p>
+
+      <p>Delta Divergence is not a reversal trigger by itself. It is an early warning system — a tell that the order flow composition of a move is changing before price confirms it. The edge lives in catching that mismatch early and combining it with structure.</p>
+
+      <div class="glossary">
+        <div class="gterm">
+          <span class="gpill">Delta (bar)</span>
+          <span class="gdef">Vol at ask minus vol at bid for a single price bar. Positive = net aggressive buying, negative = net aggressive selling.</span>
+        </div>
+        <div class="gterm">
+          <span class="gpill">CVD</span>
+          <span class="gdef">Cumulative Volume Delta — the running sum of all bar deltas across the session. Tracks net aggression over time.</span>
+        </div>
+        <div class="gterm">
+          <span class="gpill">Divergence</span>
+          <span class="gdef">Price and CVD moving in opposite directions, or price making a new extreme that CVD does not confirm.</span>
+        </div>
+        <div class="gterm">
+          <span class="gpill">Bearish Divergence</span>
+          <span class="gdef">Price makes HH, CVD makes LH (or lower). Buyers running out of aggression at the highs.</span>
+        </div>
+        <div class="gterm">
+          <span class="gpill">Bullish Divergence</span>
+          <span class="gdef">Price makes LL, CVD makes HL (or higher). Sellers losing steam into structural support.</span>
+        </div>
+      </div>
+
+      <div class="remember"><strong>If you only remember one thing:</strong> Delta tells you who is doing the work inside the candle. When that work stops matching the price direction, a reversal is being assembled — often before you can see it on price alone.</div>
+    </section>
+
+    <!-- §02 — MECHANICS -->
+    <section id="s02">
+      <div class="section-label"><span>§02</span></div>
+      <h2>Mechanics</h2>
+      <div class="skim">A bar's delta signs the aggressor. When aggressors stop following price, CVD breaks from the trend. That's the signal.</div>
+
+      <p>Every trade that executes is either a buyer lifting the offer (hitting ask = aggressive buy) or a seller hitting the bid (aggressive sell). Exchanges classify each fill by which side initiated the order. The difference gives you the bar's delta:</p>
+
+      <div class="formula">
+        Bar Delta = Vol<sub>ask</sub> − Vol<sub>bid</sub><br>
+        <span class="comment">// positive: buyers were more aggressive this bar</span><br>
+        <span class="comment">// negative: sellers were more aggressive this bar</span><br><br>
+        CVD<sub>n</sub> = CVD<sub>n-1</sub> + Delta<sub>n</sub><br>
+        <span class="comment">// cumulative sum resets at session open (or at any anchor point you choose)</span><br><br>
+        Divergence condition:<br>
+        Price(HH₂) &gt; Price(HH₁) AND CVD(HH₂) &lt; CVD(HH₁) → Bearish Divergence<br>
+        Price(LL₂) &lt; Price(LL₁)  AND CVD(LL₂) &gt; CVD(LL₁) → Bullish Divergence
+      </div>
+
+      <p><strong>Single-bar divergence</strong> is the micro-level signal: an up candle with negative delta (passive buyers stepped in; aggressive selling dominated). <strong>Multi-bar / CVD divergence</strong> is the macro-level read: the trend in price and the trend in CVD are decoupling across multiple swings. Single-bar divergence is noisy on its own — you want it at structural levels. Multi-bar CVD divergence is the higher-conviction setup, especially when it spans 4–6+ bars on the timeframe you're trading.</p>
+
+      <p>A clean setup requires two elements: (1) price at a structural extreme (prior swing high/low, HTF S/R, Wyckoff spring or UTAD zone) and (2) the CVD line failing to confirm that extreme. The structural anchor prevents you from trading divergence in the middle of a trend — the most common beginner mistake.</p>
+
+      <table class="cmp-table">
+        <thead>
+          <tr><th>Type</th><th>Signal</th><th>Timeframe</th><th>Reliability</th><th>Use with</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Single-bar delta</strong></td><td>Up bar + neg delta (or down bar + pos delta)</td><td>Tick / 1m–5m</td><td>Low (noise)</td><td>Footprint confirmation at key level</td></tr>
+          <tr><td><strong>CVD divergence</strong></td><td>Price HH/LL without CVD confirmation</td><td>5m–4h</td><td>Medium–High</td><td>Structure + absorption + imbalance</td></tr>
+          <tr><td><strong>CVD trend break</strong></td><td>CVD breaks its own trend line before price</td><td>1h–daily</td><td>High (early)</td><td>HTF bias change, position entry</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- §03 — VISUAL -->
+    <section id="s03">
+      <div class="section-label"><span>§03</span></div>
+      <h2>Visual</h2>
+      <div class="skim">Two-panel diagram: price makes a higher high, CVD makes a lower high — the bearish divergence setup. The second price swing is built on fumes.</div>
+
+      <div class="svg-wrap">
+        <svg viewBox="0 0 820 460" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background -->
+          <rect width="820" height="460" fill="#faf8f5"/>
+
+          <!-- Panel divider -->
+          <line x1="0" y1="232" x2="820" y2="232" stroke="#e7e5e4" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+          <!-- === TOP PANEL: PRICE === -->
+          <text x="20" y="22" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE (BTC / 1H)</text>
+
+          <!-- Grid lines -->
+          <line x1="60" y1="30" x2="60" y2="222" stroke="#e7e5e4" stroke-width="1"/>
+          <line x1="60" y1="222" x2="800" y2="222" stroke="#1c1917" stroke-width="1.5"/>
+
+          <!-- Price Y labels -->
+          <text x="12" y="60" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">High</text>
+          <text x="12" y="140" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">Mid</text>
+          <text x="12" y="220" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">Low</text>
+
+          <!-- Candlesticks (simplified rising trend then top) -->
+          <!-- Candle 1: small up -->
+          <rect x="80" y="185" width="12" height="22" fill="#22c55e" rx="1"/>
+          <line x1="86" y1="180" x2="86" y2="185" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="86" y1="207" x2="86" y2="212" stroke="#22c55e" stroke-width="1.5"/>
+          <!-- Candle 2: up -->
+          <rect x="105" y="170" width="12" height="25" fill="#22c55e" rx="1"/>
+          <line x1="111" y1="165" x2="111" y2="170" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="111" y1="195" x2="111" y2="202" stroke="#22c55e" stroke-width="1.5"/>
+          <!-- Candle 3: small down -->
+          <rect x="130" y="175" width="12" height="15" fill="#ef4444" rx="1"/>
+          <line x1="136" y1="170" x2="136" y2="175" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="136" y1="190" x2="136" y2="198" stroke="#ef4444" stroke-width="1.5"/>
+          <!-- Candle 4: big up — HH1 -->
+          <rect x="155" y="78" width="14" height="88" fill="#22c55e" rx="1"/>
+          <line x1="162" y1="68" x2="162" y2="78" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="162" y1="166" x2="162" y2="175" stroke="#22c55e" stroke-width="1.5"/>
+          <!-- HH1 label -->
+          <text x="150" y="58" font-family="JetBrains Mono, monospace" font-size="9" fill="#3f6212" font-weight="700">HH₁</text>
+          <line x1="162" y1="63" x2="162" y2="68" stroke="#3f6212" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- Pullback candles -->
+          <rect x="182" y="155" width="12" height="20" fill="#ef4444" rx="1"/>
+          <line x1="188" y1="150" x2="188" y2="155" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="188" y1="175" x2="188" y2="183" stroke="#ef4444" stroke-width="1.5"/>
+          <rect x="207" y="160" width="12" height="18" fill="#22c55e" rx="1"/>
+          <line x1="213" y1="155" x2="213" y2="160" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="213" y1="178" x2="213" y2="185" stroke="#22c55e" stroke-width="1.5"/>
+          <rect x="232" y="155" width="12" height="12" fill="#ef4444" rx="1"/>
+          <line x1="238" y1="150" x2="238" y2="155" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="238" y1="167" x2="238" y2="175" stroke="#ef4444" stroke-width="1.5"/>
+          <rect x="257" y="150" width="12" height="20" fill="#22c55e" rx="1"/>
+          <line x1="263" y1="145" x2="263" y2="150" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="263" y1="170" x2="263" y2="178" stroke="#22c55e" stroke-width="1.5"/>
+
+          <!-- HH2 rally — HIGHER than HH1 but on weaker delta -->
+          <rect x="282" y="112" width="14" height="35" fill="#22c55e" rx="1"/>
+          <line x1="289" y1="58" x2="289" y2="112" stroke="#22c55e" stroke-width="1.5"/>
+          <line x1="289" y1="147" x2="289" y2="155" stroke="#22c55e" stroke-width="1.5"/>
+          <!-- HH2 label -->
+          <text x="278" y="48" font-family="JetBrains Mono, monospace" font-size="9" fill="#ef4444" font-weight="700">HH₂</text>
+          <line x1="289" y1="53" x2="289" y2="58" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- Divergence zone shading on price panel -->
+          <rect x="145" y="35" width="165" height="200" fill="rgba(239,68,68,0.05)" rx="4"/>
+
+          <!-- After HH2: reversal candles -->
+          <rect x="309" y="140" width="12" height="28" fill="#ef4444" rx="1"/>
+          <line x1="315" y1="130" x2="315" y2="140" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="315" y1="168" x2="315" y2="178" stroke="#ef4444" stroke-width="1.5"/>
+          <rect x="334" y="160" width="12" height="30" fill="#ef4444" rx="1"/>
+          <line x1="340" y1="148" x2="340" y2="160" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="340" y1="190" x2="340" y2="200" stroke="#ef4444" stroke-width="1.5"/>
+          <rect x="359" y="178" width="12" height="28" fill="#ef4444" rx="1"/>
+          <line x1="365" y1="168" x2="365" y2="178" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="365" y1="206" x2="365" y2="215" stroke="#ef4444" stroke-width="1.5"/>
+
+          <!-- Price trend line -->
+          <line x1="86" y1="192" x2="162" y2="72" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.5"/>
+          <line x1="162" y1="72" x2="289" y2="62" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.5"/>
+
+          <!-- Reversal arrow on price -->
+          <path d="M 385 100 C 400 90 415 110 410 135" stroke="#ef4444" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+          <text x="388" y="88" font-family="JetBrains Mono, monospace" font-size="10" fill="#ef4444" font-weight="700">REVERSAL</text>
+
+          <!-- Arrow markers -->
+          <defs>
+            <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="#ef4444"/>
+            </marker>
+            <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="#22c55e"/>
+            </marker>
+          </defs>
+
+          <!-- === BOTTOM PANEL: CVD === -->
+          <text x="20" y="252" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c" letter-spacing="1">CVD (CUMULATIVE VOLUME DELTA)</text>
+
+          <!-- CVD grid -->
+          <line x1="60" y1="260" x2="60" y2="445" stroke="#e7e5e4" stroke-width="1"/>
+          <line x1="60" y1="445" x2="800" y2="445" stroke="#1c1917" stroke-width="1.5"/>
+          <line x1="60" y1="352" x2="800" y2="352" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="12" y="265" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">+</text>
+          <text x="12" y="356" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">0</text>
+          <text x="12" y="445" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">−</text>
+
+          <!-- CVD line: rises with price to CVH1, then diverges (lower high at CVH2) -->
+          <polyline
+            points="80,420 110,400 140,390 162,290 190,310 215,305 240,295 265,300 289,330 315,360 340,380 365,400"
+            fill="none"
+            stroke="#a3e635"
+            stroke-width="2.5"
+            stroke-linejoin="round"
+          />
+
+          <!-- CVH1 label — matches price HH1 timing -->
+          <text x="150" y="278" font-family="JetBrains Mono, monospace" font-size="9" fill="#3f6212" font-weight="700">CVH₁</text>
+          <line x1="162" y1="285" x2="162" y2="290" stroke="#3f6212" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- CVH2 label — lower than CVH1, despite price HH2 being higher -->
+          <text x="277" y="318" font-family="JetBrains Mono, monospace" font-size="9" fill="#ef4444" font-weight="700">CVH₂ ↓</text>
+          <line x1="289" y1="323" x2="289" y2="330" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2"/>
+
+          <!-- DIVERGENCE annotation -->
+          <rect x="450" y="260" width="200" height="80" fill="rgba(239,68,68,0.08)" stroke="#ef4444" stroke-width="1" rx="6" stroke-dasharray="4,3"/>
+          <text x="462" y="278" font-family="JetBrains Mono, monospace" font-size="9" fill="#ef4444" font-weight="700">BEARISH DIVERGENCE</text>
+          <text x="462" y="295" font-family="Inter, sans-serif" font-size="11" fill="#78716c">Price: HH₁ → HH₂ (higher)</text>
+          <text x="462" y="313" font-family="Inter, sans-serif" font-size="11" fill="#78716c">CVD:  CVH₁ → CVH₂ (lower)</text>
+          <text x="462" y="331" font-family="Inter, sans-serif" font-size="11" fill="#ef4444">Buyers running out of fuel →</text>
+
+          <!-- Connecting vertical lines between panels at HH1 and HH2 -->
+          <line x1="162" y1="63" x2="162" y2="240" stroke="#3f6212" stroke-width="1" stroke-dasharray="2,4" opacity="0.5"/>
+          <line x1="289" y1="48" x2="289" y2="240" stroke="#ef4444" stroke-width="1" stroke-dasharray="2,4" opacity="0.5"/>
+
+          <!-- Divergence shading on CVD panel -->
+          <rect x="145" y="258" width="165" height="195" fill="rgba(239,68,68,0.04)" rx="4"/>
+
+          <!-- CVD Y zero line label -->
+          <text x="65" y="356" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">zero</text>
+
+          <!-- CVD falling arrow post divergence -->
+          <path d="M 305 355 C 320 360 330 380 325 400" stroke="#ef4444" stroke-width="1.5" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="3,2"/>
+
+          <!-- Panel labels -->
+          <text x="680" y="222" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e" text-anchor="end">PRICE PANEL ↑</text>
+          <text x="680" y="248" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e" text-anchor="end">CVD PANEL ↓</text>
+
+        </svg>
+        <p class="svg-caption">Bearish Delta Divergence — price makes a higher second high (HH₂ > HH₁) while CVD makes a lower high (CVH₂ &lt; CVH₁). The rally is hollow: aggressive buying has been shrinking while price pushed up on passive limit order support. Sellers eventually take control.</p>
+      </div>
+
+    </section>
+
+    <!-- §04 — IN PRACTICE -->
+    <section id="s04">
+      <div class="section-label"><span>§04</span></div>
+      <h2>In Practice</h2>
+      <div class="skim">Anchor to structure first. Only trade divergence that occurs at a meaningful level — everywhere else it's noise.</div>
+
+      <div class="practice-grid">
+        <div class="pcard">
+          <span class="pnum">1</span>
+          <h4>Find the Structure First</h4>
+          <p>Mark your HTF key levels before the session opens — prior highs/lows, Wyckoff demand/supply zones, VWAP bands, major option strikes. Divergence only matters when it appears at one of these levels. CVD divergence in the middle of an open range means nothing.</p>
+        </div>
+        <div class="pcard">
+          <span class="pnum">2</span>
+          <h4>Plot CVD Over the Swing</h4>
+          <p>Anchor your CVD at the start of the move you're analysing. Watch for the second price swing into the level — if price reaches a new extreme but CVD fails to confirm, you have divergence. The greater the CVD shortfall relative to the price extension, the stronger the signal.</p>
+        </div>
+        <div class="pcard">
+          <span class="pnum">3</span>
+          <h4>Confirm with Footprint</h4>
+          <p>At the divergence extreme, drop to footprint view. Look for delta exhaustion: large bid volume absorbed without price moving lower (bullish div), or ask volume drying up at the top (bearish div). A single-bar divergence at the structural extreme ties the CVD signal together.</p>
+        </div>
+        <div class="pcard">
+          <span class="pnum">4</span>
+          <h4>Enter on Commitment, Not Divergence</h4>
+          <p>Divergence is an alert, not an entry. Wait for price to break the short-term structure created by the diverging swing — first impulsive move against the prior trend direction. That's your confirmation. Divergence without confirmation means the move can keep grinding in the trend direction far longer than you expect.</p>
+        </div>
+      </div>
+
+      <div class="worked">
+        <h4>Worked Example — BTC Bearish Divergence, April 28–30 2026</h4>
+        <table>
+          <tr><td>Context</td><td>BTC rallied from $68K to $78K through April (best month since Nov 2020). Three consecutive sessions of ETF outflows began April 28.</td></tr>
+          <tr><td>Divergence</td><td>Price held $74K–$76.5K but CVD on 4H was printing lower highs from Apr 28 peak (~$78.2K). Each attempt to push back to $77K was met by decreasing net aggression — a textbook bearish CVD divergence.</td></tr>
+          <tr><td>Confirmation</td><td>Price failed to reclaim $77K and stayed compressed in the $74K–$76.5K range. Funding turned negative (-0.0030%), liquidations collapsed -72% ($149M), signalling longs not adding.</td></tr>
+          <tr><td>R-math</td><td>Short entry at $76,400 (HH₂ rejection), stop $78,400 (+$2,000), target $73,000 (Wyckoff demand): 1.7R. Or no short — bullish divergence building as sellers exhaust into the $73K zone.</td></tr>
+          <tr><td>Outcome read</td><td>Either the sellers take over and price fills $73K, or seller exhaustion confirms bullish divergence and buyers step in — the CVD signal is the input, structure decides the bias.</td></tr>
+        </table>
+      </div>
+
+      <div class="tf-note">Timeframe fit: CVD divergence on <strong>5m–1h</strong> for intraday scalp confirmation · <strong>4h–daily CVD</strong> for swing trade bias · Footprint single-bar delta for precision entry timing.</div>
+    </section>
+
+    <!-- §05 — LIVE TAPE -->
+    <section id="s05">
+      <div class="section-label"><span>§05</span></div>
+      <h2>Live Tape</h2>
+      <div class="skim">BTC at $76,462 on May 1 AEST — a live bullish delta divergence signal as ETF selling collapses without breaking price.</div>
+
+      <div class="tape">
+        <div class="tape-label">Live Instance · BTC · May 1, 2026 · AEST / UTC+11</div>
+        <h3>BTC: Seller Exhaustion into the Wyckoff Zone</h3>
+        <p>Three consecutive sessions of <strong>ETF outflows</strong> have failed to crack BTC lower. That is the definition of bullish delta divergence at a structural level:</p>
+
+        <table class="tape-table">
+          <thead>
+            <tr><th>Date (Sydney)</th><th>BTC Close</th><th>ETF Flow</th><th>Delta Signal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Apr 28 (Tue)</td><td class="tn">$76,200</td><td class="tn">−$263M</td><td>Aggressive selling, price barely moves</td></tr>
+            <tr><td>Apr 29 (Wed)</td><td class="tn">$75,800</td><td class="tn">−$89.7M</td><td>Outflows shrinking — sellers losing conviction</td></tr>
+            <tr><td>Apr 30 (Thu)</td><td class="tn">$75,950</td><td class="tn">−$148.4M</td><td>Price reclaims lost ground despite outflows</td></tr>
+            <tr><td>May 1 (Fri)</td><td class="tp">$76,462</td><td style="color:#78716c">~Flat</td><td class="tp">Bullish divergence: sellers have not driven a new low</td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>Funding</strong> at <strong>−0.0030%</strong> (shorts paying longs — longs are not being aggressive either). <strong>Liquidations</strong> collapsed to <strong>$149M</strong> (−72% from prior sessions). Long/short ratio near equilibrium: <strong>50.36% / 49.64%</strong>. BTC dominance broke above <strong>60.6%</strong> — capital rotating back to BTC from alts.</p>
+
+        <p>The pattern: aggressive ETF sellers hammering into the <strong>$73K–$76K Wyckoff demand zone</strong> — and price not breaking. On a 4H CVD view, the CVD line is flat-to-rising while price compression holds above $74K. That is bullish delta divergence assembling in real time. The playbook is absorption → confirmation → long when price breaks above the compression range with rising CVD.</p>
+
+        <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;border-radius:8px;margin-top:14px;" loading="lazy"></iframe>
+
+        <div class="read"><strong>Read:</strong> BTC's flat-to-rising CVD against declining ETF aggression is textbook seller exhaustion — if the $73K zone holds, delta divergence is building the long case one session at a time. → <a href="market-briefing.html" style="color:var(--terminal-accent);border-color:var(--terminal-accent)">See today's Morning Edge for full BTC breakdown</a></div>
+      </div>
+    </section>
+
+    <!-- §06 — QUOTES -->
+    <section id="s06">
+      <div class="section-label"><span>§06</span></div>
+      <h2>Quotes</h2>
+      <div class="skim">From Wyckoff's tape-reading roots to modern orderflow — the principle is unchanged: price lies, volume tells the truth.</div>
+
+      <div class="quotes-grid">
+        <blockquote class="pquote">
+          <p>"Study the action of every stock as if it were a game of chess — knowing that behind every move is a player with superior resources trying not to show his hand."</p>
+          <cite>Richard Wyckoff · <em>The Richard D. Wyckoff Method of Trading and Investing in Stocks</em> · 1931 · <a href="https://www.wyckoffanalytics.com/" target="_blank" rel="noopener">wyckoffanalytics.com</a></cite>
+        </blockquote>
+        <blockquote class="pquote">
+          <p>"Volume is the force that propels markets. When price rises on diminishing volume, the move is suspect and likely to fail."</p>
+          <cite>James Dalton · <em>Mind Over Markets</em> · 1990 · <a href="https://www.amazon.com/Mind-Over-Markets-James-Dalton/dp/1592803257" target="_blank" rel="noopener">amazon.com</a></cite>
+        </blockquote>
+        <blockquote class="pquote">
+          <p>"Traders use CVD to measure market sentiment and confirm price action. If price rises while CVD falls, the move may lack true buying strength."</p>
+          <cite>Bookmap Research · <em>How Cumulative Volume Delta Transforms Your Trading Strategy</em> · 2025 · <a href="https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy" target="_blank" rel="noopener">bookmap.com</a></cite>
+        </blockquote>
+        <blockquote class="pquote">
+          <p>"Delta divergence represents one of the most powerful leading indicators available in footprint analysis — often signalling potential reversals before traditional technical indicators."</p>
+          <cite>Trader Dale · <em>Order Flow Trading Setups</em> · 2024 · <a href="https://www.trader-dale.com/order-flow-analysis-how-to-use-absorption-delta-to-confirm-trade-entry-13th-may-25/" target="_blank" rel="noopener">trader-dale.com</a></cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- §07 — COMMON TRAPS -->
+    <section id="s07">
+      <div class="section-label"><span>§07</span></div>
+      <h2>Common Traps</h2>
+      <div class="skim">The single biggest mistake: trading CVD divergence without structural context. Divergence without a level is just noise.</div>
+
+      <div class="trap">
+        <h4>1. Trading Single-Bar Delta Divergence Alone</h4>
+        <p>Single-bar divergence (up candle, negative delta) is extremely common and usually meaningless — markets have passive size sitting below price constantly. This is only useful at key structural levels with additional confluence. Trading it mechanically on its own is a one-way ticket to overtrading.</p>
+      </div>
+      <div class="trap">
+        <h4>2. No Structural Anchor</h4>
+        <p>CVD divergence in the middle of a trending move is not a trade setup. You need a level — prior swing high/low, HTF S/R, Wyckoff re-accumulation or distribution zone, significant VWAP band. Without the anchor, divergence just means "aggression is fading" — which it does constantly in trending markets.</p>
+      </div>
+      <div class="trap">
+        <h4>3. Confusing CVD Timeframe Anchors</h4>
+        <p>CVD resets at session open by default on most platforms. If you're reading 24-hour crypto CVD but your platform resets at 00:00 UTC, the numbers aren't comparable across sessions. Always know your anchor. Coinglass and Glassnode run multi-day spot CVD — different animal from intraday exchange CVD. Don't mix them.</p>
+      </div>
+      <div class="trap">
+        <h4>4. Expecting Immediate Reversal</h4>
+        <p>Divergence can persist for many bars — especially if strong passive size (absorption) is holding price at the extreme. A market making a new high with slightly lower CVD might keep grinding higher for another 2–3 bars before reversing. Wait for the structural break of the diverging swing's short-term range. Patience is the edge.</p>
+      </div>
+      <div class="trap anti">
+        <h4>5. The "Delta Never Lies" Myth — Honest Callout</h4>
+        <p>CVD data quality depends entirely on the exchange and data feed. On perpetual futures, large block trades, hidden iceberg orders, and cross-exchange arbitrage flows can distort delta significantly. Low-liquidity altcoins have near-useless CVD. Stick to BTC/ETH on major exchange perps (Binance, Bybit) for reliable data. CVD is a lens — a quality lens on quality instruments. It is not an oracle.</p>
+      </div>
+    </section>
+
+    <!-- §08 — FURTHER READING -->
+    <section id="s08">
+      <div class="section-label"><span>§08</span></div>
+      <h2>Further Reading</h2>
+      <div class="skim">Start with Bookmap (CVD mechanics), then Phemex (crypto application), then Gocharting (live orderflow tools).</div>
+
+      <div class="fr-item">
+        <span class="fr-type">Article</span>
+        <div class="fr-body">
+          <h4><a href="https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy" target="_blank" rel="noopener">How Cumulative Volume Delta Transforms Your Trading Strategy — Bookmap</a></h4>
+          <p>Canonical CVD reference: covers formula, divergence mechanics, absorption confluence, and intraday exhaustion setups. Start here for the conceptual foundation.</p>
+        </div>
+      </div>
+      <div class="fr-item">
+        <span class="fr-type">Guide</span>
+        <div class="fr-body">
+          <h4><a href="https://phemex.com/academy/what-is-cumulative-delta-cvd-indicator" target="_blank" rel="noopener">What Is the Cumulative Volume Delta (CVD) Indicator? — Phemex Academy</a></h4>
+          <p>Crypto-specific CVD guide with bullish/bearish divergence examples using BTC and ETH. Good on common mistakes including low-liquidity altcoin pitfalls.</p>
+        </div>
+      </div>
+      <div class="fr-item">
+        <span class="fr-type">Docs</span>
+        <div class="fr-body">
+          <h4><a href="https://gocharting.com/docs/orderflow/delta-and-cumulative-delta-bars" target="_blank" rel="noopener">Delta & Cumulative Delta Bars — GoCharting Orderflow Docs</a></h4>
+          <p>Technical documentation for delta and CVD bar types — useful for understanding how the computation works inside a live charting platform before building strategies.</p>
+        </div>
+      </div>
+      <div class="fr-item">
+        <span class="fr-type">Article</span>
+        <div class="fr-body">
+          <h4><a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd" target="_blank" rel="noopener">What Is Cumulative Volume Delta (CVD)? — CoinGlass</a></h4>
+          <p>CoinGlass's own explainer, relevant because their CVD chart is a go-to for multi-day spot crypto flow analysis. Includes how to interpret green/red delta lines and divergence signals.</p>
+        </div>
+      </div>
+      <div class="fr-item">
+        <span class="fr-type">Course</span>
+        <div class="fr-body">
+          <h4><a href="https://www.trader-dale.com/order-flow-analysis-how-to-use-absorption-delta-to-confirm-trade-entry-13th-may-25/" target="_blank" rel="noopener">Order Flow Analysis: How to Use Absorption & Delta to Confirm Trade Entry — Trader Dale</a></h4>
+          <p>Practical combination of absorption (passive) and delta (aggressive) for entry confirmation — the direct operational application of delta divergence in a real trade workflow.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="sources">
+        <strong>Sources verified in research:</strong><br>
+        <a href="https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy" target="_blank" rel="noopener">Bookmap — CVD Trading Strategy</a> ·
+        <a href="https://phemex.com/academy/what-is-cumulative-delta-cvd-indicator" target="_blank" rel="noopener">Phemex Academy — CVD Indicator</a> ·
+        <a href="https://gocharting.com/docs/orderflow/delta-and-cumulative-delta-bars" target="_blank" rel="noopener">GoCharting — Delta Docs</a> ·
+        <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd" target="_blank" rel="noopener">CoinGlass — CVD Explainer</a> ·
+        <a href="https://www.trader-dale.com/order-flow-analysis-how-to-use-absorption-delta-to-confirm-trade-entry-13th-may-25/" target="_blank" rel="noopener">Trader Dale — Absorption + Delta</a> ·
+        <a href="https://www.cryptotimes.io/2026/04/30/crypto-market-today-btc-eth-xrp-slide-as-etf-outflows-deepen/" target="_blank" rel="noopener">CryptoTimes — Apr 30 Market Data</a>
+      </div>
+      <div class="footer-sig">Alpha · Issue #9 · 1 May 2026 · Sydney · NGM Capital</div>
+      <div class="disclaimer">Education, not advice. Trade your own system.</div>
+    </footer>
+
+  </div><!-- /main -->
+</div><!-- /outer -->
+
+</body>
+</html>
