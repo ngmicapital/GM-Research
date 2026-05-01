@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence | 2 May 2026</title>
+<style>
+@font-face {
+  font-family: 'Charter';
+  src: local('Charter'), local('Bitstream Charter'), local('Georgia');
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: Charter, 'Bitstream Charter', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.75;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Light mode default */
+body {
+  --bg-primary:    #f5f5f0;
+  --bg-secondary:  #f0eff5;
+  --bg-sidebar:    #e8e8e0;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f0eff5;
+  --text-primary:  #1a1a2e;
+  --text-secondary:#5a6070;
+  --text-muted:    #8890a0;
+  --border:        #d4d4d4;
+  --accent-gold:   #b8960a;
+  --accent-gold-light: #7a6400;
+  --accent-gold-dim:   #9a8020;
+  --accent-blue:   #3a5ecf;
+  --accent-purple: #6b5aab;
+  --accent-amber:  #c07020;
+  --accent-green:  #3fb950;
+  --accent-red:    #f85149;
+  --accent-teal:   #3dc9b0;
+}
+
+body.dark-mode {
+  --bg-primary:    #1a1f2e;
+  --bg-secondary:  #2e3548;
+  --bg-sidebar:    #151928;
+  --bg-card:       #252b3b;
+  --bg-card-hover: #2e3548;
+  --text-primary:  #edf1f7;
+  --text-secondary:#bcc8d8;
+  --text-muted:    #8b96b0;
+  --border:        #3a4257;
+  --accent-gold:   #e8c84a;
+  --accent-gold-light: #f5dfa0;
+  --accent-gold-dim:   #a8902e;
+  --accent-blue:   #5c7cfa;
+  --accent-purple: #8b7fc7;
+  --accent-amber:  #f0a030;
+  --accent-green:  #3fb950;
+  --accent-red:    #f85149;
+  --accent-teal:   #3dc9b0;
+}
+
+/* Hamburger */
+.hamburger {
+  position: fixed; top: 16px; left: 20px; z-index: 1000;
+  width: 40px; height: 40px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px;
+}
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--text-primary); }
+
+/* Sidebar */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+  background: var(--bg-sidebar); border-right: 1px solid var(--border);
+  padding: 24px 16px; overflow-y: auto; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.2s;
+}
+.sidebar.open { transform: translateX(0); }
+.sidebar-brand {
+  font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--accent-gold); margin-bottom: 4px; margin-top: 48px;
+}
+.sidebar-date { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.sidebar-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-muted); margin: 12px 0 6px; font-family: 'Courier New', monospace; }
+.sidebar-link {
+  display: flex; align-items: flex-start; gap: 6px;
+  font-size: 11px; color: var(--text-secondary); text-decoration: none;
+  padding: 4px 0; line-height: 1.4; transition: color 0.15s;
+}
+.sidebar-link:hover, .sidebar-link.active { color: var(--text-primary); }
+.sidebar-link.active { border-left: 2px solid var(--accent-gold); padding-left: 4px; }
+.tier-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.dot-headline { background: var(--accent-gold); }
+.dot-high { background: var(--accent-blue); }
+.dot-medium { background: var(--accent-green); }
+.dot-section { background: var(--accent-teal); }
+
+/* Toggle button */
+.toggle-btn {
+  position: fixed; top: 16px; right: 20px; z-index: 1000;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; cursor: pointer;
+  font-size: 13px; color: var(--text-secondary); font-family: inherit;
+}
+.toggle-btn:hover { color: var(--text-primary); }
+
+/* Content */
+.content {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 70px 40px 80px;
+}
+
+/* Masthead */
+.masthead { text-align: center; padding: 40px 0 30px; }
+.masthead-title {
+  font-size: 3.2rem; font-weight: 700;
+  font-family: Georgia, serif; color: var(--text-primary);
+  letter-spacing: -1px;
+}
+.masthead-bar {
+  width: 80px; height: 3px; background: var(--accent-gold);
+  margin: 12px auto;
+}
+.masthead-subtitle {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 3px; color: var(--text-muted);
+}
+.masthead-date {
+  font-family: 'Courier New', monospace; font-size: 13px;
+  color: var(--text-secondary); margin-top: 6px;
+}
+.masthead-meta { display: flex; justify-content: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.meta-pill {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  padding: 3px 10px; border-radius: 12px; border: 1px solid var(--border);
+}
+.meta-pill.gold { background: rgba(184,150,10,0.15); color: var(--accent-gold); border-color: var(--accent-gold-dim); }
+.meta-pill.muted { background: var(--bg-secondary); color: var(--text-muted); }
+.masthead-separator {
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  height: 2px; margin-top: 24px; border: none;
+}
+
+/* Story cards */
+.story-card {
+  background: var(--bg-card); border-radius: 8px;
+  padding: 28px 32px; margin-bottom: 24px;
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.story-card:hover { background: var(--bg-card-hover); }
+.tier-headline { border-left: 3px solid var(--accent-gold); }
+.tier-high { border-left: 3px solid var(--accent-blue); }
+.tier-medium { border-left: 3px solid var(--accent-green); }
+
+/* Meta row */
+.meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tier-badge {
+  font-family: 'Courier New', monospace; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 2px 8px; border-radius: 4px; border: 1px solid;
+}
+.badge-headline { background: rgba(212,160,23,0.2); color: var(--accent-gold); border-color: var(--accent-gold-dim); }
+.badge-high { background: rgba(31,111,235,0.2); color: var(--accent-blue); border-color: var(--accent-blue); }
+.badge-medium { background: rgba(63,185,80,0.15); color: var(--accent-green); border-color: var(--accent-green); }
+.source-tag { font-size: 11px; color: var(--text-muted); font-family: 'Courier New', monospace; }
+.cred-tag {
+  font-family: 'Courier New', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 1px; padding: 1px 6px; border-radius: 3px;
+  background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border);
+}
+.category-tag { font-size: 11px; color: var(--text-muted); }
+
+/* Signal */
+.signal-row { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+
+/* Headline */
+.story-title {
+  font-size: 1.35rem; font-weight: 700; color: var(--text-primary);
+  line-height: 1.35; margin-bottom: 14px;
+}
+.update-flag {
+  display: inline-block; background: rgba(240,160,48,0.25);
+  color: var(--accent-amber); border: 1px solid var(--accent-amber);
+  font-family: 'Courier New', monospace; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 1px 6px; border-radius: 4px; margin-right: 8px; vertical-align: middle;
+}
+
+/* Golden quote */
+.golden-quote {
+  border-left: 3px solid var(--accent-gold);
+  background: rgba(184,150,10,0.06);
+  padding: 12px 16px; margin: 14px 0;
+  font-style: italic; color: var(--accent-gold-light);
+  font-size: 14px; line-height: 1.6;
+}
+
+/* Summary */
+.summary { color: var(--text-secondary); margin-bottom: 14px; }
+.summary p { margin-bottom: 10px; }
+
+/* Precedent */
+.precedent {
+  border-left: 2px dashed var(--text-muted);
+  padding: 8px 12px; margin: 12px 0;
+  font-size: 13px; color: var(--text-muted);
+}
+
+/* Analysis blocks */
+.analysis-block {
+  padding: 14px 16px; border-radius: 6px; margin: 12px 0; font-size: 14px;
+}
+.analysis-practitioner {
+  border-left: 3px solid #1f6feb;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.analysis-contrarian {
+  border-left: 3px solid #8957e5;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.analysis-industry {
+  border-left: 3px solid #d29922;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.analysis-label {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; font-weight: 700; margin-bottom: 6px;
+}
+.label-practitioner { color: #79c0ff; }
+.label-contrarian { color: #d2a8ff; }
+.label-industry { color: #d29922; }
+
+em.brief-read { color: var(--accent-gold); font-style: italic; font-weight: 600; }
+
+/* Portfolio impact */
+.impact-card {
+  border: 1px solid var(--accent-green); border-left: 3px solid var(--accent-green);
+  background: rgba(63,185,80,0.05); padding: 14px 16px;
+  border-radius: 6px; margin: 12px 0;
+}
+.impact-card-label {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;
+}
+.impact-line { margin: 8px 0; line-height: 1.6; font-size: 14px; color: var(--text-secondary); }
+.impact-tag { display: inline-block; font-weight: 700; margin-right: 6px; min-width: 90px; }
+.impact-tag.bull { color: var(--accent-green); }
+.impact-tag.bear { color: var(--accent-red); }
+.impact-tag.neut { color: var(--text-muted); }
+
+/* What to do */
+.todo-card {
+  border: 1px solid var(--accent-gold); border-left: 3px solid var(--accent-gold);
+  background: rgba(184,150,10,0.04); padding: 16px; border-radius: 6px; margin: 12px 0;
+}
+.todo-card-label {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; font-weight: 700; color: var(--accent-gold); margin-bottom: 10px;
+}
+.todo-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.todo-role {
+  padding: 8px 12px; border-radius: 5px; font-size: 13px; line-height: 1.5;
+}
+.role-trader { background: rgba(248,81,73,0.2); color: #ff7b72; }
+.role-counsel { background: rgba(31,111,235,0.2); color: #79c0ff; }
+.role-compliance { background: rgba(137,87,229,0.2); color: #d2a8ff; }
+.role-founder { background: rgba(63,185,80,0.2); color: #7ee787; }
+.role-label { font-family: 'Courier New', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 700; display: block; margin-bottom: 3px; }
+
+/* Connected stories */
+.connected-card {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 6px; padding: 14px 16px; margin: 12px 0;
+}
+.connected-label {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; font-weight: 700; color: var(--accent-blue); margin-bottom: 8px;
+}
+.connected-item { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
+
+/* Tags */
+.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.tag {
+  font-family: 'Courier New', monospace; font-size: 10px;
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--bg-secondary); color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Section headings */
+.section-heading {
+  font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+  margin: 40px 0 20px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  font-family: Georgia, serif;
+}
+
+/* Brief notes */
+.notes-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px 28px; margin-bottom: 24px;
+}
+.note-item { padding: 12px 0; color: var(--text-secondary); font-size: 14px; }
+.note-item + .note-item { border-top: 1px solid var(--border); }
+.note-title { font-weight: 700; color: var(--text-primary); }
+
+/* Cross-cutting grid */
+.cross-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+.cross-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 18px;
+}
+.cross-title { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--accent-teal); margin-bottom: 6px; }
+.cross-dir { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.dir-green { color: var(--accent-green); }
+.dir-amber { color: var(--accent-amber); }
+.dir-gold { color: var(--accent-gold-light); }
+.dir-red { color: var(--accent-red); }
+.cross-body { font-size: 13px; color: var(--text-secondary); }
+
+/* Tone barometer */
+.tone-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; }
+.tone-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.flag-badge {
+  display: inline-block; font-family: 'Courier New', monospace; font-size: 10px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 2px 8px; border-radius: 4px; border: 1px solid;
+}
+.flag-us { background: #1f3a6e; color: #93b4f0; border-color: #2d5299; }
+.flag-eu { background: #1a1a5e; color: #a0a8f8; border-color: #2828a0; }
+.flag-uk { background: #3a1a1a; color: #f09090; border-color: #8b2020; }
+.flag-sg { background: #1a3a2a; color: #7fcca0; border-color: #1e6640; }
+.flag-au { background: #2a1a3a; color: #c0a0f0; border-color: #5e2a8b; }
+.tone-signal { font-size: 13px; margin: 0 8px; }
+.tone-desc { color: var(--text-secondary); font-size: 13px; }
+
+/* Countdown */
+.countdown-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px; }
+.countdown-table th {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.countdown-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.countdown-event { font-weight: 600; color: var(--text-primary); font-size: 13px; }
+.countdown-date { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-muted); }
+.days-pill {
+  display: inline-block; font-family: 'Courier New', monospace; font-size: 10px;
+  font-weight: 700; padding: 2px 8px; border-radius: 10px; border: 1px solid;
+}
+.days-urgent { background: rgba(184,150,10,0.2); color: var(--accent-gold); border-color: var(--accent-gold-dim); }
+.days-normal { background: var(--bg-secondary); color: var(--text-muted); border-color: var(--border); }
+.countdown-context { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Pipeline tracker */
+.pipeline-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+.pipeline-table th {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.pipeline-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.progress-bar { display: flex; gap: 3px; align-items: center; }
+.progress-seg {
+  height: 8px; border-radius: 2px; flex: 1;
+}
+.seg-done { background: var(--accent-blue); }
+.seg-active { background: var(--accent-gold); }
+.seg-future { background: var(--border); }
+.move-adv { color: var(--accent-green); font-weight: 700; }
+.move-none { color: var(--text-muted); font-weight: 700; }
+.move-stall { color: var(--accent-red); font-weight: 700; }
+
+/* Open submissions */
+.sub-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+.sub-table th {
+  font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.sub-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.status-open { color: var(--accent-green); font-weight: 700; font-family: 'Courier New', monospace; font-size: 11px; }
+.status-closing { color: var(--accent-amber); font-weight: 700; font-family: 'Courier New', monospace; font-size: 11px; }
+.status-ongoing { color: var(--accent-blue); font-family: 'Courier New', monospace; font-size: 11px; }
+.status-closed { color: var(--text-muted); font-family: 'Courier New', monospace; font-size: 11px; text-decoration: line-through; }
+
+/* Footer */
+.footer {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px 28px; margin-top: 40px;
+  font-size: 12px; color: var(--text-muted);
+}
+.footer-section { margin-bottom: 12px; }
+.footer-heading { font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 700; }
+.footer-disclaimer { font-style: italic; font-size: 11px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border); }
+
+@media (max-width: 700px) {
+  .content { padding: 70px 16px 60px; }
+  .cross-grid { grid-template-columns: 1fr; }
+  .todo-roles { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hamburger -->
+<button class="hamburger" id="hamburger" aria-label="Open contents">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- Day/Night Toggle -->
+<button class="toggle-btn" id="themeToggle">🌙</button>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">The Brief</div>
+  <div class="sidebar-date">Saturday, 2 May 2026</div>
+  <div class="sidebar-section">Stories</div>
+  <a href="#story-1" class="sidebar-link"><span class="tier-dot dot-high"></span>Colorado AI Act Enjoined</a>
+  <a href="#story-2" class="sidebar-link"><span class="tier-dot dot-high"></span>Poland MiCA Void</a>
+  <a href="#story-3" class="sidebar-link"><span class="tier-dot dot-high"></span>OCC Charter Backlash</a>
+  <a href="#story-4" class="sidebar-link"><span class="tier-dot dot-high"></span>EU AI Omnibus May 13</a>
+  <a href="#story-5" class="sidebar-link"><span class="tier-dot dot-medium"></span>SEC Reg Crypto Imminent</a>
+  <a href="#story-6" class="sidebar-link"><span class="tier-dot dot-medium"></span>CLARITY Act Support Gap</a>
+  <div class="sidebar-section">Sections</div>
+  <a href="#brief-notes" class="sidebar-link"><span class="tier-dot dot-section"></span>Brief Notes</a>
+  <a href="#cross-cutting" class="sidebar-link"><span class="tier-dot dot-section"></span>Cross-Cutting</a>
+  <a href="#tone-barometer" class="sidebar-link"><span class="tier-dot dot-section"></span>Tone Barometer</a>
+  <a href="#countdown" class="sidebar-link"><span class="tier-dot dot-section"></span>Countdown</a>
+  <a href="#pipeline" class="sidebar-link"><span class="tier-dot dot-section"></span>Pipeline Tracker</a>
+  <a href="#submissions" class="sidebar-link"><span class="tier-dot dot-section"></span>Open Submissions</a>
+</nav>
+
+<!-- Content -->
+<main class="content" id="main-content">
+
+  <!-- Masthead -->
+  <div class="masthead">
+    <div class="masthead-title">The Brief</div>
+    <div class="masthead-bar"></div>
+    <div class="masthead-subtitle">Legal Intelligence Report</div>
+    <div class="masthead-date">Saturday, 2 May 2026</div>
+    <div class="masthead-meta">
+      <span class="meta-pill gold">6 Stories</span>
+      <span class="meta-pill muted">45+ Sources</span>
+      <span class="meta-pill muted">Past 72 Hours</span>
+    </div>
+    <hr class="masthead-separator">
+  </div>
+
+  <!-- ====== STORY 1 — HIGH ====== -->
+  <article class="story-card tier-high" id="story-1">
+    <div class="meta-row">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">US District Court (Colorado) · DOJ · xAI</span>
+      <span class="cred-tag">Primary</span>
+      <span class="category-tag">AI Governance · State/Federal Preemption</span>
+    </div>
+    <div class="signal-row">🟡 Medium — judicial stay is temporary; outcome depends on preliminary injunction hearing</div>
+    <h2 class="story-title">Federal Judge Stays Colorado AI Act Enforcement as DOJ and xAI Challenge First State AI Bias Law — June 30 Implementation Now Legally Uncertain</h2>
+
+    <blockquote class="golden-quote">
+      "Colorado's AI Act violates the First Amendment guarantee of free speech, the commerce clause of Article I, and the due process and equal protection clauses of the 14th Amendment." — xAI complaint, US District Court for Colorado (April 28, 2026) [paraphrased]
+    </blockquote>
+
+    <div class="summary">
+      <p>Magistrate Judge Cyrus Y. Chung of the US District Court for Colorado ruled on April 28 that Colorado Attorney General Phil Weiser will not initiate enforcement within 14 days of the court ruling on xAI's motion for a preliminary injunction. Both parties — xAI and the Colorado AG — jointly sought the stay, a rare alignment that signals the enforcement machinery around SB 24-205 has effectively stalled.</p>
+      <p>The case was filed by Elon Musk's xAI, which argued Colorado's AI Act violates the First Amendment, the commerce clause, and the 14th Amendment's due process and equal protection clauses. More significantly, the Department of Justice filed its own intervention motion on April 28 to block the law, citing the White House's December 2025 executive order establishing a national AI policy framework that prioritises federal preemption of state regulation.</p>
+      <p>The law — SB 24-205, signed in 2024 and delayed by Gov. Jared Polis to June 30, 2026 — requires businesses using AI in consequential employment, housing, credit, healthcare, insurance, and education decisions to implement risk management policies, conduct annual impact assessments, issue pre-decision consumer notices, and maintain website disclosures. Civil penalties reach $20,000 per violation under the Colorado Consumer Protection Act.</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> <em>NetChoice v. Paxton</em> (5th Cir. 2022, SCOTUS vacated 2024) — federal courts previously invalidated Texas social media content-moderation law on commerce clause and First Amendment grounds; pattern suggests federalisation of tech-AI regulation is recurring.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      The federal government's intervention is the more consequential event. DOJ arguing that Colorado's law conflicts with the White House national AI framework converts this from a private xAI dispute into a structural test of whether the federal executive can preempt state AI regulation without Congress acting. If the DOJ succeeds, it could invalidate not just Colorado but California's AI transparency laws, Illinois employer-AI rules, and the entire emerging state AI compliance stack. <em class="brief-read">The Brief's read:</em> firms that built Colorado AI Act compliance programs should model two scenarios — stay upheld (June 30 delayed indefinitely) or stay dissolved (sprint to compliance by court order). Wilson Sonsini's 2026 AI regulatory preview flagged exactly this federal-state tension as the defining uncertainty of the year.
+    </div>
+
+    <div class="analysis-block analysis-contrarian">
+      <div class="analysis-label label-contrarian">🔄 Contrarian Take</div>
+      Colorado AG Phil Weiser agreed to the stay but has not conceded the law's validity. A coalition of state AGs is likely to coordinate amicus support as this case progresses, particularly given that 38 AGs already mobilised around Kalshi/prediction markets. <em class="brief-read">The Brief's read:</em> the stay buys time for Congress to preempt the field, but if Congress fails to pass a federal AI framework, the state battlefield reopens the moment the injunction lifts.
+    </div>
+
+    <div class="analysis-block analysis-industry">
+      <div class="analysis-label label-industry">🏗️ Industry Implications</div>
+      Every enterprise AI vendor selling high-risk AI applications into US markets faces binary regulatory risk: federal preemption (one framework, lower compliance cost) vs. state patchwork (50 frameworks, exponential cost). <em class="brief-read">The Brief's read:</em> LegalTech and AI-compliance SaaS firms that built Colorado-specific tooling face product obsolescence if federal preemption wins. xAI, Anthropic, OpenAI, and Google DeepMind all benefit from outcome — a single federal standard is structurally favourable to large incumbents who can absorb centralised compliance.
+    </div>
+
+    <div class="impact-card">
+      <div class="impact-card-label">📊 Portfolio Impact</div>
+      <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> xAI (private), large AI incumbents (GOOG, MSFT, META) — federal preemption eliminates 50-state compliance cost for enterprise AI deployments.</p>
+      <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> AI compliance SaaS firms (ORCA AI, Credo AI — private) — state-specific compliance tooling faces demand destruction if preemption wins.</p>
+      <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> COIN, RIOT, MARA — crypto-native firms; tangential unless they operate AI-driven products subject to high-risk AI classification under state law.</p>
+    </div>
+
+    <div class="todo-card">
+      <div class="todo-card-label">📋 What To Do</div>
+      <div class="todo-roles">
+        <div class="todo-role role-trader"><span class="role-label">Trader</span>Model a binary outcome on AI governance — federal preemption (bullish large-cap AI) or state patchwork (bearish enterprise AI margins) — and size positions accordingly before the preliminary injunction hearing.</div>
+        <div class="todo-role role-counsel"><span class="role-label">Counsel</span>Immediately audit any Colorado AI Act compliance work product and flag to clients that enforceability is now stayed — begin tracking DOJ intervention papers for federal preemption argument structure.</div>
+        <div class="todo-role role-compliance"><span class="role-label">Compliance</span>Put Colorado AI Act compliance implementation on hold pending the preliminary injunction ruling; do not scrap work already done as the stay could dissolve on short notice.</div>
+        <div class="todo-role role-founder"><span class="role-label">Founder</span>If your AI product touches employment, credit, or healthcare decisions in Colorado, pause June 30 compliance sprints but maintain documentation — you need to be ready to activate on 2-week notice if the injunction lifts.</div>
+      </div>
+    </div>
+
+    <div class="connected-card">
+      <div class="connected-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #4 (EU AI Act Omnibus) — same dynamic: high-risk AI obligations being contested at the legislative architecture level; outcome of May 13 trilogue will determine whether the EU faces its own governance gap analogous to Colorado's.</div>
+      <div class="connected-item">↔️ Story #5 (SEC Reg Crypto) — parallel structure: SEC using federal rulemaking to preempt state securities law for crypto; DOJ doing the same for state AI law.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#AIGovernance</span>
+      <span class="tag">#ColoradoAIAct</span>
+      <span class="tag">#FederalPreemption</span>
+      <span class="tag">#xAI</span>
+      <span class="tag">#DOJ</span>
+      <span class="tag">#StateAILaw</span>
+    </div>
+  </article>
+
+  <!-- ====== STORY 2 — HIGH ====== -->
+  <article class="story-card tier-high" id="story-2">
+    <div class="meta-row">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">Wozniak Legal · Bird &amp; Bird · Polish KNF</span>
+      <span class="cred-tag">Secondary</span>
+      <span class="category-tag">MiCA · EU Crypto · Poland</span>
+    </div>
+    <div class="signal-row">🔴 Low — no legislative resolution possible before July 1 given parliamentary calendar</div>
+    <h2 class="story-title">Poland Is the Only EU State Without a MiCA Licensing Regime — Presidential Double Veto Means July 1 Cliff Will Force VASPs to Cease Operations or Passport From Abroad</h2>
+
+    <blockquote class="golden-quote">
+      "If by 1 July 2026 Poland still has no designated MiCA authority, entities operating under the Polish transitional regime will lose the right to provide crypto-asset services until they obtain MiCA authorisation. This deadline cannot be extended by Polish law or KNF decision — it is fixed by MiCA Regulation." — Wozniak Legal client alert, 2026
+    </blockquote>
+
+    <div class="summary">
+      <p>Poland's President Karol Nawrocki vetoed the Polish Crypto-Assets Market Act twice — most recently on 1 December 2025 — leaving Poland as the only EU member state without a domestic MiCA implementation law and, critically, without a designated national competent authority empowered to issue CASP licenses. The KNF (Poland's financial regulator) cannot process MiCA applications without the statutory framework in place.</p>
+      <p>The consequence for July 1 is binary: Polish virtual asset service providers operating under the legacy VASP registration will automatically lose authorization to provide crypto services on 1 July 2026 when the MiCA transitional period expires. They cannot be saved by KNF forbearance — MiCA is directly applicable EU law with a hard-stop deadline. Firms without a MiCA CASP license from any EU national competent authority must cease operations in the EU.</p>
+      <p>The practical escape route is passporting: Polish VASPs can obtain CASP licenses from Lithuania, Estonia, or Latvia — all of which have operational MiCA licensing regimes — and passport services back into Poland under Article 60 of MiCA. Kanga, one of Poland's largest domestic exchanges, has publicly flagged relocation to Latvia as its contingency plan.</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> Post-Brexit UK-EU equivalence gap (2021) — UK financial firms lost EU passporting rights overnight and faced the same cross-border licensing scramble; Poland's situation is structurally analogous but compressed into a 60-day window.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      This is the first structural MiCA enforcement gap to emerge in an EU member state. The legal exposure for Polish VASPs continuing to operate after July 1 without a CASP license is severe: MiCA Article 111 allows NCAs to impose fines up to 12.5% of global annual turnover for unauthorised CASP operations, plus cease-and-desist orders and executive liability. <em class="brief-read">The Brief's read:</em> any firm with Polish users — including non-Polish CASPs — should audit whether their service is being accessed from Polish IP addresses and confirm their own NCA authorization is sufficient to cover Poland-resident clients under MiCA's passporting framework. Bird & Bird's analysis of the passporting mechanism confirms it is available but requires notification to KNF, which itself faces an operational question without a legislative mandate.
+    </div>
+
+    <div class="analysis-block analysis-contrarian">
+      <div class="analysis-label label-contrarian">🔄 Contrarian Take</div>
+      Poland's presidential veto may be politically reversible before July 1 — parliamentary calendar allows for emergency legislative sessions, and domestic industry pressure on the government is intensifying. <em class="brief-read">The Brief's read:</em> the probability of emergency legislation passing in time is less than 20% given Polish parliamentary dynamics; firms should plan for the hard-stop scenario, not the optimistic one.
+    </div>
+
+    <div class="analysis-block analysis-industry">
+      <div class="analysis-label label-industry">🏗️ Industry Implications</div>
+      Lithuania and Estonia stand to capture significant licensing revenue as Polish firms seek rapid CASP authorization. Law firms with Baltic regulatory practices (Bird & Bird, Sorainen, TGS Baltic) will see demand surge. Pan-European exchanges already licensed (Coinbase Europe, Bitstamp, OKX EU) gain market share in Poland by default — their existing MiCA licenses passport in while Polish incumbents scramble. <em class="brief-read">The Brief's read:</em> this is a structural windfall for Baltic licensing hubs at Poland's expense, and a cautionary data point for any jurisdiction where domestic MiCA implementation is behind schedule.
+    </div>
+
+    <div class="impact-card">
+      <div class="impact-card-label">📊 Portfolio Impact</div>
+      <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> Coinbase (COIN), Bitstamp (private) — pan-EU licensed CASPs gain Poland market share as domestic VASPs are displaced after July 1.</p>
+      <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Polish domestic exchanges (Kanga — private), Polish VASP ecosystem — regulatory discontinuity will trigger customer churn and operational disruption.</p>
+      <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> BTC, ETH spot prices — Poland-specific licensing gap has no material impact on global crypto liquidity.</p>
+    </div>
+
+    <div class="todo-card">
+      <div class="todo-card-label">📋 What To Do</div>
+      <div class="todo-roles">
+        <div class="todo-role role-trader"><span class="role-label">Trader</span>No direct trade signal from Poland MiCA gap; however, monitor for pan-EU CASP market share re-aggregation toward MiCA-compliant exchanges post-July 1.</div>
+        <div class="todo-role role-counsel"><span class="role-label">Counsel</span>If you advise any Polish VASP, begin Lithuania or Estonia passporting application immediately — KNF notification under Article 60 requires advance planning even without a domestic law framework in Poland.</div>
+        <div class="todo-role role-compliance"><span class="role-label">Compliance</span>Audit EU customer bases for Polish-resident users and confirm that your firm's CASP license explicitly covers Poland-resident service provision via passporting.</div>
+        <div class="todo-role role-founder"><span class="role-label">Founder</span>If you operate a Polish-facing crypto business, file a Lithuanian or Estonian CASP application this week — 60 days is not enough runway if you haven't started.</div>
+      </div>
+    </div>
+
+    <div class="connected-card">
+      <div class="connected-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #4 (EU AI Act Omnibus) — both stories reflect institutional friction in EU member state implementation of EU-level regulatory frameworks; Poland's MiCA failure and the Omnibus trilogue collapse share a root cause of domestic political override of EU legal obligations.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#MiCA</span>
+      <span class="tag">#Poland</span>
+      <span class="tag">#CASP</span>
+      <span class="tag">#EUCrypto</span>
+      <span class="tag">#Passporting</span>
+      <span class="tag">#July1Cliff</span>
+    </div>
+  </article>
+
+  <!-- ====== STORY 3 — HIGH ====== -->
+  <article class="story-card tier-high" id="story-3">
+    <div class="meta-row">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">OCC · ICBA · American Banker · Banking Dive</span>
+      <span class="cred-tag">Primary</span>
+      <span class="category-tag">Stablecoin · Bank Charters · OCC · ABA · ICBA</span>
+    </div>
+    <div class="signal-row">🟢 High — OCC conditional approvals are documented; banking sector opposition formally on record</div>
+    <h2 class="story-title">OCC's Crypto Bank Charter Wave Draws Formal Banking Sector Pushback — ABA Demands Sequencing Pause as Six Firms Including Coinbase Clear Conditional Approval</h2>
+
+    <blockquote class="golden-quote">
+      "Today's conditional approval of Coinbase's trust charter application is a grave mistake that will only serve to put U.S. consumers at risk." — Rebeca Romero Rainey, President and CEO, Independent Community Bankers of America, April 2026
+    </blockquote>
+
+    <div class="summary">
+      <p>The OCC has issued conditional approvals for national trust bank charters to six crypto-native firms in rapid succession: Circle (First National Digital Currency Bank), Ripple National Trust Bank, Paxos Trust Co., BitGo Bank &amp; Trust, Fidelity Digital Assets, and — on April 2, 2026 — Coinbase. The approvals allow these firms to offer custody, safekeeping, and fiduciary digital asset services under a single federal regulator in place of the current patchwork of 50-state money transmitter licences.</p>
+      <p>The American Bankers Association responded on March 5, 2026 by formally rejecting a White House compromise on the GENIUS Act stablecoin legislation, arguing that yield-bearing stablecoins constitute deposit-like products that should face the same regulatory requirements as bank deposits. The ABA has separately called on the OCC to pause charter reviews pending enactment of CLARITY Act stablecoin rules. The ICBA's language is more direct: it called Coinbase's conditional approval a "grave mistake" that puts consumers at risk.</p>
+      <p>Coinbase CLO Paul Grewal confirmed the company still requires final OCC approval before operating under a national charter, and the conditional approval triggers a review period during which the firm must satisfy additional capital, risk management, and operational requirements. But the political and legal direction is clear: the OCC is moving faster than Congress, and banking incumbents are not positioned to stop it through legislative means while the CLARITY Act remains in markup.</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> OCC Fintech Charter (2018–2020) — Varo Bank became the first de novo fintech to receive a full OCC charter in 2020 after a two-year fight; state bank regulators and ABA opposed it then too, but OCC prevailed.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      Six conditional approvals in approximately 90 days creates a regulatory fait accompli that materially weakens the ABA's legislative leverage over the CLARITY Act. If Circle, Ripple, Coinbase, and Paxos are operating as national trust banks before CLARITY passes, the stablecoin yield debate becomes moot for the charter holders — they are subject to OCC prudential supervision, not the stablecoin issuer framework. <em class="brief-read">The Brief's read:</em> the ABA's sequencing demand (pause charters until stablecoin rules are set) is legally unenforceable — the OCC has independent statutory authority under 12 USC to grant trust charters. The only mechanism to slow OCC is a Congressional appropriations rider, which requires Senate floor time that doesn't currently exist.
+    </div>
+
+    <div class="analysis-block analysis-contrarian">
+      <div class="analysis-label label-contrarian">🔄 Contrarian Take</div>
+      Conditional approval is not final approval. FinTech Weekly reported that 83 days have passed since the first approval with firms still completing supervisory milestones. History suggests OCC conditional approvals can be withdrawn if capital requirements are not met or if political winds shift between administrations. <em class="brief-read">The Brief's read:</em> the risk of revocation is low under the current administration but should not be zero-weighted by charter applicants.
+    </div>
+
+    <div class="analysis-block analysis-industry">
+      <div class="analysis-label label-industry">🏗️ Industry Implications</div>
+      National trust charters give Coinbase, Circle, and Ripple access to a qualified custodian designation under SEC regulations — directly relevant to institutional digital asset custody mandates and the growing tokenized RWA infrastructure stack. <em class="brief-read">The Brief's read:</em> traditional custodians (State Street, BNY Mellon) face increased competition in digital custody from OCC-chartered crypto natives with lower legacy-system cost bases. Morgan Stanley's digital assets commentary (paraphrased, no public report) has flagged that crypto-native trust banks could price institutional custody services 30–40% below incumbent rates.
+    </div>
+
+    <div class="impact-card">
+      <div class="impact-card-label">📊 Portfolio Impact</div>
+      <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> COIN, CRCL (Circle, IPO pending), PAXOS (private) — federal charter unlocks institutional custody mandates and eliminates multi-state compliance cost; re-rates business models upward.</p>
+      <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> STT (State Street), BK (BNY Mellon) — digital custody pricing pressure from crypto-native trust banks with lower legacy cost bases and federal regulatory alignment.</p>
+      <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> BTC, ETH spot — charter approvals are infrastructure, not demand signal; no direct spot price catalyst.</p>
+    </div>
+
+    <div class="todo-card">
+      <div class="todo-card-label">📋 What To Do</div>
+      <div class="todo-roles">
+        <div class="todo-role role-trader"><span class="role-label">Trader</span>COIN equity re-rates on trust charter progression — watch for final OCC approval as the near-term catalyst; size positions around that event, not the conditional stage.</div>
+        <div class="todo-role role-counsel"><span class="role-label">Counsel</span>Assess whether any existing money-transmitter or state trust licence arrangements for Coinbase, Circle, or Ripple clients need updating to reflect the federal charter path — OCC supervision displaces state law in most areas.</div>
+        <div class="todo-role role-compliance"><span class="role-label">Compliance</span>Monitor OCC supervisory expectations memo for trust bank charters — the capital and operational milestones in conditional approvals define the compliance framework for any firm considering a similar application.</div>
+        <div class="todo-role role-founder"><span class="role-label">Founder</span>If your business model requires a qualified custodian designation, the OCC trust charter path is now clearly open — begin assessing whether the capital requirements (generally higher than state trust licences) are achievable for your balance sheet.</div>
+      </div>
+    </div>
+
+    <div class="connected-card">
+      <div class="connected-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #6 (CLARITY Act) — the OCC charter wave makes CLARITY Act passage more urgent for ABA/ICBA, who see legislative sequencing as their last lever to slow crypto banking expansion.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#OCC</span>
+      <span class="tag">#TrustCharter</span>
+      <span class="tag">#Coinbase</span>
+      <span class="tag">#Circle</span>
+      <span class="tag">#Ripple</span>
+      <span class="tag">#ABA</span>
+      <span class="tag">#Stablecoin</span>
+    </div>
+  </article>
+
+  <!-- ====== STORY 4 — HIGH (UPDATE) ====== -->
+  <article class="story-card tier-high" id="story-4">
+    <div class="meta-row">
+      <span class="tier-badge badge-high">High</span>
+      <span class="source-tag">European Parliament · Cypriot Presidency · A&amp;O Shearman · Ropes &amp; Gray</span>
+      <span class="cred-tag">Primary</span>
+      <span class="category-tag">AI Governance · EU · AI Act</span>
+    </div>
+    <div class="signal-row">🟡 Medium — second trilogue scheduled but Annex I dispute remains structurally unresolved</div>
+    <h2 class="story-title"><span class="update-flag">Update</span>EU AI Act Digital Omnibus: May 13 Trilogue Set as Cypriot Presidency Races to Close Annex I Gap Before June 30 Term-End</h2>
+
+    <blockquote class="golden-quote">
+      "A follow-up trilogue is scheduled for approximately 13 May 2026, two weeks after the collapse, under the Cypriot Presidency... The unresolved file was the architecture for AI in regulated products under Annex I." — Modulos AI regulatory briefing, May 2026 [paraphrased]
+    </blockquote>
+
+    <div class="summary">
+      <p>Following the April 28 collapse of EU AI Act Digital Omnibus trilogue talks after 12 hours of failed negotiations, the Cypriot Council Presidency has scheduled a second attempt for approximately May 13, 2026. The Cypriot Presidency's mandate ends June 30 — meaning this is one of only two remaining windows to close the file before authority passes to the next Presidency.</p>
+      <p>The core sticking point is Annex I architecture: specifically, how conformity-assessment obligations under the AI Act relate to existing sectoral product-safety laws (Machinery Regulation, Medical Device Regulation, In-Vitro Diagnostic Regulation). The EU Parliament's position — adopted in its pre-trilogue mandate — includes a ban on "nudification" AI applications, a fixed August 2026 high-risk deadline, and simplified compliance for SMEs. The Council has not fully accepted any of these positions.</p>
+      <p>If May 13 fails, the Omnibus either dies in this legislative cycle or passes to the Polish Presidency (July–December 2026) — creating additional political complexity given Poland's pre-existing MiCA governance failures. The original AI Act August 2026 high-risk compliance deadline remains legally in force regardless of Omnibus outcome.</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> GDPR Article 65 one-stop-shop disputes between NCAs — technical disagreements on adjudication architecture similarly delayed enforcement clarity for years after the regulation came into force.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      The Omnibus failure creates a two-track risk for deployers of high-risk AI in regulated sectors: (a) compliance with the current AI Act as written, with August 2026 obligations already in force; and (b) potential retroactive modification of those obligations if Omnibus eventually passes with different Annex I rules. A&amp;O Shearman's Digital Omnibus brief notes that the conformity-assessment relationship between the AI Act and sectoral safety law (MDR, IVDR) is the binding constraint — medical device AI deployers face the most acute uncertainty because they sit at the intersection of both regimes.
+    </div>
+
+    <div class="analysis-block analysis-contrarian">
+      <div class="analysis-label label-contrarian">🔄 Contrarian Take</div>
+      Ropes &amp; Gray's trilogue analysis suggests the Omnibus may pass with a narrower scope than originally proposed — dropping the most contentious Annex I provisions and preserving only the nudification ban and SME simplifications. A narrow Omnibus that avoids the Annex I architecture fight could close quickly, even after April's collapse. <em class="brief-read">The Brief's read:</em> narrow passage is the most likely outcome if May 13 produces agreement — but it would leave the conformity-assessment ambiguity unresolved for regulated-product AI deployers.
+    </div>
+
+    <div class="analysis-block analysis-industry">
+      <div class="analysis-label label-industry">🏗️ Industry Implications</div>
+      Medical device AI firms (Siemens Healthineers, Philips Healthcare, GE HealthCare), industrial automation (ABB, Schneider Electric) and EU AI compliance vendors (OneTrust, TrustArc) all face planning uncertainty. <em class="brief-read">The Brief's read:</em> compliance teams in regulated-product sectors should assume August 2026 deadline applies as written and build contingency capacity for Omnibus retroactive modification — retrofitting compliance to changed rules is more expensive than building in optionality now.
+    </div>
+
+    <div class="impact-card">
+      <div class="impact-card-label">📊 Portfolio Impact</div>
+      <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> EU AI compliance vendors (OneTrust — private), law firms with EU tech regulatory practices — prolonged Omnibus uncertainty sustains advisory demand.</p>
+      <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> SIE.DE (Siemens Healthineers), PHIA.AS (Philips) — regulated-product AI deployers face compliance cost step-up if August 2026 deadline applies without Omnibus modifications.</p>
+      <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> Pure-play non-regulated AI applications (marketing, content, analytics) — Annex I dispute does not affect non-high-risk AI categories.</p>
+    </div>
+
+    <div class="todo-card">
+      <div class="todo-card-label">📋 What To Do</div>
+      <div class="todo-roles">
+        <div class="todo-role role-trader"><span class="role-label">Trader</span>Watch May 13 trilogue outcome: Omnibus passage (short-term relief for regulated-sector AI stocks); second failure (compliance cost pressure persists, accelerates August 2026 preparation spending).</div>
+        <div class="todo-role role-counsel"><span class="role-label">Counsel</span>Advise EU-regulated-product clients to assume August 2026 AI Act deadline applies as written — do not wait for Omnibus; draft parallel advice for the scenario where Omnibus retroactively modifies Annex I obligations.</div>
+        <div class="todo-role role-compliance"><span class="role-label">Compliance</span>Complete AI system inventory and risk classification under current AI Act Annex I before August 2026 — Omnibus uncertainty is not a reason to delay; it is a reason to build modular compliance programs that can be updated.</div>
+        <div class="todo-role role-founder"><span class="role-label">Founder</span>If your product is an AI system embedded in a CE-marked product (machinery, medical device), get legal opinion on current Annex I conformity-assessment obligations now — May 13 outcome will clarify but not eliminate this exposure.</div>
+      </div>
+    </div>
+
+    <div class="connected-card">
+      <div class="connected-label">↔️ Connected Stories</div>
+      <div class="connected-item">↔️ Story #1 (Colorado AI Act) — parallel jurisdictional governance failures: EU Omnibus stalls on Annex I architecture; US federal AI preemption challenged in court. Both reflect the same structural tension between AI regulation ambition and institutional capacity.</div>
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#EUAIAct</span>
+      <span class="tag">#DigitalOmnibus</span>
+      <span class="tag">#Trilogue</span>
+      <span class="tag">#AIGovernance</span>
+      <span class="tag">#AnnexI</span>
+      <span class="tag">#CypriotPresidency</span>
+    </div>
+  </article>
+
+  <!-- ====== STORY 5 — MEDIUM ====== -->
+  <article class="story-card tier-medium" id="story-5">
+    <div class="meta-row">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">SEC · Sidley Austin · Greenberg Traurig · CoinDesk</span>
+      <span class="cred-tag">Primary</span>
+      <span class="category-tag">US Crypto Regulation · SEC · Token Framework</span>
+    </div>
+    <div class="signal-row">🟡 Medium — Atkins' confirmation is on the record; formal NPRM not yet published</div>
+    <h2 class="story-title">SEC "Regulation Crypto Assets" Formal Rulemaking Expected Within Days — Atkins Confirms 400+ Page Package Including Innovation Exemption and Token Safe Harbor</h2>
+
+    <blockquote class="golden-quote">
+      "We're planning to launch the formal rulemaking process in a week or two." — SEC Chairman Paul S. Atkins, Digital Chamber Blockchain Summit, 2026 [paraphrased]
+    </blockquote>
+
+    <div class="summary">
+      <p>SEC Chairman Paul Atkins confirmed at The Digital Chamber's 2026 Blockchain Summit that the Commission will publish a formal "Regulation Crypto Assets" notice of proposed rulemaking within weeks. The package is expected to exceed 400 pages and will build on the March 17, 2026 joint SEC-CFTC interpretive guidance that established a five-category crypto asset taxonomy (digital commodities, digital collectibles, digital tools, stablecoins, digital securities).</p>
+      <p>Key elements expected in the NPRM: an "innovation exemption" allowing crypto projects to operate with reduced compliance burdens during a defined period; a codification of Commissioner Hester Peirce's Token Safe Harbor concept; formal rulemaking on capital-raising pathways for token issuers; and a proposed broker-dealer registration framework for crypto exchanges and intermediaries. The document will also address SEC-CFTC jurisdictional boundaries established by the MOU signed March 11.</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> Reg A+ (2015) — SEC expanded exemptions for small-company capital raises from $5M to $50M; "innovation exemption" follows the same regulatory logic of carving out sandbox conditions for emerging sectors.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      The 400+ page formal NPRM will open a 60–90 day comment period, meaning final rules cannot arrive before Q3 2026 at the earliest. Sidley's Blockchain Bulletin notes the CLARITY Act and SEC rulemaking are proceeding on parallel but interdependent tracks — if CLARITY passes before the NPRM becomes final, Congressional provisions will supersede SEC's rulemaking authority in some areas. <em class="brief-read">The Brief's read:</em> the strategic value of the NPRM is not the final rule — it is the interpretive signals embedded in the proposal, which will guide market practice immediately upon release.
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#SEC</span>
+      <span class="tag">#RegCrypto</span>
+      <span class="tag">#TokenSafeHarbor</span>
+      <span class="tag">#NPRM</span>
+      <span class="tag">#Atkins</span>
+    </div>
+  </article>
+
+  <!-- ====== STORY 6 — MEDIUM (UPDATE) ====== -->
+  <article class="story-card tier-medium" id="story-6">
+    <div class="meta-row">
+      <span class="tier-badge badge-medium">Medium</span>
+      <span class="source-tag">CoinGape · Blockonomi · CoinReporter · CoinDesk</span>
+      <span class="cred-tag">Media</span>
+      <span class="category-tag">US Crypto Regulation · CLARITY Act · Senate</span>
+    </div>
+    <div class="signal-row">🟡 Medium — markup target exists but full Republican caucus support is not confirmed</div>
+    <h2 class="story-title"><span class="update-flag">Update</span>CLARITY Act: Senate Banking Republicans Haven't Secured Full Caucus Support as Week-of-May-11 Markup Approaches</h2>
+
+    <blockquote class="golden-quote">
+      "We are going to markup the Clarity Act in May. We are going to get it to the finish line." — Senator Cynthia Lummis, late April 2026 [paraphrased]
+    </blockquote>
+
+    <div class="summary">
+      <p>While Senator Tillis reversed his opposition on May 1 and Senator Lummis has committed to a May markup, CoinGape's legislative tracking confirms that Senate Banking Republicans have not yet secured full caucus support ahead of the week-of-May-11 target. The outstanding disputes centre on the DeFi treatment provisions, stablecoin yield structures, and residual ethics provisions raised by Tillis in the prior stalemate.</p>
+      <p>Galaxy Digital's head of research publicly estimated odds of CLARITY Act passage in 2026 at approximately 50-50, noting that a narrow window exists between now and mid-summer before Congress's attention shifts to the appropriations cycle. Industry support remains strong — more than 120 crypto firms including Coinbase, Ripple, and Circle signed a letter urging Senate leadership to schedule markup "as soon as practicable."</p>
+    </div>
+
+    <div class="precedent">📎 <strong>Historical Precedent:</strong> GENIUS Act (2025) — stablecoin bill passed Senate Banking Committee 18-6 in March 2025, then faced floor delays before final passage in June 2025; CLARITY Act appears to be following the same drawn-out pattern.</div>
+
+    <div class="analysis-block analysis-practitioner">
+      <div class="analysis-label label-practitioner">⚖️ Practitioner Analysis</div>
+      <em class="brief-read">The Brief's read:</em> the OCC trust charter wave (Story #3) has subtly changed the power dynamic — firms like Coinbase, Circle, and Ripple now have a regulatory path forward without CLARITY Act passage, which reduces their urgency as lobbyists. Full Republican support remains the mechanical prerequisite for committee markup; if any member abstains, Tim Scott may choose to delay rather than risk a close committee vote.
+    </div>
+
+    <div class="tags-row">
+      <span class="tag">#CLARITYAct</span>
+      <span class="tag">#MarketStructure</span>
+      <span class="tag">#Senate</span>
+      <span class="tag">#Tillis</span>
+      <span class="tag">#Lummis</span>
+      <span class="tag">#CryptoLegislation</span>
+    </div>
+  </article>
+
+  <!-- ====== BRIEF NOTES ====== -->
+  <div id="brief-notes">
+    <h2 class="section-heading">📰 Brief Notes</h2>
+    <div class="notes-card">
+      <div class="note-item">
+        <span class="note-title">GENIUS Act Implementation: Federal Reserve and Treasury Rulemaking Next</span> — The OCC comment period on its proposed GENIUS Act implementing regulations closed May 1, 2026. The Federal Reserve System and the Department of the Treasury are expected to issue their own proposed rules next, completing the three-regulator rulemaking stack required under the Act's tiered supervision framework. No timeline has been officially confirmed.
+      </div>
+      <hr style="border:none; border-top: 1px solid var(--border);">
+      <div class="note-item">
+        <span class="note-title">FCA Cryptoasset Guidance Consultation Closes June 3</span> — The FCA's consultation on guidance for the UK's future cryptoasset regime (CP26/13) closes June 3, 2026. An FCA operational resilience webinar is scheduled for May 21, with the authorisation application window opening September 30, 2026 for the October 2027 regime commencement. Firms with UK crypto ambitions should be structuring applications now.
+      </div>
+      <hr style="border:none; border-top: 1px solid var(--border);">
+      <div class="note-item">
+        <span class="note-title">MAS Crypto Bank Capital Consultation Closes May 18</span> — MAS's consultation on prudential treatment of cryptoassets — proposing lighter "Group 1" capital treatment for tokenised traditional assets and non-algorithmic stablecoins, with permissionless cryptoasset exposure capped at 2% of Tier 1 capital — closes May 18. The consultation proposes to depart from the Basel Committee's most restrictive Group 2 treatment for qualifying stablecoins, which would give Singapore banks a structural advantage in crypto custody and collateral markets.
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CROSS-CUTTING ====== -->
+  <div id="cross-cutting">
+    <h2 class="section-heading">🔗 Cross-Cutting Implications</h2>
+    <div class="cross-grid">
+      <div class="cross-card">
+        <div class="cross-title">Stablecoin Regulation</div>
+        <div class="cross-dir dir-amber">↗ Mixed Signals</div>
+        <div class="cross-body">OCC trust charters advance ahead of CLARITY Act passage; ABA and ICBA formally opposing. Six conditional approvals create regulatory fait accompli that weakens banking sector's legislative leverage.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">DeFi</div>
+        <div class="cross-dir dir-green">⬆ Quietly Advancing</div>
+        <div class="cross-body">SEC DeFi front-end safe harbor (May 1) and imminent Reg Crypto NPRM provide the most permissive DeFi regulatory environment in any major jurisdiction. CLARITY Act DeFi provisions remain the outstanding legislative uncertainty.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">AI Governance</div>
+        <div class="cross-dir dir-amber">↗ Mixed Signals</div>
+        <div class="cross-body">Colorado AI Act enjoined, EU Omnibus stalled, federal preemption strategy emerging from DOJ. Both the US and EU are experiencing institutional friction converting AI regulatory ambition into enforceable rules.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">Legal Tech / AI Compliance</div>
+        <div class="cross-dir dir-amber">→ Pivoting</div>
+        <div class="cross-body">AI compliance tooling built for Colorado's June 30 deadline faces uncertain market after injunction. Firms that built state-specific tools must hedge against federal preemption making those tools obsolete.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">UK / EU / US Regulatory Divergence</div>
+        <div class="cross-dir dir-gold">⚡ Widening</div>
+        <div class="cross-body">OCC moves unilaterally ahead of Congress; EU Omnibus fails; UK crypto regime on track for 2027. Three jurisdictions are developing materially different institutional crypto infrastructure frameworks with limited coordination.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">Singapore / APAC</div>
+        <div class="cross-dir dir-green">⬆ Accelerating</div>
+        <div class="cross-body">MAS capital consultation on lighter prudential treatment closes May 18; ASIC AFSL window open with June 30 deadline. Both Singapore and Australia are building the most sophisticated regulatory frameworks for institutional crypto in the APAC region.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">Tokenization &amp; RWA</div>
+        <div class="cross-dir dir-green">⬆ Quietly Advancing</div>
+        <div class="cross-body">OCC national trust charters provide the federal custody infrastructure stack that institutional RWA tokenization requires. Six crypto-native qualified custodians now hold or expect federal authorization. RWA distributed asset value at $30.3B as of May 1.</div>
+      </div>
+      <div class="cross-card">
+        <div class="cross-title">Institutional Crypto Infrastructure</div>
+        <div class="cross-dir dir-green">⬆ Accelerating</div>
+        <div class="cross-body">OCC charters, SEC safe harbors, and imminent Reg Crypto NPRM are creating the regulatory stack that institutional capital deployment requires. 2026 is the year the US institutional crypto infrastructure becomes legally legible.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TONE BAROMETER ====== -->
+  <div id="tone-barometer">
+    <h2 class="section-heading">🌡️ Regulatory Tone Barometer</h2>
+    <table class="tone-table">
+      <tr>
+        <td><span class="flag-badge flag-us">US</span></td>
+        <td class="tone-signal">🟢 Loosening</td>
+        <td class="tone-desc">OCC trust charters advancing, SEC rulemaking imminent, DeFi safe harbor in place. Congress slow but CLARITY Act on the May markup track. Federal preemption strategy on AI marks a pro-innovation federal posture.</td>
+      </tr>
+      <tr>
+        <td><span class="flag-badge flag-eu">EU</span></td>
+        <td class="tone-signal">🟡 Holding</td>
+        <td class="tone-desc">MiCA enforcement tightening toward July 1 cliff; Poland creates structural CASP licensing gap. AI Act Omnibus stalled; August 2026 high-risk deadline in force. Net: tightening on crypto enforcement, uncertain on AI.</td>
+      </tr>
+      <tr>
+        <td><span class="flag-badge flag-uk">UK</span></td>
+        <td class="tone-signal">🟢 Loosening</td>
+        <td class="tone-desc">Cryptoassets Regulations 2026 enacted February 4; application window opens September 2026; FCA consultations substantively complete. Clear regulatory pathway for crypto firms into the October 2027 regime.</td>
+      </tr>
+      <tr>
+        <td><span class="flag-badge flag-sg">SG</span></td>
+        <td class="tone-signal">🟢 Loosening</td>
+        <td class="tone-desc">MAS capital consultation proposes lighter Group 1 treatment for tokenised assets and qualifying stablecoins; permissionless blockchain carve-out signals Basel departure. Singapore deliberately building a competitive institutional crypto framework.</td>
+      </tr>
+      <tr>
+        <td><span class="flag-badge flag-au">AU</span></td>
+        <td class="tone-signal">🟡 Holding</td>
+        <td class="tone-desc">DAF Act enacted April 8, commences April 2027. AFSL no-action window open to June 30, 2026. Regulatory framework settled; implementation uncertainty remains around ASIC guidance and licence processing capacity.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== COUNTDOWN ====== -->
+  <div id="countdown">
+    <h2 class="section-heading">⏱️ Regulatory Countdown</h2>
+    <table class="countdown-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Date</th>
+          <th>Days</th>
+          <th>Context</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="countdown-event">CLARITY Act Markup Target</span></td>
+          <td><span class="countdown-date">w/c 11 May 2026</span></td>
+          <td><span class="days-pill days-urgent">9d</span></td>
+          <td class="countdown-context">Senate Banking Committee; subject to Republican caucus alignment</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">EU AI Act Omnibus — May 13 Trilogue</span></td>
+          <td><span class="countdown-date">13 May 2026</span></td>
+          <td><span class="days-pill days-urgent">11d</span></td>
+          <td class="countdown-context">Cypriot Presidency's second attempt to close Annex I dispute</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">MAS Crypto Capital Consultation Closes</span></td>
+          <td><span class="countdown-date">18 May 2026</span></td>
+          <td><span class="days-pill days-urgent">16d</span></td>
+          <td class="countdown-context">Group 1 prudential treatment for tokenised assets and stablecoins</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">FCA Cryptoasset Authorisation Webinar</span></td>
+          <td><span class="countdown-date">21 May 2026</span></td>
+          <td><span class="days-pill days-urgent">19d</span></td>
+          <td class="countdown-context">Operational resilience and SMCR overview for prospective applicants</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">FCA CP26/13 Guidance Consultation Closes</span></td>
+          <td><span class="countdown-date">3 Jun 2026</span></td>
+          <td><span class="days-pill days-normal">32d</span></td>
+          <td class="countdown-context">UK cryptoasset regime perimeter guidance; policy statements due summer</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">Australia AFSL No-Action Expiry</span></td>
+          <td><span class="countdown-date">30 Jun 2026</span></td>
+          <td><span class="days-pill days-normal">59d</span></td>
+          <td class="countdown-context">DAP/TCP providers must lodge AFSL applications or cease operations</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">Colorado AI Act Enforcement Date</span></td>
+          <td><span class="countdown-date">30 Jun 2026</span></td>
+          <td><span class="days-pill days-normal">59d</span></td>
+          <td class="countdown-context">Now stayed pending preliminary injunction ruling; date remains in statute</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">MiCA Transitional Period Expires (EU-wide)</span></td>
+          <td><span class="countdown-date">1 Jul 2026</span></td>
+          <td><span class="days-pill days-normal">60d</span></td>
+          <td class="countdown-context">All CASPs without MiCA authorization must cease EU operations; Poland in crisis</td>
+        </tr>
+        <tr>
+          <td><span class="countdown-event">EU AI Act High-Risk Obligations Apply</span></td>
+          <td><span class="countdown-date">2 Aug 2026</span></td>
+          <td><span class="days-pill days-normal">92d</span></td>
+          <td class="countdown-context">Legally in force regardless of Omnibus outcome; Annex III high-risk AI systems affected</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== PIPELINE TRACKER ====== -->
+  <div id="pipeline">
+    <h2 class="section-heading">🔄 Regulatory Pipeline Tracker</h2>
+    <table class="pipeline-table">
+      <thead>
+        <tr>
+          <th>Bill / Rule</th>
+          <th>Jurisdiction</th>
+          <th>Stage</th>
+          <th>Movement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CLARITY Act (Digital Asset Market Clarity Act)</strong></td>
+          <td>US</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-active"></div>
+              <div class="progress-seg seg-future"></div>
+              <div class="progress-seg seg-future"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Committee markup targeted w/c May 11</span>
+          </td>
+          <td><span class="move-adv">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>GENIUS Act (Stablecoin)</strong></td>
+          <td>US</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Enacted July 18, 2025; OCC comment period closed May 1</span>
+          </td>
+          <td><span class="move-none">▬ Rulemaking</span></td>
+        </tr>
+        <tr>
+          <td><strong>EU AI Act Digital Omnibus</strong></td>
+          <td>EU</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-active"></div>
+              <div class="progress-seg seg-future"></div>
+              <div class="progress-seg seg-future"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Trilogue — May 13 second attempt; Annex I unresolved</span>
+          </td>
+          <td><span class="move-stall">▼ Stalled</span></td>
+        </tr>
+        <tr>
+          <td><strong>UK Cryptoassets Regulatory Regime</strong></td>
+          <td>UK</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-active"></div>
+              <div class="progress-seg seg-future"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Regulations enacted Feb 4; application window Sep 30</span>
+          </td>
+          <td><span class="move-adv">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>Australia DAF Act (Digital Assets Framework)</strong></td>
+          <td>AU</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-future"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Royal Assent Apr 8; commences Apr 9, 2027</span>
+          </td>
+          <td><span class="move-none">▬ Implementation</span></td>
+        </tr>
+        <tr>
+          <td><strong>SEC Regulation Crypto Assets (NPRM)</strong></td>
+          <td>US</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-active"></div>
+              <div class="progress-seg seg-future"></div>
+              <div class="progress-seg seg-future"></div>
+              <div class="progress-seg seg-future"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Expected "within days" per Atkins; 400+ pages</span>
+          </td>
+          <td><span class="move-adv">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>MiCA CASP Full Enforcement</strong></td>
+          <td>EU</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-active"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">July 1 transitional expiry; NCAs enforcing post-cliff</span>
+          </td>
+          <td><span class="move-adv">▲ Advanced</span></td>
+        </tr>
+        <tr>
+          <td><strong>Colorado AI Act (SB 24-205)</strong></td>
+          <td>US (CO)</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-done"></div>
+              <div class="progress-seg seg-active"></div>
+            </div>
+            <span style="font-size:11px;color:var(--text-muted)">Enacted; enforcement stayed pending injunction ruling</span>
+          </td>
+          <td><span class="move-stall">▼ Enjoined</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== OPEN SUBMISSIONS ====== -->
+  <div id="submissions">
+    <h2 class="section-heading">📬 Open Submissions &amp; Consultations</h2>
+    <table class="sub-table">
+      <thead>
+        <tr>
+          <th>Consultation</th>
+          <th>Body</th>
+          <th>Jurisdiction</th>
+          <th>Deadline</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Crypto Bank Capital Prudential Treatment</td>
+          <td>MAS</td>
+          <td>Singapore</td>
+          <td>18 May 2026</td>
+          <td><span class="status-closing">🟡 CLOSING SOON — 16d</span></td>
+        </tr>
+        <tr>
+          <td>CP26/13 Cryptoasset Regulatory Perimeter Guidance</td>
+          <td>FCA</td>
+          <td>UK</td>
+          <td>3 Jun 2026</td>
+          <td><span class="status-open">🟢 OPEN</span></td>
+        </tr>
+        <tr>
+          <td>DAP/TCP AFSL Applications (No-Action Window)</td>
+          <td>ASIC</td>
+          <td>Australia</td>
+          <td>30 Jun 2026</td>
+          <td><span class="status-open">🟢 OPEN</span></td>
+        </tr>
+        <tr>
+          <td>Regulation Crypto Assets NPRM (forthcoming)</td>
+          <td>SEC</td>
+          <td>US</td>
+          <td>TBD (est. 60–90d from publication)</td>
+          <td><span class="status-ongoing">🔵 UPCOMING</span></td>
+        </tr>
+        <tr>
+          <td>EU AI Act Member State AI Regulatory Sandboxes</td>
+          <td>European Commission</td>
+          <td>EU</td>
+          <td>2 Aug 2026</td>
+          <td><span class="status-ongoing">🔵 ONGOING</span></td>
+        </tr>
+        <tr>
+          <td>ESMA MiCA Interim CASP Register Submissions</td>
+          <td>ESMA / NCAs</td>
+          <td>EU</td>
+          <td>1 Jul 2026</td>
+          <td><span class="status-open">🟢 OPEN</span></td>
+        </tr>
+        <tr>
+          <td>GENIUS Act Implementing Regulations — Federal Reserve</td>
+          <td>Federal Reserve</td>
+          <td>US</td>
+          <td>TBD</td>
+          <td><span class="status-ongoing">🔵 UPCOMING</span></td>
+        </tr>
+        <tr>
+          <td>CFTC Digital Asset Derivatives Pilot Extension</td>
+          <td>CFTC</td>
+          <td>US</td>
+          <td>Ongoing</td>
+          <td><span class="status-ongoing">🔵 ONGOING</span></td>
+        </tr>
+        <tr>
+          <td>OCC GENIUS Act Stablecoin Rules</td>
+          <td>OCC</td>
+          <td>US</td>
+          <td>Closed 1 May 2026</td>
+          <td><span class="status-closed">🔴 CLOSED</span></td>
+        </tr>
+        <tr>
+          <td>CFTC Prediction Markets ANPRM</td>
+          <td>CFTC</td>
+          <td>US</td>
+          <td>Closed 30 Apr 2026</td>
+          <td><span class="status-closed">🔴 CLOSED</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <div class="footer">
+    <div class="footer-section">
+      <div class="footer-heading">Tier 1 — Primary Regulators</div>
+      SEC, CFTC, OCC, Federal Reserve, FCA, ESMA, ASIC, MAS, European Commission, US DOJ, Colorado AG, EU Cypriot Presidency, European Parliament
+    </div>
+    <div class="footer-section">
+      <div class="footer-heading">Tier 2 — Law Firms</div>
+      A&amp;O Shearman, Bird &amp; Bird, Davis Polk, Greenberg Traurig, Ropes &amp; Gray, Sidley Austin, Wilson Sonsini, Wozniak Legal, Baker Botts, Alston &amp; Bird, Troutman Pepper
+    </div>
+    <div class="footer-section">
+      <div class="footer-heading">Tier 3 — Industry &amp; Advocacy</div>
+      Blockchain Association, Coin Center, Coinbase (Grewal statement), ICBA, ABA, Galaxy Digital Research, Digital Chamber
+    </div>
+    <div class="footer-section">
+      <div class="footer-heading">Tier 5 — Media</div>
+      American Banker, Banking Dive, CoinDesk, CoinGape, Blockonomi, Colorado Politics, Denver Gazette, CoinReporter, FinTech Weekly, HR Dive, Blockhead, Modulos AI
+    </div>
+    <div class="footer-disclaimer">
+      <strong>The Brief — Legal Intelligence</strong> is an AI-generated research digest for informational purposes only. Nothing herein constitutes legal advice or a solicitation of legal services. All legal interpretations are editorial views unless attributed to a named source. Verify all claims against primary sources before acting. Published 2 May 2026.
+    </div>
+  </div>
+
+</main>
+
+<script>
+// Hamburger
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+
+hamburger.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sidebar.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+    sidebar.classList.remove('open');
+  }
+});
+
+sidebar.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => sidebar.classList.remove('open'));
+});
+
+// Day/Night toggle — default is light mode
+const toggle = document.getElementById('themeToggle');
+toggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  toggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+});
+
+// IntersectionObserver for sidebar active state
+const storyLinks = document.querySelectorAll('.sidebar-link[href^="#story"]');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      storyLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.sidebar-link[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('article[id]').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
