@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Speed of Tape | May 4, 2026</title>
+<meta property="og:description" content="Alpha — Speed of Tape | May 4, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Speed of Tape</h1>
+  <div class="meta">
+    <span>Monday · 04 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #12</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Speed of tape — prints per second on the time-and-sales feed — measures the urgency of participants, not the direction. When the tape accelerates from a baseline of 20–40 prints/sec to 200+ in seconds, someone has decided to get filled <em>now</em>, regardless of price.</strong> The practical edge: pace acceleration into a structural level is information that price hasn't shown yet — a fast, one-sided burst into a known liquidity pool tells you a sweep is happening before the candle closes, and a sudden deceleration after a thrust tells you the move has run out of buyers. Read pace first, price second.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Urgency on the time-and-sales feed · prints per second as a state variable</div>
+    </div>
+  </div>
+
+  <div class="skim">Speed of tape is the rate at which trades are printing — transactions per second on the time-and-sales window — and it is the cleanest single read of how urgent participants are right now.</div>
+
+  <p>Every executed trade stamps a print on the time-and-sales (T&amp;S) feed: price, size, side, timestamp. The number of prints per unit of time is the <strong>tempo</strong> of the market. Calm tape: a few prints per second, mostly small, mixed bid and ask. Active tape: dozens per second, larger sizes, a clear bias to one side. Hot tape: the feed becomes a blur — hundreds of prints per second, all stacked at the ask or bid, the order book visibly shedding levels as it goes.</p>
+
+  <p>Tony, Wyckoff would call this the <em>activity</em> of the tape. Bookmap calls it <em>tempo</em>. Footprint platforms call it <em>speed of tape</em>. They all measure the same primitive: how many decisions are crossing the spread per unit of time. That metric, more than any single candle or indicator, tells you whether participants are <strong>willing to wait</strong> (passive, low pace) or <strong>need to be filled now</strong> (aggressive, high pace).</p>
+
+  <p>Why it matters mechanically: every print on the tape is a market order eating a passive resting limit order. A burst of pace is a burst of forced liquidity-taking. When that burst is one-sided and lands into a known structural pocket — prior swing high, equal lows, a liquidation cluster, a thin patch of book — it is the first observable evidence of a sweep, breakout, or liquidation cascade. Price will catch up; the tape already knows. As the <a href="https://bookmap.com/blog/whats-inside-the-tape-how-to-read-trade-size-speed-and-aggression">Bookmap practitioner guide</a> puts it: <em>"the speed of the tape helps you stay one step ahead of momentum before it becomes obvious on the chart."</em></p>
+
+  <p>Speed of tape is a sibling concept to CVD, footprint, and absorption — but it lives one rung lower in the stack. CVD asks <em>who is winning</em>; speed of tape asks <em>how hard they're trying right now</em>. The signal is intentionally crude. It does not tell you direction in isolation; combined with the bid/ask split of those prints, it does.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>PRINT</b><span>One executed trade row on the T&amp;S feed</span></span>
+    <span class="pill-term"><b>PACE</b><span>Prints per second over a rolling window</span></span>
+    <span class="pill-term"><b>BURST</b><span>Sustained acceleration above baseline pace</span></span>
+    <span class="pill-term"><b>STALL</b><span>Pace collapse after a burst — momentum exhausting</span></span>
+    <span class="pill-term"><b>ASK PRINTS</b><span>Trades at the offer — aggressive buying</span></span>
+    <span class="pill-term"><b>BID PRINTS</b><span>Trades at the bid — aggressive selling</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Pace is urgency. A fast, one-sided tape is participants telling you they cannot wait. A slow, two-sided tape is the market telling you no one cares.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Calculation · baseline establishment · pace + bias decoder</div>
+    </div>
+  </div>
+
+  <div class="skim">Pace is computed by counting prints (or summing volume) over a rolling N-second window, then comparing to a recent rolling average — burst signals fire when current pace exceeds a multiple of baseline.</div>
+
+  <p>The raw inputs are exchange trade messages. Every Binance, Bybit, or Coinbase websocket trade event carries timestamp, price, size, and an aggressor flag (or implied side). Speed-of-tape implementations differ on what they count, but the core formula is the same.</p>
+
+  <div class="formula">
+<b>Pace (prints):</b>
+P(t) = count of trades in window [t−N, t]
+
+<b>Pace (volume):</b>
+V(t) = Σ(trade_size) over window [t−N, t]
+
+<b>Baseline (rolling average):</b>
+P̄(t) = SMA of P over a longer window [t−M, t]   (e.g. M = 30 × N)
+
+<b>Burst signal:</b>
+P(t) &gt; k · P̄(t)   →  pace acceleration
+typical k = 3 to 5 for "noticeable", 8+ for "violent"
+
+<b>Directional pace:</b>
+ΔP(t) = (asks at offer − bids at bid) over window N
+sign(ΔP) gives the bias of the burst
+
+    <div class="note">N is typically 1–5 seconds for scalping, 30–60s for swing context. Tools like Bookmap, MotiveWave's Speed of Tape study, and Volumetrica all expose configurable N and threshold k. ATAS and Sierra Chart expose this as "Cluster Speed" or "Tape Speed Filter."</div>
+  </div>
+
+  <p>The two operational modes worth distinguishing:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Mode</th><th>What it shows</th><th>When to use</th></tr>
+    <tr><td>Print count</td><td>Number of executions per second — sensitive to retail clusters</td><td>Spotting algo bursts, panic prints, headline-driven flow</td></tr>
+    <tr><td>Volume per second</td><td>Notional throughput — large prints weighted heavier</td><td>Distinguishing institutional aggression from retail noise</td></tr>
+    <tr><td>Side-split pace</td><td>Asks/sec vs bids/sec — directional component</td><td>Confirming whether a burst is one-sided or churn</td></tr>
+    <tr><td>Tape × levels</td><td>Pace overlaid on absorption/liquidity zones</td><td>Catching sweeps, false breakouts, and stop runs in real time</td></tr>
+  </table>
+  </div>
+
+  <p>The most common practical decoder pairs <strong>pace</strong> and <strong>side</strong> into four states. <em>Fast + one-sided</em> = aggression is in control; trade with it. <em>Fast + two-sided</em> = volatility burst, no clear hand; stand aside. <em>Slow + drifting</em> = passive control, mean-reversion zone. <em>Slow + then sudden burst at a level</em> = ambush — the highest-information setup the tape produces, because the silence before the burst means the move was not foreshadowed by ongoing pressure.</p>
+
+  <p>Critical nuance: <strong>pace decay</strong> is as informative as pace acceleration. A thrust into a level on 200 prints/sec that immediately collapses to 30 prints/sec while price holds the high is absorption — passive size on the other side soaked the aggression and the aggressor ran out of fuel. Bookmap's framing: <em>"Aggressive moves into high liquidity with sudden stalls signal potential exhaustion."</em> Read the deceleration; it is where reversals are born.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — the four pace states and the burst-then-stall reversal</div>
+    </div>
+  </div>
+
+  <div class="skim">First diagram: pace + side decoder showing the four operational states. Second: a burst-then-stall reversal — the most repeatable pattern speed-of-tape generates.</div>
+
+  <!-- SVG 1 — Pace × Side Decoder -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Speed of tape decoder — pace versus side bias quadrants">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">The Pace × Side Decoder</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">FOUR TAPE STATES · WHAT EACH ONE TELLS YOU</text>
+
+      <!-- Outer frame -->
+      <rect x="80" y="70" width="640" height="340" fill="none" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Quadrant dividers -->
+      <line x1="400" y1="70" x2="400" y2="410" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="80" y1="240" x2="720" y2="240" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Axis labels -->
+      <text x="400" y="62" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="1">PACE  →</text>
+      <text x="64" y="240" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="1" transform="rotate(-90, 64, 240)">SIDE BIAS  →</text>
+
+      <text x="240" y="430" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5">SLOW (≤ 1× baseline)</text>
+      <text x="560" y="430" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5">FAST (≥ 3× baseline)</text>
+
+      <text x="40" y="155" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5" transform="rotate(-90, 40, 155)">ONE-SIDED</text>
+      <text x="40" y="325" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5" transform="rotate(-90, 40, 325)">TWO-SIDED</text>
+
+      <!-- Q1 — Slow + One-sided (top-left) — drift / control -->
+      <rect x="82" y="72" width="316" height="166" fill="#f7fee7" opacity="0.7"/>
+      <text x="240" y="98" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#3f6212">Quiet Drift</text>
+      <text x="240" y="120" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">SLOW · ONE-SIDED</text>
+      <text x="240" y="150" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Passive accumulation or distribution.</text>
+      <text x="240" y="168" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">A patient hand is in control;</text>
+      <text x="240" y="186" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">price drifts in their favour.</text>
+      <text x="240" y="216" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.3">→ trade with the side · low urgency</text>
+
+      <!-- Q2 — Fast + One-sided (top-right) — momentum / sweep -->
+      <rect x="402" y="72" width="316" height="166" fill="#dcfce7" opacity="0.85"/>
+      <text x="560" y="98" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#166534">Aggression</text>
+      <text x="560" y="120" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#166534" letter-spacing="0.5">FAST · ONE-SIDED</text>
+      <text x="560" y="150" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Sweep, breakout, or liquidation.</text>
+      <text x="560" y="168" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Aggressor is paying any price</text>
+      <text x="560" y="186" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">to get filled now.</text>
+      <text x="560" y="216" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.3">→ join the burst OR fade the stall</text>
+
+      <!-- Q3 — Slow + Two-sided (bottom-left) — chop -->
+      <rect x="82" y="242" width="316" height="166" fill="#f5f5f4" opacity="0.85"/>
+      <text x="240" y="268" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#57534e">Chop</text>
+      <text x="240" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#57534e" letter-spacing="0.5">SLOW · TWO-SIDED</text>
+      <text x="240" y="320" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Algorithmic balance.</text>
+      <text x="240" y="338" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">No urgency from anyone;</text>
+      <text x="240" y="356" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">price rotates around fair value.</text>
+      <text x="240" y="386" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.3">→ stand aside · scalpers only</text>
+
+      <!-- Q4 — Fast + Two-sided (bottom-right) — volatility burst -->
+      <rect x="402" y="242" width="316" height="166" fill="#fef3c7" opacity="0.85"/>
+      <text x="560" y="268" text-anchor="middle" font-family="DM Serif Display,serif" font-size="17" fill="#78350f">Volatility Burst</text>
+      <text x="560" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">FAST · TWO-SIDED</text>
+      <text x="560" y="320" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">News print, headline shock,</text>
+      <text x="560" y="338" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">CPI release. Both sides aggressive,</text>
+      <text x="560" y="356" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">no clear winner yet.</text>
+      <text x="560" y="386" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.3">→ wait for resolution · do not chase</text>
+
+      <!-- Highlight border on Q2 -- the alpha quadrant -->
+      <rect x="402" y="72" width="316" height="166" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+      <text x="560" y="55" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#3f6212" letter-spacing="1" font-weight="700">★ THE ALPHA QUADRANT</text>
+
+    </svg>
+    <div class="svg-caption">Speed of tape only generates trades from one quadrant of this 2×2 — fast, one-sided pace. Quiet drift is for swing context, chop is for sitting on hands, and a two-sided volatility burst is a coin flip you do not need to take. The full alpha is in pace + bias agreement, ideally landing into a structural level.</div>
+  </div>
+
+  <!-- SVG 2 — Burst-then-Stall Reversal -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Burst-then-stall reversal — pace acceleration into resistance, then sharp deceleration as absorption holds">
+
+      <defs>
+        <linearGradient id="paceGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.45"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Burst → Stall Reversal</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PACE SPIKES INTO LEVEL · THEN COLLAPSES · ABSORPTION CONFIRMED</text>
+
+      <!-- ── Price panel (top, y 60-220) ── -->
+      <text x="36" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE</text>
+      <line x1="60" y1="75" x2="60" y2="225" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="225" x2="760" y2="225" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Resistance level -->
+      <line x1="60" y1="98" x2="760" y2="98" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <text x="756" y="93" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" font-weight="700">RESISTANCE / SWEEP TARGET</text>
+
+      <!-- Price candles building, thrusting, then stalling, then reversing -->
+      <!-- Pre-burst grind -->
+      <rect x="80"  y="180" width="14" height="12" fill="#22c55e"/>
+      <rect x="110" y="172" width="14" height="14" fill="#22c55e"/>
+      <rect x="140" y="165" width="14" height="14" fill="#ef4444"/>
+      <rect x="170" y="160" width="14" height="14" fill="#22c55e"/>
+      <rect x="200" y="152" width="14" height="14" fill="#22c55e"/>
+      <rect x="230" y="146" width="14" height="12" fill="#ef4444"/>
+      <rect x="260" y="140" width="14" height="14" fill="#22c55e"/>
+      <rect x="290" y="132" width="14" height="14" fill="#22c55e"/>
+      <!-- Burst candle — long green thrust into resistance -->
+      <rect x="320" y="100" width="14" height="34" fill="#22c55e"/>
+      <line x1="327" y1="98" x2="327" y2="100" stroke="#22c55e" stroke-width="2"/>
+      <text x="327" y="92" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212" font-weight="700">BURST</text>
+      <!-- Stall — wick into resistance, close back below -->
+      <rect x="350" y="105" width="14" height="14" fill="#ef4444"/>
+      <line x1="357" y1="100" x2="357" y2="105" stroke="#ef4444" stroke-width="2"/>
+      <line x1="357" y1="119" x2="357" y2="128" stroke="#ef4444" stroke-width="2"/>
+      <text x="357" y="138" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f" font-weight="700">STALL</text>
+      <!-- Reversal -->
+      <rect x="380" y="118" width="14" height="18" fill="#ef4444"/>
+      <rect x="410" y="130" width="14" height="20" fill="#ef4444"/>
+      <rect x="440" y="145" width="14" height="22" fill="#ef4444"/>
+      <rect x="470" y="160" width="14" height="20" fill="#ef4444"/>
+      <rect x="500" y="172" width="14" height="18" fill="#ef4444"/>
+      <rect x="530" y="180" width="14" height="14" fill="#22c55e"/>
+      <rect x="560" y="178" width="14" height="14" fill="#ef4444"/>
+      <rect x="590" y="182" width="14" height="16" fill="#ef4444"/>
+      <rect x="620" y="190" width="14" height="14" fill="#ef4444"/>
+      <rect x="650" y="196" width="14" height="14" fill="#22c55e"/>
+      <rect x="680" y="190" width="14" height="14" fill="#ef4444"/>
+      <rect x="710" y="194" width="14" height="14" fill="#ef4444"/>
+
+      <!-- ── Pace panel (bottom, y 250-400) ── -->
+      <text x="36" y="262" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PACE</text>
+      <text x="36" y="276" font-family="JetBrains Mono,monospace" font-size="9" fill="#a8a29e" letter-spacing="0.5">prints/s</text>
+      <line x1="60" y1="265" x2="60" y2="405" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="405" x2="760" y2="405" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Baseline pace line -->
+      <line x1="60" y1="380" x2="760" y2="380" stroke="#78716c" stroke-width="1" stroke-dasharray="3,4"/>
+      <text x="56" y="383" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">~30/s baseline</text>
+
+      <!-- Threshold line (3× baseline) -->
+      <line x1="60" y1="335" x2="760" y2="335" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,4"/>
+      <text x="756" y="332" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f">3× baseline (burst trigger)</text>
+
+      <!-- Pace bars -->
+      <!-- Pre-burst: low and stable -->
+      <rect x="80"  y="378" width="14" height="22" fill="#a3e635" opacity="0.6"/>
+      <rect x="110" y="375" width="14" height="25" fill="#a3e635" opacity="0.6"/>
+      <rect x="140" y="380" width="14" height="20" fill="#a3e635" opacity="0.6"/>
+      <rect x="170" y="378" width="14" height="22" fill="#a3e635" opacity="0.6"/>
+      <rect x="200" y="376" width="14" height="24" fill="#a3e635" opacity="0.6"/>
+      <rect x="230" y="378" width="14" height="22" fill="#a3e635" opacity="0.6"/>
+      <rect x="260" y="372" width="14" height="28" fill="#a3e635" opacity="0.6"/>
+      <rect x="290" y="368" width="14" height="32" fill="#a3e635" opacity="0.7"/>
+      <!-- BURST — pace explodes -->
+      <rect x="320" y="280" width="14" height="120" fill="#22c55e"/>
+      <text x="327" y="272" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#166534" font-weight="700">220/s</text>
+      <!-- STALL — pace collapses sharply -->
+      <rect x="350" y="370" width="14" height="30" fill="#fbbf24"/>
+      <text x="357" y="362" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f" font-weight="700">35/s</text>
+      <!-- Reversal — pace stays low/moderate, mostly bid-side -->
+      <rect x="380" y="365" width="14" height="35" fill="#ef4444" opacity="0.7"/>
+      <rect x="410" y="360" width="14" height="40" fill="#ef4444" opacity="0.7"/>
+      <rect x="440" y="350" width="14" height="50" fill="#ef4444" opacity="0.8"/>
+      <rect x="470" y="358" width="14" height="42" fill="#ef4444" opacity="0.7"/>
+      <rect x="500" y="368" width="14" height="32" fill="#ef4444" opacity="0.6"/>
+      <rect x="530" y="375" width="14" height="25" fill="#ef4444" opacity="0.5"/>
+      <rect x="560" y="378" width="14" height="22" fill="#a3e635" opacity="0.4"/>
+      <rect x="590" y="376" width="14" height="24" fill="#a3e635" opacity="0.4"/>
+      <rect x="620" y="378" width="14" height="22" fill="#a3e635" opacity="0.4"/>
+      <rect x="650" y="378" width="14" height="22" fill="#a3e635" opacity="0.4"/>
+      <rect x="680" y="380" width="14" height="20" fill="#a3e635" opacity="0.4"/>
+      <rect x="710" y="380" width="14" height="20" fill="#a3e635" opacity="0.4"/>
+
+      <!-- Burst → stall annotation -->
+      <line x1="327" y1="280" x2="327" y2="98" stroke="#3f6212" stroke-width="1" stroke-dasharray="2,3" opacity="0.6"/>
+      <line x1="357" y1="370" x2="357" y2="105" stroke="#78350f" stroke-width="1" stroke-dasharray="2,3" opacity="0.6"/>
+
+      <!-- Highlight zone: burst-then-stall window -->
+      <rect x="316" y="60" width="55" height="345" fill="#fbbf24" opacity="0.05"/>
+      <rect x="316" y="60" width="55" height="345" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+
+    </svg>
+    <div class="svg-caption">The reversal template: pace grinds at baseline (~30 prints/sec), then bursts to 200+/sec on a single thrust candle into resistance. The very next bar, pace collapses back to baseline — aggression has run out — and price reverses. The burst alone is a momentum signal; the burst-followed-by-stall is the reversal signal. Without the stall, you do not have absorption; you have a continuation.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Establish baseline · pair with structure · trade the deceleration</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never trade pace in a vacuum. Pace at a level is signal; pace in the middle of a range is noise.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Calibrate the Baseline Before You Calibrate the Trade</h4>
+        <p>Every market and every session has its own normal pace. BTC perp on Binance during US session might run 60–100 prints/sec baseline; the same pair in Asia dead hours might run 15–25/sec. Watch the tape for 5–10 minutes before you act. Without a calibrated baseline, you cannot see a burst — every cluster looks fast.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Pair Pace With a Pre-Defined Level</h4>
+        <p>Pace bursts in the middle of a range are usually algos rebalancing or news flickers — not tradeable. Pace bursts <em>at</em> a level — prior swing high, equal lows, a liquidation cluster from <a href="https://www.coinglass.com/LiquidationData">Coinglass</a>, an HVN/LVN — are tradeable. Mark your levels first; then watch for pace to confirm.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Trade the Stall, Not the Burst</h4>
+        <p>The burst is the trap most traders fall into — chasing a fast tape into a level that was the entire reason institutions were waiting there. The cleaner trade is the deceleration: pace collapses while price holds the high, body of the next candle closes back inside the level. That's the fade. Burst alone is FOMO bait; burst plus stall is information.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Cross-Reference With Size, Not Just Count</h4>
+        <p>Two hundred prints/sec of 0.01 BTC is retail panic. Twenty prints/sec at 5 BTC each is one institutional desk working a sell. Print count and notional volume tell you different things — always glance at trade size on the T&amp;S window. Bookmap and footprint platforms make this trivial; on raw exchange feeds, sort by size.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Fade After a Headline Pop</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>BTC ranging 77,800–78,400 for 6 hours. Baseline pace ~40 prints/sec. Pre-defined resistance at $79,000 (prior swing + liquidation cluster).</td></tr>
+      <tr><td>Burst</td><td>Headline hits at 14:08 Sydney. Pace explodes to ~280 prints/sec, all ask-side. BTC sweeps from $78,150 → $79,050 in under 4 minutes.</td></tr>
+      <tr><td>Stall</td><td>Pace collapses back to ~50/sec within 2 minutes of the high. Bid prints start outnumbering asks. Price holds just below $79,000 — no continuation.</td></tr>
+      <tr><td>Trigger</td><td>5m candle closes back below $78,800 — failed sweep. Enter short at market ~$78,750.</td></tr>
+      <tr><td>Stop</td><td>Above the headline high: $79,150. Risk = $400/BTC (~0.51%).</td></tr>
+      <tr><td>Target</td><td>Range mid at $78,100. R:R = ~1.6:1. Trail stop to entry below $78,400.</td></tr>
+      <tr><td>Invalidation</td><td>Pace re-accelerates ask-side and prints close above $79,150 — sweep was real, exit and reverse.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> 1m–5m for entry; pace itself is a sub-second metric. 1h+ for level identification. Speed of tape is execution-grade information — it does not tell you what to trade, only when to fire on what you've already decided to trade.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC's weekend Iran-headline pop · burst into $79K · immediate stall</div>
+    </div>
+  </div>
+
+  <div class="skim">Saturday 3 May produced a textbook burst-then-stall on BTC: Iran diplomatic-channel headline drove a fast spike above $79K, Trump skepticism hit the wires within an hour and the tape collapsed back to baseline at $78K. A repeatable template, played out in real time.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 1H</div>
+    <h4>BTC's Iran-Headline Sweep — A Pace Lesson in Two Acts</h4>
+
+    <p>Through Saturday and Sunday (3–4 May 2026), BTC consolidated tightly around <strong>$78,000–78,400</strong> on subdued weekend pace. Sometime during the US/Asia handoff, a headline crossed reporting that Iran had sent a fresh diplomatic proposal to the United States. The tape immediately accelerated — ask-side prints stacked, depth on the offer side of the order book was eaten, and BTC pushed to a session high above <strong>$79,000</strong> before the move had been priced into the cash equities open.</p>
+
+    <p>The classic acceleration phase. Then the second act: <strong>Trump publicly expressed skepticism</strong> about the Iranian proposal within the hour. The tape did not panic-sell — it simply <em>stopped buying</em>. Pace collapsed back to baseline, ask-side prints dried up, and price drifted back to the prior consolidation zone near <strong>$78,200</strong> over the following candles. No catalyst for a flush; just an aggressor that ran out of reason to keep paying up. By Sunday's close BTC was right back at $78,190 — exactly where it had started, with intraday range cleared and stops on both sides of $78K refreshed.</p>
+
+    <p>Two things this teaches. First, fast tape into a clear structural pocket ($79K had been prior resistance for the entire month) is not by itself a continuation signal — most of the time it is a sweep that gets faded the moment the catalyst weakens. Second, the <em>absence</em> of pace on the way back down is itself information: nobody chased the reversal because nobody was urgent. Just a controlled fade as the speculative ask dried up. This is also why the morning's <a href="market-briefing.html" style="color:#bef264;border-bottom-color:#bef264">Morning Edge</a> flagged BTC as grinding $78K with crowded shorts — the market is in a state where headline-driven bursts move price two ways without committing to either.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Pre-burst range</td><td>$78,000 – $78,400 (low pace, ~30 prints/s)</td></tr>
+        <tr><td>Burst trigger</td><td>Iran diplomatic-channel headline</td></tr>
+        <tr><td>High of move</td><td>~$79,050 · brief tag of $79K resistance</td></tr>
+        <tr><td>Burst window</td><td>~minutes · ask-dominant, pace ≥ 5× baseline</td></tr>
+        <tr><td>Counter-headline</td><td>Trump expressed skepticism (within ~1h)</td></tr>
+        <tr><td>Pace post-headline</td><td>Collapsed back to baseline · no follow-through</td></tr>
+        <tr><td>Settlement (Sun close)</td><td>~$78,190 · round-trip back to consolidation</td></tr>
+        <tr><td>Sources</td><td>LatestLY · CoinDesk · CryptoNews · own Morning Edge</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Headline-driven bursts at $79K were faded both ways this weekend with no commitment. The tape says positioning is undecided and reflexive — not a regime where you trade pace for continuation, only for fade-into-deceleration. Until pace sustains for more than a single candle into a new high, treat any burst as a setup to fade, not chase.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Wyckoff's century-old framing alongside modern practitioners</div>
+    </div>
+  </div>
+
+  <div class="skim">From Wyckoff's original tape-reading manual to modern Bookmap/Bybit practitioners — the language has changed, the concept has not.</div>
+
+  <div class="quote">
+    <p>"Every minute of the day it is demonstrating whether supply or demand is the greater."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · <a href="https://archive.org/stream/WyckoffMethodOfTapeReading/Wyckoff+-+Method+of+Tape+Reading_djvu.txt">archive.org full text</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The tape tells the truth. It records the actual transactions, and transactions are based on hopes, fears, greed, and all the emotions that drive human behavior in markets."</p>
+    <div class="attr"><b>Jesse Livermore</b> · attributed in <em>Reminiscences of a Stock Operator</em> tradition · <a href="https://priceactionninja.com/jesse-livermores-tape-reading-method-explained/">PriceActionNinja</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The speed of the tape (transactions per second) indicates urgency; a tape accelerating from 50 to 200+ prints per second signals a potential breakout or breakdown."</p>
+    <div class="attr"><b>Bookmap Practitioner Guide</b> · "What's Inside the Tape" · 2025 · <a href="https://bookmap.com/blog/whats-inside-the-tape-how-to-read-trade-size-speed-and-aggression">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Aggressive moves into high liquidity with sudden stalls signal potential exhaustion."</p>
+    <div class="attr"><b>Bookmap</b> · same source · the deceleration rule that turns pace into a reversal trigger</div>
+  </div>
+
+  <div class="quote">
+    <p>"In cryptocurrency exchanges, every buy and sell fills against the limit order book. By monitoring the time and sales tape, bid–ask imbalances, and resting liquidity, traders can gauge whether aggressive buyers or sellers are in control."</p>
+    <div class="attr"><b>Order Flow Trading in Crypto Markets</b> · 2026 · <a href="https://fibalgo.com/education/tape-reading-trading-strategy-institutional-flow">FibAlgo institutional-flow note</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways traders wreck themselves with speed of tape</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: chasing the burst. The whole edge of speed of tape is reading the deceleration that comes after — not the acceleration itself.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Chasing the Burst</h5>
+      <p>The burst is the part everyone sees — pace explodes, price thrusts, you market in. Most of the time you are buying the high tick from a desk that has been waiting at that level. The burst is the bait; the stall is the fade. If you can only watch one thing, watch what happens to pace <em>after</em> the thrust candle.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>No Baseline, No Burst</h5>
+      <p>A "fast tape" is meaningless without a reference. 100 prints/sec is fast for ETH at 03:00 Sydney; it's slow for BTC at the US cash open. Sit with the tape for 5–10 minutes before you trade it. If you cannot tell me current pace as a multiple of baseline, you are reading noise.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Treating Pace as Direction</h5>
+      <p>Speed of tape is not a directional indicator. A two-sided burst — both bid and ask prints stacking — is volatility, not momentum. Always cross-reference pace with side: only a fast <em>and</em> one-sided tape carries directional information. Bookmap's coloured dots, ATAS's cluster filter, or simply the bid/ask split on the T&amp;S column do this for you.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Ignoring HFT Print-Spam</h5>
+      <p>Modern algos generate enormous print counts at trivial sizes — a single HFT can flood the tape with 500 prints/sec of 0.001 BTC each, signalling nothing. Always sanity-check pace against notional volume. If the per-second count is 5× baseline but per-second volume is flat, you are watching algorithmic noise, not aggression.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Treating Speed of Tape as a Standalone Strategy</h5>
+      <p>Speed of tape is not a system. It is execution information that sharpens trades you have already decided to take from structure, levels, and bias. The traders who got rich "reading the tape" in 2010 had no other tools — modern crypto has CVD, footprint, heatmaps, OI, funding, and on-chain flow. Pace is now one input among many. Anyone selling you a "tape reading course" as standalone alpha in 2026 is selling you nostalgia. Use it as a confluence layer; do not build a strategy around it alone.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Verified sources only — fetched in research</div>
+    </div>
+  </div>
+
+  <div class="skim">From Wyckoff's primary text to modern platform implementations — five sources that go deeper.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://archive.org/stream/WyckoffMethodOfTapeReading/Wyckoff+-+Method+of+Tape+Reading_djvu.txt">Richard D. Wyckoff — Studies in Tape Reading (1910, full text)</a>
+        <span>The primary source. Wyckoff codified what every modern speed-of-tape concept restates — activity, urgency, supply vs demand minute by minute. The full text is on archive.org. Read at least the opening sections.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/whats-inside-the-tape-how-to-read-trade-size-speed-and-aggression">Bookmap — What's Inside the Tape (Speed, Size, Aggression)</a>
+        <span>The most operational modern explainer. Walks through pace acceleration, deceleration into liquidity, and aggression colour-coding. Free of platform marketing — directly actionable.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Platform</div>
+      <div class="fr-body">
+        <a href="https://docs.motivewave.com/user-guide/volume-order-flow-analysis-guide/speed-of-tape">MotiveWave — Speed of Tape Study Documentation</a>
+        <span>Technical reference for the pace-as-indicator implementation: ticks, volume, ask volume, bid volume, delta volume — five computation modes with auto-filter. Useful even if you don't use MotiveWave; the parameters generalise.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://fibalgo.com/education/tape-reading-trading-strategy-institutional-flow">FibAlgo — Tape Reading Still Beats Algorithms at Their Own Game</a>
+        <span>Crypto-aware modern take: why pace and side-bias remain readable in algorithmic markets, and where institutional execution methods can still fool the tape. Strong on common traps.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://help.volumetricatrading.com/en/support/solutions/articles/204000011988-speed-of-tape">Volumetrica — Speed of Tape Indicator Reference</a>
+        <span>Configurable filter implementation: time interval, min/max thresholds, statistical filtering. Worth reading even if just to understand how a "burst" is parameterised in practice.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Live Data</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/LiquidationData">Coinglass — Liquidation Data &amp; Heatmap</a>
+        <span>The pace-relevant level layer for BTC/ETH: where stops are clustered, where liquidations sit, where a fast tape will most likely sweep. Mark levels here first; then watch the tape for confirmation.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/blog/whats-inside-the-tape-how-to-read-trade-size-speed-and-aggression">Bookmap · What's Inside the Tape</a>
+    <a href="https://help.volumetricatrading.com/en/support/solutions/articles/204000011988-speed-of-tape">Volumetrica · Speed of Tape Reference</a>
+    <a href="https://docs.motivewave.com/user-guide/volume-order-flow-analysis-guide/speed-of-tape">MotiveWave · Speed of Tape Docs</a>
+    <a href="https://archive.org/stream/WyckoffMethodOfTapeReading/Wyckoff+-+Method+of+Tape+Reading_djvu.txt">Wyckoff · Studies in Tape Reading (1910)</a>
+    <a href="https://priceactionninja.com/jesse-livermores-tape-reading-method-explained/">Livermore Tape Reading · PriceActionNinja</a>
+    <a href="https://fibalgo.com/education/tape-reading-trading-strategy-institutional-flow">FibAlgo · Institutional Tape Reading</a>
+    <a href="https://www.coinglass.com/LiquidationData">Coinglass Liquidation Heatmap</a>
+    <a href="https://www.warriortrading.com/time-and-sales/">Warrior Trading · Time &amp; Sales Guide</a>
+    <a href="https://www.tradealgo.com/trading-guides/day-trading/tape-reading-for-day-traders-how-to-interpret-time-and-sales-data">TradeAlgo · Tape Reading for Day Traders</a>
+    <a href="https://www.latestly.com/business/bitcoin-price-today-may-3-2026-btc-price-consolidates-at-usd-78281-as-traders-eye-resistance-levels-7415126.html">LatestLY · BTC May 3 2026 price action</a>
+  </div>
+  <div>Alpha · Issue #12 · 04 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
