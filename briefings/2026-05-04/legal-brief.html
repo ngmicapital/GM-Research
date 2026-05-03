@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence — 4 May 2026</title>
+<style>
+@font-face { font-family: 'Charter'; src: local('Charter'), local('Bitstream Charter'), local('Georgia'); font-display: swap; }
+
+:root {
+  --bg-primary: #1a1f2e; --bg-secondary: #2e3548; --bg-sidebar: #151928;
+  --bg-card: #252b3b; --bg-card-hover: #2e3548;
+  --text-primary: #edf1f7; --text-secondary: #bcc8d8; --text-muted: #8b96b0;
+  --border: #3a4257;
+  --accent-gold: #e8c84a; --accent-gold-light: #f5dfa0; --accent-gold-dim: #a8902e;
+  --accent-blue: #5c7cfa; --accent-purple: #8b7fc7; --accent-amber: #f0a030;
+  --accent-green: #3fb950; --accent-red: #f85149; --accent-teal: #3dc9b0;
+}
+body.light-mode {
+  --bg-primary: #f5f5f0; --bg-secondary: #f0eff5; --bg-sidebar: #e8e8e0;
+  --bg-card: #ffffff; --bg-card-hover: #f0eff5;
+  --text-primary: #1a1a2e; --text-secondary: #5a6070; --text-muted: #8890a0;
+  --border: #d4d4d4;
+  --accent-gold: #b8960a; --accent-gold-light: #7a6400; --accent-gold-dim: #9a8020;
+  --accent-blue: #3a5ecf; --accent-purple: #6b5aab; --accent-amber: #c07020;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Charter, 'Bitstream Charter', Georgia, serif;
+  font-size: 15px; line-height: 1.75;
+  background: var(--bg-primary); color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
+}
+
+.theme-toggle {
+  position: fixed; top: 16px; right: 20px; z-index: 1000;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 14px; cursor: pointer; color: var(--text-primary);
+  font-family: inherit; font-size: 13px; letter-spacing: 0.05em;
+}
+
+.hamburger {
+  position: fixed; top: 16px; left: 20px; z-index: 1000;
+  width: 40px; height: 40px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--text-primary); gap: 3px;
+}
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--text-primary); }
+
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+  background: var(--bg-sidebar); border-right: 1px solid var(--border);
+  padding: 24px 16px; overflow-y: auto; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.2s;
+}
+.sidebar.open { transform: translateX(0); }
+.sidebar .brand {
+  font-family: inherit; color: var(--accent-gold);
+  font-size: 18px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.sidebar .brand-date { color: var(--text-muted); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 18px; }
+.sidebar h4 {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-muted); margin: 18px 0 8px; font-weight: 600;
+}
+.sidebar a {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text-secondary); text-decoration: none; font-size: 13px;
+  padding: 6px 8px 6px 10px; border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.sidebar a:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+.sidebar a.active { color: var(--text-primary); border-left-color: var(--accent-gold); }
+.tier-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-headline { background: var(--accent-gold); }
+.dot-high { background: var(--accent-blue); }
+.dot-medium { background: var(--accent-green); }
+
+.content { margin: 0 auto; max-width: 960px; padding: 70px 40px 80px; }
+
+.masthead { text-align: center; padding: 30px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 36px; position: relative; }
+.masthead h1 { font-family: Georgia, serif; font-size: 3.2rem; margin: 0; letter-spacing: 0.02em; }
+.masthead .accent-bar { width: 80px; height: 3px; background: var(--accent-gold); margin: 14px auto 14px; }
+.masthead .subtitle { font-family: inherit; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.22em; font-size: 12px; }
+.masthead .date-line { font-family: inherit; color: var(--text-secondary); margin-top: 6px; letter-spacing: 0.08em; font-size: 14px; }
+.masthead .meta-row { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-family: inherit; font-weight: 600; }
+.pill-gold { background: rgba(212,160,23,0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); }
+.pill-muted { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
+.gold-grad { background: linear-gradient(90deg, transparent, var(--accent-gold), transparent); height: 2px; margin-top: 24px; }
+
+.story-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 28px 30px; margin-bottom: 26px; border-left-width: 3px; border-left-style: solid;
+  scroll-margin-top: 80px;
+}
+.story-card.tier-headline { border-left-color: var(--accent-gold); }
+.story-card.tier-high { border-left-color: var(--accent-blue); }
+.story-card.tier-medium { border-left-color: var(--accent-green); }
+
+.meta-line { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; font-family: inherit; font-size: 11px; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; font-family: inherit; }
+.badge-headline { background: rgba(212,160,23,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); }
+.badge-high { background: rgba(31,111,235,0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+.badge-medium { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+.source-tag { color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.cred-tag { color: var(--accent-teal); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+.cat-tag { color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+.signal { font-family: inherit; font-size: 12px; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.04em; }
+
+.story-title { font-size: 1.45rem; font-weight: 700; line-height: 1.35; margin: 6px 0 18px; color: var(--text-primary); }
+.update-flag {
+  display: inline-block; background: rgba(240,160,48,0.18); color: var(--accent-amber);
+  border: 1px solid var(--accent-amber); border-radius: 4px;
+  font-family: inherit; font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; padding: 2px 8px; margin-right: 10px; vertical-align: middle;
+}
+
+.golden-quote {
+  border-left: 3px solid var(--accent-gold);
+  background: rgba(212,160,23,0.05);
+  padding: 14px 18px; margin: 18px 0;
+  font-style: italic; color: var(--accent-gold-light); font-size: 15px;
+}
+.golden-quote .attrib { display: block; margin-top: 6px; font-style: normal; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; }
+
+.summary p { margin: 12px 0; color: var(--text-secondary); }
+
+.precedent {
+  border-left: 1px dashed var(--text-muted); padding: 6px 14px; margin: 14px 0;
+  font-size: 13px; color: var(--text-muted);
+}
+
+.block { padding: 14px 18px; border-left: 3px solid; border-radius: 4px; margin: 14px 0; background: var(--bg-secondary); }
+.block-analysis { border-left-color: #1f6feb; }
+.block-contrarian { border-left-color: #8957e5; }
+.block-industry { border-left-color: #d29922; }
+.block h5 { margin: 0 0 8px; font-family: inherit; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--text-primary); }
+.block p { margin: 6px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+.brief-read { color: var(--accent-gold); font-style: italic; font-weight: 600; }
+
+.impact-card { background: var(--bg-secondary); border-left: 3px solid var(--accent-green); padding: 14px 18px; border-radius: 4px; margin: 14px 0; }
+.impact-card h5 { margin: 0 0 10px; font-family: inherit; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--text-primary); }
+.impact-line { margin: 8px 0; line-height: 1.6; font-size: 14px; color: var(--text-secondary); }
+.impact-tag { display: inline-block; font-weight: 700; margin-right: 6px; min-width: 90px; }
+.impact-tag.bull { color: var(--accent-green); }
+.impact-tag.bear { color: var(--accent-red); }
+.impact-tag.neut { color: var(--text-muted); }
+
+.todo-card { background: var(--bg-secondary); border-left: 3px solid var(--accent-gold); padding: 14px 18px; border-radius: 4px; margin: 14px 0; }
+.todo-card h5 { margin: 0 0 10px; font-family: inherit; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--text-primary); }
+.todo-line { margin: 6px 0; font-size: 14px; line-height: 1.6; }
+.todo-role { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: inherit; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-right: 8px; min-width: 96px; text-align: center; }
+.role-trader { background: rgba(248,81,73,0.2); color: #ff7b72; }
+.role-counsel { background: rgba(31,111,235,0.2); color: #79c0ff; }
+.role-compliance { background: rgba(137,87,229,0.2); color: #d2a8ff; }
+.role-founder { background: rgba(63,185,80,0.2); color: #7ee787; }
+
+.connected { background: var(--bg-secondary); padding: 14px 18px; border-radius: 4px; margin: 14px 0; }
+.connected h5 { margin: 0 0 10px; font-family: inherit; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: var(--accent-blue); }
+.connected p { margin: 4px 0; font-size: 13px; color: var(--text-secondary); }
+
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.tag { font-family: inherit; font-size: 11px; padding: 3px 10px; background: var(--border); color: var(--text-secondary); border-radius: 3px; letter-spacing: 0.06em; }
+
+section.persistent { margin-top: 48px; }
+section.persistent h2 { font-family: Georgia, serif; font-size: 1.6rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 18px; }
+
+.cross-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.cross-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.cross-card h4 { margin: 0 0 6px; color: var(--accent-teal); font-family: inherit; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+.cross-card .dir { font-family: inherit; font-size: 12px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.05em; }
+.dir-accel { color: var(--accent-green); }
+.dir-quiet { color: var(--accent-green); }
+.dir-mixed { color: var(--accent-amber); }
+.dir-widen { color: var(--accent-gold-light); }
+.dir-decel { color: var(--accent-red); }
+.dir-pivot { color: var(--accent-amber); }
+.cross-card p { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+
+.tone-row { display: grid; grid-template-columns: 80px 200px 1fr; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.flag-badge { display: inline-block; font-family: inherit; font-size: 11px; padding: 4px 10px; border-radius: 4px; font-weight: 700; letter-spacing: 0.14em; text-align: center; }
+.flag-us { background: #1f3a6e; color: #93b4f0; border: 1px solid #2d5299; }
+.flag-eu { background: #1a1a5e; color: #a0a8f8; border: 1px solid #2828a0; }
+.flag-uk { background: #3a1a1a; color: #f09090; border: 1px solid #8b2020; }
+.flag-sg { background: #1a3a2a; color: #7fcca0; border: 1px solid #1e6640; }
+.flag-au { background: #2a1a3a; color: #c0a0f0; border: 1px solid #5e2a8b; }
+.tone-signal { font-family: inherit; font-size: 13px; font-weight: 600; }
+.tone-explain { color: var(--text-secondary); font-size: 13px; }
+
+.countdown-row { display: grid; grid-template-columns: 1.6fr 0.9fr 0.7fr 1.6fr; gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--border); align-items: center; font-size: 14px; }
+.countdown-event { font-weight: 700; color: var(--text-primary); }
+.countdown-date { font-family: inherit; color: var(--text-muted); font-size: 12px; letter-spacing: 0.05em; }
+.countdown-context { color: var(--text-secondary); font-size: 13px; }
+
+.pipeline-row { display: grid; grid-template-columns: 2fr 0.8fr 1.6fr 0.6fr; gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; align-items: center; }
+.pipeline-bar { display: flex; gap: 2px; height: 12px; }
+.pipeline-bar span { flex: 1; background: var(--bg-secondary); border-radius: 2px; }
+.pipeline-bar span.done { background: var(--accent-green); }
+.pipeline-bar span.cur { background: var(--accent-amber); }
+.move-up { color: var(--accent-green); font-weight: 700; }
+.move-flat { color: var(--text-muted); }
+.move-down { color: var(--accent-red); font-weight: 700; }
+
+.consult-row { display: grid; grid-template-columns: 2fr 1fr 0.8fr 0.9fr 0.8fr; gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--border); align-items: center; font-size: 13px; }
+.status-open { color: var(--accent-green); font-weight: 700; }
+.status-soon { color: var(--accent-gold); font-weight: 700; }
+.status-ongoing { color: var(--accent-blue); font-weight: 700; }
+.status-closed { color: var(--text-muted); text-decoration: line-through; }
+
+footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
+footer h4 { margin: 14px 0 6px; color: var(--text-secondary); font-family: inherit; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+footer .src-list { font-size: 12px; line-height: 1.7; }
+
+@media (max-width: 720px) {
+  .content { padding: 70px 18px 60px; }
+  .masthead h1 { font-size: 2.2rem; }
+  .countdown-row, .pipeline-row, .consult-row, .tone-row { grid-template-columns: 1fr; gap: 6px; }
+  .story-card { padding: 22px 18px; }
+}
+</style>
+</head>
+<body class="light-mode">
+
+<button class="hamburger" id="hamburger" aria-label="Open contents">
+  <span></span><span></span><span></span>
+</button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙 Dark</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">The Brief</div>
+  <div class="brand-date">4 May 2026</div>
+
+  <h4>Stories</h4>
+  <a href="#story-1"><span class="tier-dot dot-headline"></span>CFTC AI registration review</a>
+  <a href="#story-2"><span class="tier-dot dot-high"></span>Polymarket main-exchange ask</a>
+  <a href="#story-3"><span class="tier-dot dot-high"></span>Merkley letter to CFTC</a>
+  <a href="#story-4"><span class="tier-dot dot-high"></span>FinCEN-OFAC stablecoin NPRM</a>
+  <a href="#story-5"><span class="tier-dot dot-medium"></span>Tornado Cash retrial blocked</a>
+  <a href="#story-6"><span class="tier-dot dot-medium"></span>FCA CP26/13 perimeter</a>
+
+  <h4>Sections</h4>
+  <a href="#cross-cutting">Cross-Cutting</a>
+  <a href="#tone">Tone Barometer</a>
+  <a href="#countdown">Countdown</a>
+  <a href="#pipeline">Pipeline Tracker</a>
+  <a href="#consultations">Open Submissions</a>
+  <a href="#footer">Footer</a>
+</aside>
+
+<main class="content">
+
+<header class="masthead">
+  <h1>The Brief</h1>
+  <div class="accent-bar"></div>
+  <div class="subtitle">Legal Intelligence Report</div>
+  <div class="date-line">Monday, 4 May 2026</div>
+  <div class="meta-row">
+    <span class="pill pill-gold">6 Stories</span>
+    <span class="pill pill-muted">45+ Sources</span>
+    <span class="pill pill-muted">Past 24 Hours</span>
+  </div>
+  <div class="gold-grad"></div>
+</header>
+
+<!-- STORY 1 — HEADLINE -->
+<article class="story-card tier-headline" id="story-1">
+  <div class="meta-line">
+    <span class="badge badge-headline">Headline</span>
+    <span class="source-tag">CoinDesk · Bloomberg</span>
+    <span class="cred-tag">[Secondary]</span>
+    <span class="cat-tag">CFTC · Workforce · AI</span>
+  </div>
+  <div class="signal">🟢 High — Selig confirmed on the record; Microsoft 365 Copilot deployment already authorised across CFTC.</div>
+  <h2 class="story-title">CFTC Deploys Microsoft 365 Copilot Across Workforce — AI Now Reviews Crypto Registration Filings as Headcount Falls 23% From 708 to 543 FTEs</h2>
+
+  <div class="golden-quote">
+    "AI tools can be used to review the applications, flag certain things for the staff, make their jobs easier, make it much faster for them to provide feedback and also reject certain things that aren't materially complete."
+    <span class="attrib">— Chairman Michael Selig, interview with CoinDesk, 27 April 2026.</span>
+  </div>
+
+  <div class="summary">
+    <p>Chairman Mike Selig has confirmed the CFTC will use AI to triage incoming crypto registration applications — flagging incomplete or facially deficient filings, ranking the queue, and freeing the agency's shrunken human staff for harder cases. The CFTC's headcount has dropped from <strong>708 full-time employees at the close of FY2024 to roughly 543 today</strong>, a ~23% cut in eighteen months, driven by Trump administration federal-staffing reductions. Selig has authorised Microsoft 365 Copilot agency-wide and is building bespoke surveillance models targeting fraud, market manipulation, and insider trading across crypto and prediction markets.</p>
+    <p>This is the first time a US financial regulator has formally tied its registration-review pipeline to a generative AI workflow. Applications for FCM, swap dealer, DCM, DCO, and SEF status — including those expected from Polymarket, Coinbase Derivatives, and the wave of crypto firms anticipated post-CLARITY — will now be filtered through Copilot before reaching a human reviewer.</p>
+    <p>The shift compounds an institutional reality: with four of five Commission seats vacant, Selig is the only sitting commissioner. Every contested approval already requires his signature; AI now stands between filers and his desk.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> SEC EDGAR filing-quality screens (since 2016) automated form-type validation but never substantive merit review; the CFTC step is materially broader.</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>Sidley's "Project Crypto" alert series</strong> and <strong>Cleary Gottlieb's 2026 Digital Assets Update</strong>, registration timelines under the post-CLARITY CFTC perimeter were already projected to bottleneck at 543 staff. AI triage solves throughput, not legal judgment — every Section 5 finding for a DCM, every fitness-and-propriety call for a DCO, still requires Commission-level review. <em class="brief-read">The Brief's read:</em> the practical effect is a barbell — clean filings approve faster, marginal filings die in the queue with no clear due-process path to human review. Counsel should now over-document on first submission; "iterate with staff" is no longer a viable strategy.</p>
+  </div>
+
+  <div class="block block-contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p><em class="brief-read">The Brief's read:</em> the workforce cut, not the AI tooling, is the binding constraint — Copilot is a face-saving narrative for a regulator that lost its ability to do the job. If Senate Democrats (see Story 3) succeed in imposing a prediction-market rulemaking on top of the CFTC's existing crypto, derivatives, and surveillance docket, no AI deployment closes that gap. Expect litigation challenging AI-driven rejections under APA §706(2)(A) "arbitrary and capricious" review within twelve months.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Big-law fintech practices (<strong>Sidley, Davis Polk, Latham, Sullivan & Cromwell</strong>) gain pricing power on first-filing quality — applications now need to pass an AI screen before they reach a regulator. Expect a new line item: "AI-readiness review" pre-submission. Microsoft (<strong>MSFT</strong>) cements public-sector Copilot beachhead; Palantir (<strong>PLTR</strong>) and OpenAI's Gov stack lose a flagship federal logo. RegTech vendors (<strong>ComplyAdvantage, Sayari, Hummingbird</strong>) reposition products as "regulator-mirror" engines to predict AI rejection probability.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> <strong>MSFT</strong>, large fintech-bar firms, RegTech compliance vendors — registration-review automation = sticky federal contract + paid expert advisory.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Marginal crypto applicants and DIY sponsors — first-pass rejection rate will climb materially; <strong>PLTR</strong> on margin (lost CFTC anchor).</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> <strong>COIN, RPLX (Ripple)</strong>, Polymarket — already lawyered up for first-class filings; relative position unchanged.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do</h5>
+    <p class="todo-line"><span class="todo-role role-trader">Trader</span>Long MSFT enterprise-government tail; short small-cap RegTech that hasn't pivoted to "AI-mirror" positioning by Q3.</p>
+    <p class="todo-line"><span class="todo-role role-counsel">Counsel</span>Treat first CFTC submission as final — assume no remediation window; over-document materiality, completeness, and Section 5 sub-elements.</p>
+    <p class="todo-line"><span class="todo-role role-compliance">Compliance</span>Audit registration-package templates against CFTC checklists; install pre-submission AI redline against rejection-trigger language.</p>
+    <p class="todo-line"><span class="todo-role role-founder">Founder</span>Budget six months minimum for CFTC registration; do not start fundraising on assumption of expedited approval.</p>
+  </div>
+
+  <div class="connected">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #2 (Polymarket main-exchange) — Polymarket's pending main-exchange approval is the first material test of the AI-triage pipeline.</p>
+    <p>↔️ Story #3 (Merkley letter) — Senate Democrats demand rulemaking workload the CFTC's 543 humans cannot absorb without AI.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#CFTC</span><span class="tag">#AI</span><span class="tag">#registration</span><span class="tag">#MicrosoftCopilot</span><span class="tag">#Selig</span><span class="tag">#DOGE</span>
+  </div>
+</article>
+
+<!-- STORY 2 — HIGH -->
+<article class="story-card tier-high" id="story-2">
+  <div class="meta-line">
+    <span class="badge badge-high">High</span>
+    <span class="source-tag">Bloomberg · CoinDesk</span>
+    <span class="cred-tag">[Secondary]</span>
+    <span class="cat-tag">CFTC · Prediction Markets</span>
+  </div>
+  <div class="signal">🟡 Medium — Bloomberg confirms ongoing talks; no formal Commission vote on docket yet.</div>
+  <h2 class="story-title">Polymarket Asks CFTC to Lift US Ban on Main Offshore Exchange — Single Sitting Commissioner Means Selig Decides Alone</h2>
+
+  <div class="golden-quote">
+    "If prediction markets are pushed offshore, it would lead to a repeat of the FTX-style collapse." [paraphrased]
+    <span class="attrib">— Chairman Selig, public remarks April 2026 via CoinDesk reporting.</span>
+  </div>
+
+  <div class="summary">
+    <p>Polymarket has formally engaged the CFTC about lifting the geo-block on its main, overseas exchange — the platform that has been off-limits to US traders since the 2022 settlement. Bloomberg first reported the discussions on 28 April; CoinDesk corroborated. The ask is distinct from the limited intermediated US sandbox the CFTC approved in late 2025 (which has yet to fully launch).</p>
+    <p>Procedurally, the request lands in front of an unprecedented single-commissioner CFTC: with four seats vacant, any approval falls to Chairman Selig alone — eliminating the deadlock risk that has historically frustrated event-contract approvals.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> KalshiEX won single-judge prelim injunction against CFTC election-contract block (D.D.C. 2024); Polymarket avoided that fight by exiting US market under 2022 settlement.</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>Sidley's February 2026 "Imminent Rulemaking on Prediction Markets" alert</strong>, the CFTC's posture has flipped from adversary to enabler under Selig — but the agency's pending rulemaking on event contracts (45-day comment period closed 30 April, see Story 3) is still open. <em class="brief-read">The Brief's read:</em> approving Polymarket's main exchange before that rulemaking is finalised would be procedurally aggressive — it preempts the very public process the Democrats are now leveraging. Expect Selig to either condition approval on a sport/election carve-out, or wait until the final rule is published to inoculate the decision against APA challenge.</p>
+  </div>
+
+  <div class="block block-contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>Per <strong>Senator Merkley's 30 April letter to the CFTC</strong>, allowing Polymarket's main exchange to onboard US traders before insider-trading and election-contract rules are in force "[institutionalises] gambling on national security outcomes." If approved this quarter, the decision becomes the first concrete vehicle for a Democratic challenge — under either APA arbitrary-and-capricious review or, if Democrats retake committee chairs in 2027, hearings followed by direct legislation overriding Selig.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct beneficiary if approved: Polymarket itself (held positions among Founders Fund, Peter Thiel-aligned funds). Direct losers: Kalshi (loses domestic monopoly on regulated event contracts); offshore unregulated competitors (Manifold, others). Adjacent: <strong>DraftKings (DKNG), FanDuel (FLTR.L)</strong> — sports event-contract overlap eats into licensed-state sportsbook margins. <em class="brief-read">The Brief's read:</em> the gambling industry's lobbying spend against Polymarket triples within 30 days of a favourable ruling.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> Polymarket equity holders (private), <strong>COIN</strong> (event-contract listing optionality), <strong>CME</strong> (rule-by-rule alignment with new event-contract regime).</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> <strong>DKNG, FLTR.L, MGM, PENN</strong> — sports event contracts undercut state-licensed sportsbook hold; Kalshi's pre-IPO valuation if main-Polymarket comes onshore.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> Sports leagues (NFL, NBA) — already integrated official-data deals across both worlds.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do</h5>
+    <p class="todo-line"><span class="todo-role role-trader">Trader</span>Pair trade — long Polymarket-exposed VC tokens (limited public proxies), short DKNG / MGM into the rumour cycle.</p>
+    <p class="todo-line"><span class="todo-role role-counsel">Counsel</span>Track the CFTC docket weekly; an approval order without a final event-contract rule is the strongest APA challenge vector since 2024 Kalshi.</p>
+    <p class="todo-line"><span class="todo-role role-compliance">Compliance</span>If you list event contracts, confirm KYC/AML controls match CFTC's Polymarket-fact-pattern standard, not the broader DCM template.</p>
+    <p class="todo-line"><span class="todo-role role-founder">Founder</span>If you're building event-contract rails, file now under the more-permissive Selig CFTC; the Democratic backlash window is closing.</p>
+  </div>
+
+  <div class="connected">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #3 (Merkley letter) — same docket, opposing pressure; Polymarket request is the test case for whether the rulemaking carries weight.</p>
+    <p>↔️ Story #1 (CFTC AI) — Polymarket's main-exchange application is now Selig's first major AI-triaged file.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#CFTC</span><span class="tag">#Polymarket</span><span class="tag">#predictionmarkets</span><span class="tag">#Kalshi</span><span class="tag">#eventcontracts</span>
+  </div>
+</article>
+
+<!-- STORY 3 — HIGH -->
+<article class="story-card tier-high" id="story-3">
+  <div class="meta-line">
+    <span class="badge badge-high">High</span>
+    <span class="source-tag">Merkley.senate.gov · CNBC</span>
+    <span class="cred-tag">[Primary]</span>
+    <span class="cat-tag">Senate · CFTC · Event Contracts</span>
+  </div>
+  <div class="signal">🟢 High — letter filed; primary text published on Merkley.senate.gov.</div>
+  <h2 class="story-title">Senate Dems Led by Merkley Demand CFTC Rule Banning Sports, Election, War Event Contracts and Insider-Trading Prohibition — Filed on Final Day of 45-Day Comment Window</h2>
+
+  <div class="golden-quote">
+    "Event contracts on the outcome of a sports game or event are far from the intent of the CFTC's mission and are one of the most egregious examples of how these contracts represent gambling and violate states' rights to regulate this activity." [paraphrased from letter via CNBC]
+    <span class="attrib">— Sen. Jeff Merkley (D-OR) and co-signers, 30 April 2026.</span>
+  </div>
+
+  <div class="summary">
+    <p>Sen. Jeff Merkley (D-OR) led a group of Senate Democrats in a 30 April letter to CFTC Chairman Selig demanding the agency adopt three rules: (1) prohibition of event contracts on sports outcomes; (2) prohibition on contracts referencing US elections, war, military action, and government decisions absent a "valid economic hedging interest"; and (3) an insider-trading rule for event-contract platforms. The letter was filed on the final day of the CFTC's 45-day rulemaking comment period.</p>
+    <p>Timing matters: the comment-period close means the CFTC must now address every major commenter's argument before publishing a final rule, and Democrats have framed the docket so a refusal to ban sports/election contracts becomes APA-challengeable on "failure to consider relevant factors."</p>
+    <p>Context for the insider-trading prong: a US Army Special Forces Master Sergeant was charged earlier this year for using classified intelligence about the operation that captured Venezuelan leader Nicolás Maduro to make Polymarket bets — the canonical fact pattern Merkley is using to justify rulemaking.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> CFTC v. KalshiEX (D.D.C. 2024) held that the agency cannot use Section 5c(c)(5)(C) "gaming" prong to block election contracts absent further statutory authority — the Merkley letter explicitly seeks to overcome that ruling via formal rulemaking.</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>Sidley's February 2026 alert on CFTC event-contract rulemaking</strong> and the <strong>Senate Banking minority text</strong> appended to the letter, the petition uses Section 4c(b) of the Commodity Exchange Act — fraud and manipulation authority — as the legal hook for the insider-trading prong, sidestepping the post-Kalshi gaming-prong limit. Plaintiffs in any future Polymarket / Kalshi challenge will now point to the absence of an insider-trading rule as evidence the CFTC failed in its core surveillance mandate. <em class="brief-read">The Brief's read:</em> Selig is now boxed — he can't approve Polymarket's main exchange (Story 2) without first responding substantively to this comment, or he hands Democrats a ready-made arbitrary-and-capricious case.</p>
+  </div>
+
+  <div class="block block-contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p><em class="brief-read">The Brief's read:</em> the Merkley letter has limited legal force on its own — Democrats sit in committee minority, and even a final rule banning sports/election contracts faces immediate APA challenge from Kalshi/Polymarket, which the Selig CFTC may decline to defend vigorously. The real risk to the prediction-market industry is reputational, not regulatory: every insider-trading scandal that surfaces (and they will) gives the next Democratic CFTC Chair a fact pattern the next administration will not have to manufacture.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Polymarket and Kalshi face mounting compliance overhead — expect surveillance-vendor RFPs (Nasdaq SMARTS, Eventus Validus, OneTick) to land within 30 days. Sportsbooks (<strong>DKNG, FLTR.L, MGM, PENN</strong>) gain a regulatory ally and a reason to keep lobbying state attorneys general. Insider-trading enforcement vendors (<strong>Behavox, Symphony, Eventus</strong>) win new product line: prediction-market trade surveillance.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> Trade-surveillance vendors (Nasdaq <strong>NDAQ</strong> SMARTS), state-licensed sportsbooks (<strong>DKNG, MGM</strong>) on regulatory-moat narrative.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Pre-IPO Kalshi valuation (drag on imminent listing), Polymarket pre-CFTC-approval optionality (Story 2 path narrows).</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> <strong>COIN</strong> — exposure to event contracts is optional and easily mothballed.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do</h5>
+    <p class="todo-line"><span class="todo-role role-trader">Trader</span>Stay long sportsbook complex through any Polymarket main-exchange approval headlines; the Merkley letter limits Polymarket's domestic upside.</p>
+    <p class="todo-line"><span class="todo-role role-counsel">Counsel</span>If representing event-contract platforms, file responsive comments to Merkley's submission within 30 days even though the window closed — agency convention permits late submissions on identified material issues.</p>
+    <p class="todo-line"><span class="todo-role role-compliance">Compliance</span>Stand up insider-trading detection on event-contract books now; the rule is coming with or without Merkley.</p>
+    <p class="todo-line"><span class="todo-role role-founder">Founder</span>Avoid building event-contract products referencing US elections, sports outcomes, or military actions — political risk is now bipartisan-real.</p>
+  </div>
+
+  <div class="connected">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #2 (Polymarket main-exchange) — Merkley's letter is the principal procedural obstacle to Selig's approval.</p>
+    <p>↔️ Story #1 (CFTC AI capacity) — adding event-contract rulemaking workload onto a 543-FTE CFTC strengthens the Democrats' "regulator unfit for task" narrative.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#Merkley</span><span class="tag">#CFTC</span><span class="tag">#predictionmarkets</span><span class="tag">#insidertrading</span><span class="tag">#sportscontracts</span>
+  </div>
+</article>
+
+<!-- STORY 4 — HIGH -->
+<article class="story-card tier-high" id="story-4">
+  <div class="meta-line">
+    <span class="badge badge-high">High</span>
+    <span class="source-tag">FinCEN · Treasury · Sullivan & Cromwell</span>
+    <span class="cred-tag">[Primary]</span>
+    <span class="cat-tag">Stablecoin · BSA · Sanctions</span>
+  </div>
+  <div class="signal">🟢 High — NPRM published in Federal Register; comments due 9 June.</div>
+  <h2 class="story-title">FinCEN-OFAC Joint NPRM Treats Permitted Payment Stablecoin Issuers as BSA Financial Institutions — Comments Due 9 June, Final Rule Required by 18 July GENIUS Statutory Clock</h2>
+
+  <div class="golden-quote">
+    "PPSIs must have the technical capabilities, policies, and procedures to block, freeze, and reject specific or impermissible transactions that violate Federal or State laws, rules, or regulations as provided in the GENIUS Act." [paraphrased]
+    <span class="attrib">— FinCEN/OFAC NPRM, 91 Fed. Reg. — (10 April 2026), via WilmerHale and Sullivan & Cromwell client alerts.</span>
+  </div>
+
+  <div class="summary">
+    <p>FinCEN and OFAC have jointly published a Notice of Proposed Rulemaking implementing the GENIUS Act's anti-money laundering, counter-terrorism financing, and sanctions-compliance regime for Permitted Payment Stablecoin Issuers (PPSIs). The NPRM treats every PPSI as a "financial institution" for Bank Secrecy Act purposes and imposes parallel obligations on programmatic transaction-blocking, sanctioned-address screening, and reserve-account compliance.</p>
+    <p>Critically, the proposed rule distinguishes primary from secondary market activity. The NPRM acknowledges that "the majority of illicit finance involving payment stablecoins occurs on the secondary market" — but caps its secondary-market reach at <strong>technical capability requirements (block/freeze/reject)</strong>, expressly declining to impose customer due diligence, ongoing monitoring, or SAR obligations on secondary-market activity.</p>
+    <p>Public comment closes 9 June 2026. Treasury's statutory deadline to publish final regulations is 18 July 2026 (per GENIUS), with full enforcement no later than 18 January 2027. The window between comment close and final rule is six weeks — minimal by federal-rulemaking standards.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> FinCEN's 2020 "Travel Rule" amendment for crypto VASPs imposed similar but less-prescriptive technical capability requirements; the GENIUS-Act PPSI rule is a material escalation in scope and specificity.</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>Sullivan & Cromwell's 11 April 2026 client memo</strong> and <strong>Covington & Burling's "Five Things to Know" alert</strong>, the secondary-market carve-out is the most consequential piece. PPSIs only need to maintain technical block/freeze capability over secondary-market transactions — they do not have to monitor, report, or KYC end-users. Practical effect: <strong>Circle (USDC), Paxos (USDP), Ripple (RLUSD)</strong> avoid a reporting nightmare but must build sanctioned-address blocklists into protocol-level redemption logic. Per <strong>Holland & Knight's 18 April 2026 alert</strong>, this is a near-perfect alignment with OFAC's existing sanctioned-address SDN List rails — but it imports OFAC strict-liability standards into stablecoin issuance for the first time.</p>
+  </div>
+
+  <div class="block block-contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>Per <strong>Consensys's 2 May pushback letter</strong> (reported in <em>The Coin Republic</em>), the technical-block requirement is "operationally infeasible for protocol-issued stablecoins" — proof-of-reserve issuers (including non-custodial designs being explored by Frax, Lido-staked-USD variants) cannot block on-chain transactions without compromising the redemption guarantee that makes the asset a stablecoin. The first PPSI rejection on this ground will trigger litigation testing whether GENIUS preempts non-custodial token issuance entirely.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Compliance moat for incumbent custodial issuers: <strong>Circle (USDC), PayPal (PYUSD), Paxos (USDP), Ripple (RLUSD)</strong> already have OFAC blocklist tooling — incremental cost is modest. For decentralised projects: <strong>MakerDAO/Sky, Frax, Liquity</strong> face an existential question — file as PPSI under GENIUS or accept that their stablecoins cannot be marketed to US users by 18 January 2027. Sanctions-screening vendors win: <strong>Chainalysis, Elliptic, TRM Labs</strong> all have pre-built block-list APIs that map directly into the proposed rule's technical-capability requirement.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> <strong>CRCL (Circle)</strong>, <strong>PYPL</strong> (PYUSD), Chainalysis/Elliptic/TRM (private), legacy bank-rail BaaS providers — moat hardens.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Decentralised stablecoin protocols (MKR, FRAX governance tokens) and any CEX whose stablecoin float is dominated by non-PPSI assets.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> <strong>COIN</strong> — Coinbase distribution agreement with Circle preserves USDC revenue share regardless of NPRM mechanics.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do</h5>
+    <p class="todo-line"><span class="todo-role role-trader">Trader</span>Long CRCL into 18 July statutory deadline; rotate out of decentralised-stablecoin governance tokens before the final rule lands.</p>
+    <p class="todo-line"><span class="todo-role role-counsel">Counsel</span>File comments by 9 June if your client is a PPSI candidate; flag any drafting ambiguity on "secondary market" scope — that boundary is litigation-bait.</p>
+    <p class="todo-line"><span class="todo-role role-compliance">Compliance</span>Map your existing OFAC sanctioned-address screening pipeline against the NPRM's technical-capability standard; gap-test before 9 June.</p>
+    <p class="todo-line"><span class="todo-role role-founder">Founder</span>If launching a stablecoin, default to a custodial PPSI structure now; non-custodial designs face a compressed legal-feasibility analysis.</p>
+  </div>
+
+  <div class="connected">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ FDIC GENIUS Act NPRM (covered 3 May) — same 9 June deadline, parallel comment streams, separate agency.</p>
+    <p>↔️ Tillis–Alsobrooks stablecoin yield compromise (covered 3 May) — together with the FinCEN-OFAC NPRM, defines the full 2027 PPSI compliance perimeter.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#FinCEN</span><span class="tag">#OFAC</span><span class="tag">#GENIUS</span><span class="tag">#stablecoin</span><span class="tag">#BSA</span><span class="tag">#PPSI</span>
+  </div>
+</article>
+
+<!-- STORY 5 — MEDIUM -->
+<article class="story-card tier-medium" id="story-5">
+  <div class="meta-line">
+    <span class="badge badge-medium">Medium</span>
+    <span class="source-tag">SDNY · The Block</span>
+    <span class="cred-tag">[Secondary]</span>
+    <span class="cat-tag">DOJ · DeFi · Tornado Cash</span>
+  </div>
+  <div class="signal">🟢 High — court filing of record; retrial calendar set.</div>
+  <h2 class="story-title">SDNY Prosecutors Reject Roman Storm's Cox v. Sony Dismissal Bid — DOJ Files 7 April Letter, Targets October 2026 Retrial on Money-Laundering and Sanctions-Evasion Counts</h2>
+
+  <div class="golden-quote">
+    "[The Cox Communications ruling] applies only to civil copyright law and has no bearing on the criminal charges in this case." [paraphrased from DOJ letter via The Block]
+    <span class="attrib">— SDNY prosecutors, letter filed 7 April 2026.</span>
+  </div>
+
+  <div class="summary">
+    <p>Tornado Cash co-founder Roman Storm's effort to dismiss the unresolved counts of his 2025 prosecution has been rejected by SDNY prosecutors. Storm had relied on the Supreme Court's 2026 ruling in <em>Cox Communications, Inc. v. Sony Music Entertainment</em> — which limited contributory liability for ISPs in civil copyright cases — arguing the same logic should defeat his criminal money-laundering and sanctions-evasion exposure. DOJ disagreed in a 7 April court letter, calling the analogy "no bearing" on criminal-law contributory liability.</p>
+    <p>The August 2025 jury convicted Storm on conspiracy to operate an unlicensed money-transmitting business but deadlocked on money-laundering and sanctions counts. DOJ now seeks an October 2026 retrial — projected to last roughly three weeks and revisit intent and the Tornado Cash protocol's role.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> The DOJ's March 2026 report to Congress acknowledged lawful uses of crypto mixers — yet aggressive prosecution of Storm continues, marking the limits of the new "softer mixer policy."</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>Mayer Brown's August 2025 trial-implications memo</strong> and <strong>Bankless's 7 April reporting</strong>, the DOJ's letter explicitly distinguishes civil from criminal contributory liability — preserving the Government's preferred theory that 250+ post-deployment Tornado Cash contract changes by Storm constitute affirmative criminal conduct. <em class="brief-read">The Brief's read:</em> the DOJ filing closes the most efficient developer-liability defence available under <em>Cox</em>; future DeFi-developer prosecutions should expect the same wall. Counsel for protocol developers must now plan their defence around <em>scienter</em> and <em>protocol-design intent</em>, not contributory-liability shielding.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>The CLARITY Act DeFi developer-liability provision (in active Senate Banking negotiation per the 2 May Tillis update) gains new urgency — Storm's case is the live counterfactual. Anonymity-preserving protocol developers (<strong>Aztec Network, Privacy Pools, Railway/Railgun</strong>) accelerate jurisdictional reorganisation outside the US. Compliance vendors (<strong>Chainalysis, TRM Labs, Elliptic</strong>) win on every reinforcement of the Travel-Rule + sanctioned-address regime that Storm's prosecution validates.</p>
+  </div>
+
+  <div class="connected">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Tillis CLARITY Act DeFi-developer-liability provision (covered 3 May) — Storm retrial happens before any statutory shield is enacted.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#TornadoCash</span><span class="tag">#DOJ</span><span class="tag">#DeFi</span><span class="tag">#developerliability</span><span class="tag">#SDNY</span>
+  </div>
+</article>
+
+<!-- STORY 6 — MEDIUM -->
+<article class="story-card tier-medium" id="story-6">
+  <div class="meta-line">
+    <span class="badge badge-medium">Medium</span>
+    <span class="source-tag">FCA · A&O Shearman · Hogan Lovells</span>
+    <span class="cred-tag">[Primary]</span>
+    <span class="cat-tag">UK · Cryptoasset Perimeter</span>
+  </div>
+  <div class="signal">🟢 High — consultation paper published; deadline confirmed.</div>
+  <h2 class="story-title">FCA Opens CP26/13 Cryptoasset Perimeter Guidance — Final Boundary Question Before October 2027 Regime Commences, Comments Due 3 June 2026</h2>
+
+  <div class="golden-quote">
+    "[CP26/13] invites comment on the regulatory boundary for the United Kingdom's incoming crypto regime." [paraphrased]
+    <span class="attrib">— FCA, CP26/13 publication 15 April 2026.</span>
+  </div>
+
+  <div class="summary">
+    <p>The FCA has published Consultation Paper CP26/13 on cryptoasset perimeter guidance — the final substantive consultation before the October 2027 commencement of the new UK cryptoasset regime under the Financial Services and Markets Act perimeter. The paper is the companion piece to the closed CP25/40 (December 2025) and CP25/41 consultations on activities and admissions; CP26/13 specifically addresses which activities fall inside vs. outside the regulated perimeter.</p>
+    <p>Practical issues: how staking-as-a-service is classified, when DeFi front-end provision crosses into "operating a trading platform," and whether tokenised-fund administration is within the regulated activity definition. Final policy statements are scheduled for Summer 2026 (CP25/40 family) and Autumn 2026 (CP26/13).</p>
+    <p>Application window for the new regulated activities opens 30 September 2026 and closes 28 February 2027.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical precedent:</strong> FCA's 2019 Cryptoasset Perimeter Guidance (PERG 19A) created the regulated/unregulated split that has governed UK crypto promotion since — CP26/13 is the first comprehensive update.</div>
+
+  <div class="block block-analysis">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Per <strong>A&O Shearman's "UK Future Crypto Framework" alert</strong> and <strong>Hogan Lovells' CP25/40 takeaways</strong>, the perimeter guidance is the consultation that decides whether DeFi front-end providers, staking aggregators, and wallet operators sit inside or outside the FSMA framework. <em class="brief-read">The Brief's read:</em> firms that wait for the Autumn 2026 policy statement will miss the application window — the practical course is to file under CP25/40 assumptions now and amend if the perimeter narrows. The FCA has signalled it will treat early applicants favourably on supervisory engagement.</p>
+  </div>
+
+  <div class="block block-industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>UK-domiciled crypto firms (<strong>Copper, Zodia Custody, Bitstamp, Revolut</strong>) accelerate licence-prep work; offshore-licensed firms (Crypto.com, Bybit, OKX) must now decide whether to passport via post-MiCA EU subs or apply directly. Stablecoin issuers face the additional CP25/14 stablecoin-issuance overlay — UK-issued, UK-managed reserves, full lifecycle within UK jurisdiction.</p>
+  </div>
+
+  <div class="tags">
+    <span class="tag">#FCA</span><span class="tag">#UK</span><span class="tag">#perimeter</span><span class="tag">#CP26/13</span><span class="tag">#cryptoasset</span>
+  </div>
+</article>
+
+<!-- ===== PERSISTENT SECTIONS ===== -->
+
+<section class="persistent" id="cross-cutting">
+  <h2>Cross-Cutting Implications</h2>
+  <div class="cross-grid">
+    <div class="cross-card">
+      <h4>Stablecoin Regulation</h4>
+      <div class="dir dir-accel">⬆ Accelerating</div>
+      <p>FinCEN-OFAC NPRM (Story 4) layered on FDIC NPRM and Tillis–Alsobrooks yield deal makes the 18 July 2026 final-rule deadline binding. Circle, Paxos, Ripple compliance moats harden; decentralised stablecoin protocols face existential GENIUS-conformity question.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Prediction Markets</h4>
+      <div class="dir dir-mixed">↗ Mixed Signals</div>
+      <p>CFTC's Polymarket main-exchange engagement (Story 2) collides with Merkley letter (Story 3) and recent Senate self-ban — Selig must clear his rulemaking responses before approving anything.</p>
+    </div>
+    <div class="cross-card">
+      <h4>DeFi & Developer Liability</h4>
+      <div class="dir dir-decel">⬇ Decelerating (for developers)</div>
+      <p>Storm dismissal rejection (Story 5) confirms the criminal contributory-liability wall remains intact; CLARITY Act DeFi-shield language now the only legislative hope.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Regulator Capacity</h4>
+      <div class="dir dir-pivot">→ Pivoting</div>
+      <p>CFTC AI-triage rollout (Story 1) is a structural shift — first US financial regulator to formally automate registration screening; SEC will be next per Atkins's signalling.</p>
+    </div>
+    <div class="cross-card">
+      <h4>UK / EU / US Divergence</h4>
+      <div class="dir dir-widen">⚡ Widening</div>
+      <p>UK pursues bespoke perimeter (CP26/13, Story 6) while MiCA T-58 cliff approaches; US triangulates between FinCEN-OFAC, CFTC, SEC. Three different stablecoin regimes coexist by Q3.</p>
+    </div>
+    <div class="cross-card">
+      <h4>AI Governance</h4>
+      <div class="dir dir-mixed">↗ Mixed Signals</div>
+      <p>EU AI Act trilogue collapsed 28 April; 13 May reset under Cypriot Presidency. US federal CFTC AI rollout proceeds without comparable governance scaffolding — regulator-as-AI-user, not regulator-of-AI.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Tokenization & RWA</h4>
+      <div class="dir dir-quiet">⬆ Quietly Advancing</div>
+      <p>RWA tokenization passed $19.3B (CoinGecko, 1 May); Nasdaq tokenized-securities pilot loaded for Q3 launch; SEC innovation exemption framework cited by Atkins.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Singapore / APAC</h4>
+      <div class="dir dir-quiet">⬆ Quietly Advancing</div>
+      <p>MAS crypto-bank capital consultation closes 18 May; HKMA stablecoin licences granted to HSBC and Anchorpoint; ASIC 18-month roadmap landing first Phase 1 instruments.</p>
+    </div>
+  </div>
+</section>
+
+<section class="persistent" id="tone">
+  <h2>Tone Barometer</h2>
+  <div class="tone-row">
+    <span class="flag-badge flag-us">US</span>
+    <span class="tone-signal">🟡 Holding</span>
+    <span class="tone-explain">Selig CFTC pivots toward enablement (Story 1, 2) but Democratic letter (Story 3) increases procedural friction; SEC stays in rulemaking.</span>
+  </div>
+  <div class="tone-row">
+    <span class="flag-badge flag-eu">EU</span>
+    <span class="tone-signal">🟡 Holding</span>
+    <span class="tone-explain">MiCA T-58 enforcement set; AI Act trilogue stalled — institutional appetite for further crypto rulemaking exhausted before Lithuanian Presidency.</span>
+  </div>
+  <div class="tone-row">
+    <span class="flag-badge flag-uk">UK</span>
+    <span class="tone-signal">🟢 Loosening</span>
+    <span class="tone-explain">FCA CP26/13 (Story 6) uses growth-friendly framing; stablecoin sandbox open; FCA explicitly pitches London as MiCA-alternative for non-EU CASPs.</span>
+  </div>
+  <div class="tone-row">
+    <span class="flag-badge flag-sg">SG</span>
+    <span class="tone-signal">🟢 Loosening</span>
+    <span class="tone-explain">MAS Group-1 prudential treatment for tokenized assets and certain stablecoins active; permissionless carve-out signals Basel divergence.</span>
+  </div>
+  <div class="tone-row">
+    <span class="flag-badge flag-au">AU</span>
+    <span class="tone-signal">🟡 Holding</span>
+    <span class="tone-explain">DAF Act commences 9 April 2027; 18-month ASIC roadmap in Phase 1 (consultation/roundtables); INFO 225 no-action expires June.</span>
+  </div>
+</section>
+
+<section class="persistent" id="countdown">
+  <h2>Regulatory Countdown</h2>
+  <div class="countdown-row">
+    <span class="countdown-event">EU AI Act Omnibus trilogue (rescheduled)</span>
+    <span class="countdown-date">13 May 2026</span>
+    <span class="pill pill-gold">9 days</span>
+    <span class="countdown-context">Cypriot Presidency must close Annex I gap before 30 June term-end.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">Senate Banking CLARITY Act markup window opens</span>
+    <span class="countdown-date">11 May 2026</span>
+    <span class="pill pill-gold">7 days</span>
+    <span class="countdown-context">Tillis reversed; Kennedy still withholding — Tim Scott counts 12/13 R votes.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">MAS Crypto Bank Capital consultation closes</span>
+    <span class="countdown-date">18 May 2026</span>
+    <span class="pill pill-gold">14 days</span>
+    <span class="countdown-context">Group 1/Group 2 prudential treatment + 2% / 5% Tier 1 caps.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">FCA CP26/13 perimeter guidance comment deadline</span>
+    <span class="countdown-date">3 June 2026</span>
+    <span class="pill pill-gold">30 days</span>
+    <span class="countdown-context">Final perimeter consultation before policy statement (Autumn 2026).</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">FinCEN-OFAC PPSI NPRM comment deadline</span>
+    <span class="countdown-date">9 June 2026</span>
+    <span class="pill pill-muted">36 days</span>
+    <span class="countdown-context">Same date as FDIC GENIUS NPRM — coordinate filings.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">ASIC INFO 225 no-action expires</span>
+    <span class="countdown-date">30 June 2026</span>
+    <span class="pill pill-muted">57 days</span>
+    <span class="countdown-context">Compliance officer notified to AUSTRAC by 30 May.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">MiCA transitional period ends EU-wide</span>
+    <span class="countdown-date">1 July 2026</span>
+    <span class="pill pill-muted">58 days</span>
+    <span class="countdown-context">ESMA wind-down plans must be operational; Poland still without national regime.</span>
+  </div>
+  <div class="countdown-row">
+    <span class="countdown-event">GENIUS Act final regulations statutory deadline</span>
+    <span class="countdown-date">18 July 2026</span>
+    <span class="pill pill-muted">75 days</span>
+    <span class="countdown-context">Treasury locked in; six-week window between comment close and final.</span>
+  </div>
+</section>
+
+<section class="persistent" id="pipeline">
+  <h2>Regulatory Pipeline Tracker</h2>
+  <div class="pipeline-row" style="font-weight:700; color:var(--text-muted); border-bottom:1px solid var(--border);">
+    <span>Bill / Rule</span><span>Jurisdiction</span><span>Stage</span><span>Move</span>
+  </div>
+  <div class="pipeline-row">
+    <span>CLARITY Act (HR3633 / S—)</span><span>US Senate</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span><span></span></div>
+    <span class="move-up">▲</span>
+  </div>
+  <div class="pipeline-row">
+    <span>FinCEN-OFAC PPSI NPRM</span><span>US Treasury</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span></div>
+    <span class="move-up">▲</span>
+  </div>
+  <div class="pipeline-row">
+    <span>FDIC GENIUS Act NPRM</span><span>US FDIC</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span></div>
+    <span class="move-flat">▬</span>
+  </div>
+  <div class="pipeline-row">
+    <span>SEC Reg Crypto Assets</span><span>US SEC</span>
+    <div class="pipeline-bar"><span class="cur"></span><span></span><span></span><span></span></div>
+    <span class="move-flat">▬</span>
+  </div>
+  <div class="pipeline-row">
+    <span>CFTC Event-Contract Rulemaking</span><span>US CFTC</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="done"></span><span class="cur"></span><span></span></div>
+    <span class="move-up">▲</span>
+  </div>
+  <div class="pipeline-row">
+    <span>EU AI Act Omnibus</span><span>EU Trilogue</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span><span></span></div>
+    <span class="move-down">▼</span>
+  </div>
+  <div class="pipeline-row">
+    <span>FCA CP26/13 Perimeter Guidance</span><span>UK</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span></div>
+    <span class="move-up">▲</span>
+  </div>
+  <div class="pipeline-row">
+    <span>MAS Crypto Bank Capital</span><span>Singapore</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="cur"></span><span></span><span></span></div>
+    <span class="move-flat">▬</span>
+  </div>
+  <div class="pipeline-row">
+    <span>DAF Act Implementation</span><span>Australia</span>
+    <div class="pipeline-bar"><span class="done"></span><span class="done"></span><span class="cur"></span><span></span><span></span></div>
+    <span class="move-up">▲</span>
+  </div>
+</section>
+
+<section class="persistent" id="consultations">
+  <h2>Open Submissions & Consultations</h2>
+  <div class="consult-row" style="font-weight:700; color:var(--text-muted); border-bottom:1px solid var(--border);">
+    <span>Consultation</span><span>Body</span><span>Jurisdiction</span><span>Deadline</span><span>Status</span>
+  </div>
+  <div class="consult-row">
+    <span>CFTC event-contract rulemaking input</span><span>CFTC</span><span>US</span><span>30 Apr 2026</span><span class="status-closed">🔴 CLOSED</span>
+  </div>
+  <div class="consult-row">
+    <span>MAS Cryptoasset Capital Treatment</span><span>MAS</span><span>SG</span><span>18 May 2026</span><span class="status-soon">🟡 CLOSING SOON</span>
+  </div>
+  <div class="consult-row">
+    <span>FCA CP26/13 Perimeter Guidance</span><span>FCA</span><span>UK</span><span>3 Jun 2026</span><span class="status-open">🟢 OPEN</span>
+  </div>
+  <div class="consult-row">
+    <span>FinCEN-OFAC PPSI AML/Sanctions NPRM</span><span>Treasury</span><span>US</span><span>9 Jun 2026</span><span class="status-open">🟢 OPEN</span>
+  </div>
+  <div class="consult-row">
+    <span>FDIC GENIUS Act NPRM</span><span>FDIC</span><span>US</span><span>9 Jun 2026</span><span class="status-open">🟢 OPEN</span>
+  </div>
+  <div class="consult-row">
+    <span>ESMA MiCA Wind-Down Statement</span><span>ESMA</span><span>EU</span><span>Ongoing</span><span class="status-ongoing">🔵 ONGOING</span>
+  </div>
+  <div class="consult-row">
+    <span>ASIC DAF Act Phase 1 Consultations</span><span>ASIC</span><span>AU</span><span>Rolling</span><span class="status-ongoing">🔵 ONGOING</span>
+  </div>
+  <div class="consult-row">
+    <span>SFC Cryptoasset Advisor / Asset Manager Regime</span><span>SFC</span><span>HK</span><span>TBC</span><span class="status-ongoing">🔵 ONGOING</span>
+  </div>
+  <div class="consult-row">
+    <span>Treasury.gov.au Digital Assets Reform</span><span>Treasury</span><span>AU</span><span>Rolling</span><span class="status-ongoing">🔵 ONGOING</span>
+  </div>
+</section>
+
+<footer id="footer">
+  <h4>Sources</h4>
+  <div class="src-list">
+    <strong>Tier 1 (Regulators):</strong> SEC.gov, CFTC.gov, FCA.org.uk, ESMA, FinCEN, OFAC, Treasury.gov, MAS.gov.sg, ASIC.gov.au, congress.gov, federalregister.gov ·
+    <strong>Tier 2 (Law Firms):</strong> Sidley Austin, Sullivan & Cromwell, Davis Polk, Latham & Watkins, Holland & Knight, Covington & Burling, WilmerHale, Hogan Lovells, A&O Shearman, Mayer Brown, K&L Gates, Norton Rose Fulbright, Cleary Gottlieb ·
+    <strong>Tier 3 (Industry):</strong> Coinbase, Circle, Ripple, Consensys, Blockchain Association ·
+    <strong>Tier 4 (Intelligence):</strong> Chainalysis, Elliptic, TRM Labs ·
+    <strong>Tier 5 (Media):</strong> CoinDesk, The Block, Bloomberg, CNBC, IAPP, Bankless, The Coin Republic.
+  </div>
+  <h4>Disclaimer</h4>
+  <p>The Brief is editorial intelligence, not legal advice. Cited primary sources should be consulted before any action. Direct quotations are attributed to named officials; paraphrases are flagged. Practitioner Analysis, Contrarian Take, and Industry Implications cite firm authority where available; otherwise marked as <em class="brief-read">The Brief's read</em>. Portfolio-impact tags are illustrative; readers are responsible for their own due diligence.</p>
+  <p style="margin-top:14px; color:var(--text-muted);">© 2026 The Brief — Legal Intelligence · Generated 4 May 2026.</p>
+</footer>
+
+</main>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('themeToggle');
+  function applyThemeButton() {
+    const isLight = document.body.classList.contains('light-mode');
+    themeBtn.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+  }
+  themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    applyThemeButton();
+  });
+  applyThemeButton();
+
+  // Hamburger drawer
+  const hb = document.getElementById('hamburger');
+  const sb = document.getElementById('sidebar');
+  hb.addEventListener('click', (e) => { e.stopPropagation(); sb.classList.toggle('open'); });
+  document.addEventListener('click', (e) => {
+    if (!sb.contains(e.target) && !hb.contains(e.target)) sb.classList.remove('open');
+  });
+  sb.querySelectorAll('a').forEach(a => a.addEventListener('click', () => sb.classList.remove('open')));
+
+  // Active section highlight
+  const links = sb.querySelectorAll('a[href^="#"]');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = sb.querySelector(`a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
