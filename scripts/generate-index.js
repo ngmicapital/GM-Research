@@ -667,6 +667,7 @@ a{color:inherit;text-decoration:none}
     <nav class="topbar-nav">
       <a href="index.html" class="active">~/archive</a>
       <a href="visualizations.html">~/visualisations</a>
+      <a href="wyckoff.html">~/wyckoff</a>
     </nav>
     <div class="topbar-meta">
       <span class="live-dot"></span>
