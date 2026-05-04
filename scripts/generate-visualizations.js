@@ -825,6 +825,7 @@ function buildVisualizationsHTML() {
     <div class="topbar-tabs">
       <a href="index.html" class="topbar-tab">Intelligence Archive</a>
       <a href="visualizations.html" class="topbar-tab active">Visualizations</a>
+      <a href="wyckoff.html" class="topbar-tab">Wyckoff</a>
     </div>
   </div>
   <div class="topbar-right">
