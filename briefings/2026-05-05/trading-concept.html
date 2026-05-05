@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Funding + OI + Price Decoder | May 5, 2026</title>
+<meta property="og:description" content="Alpha — Funding + OI + Price Decoder | May 5, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Funding + OI + Price Decoder</h1>
+  <div class="meta">
+    <span>Tuesday · 5 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #13</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>The Funding + OI + Price decoder is the three-variable framework for reading perpetual futures positioning — funding tells you who is paying to hold, open interest tells you whether positions are being added or unwound, price tells you the direction of pressure.</strong> Read in combination they collapse the noise of perp markets into four legible regimes — new longs, new shorts, long flush, short squeeze — and the regime, not the price level, is what tells you whether a move has fuel or is running on empty.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Three variables · one positioning signal</div>
+    </div>
+  </div>
+
+  <div class="skim">A tape decoder that reads three derivatives variables together — funding rate, open interest, and price — to classify what is actually happening in perp positioning.</div>
+
+  <p>Funding rate, open interest, and price are the three native data fields of any crypto perpetual futures market. Read in isolation each is ambiguous: a high funding rate could be a healthy uptrend or a crowded long that is about to fold. A rising OI could mean conviction or capitulation. Price could be marking up because of real demand or because thin liquidity is being shoved by leverage. <strong>The decoder works by reading them in combination</strong> — three variables, eight possible sign-combinations, and a small set of regimes that account for the four that actually matter.</p>
+
+  <p>The mechanic this measures is positioning, not opinion. <strong>Funding</strong> is the periodic payment that anchors the perpetual price to spot — when it is positive, longs are paying shorts to keep the perp tracking spot; when negative, shorts are paying longs. <strong>Open interest</strong> is the total notional of contracts open and unsettled — it goes up only when a new long meets a new short, and down only when a long and short close against each other. <strong>Price</strong> is the result. The decoder asks: when price moves, who is paying for the privilege, and is the position pool growing or shrinking? That single question separates new positioning from forced unwinds.</p>
+
+  <p>Why this matters at the chart level: a rally on rising OI with rising funding is very different from a rally on falling OI with funding flipping from negative to positive. The first is new longs piling in; the second is shorts being squeezed out. Both look identical on a candlestick. But the first has continuation fuel only if real demand is behind it, while the second is mechanically self-limiting — once the trapped shorts are flushed, there is no one left to buy. The decoder lets you tell the two apart in real time, before the move resolves.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>FUNDING RATE</b><span>Periodic payment between longs and shorts that anchors perp to spot</span></span>
+    <span class="pill-term"><b>OPEN INTEREST</b><span>Total notional of unsettled futures contracts</span></span>
+    <span class="pill-term"><b>NEW LONGS</b><span>Price ↑ + OI ↑ + funding +</span></span>
+    <span class="pill-term"><b>NEW SHORTS</b><span>Price ↓ + OI ↑ + funding −</span></span>
+    <span class="pill-term"><b>LONG FLUSH</b><span>Price ↓ + OI ↓ + funding flipping +→−</span></span>
+    <span class="pill-term"><b>SHORT SQUEEZE</b><span>Price ↑ + OI ↓ + funding flipping −→+</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Price tells you what; OI tells you whether positions are growing or unwinding; funding tells you who is paying. New positions and forced unwinds look identical on a chart — the decoder is what separates them.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Funding formula · OI accounting · the four regimes</div>
+    </div>
+  </div>
+
+  <div class="skim">Funding = premium index + interest component, paid every 4–8 hours; OI changes only when a long-short pair opens or closes; the decoder reads the joint state.</div>
+
+  <p>Funding rate is set per exchange but the basic formula is universal: a <strong>premium component</strong> (how much the perp is trading above or below spot) plus a small <strong>interest-rate component</strong> (a fixed bias, usually 0.01% / 8h on Binance for BTC and ETH). When perp trades above spot, premium is positive, funding is positive, longs pay shorts. The payment is multiplied across every open notional dollar at the funding timestamp — which is why crowded markets bleed real money each cycle.</p>
+
+  <div class="formula">
+<b>Funding rate (simplified):</b>
+F = clamp(premium_index + clamp(interest − premium, ±0.05%), −0.75%, +0.75%)
+
+<b>Per-cycle payment to your account:</b>
+payment = F × position_notional × side
+  side = +1 if long (you pay if F&gt;0, you receive if F&lt;0)
+  side = −1 if short
+
+<b>Open Interest accounting:</b>
+ΔOI = +1 contract  when a new long opens against a new short
+ΔOI = −1 contract  when an existing long and existing short close against each other
+ΔOI =  0           when an existing position transfers between two new participants
+
+<b>Daily funding cost (Binance, 8h cycle):</b>
+daily_cost ≈ F × 3 × notional
+  example: F = +0.05% per 8h, 1 BTC long at $76k → ~$114/day in funding
+
+    <div class="note">Funding is calibrated per exchange. Binance and Bybit use 8-hour cycles for BTC/ETH. dYdX uses 1-hour cycles. Hyperliquid uses 1-hour cycles with separate interest assumptions. Cross-exchange funding spreads (e.g. Binance perp vs OKX perp) are themselves a tradeable signal — when one venue's funding diverges sharply from the rest, positioning is concentrating there.</div>
+  </div>
+
+  <p>The OI accounting rule is the part most retail traders miss. OI does not measure who is winning; it measures how much position is open. <strong>Rising OI</strong> means new contracts are being created — for every new long, a new short stepped in to take the other side. <strong>Falling OI</strong> means contracts are being closed — paired long and short positions are unwinding into each other. This is what makes "OI ↓ on a price ↑" the mechanical signature of short covering: shorts are buying back to close, longs are selling to close, net OI drops, but the marginal flow into the book is buying.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Regime</th><th>Price</th><th>OI</th><th>Funding</th><th>Read</th></tr>
+    <tr><td>New longs</td><td>↑</td><td>↑</td><td>+ rising</td><td>Real positioning building. Sustainable only if spot CVD confirms — otherwise leveraged-only.</td></tr>
+    <tr><td>New shorts</td><td>↓</td><td>↑</td><td>− rising</td><td>Shorts pressing into weakness. Watch for negative-funding extreme = squeeze fuel.</td></tr>
+    <tr><td>Long flush</td><td>↓</td><td>↓</td><td>+ → −</td><td>Forced long unwind. Liquidations cascading. Bottom forms when OI bleeds out.</td></tr>
+    <tr><td>Short squeeze</td><td>↑</td><td>↓</td><td>− → +</td><td>Shorts covering. Mechanically self-limiting — runs out of fuel when shorts are flushed.</td></tr>
+    <tr><td>Distribution</td><td>flat / ↓</td><td>↑</td><td>+ extreme</td><td>Crowded longs paying heavy funding into stalling price. Classic top mechanic.</td></tr>
+    <tr><td>Capitulation</td><td>flat / ↑</td><td>↓</td><td>− extreme</td><td>Crowded shorts paying heavy funding into stalling price. Classic bottom mechanic.</td></tr>
+  </table>
+  </div>
+
+  <p>The two extreme rows are where the decoder pays for itself. <strong>Distribution</strong> is the regime where funding is screaming positive but price has stopped advancing — longs are still paying, but no new highs are being printed. The market is stalling on top of crowded leverage. The next move down does not need a catalyst; it just needs the marginal long to give up. <strong>Capitulation</strong> is the mirror: funding deeply negative, OI bleeding, but price has stopped falling. The shorts are still paying to hold, and the bottom is being built underneath them.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">The four-regime decoder grid</div>
+    </div>
+  </div>
+
+  <div class="skim">A 2×2 grid of price direction × OI direction, with funding-sign overlays, mapping every joint state to its named regime.</div>
+
+  <!-- SVG 1 — Decoder Grid -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Funding + OI + Price decoder grid">
+      <defs>
+        <linearGradient id="gNL" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#bbf7d0" stop-opacity="0.7"/>
+          <stop offset="1" stop-color="#22c55e" stop-opacity="0.18"/>
+        </linearGradient>
+        <linearGradient id="gNS" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fecaca" stop-opacity="0.7"/>
+          <stop offset="1" stop-color="#ef4444" stop-opacity="0.18"/>
+        </linearGradient>
+        <linearGradient id="gSQ" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#bef264" stop-opacity="0.6"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.15"/>
+        </linearGradient>
+        <linearGradient id="gFL" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fed7aa" stop-opacity="0.7"/>
+          <stop offset="1" stop-color="#fbbf24" stop-opacity="0.18"/>
+        </linearGradient>
+      </defs>
+
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Funding + OI + Price — Four-Regime Decoder</text>
+
+      <!-- Axis labels -->
+      <text x="400" y="60" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="2">PRICE</text>
+      <text x="60" y="240" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="2" transform="rotate(-90 60 240)">OPEN INTEREST</text>
+
+      <!-- Column headers -->
+      <text x="270" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#22c55e">PRICE ↑</text>
+      <text x="540" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#ef4444">PRICE ↓</text>
+
+      <!-- Row labels -->
+      <text x="100" y="180" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#3f6212">OI ↑</text>
+      <text x="100" y="340" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#3f6212">OI ↓</text>
+
+      <!-- Quadrant: NEW LONGS (Price ↑, OI ↑) -->
+      <rect x="120" y="100" width="300" height="160" fill="url(#gNL)" stroke="#22c55e" stroke-width="1.5" rx="6"/>
+      <text x="270" y="135" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#14532d" font-style="italic">New Longs</text>
+      <text x="270" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534">FUNDING + RISING</text>
+      <text x="270" y="185" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Real positioning</text>
+      <text x="270" y="202" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Confirm with spot CVD</text>
+      <text x="270" y="232" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#15803d" letter-spacing="1.5">SUSTAINABLE IF SPOT CONFIRMS</text>
+
+      <!-- Quadrant: NEW SHORTS (Price ↓, OI ↑) -->
+      <rect x="430" y="100" width="300" height="160" fill="url(#gNS)" stroke="#ef4444" stroke-width="1.5" rx="6"/>
+      <text x="580" y="135" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#7f1d1d" font-style="italic">New Shorts</text>
+      <text x="580" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b">FUNDING − DEEPENING</text>
+      <text x="580" y="185" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Bears pressing weakness</text>
+      <text x="580" y="202" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Squeeze fuel building</text>
+      <text x="580" y="232" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#b91c1c" letter-spacing="1.5">EXTREME = SQUEEZE PRIMED</text>
+
+      <!-- Quadrant: SHORT SQUEEZE (Price ↑, OI ↓) -->
+      <rect x="120" y="270" width="300" height="160" fill="url(#gSQ)" stroke="#a3e635" stroke-width="1.5" rx="6"/>
+      <text x="270" y="305" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#365314" font-style="italic">Short Squeeze</text>
+      <text x="270" y="330" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212">FUNDING − → +</text>
+      <text x="270" y="355" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Shorts covering, OI bleeding</text>
+      <text x="270" y="372" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">No new buyers — only ex-shorts</text>
+      <text x="270" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#65a30d" letter-spacing="1.5">SELF-LIMITING. FADE INTO STRENGTH</text>
+
+      <!-- Quadrant: LONG FLUSH (Price ↓, OI ↓) -->
+      <rect x="430" y="270" width="300" height="160" fill="url(#gFL)" stroke="#fbbf24" stroke-width="1.5" rx="6"/>
+      <text x="580" y="305" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#78350f" font-style="italic">Long Flush</text>
+      <text x="580" y="330" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#92400e">FUNDING + → −</text>
+      <text x="580" y="355" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Forced unwind, liqs cascading</text>
+      <text x="580" y="372" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#1c1917">Bottoms when OI stops bleeding</text>
+      <text x="580" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#a16207" letter-spacing="1.5">BUYING WINDOW WHEN OI FLATTENS</text>
+
+      <!-- footer micro-note -->
+      <text x="400" y="450" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#78716c" font-style="italic">Direction of OI distinguishes new positioning (OI ↑) from forced unwinds (OI ↓). Funding sign &amp; trend tells you which side is paying.</text>
+
+    </svg>
+    <div class="svg-caption">Decoder grid: every joint state of price × OI × funding maps to one of four named regimes. The two regimes on the OI ↓ row are mechanically self-limiting — they end when the trapped side is flushed.</div>
+  </div>
+
+  <!-- SVG 2 — Distribution & Capitulation overlay -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Distribution top and capitulation bottom mechanics">
+      <defs>
+        <marker id="arrTop" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+        <marker id="arrBot" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#22c55e"/>
+        </marker>
+      </defs>
+
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="18" fill="#1c1917">Distribution Top &amp; Capitulation Bottom — Funding Extremes</text>
+
+      <!-- Price line -->
+      <path d="M 60 220 Q 140 130, 220 110 Q 290 95, 350 110 Q 410 130, 470 200 Q 530 270, 600 280 Q 670 285, 740 240"
+            fill="none" stroke="#1c1917" stroke-width="2.2"/>
+
+      <!-- Funding bars under price -->
+      <g font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">
+        <!-- positive funding accumulating -->
+        <rect x="80"  y="320" width="14" height="8"  fill="#86efac"/>
+        <rect x="100" y="316" width="14" height="12" fill="#4ade80"/>
+        <rect x="120" y="310" width="14" height="18" fill="#22c55e"/>
+        <rect x="140" y="304" width="14" height="24" fill="#16a34a"/>
+        <rect x="160" y="298" width="14" height="30" fill="#15803d"/>
+        <rect x="180" y="294" width="14" height="34" fill="#14532d"/>
+        <rect x="200" y="290" width="14" height="38" fill="#14532d"/>
+        <rect x="220" y="288" width="14" height="40" fill="#14532d"/>
+        <rect x="240" y="290" width="14" height="38" fill="#15803d"/>
+        <!-- flip -->
+        <rect x="270" y="320" width="14" height="6" fill="#fca5a5"/>
+        <rect x="290" y="328" width="14" height="14" fill="#ef4444" transform="translate(0 -8)"/>
+        <rect x="310" y="328" width="14" height="22" fill="#dc2626" transform="translate(0 -8)"/>
+        <!-- bottom side -->
+        <rect x="440" y="328" width="14" height="22" fill="#dc2626" transform="translate(0 -8)"/>
+        <rect x="460" y="328" width="14" height="30" fill="#b91c1c" transform="translate(0 -8)"/>
+        <rect x="480" y="328" width="14" height="36" fill="#7f1d1d" transform="translate(0 -8)"/>
+        <rect x="500" y="328" width="14" height="40" fill="#7f1d1d" transform="translate(0 -8)"/>
+        <rect x="520" y="328" width="14" height="38" fill="#991b1b" transform="translate(0 -8)"/>
+        <!-- flip back -->
+        <rect x="560" y="320" width="14" height="6" fill="#bbf7d0"/>
+        <rect x="580" y="316" width="14" height="12" fill="#86efac"/>
+        <rect x="600" y="312" width="14" height="16" fill="#4ade80"/>
+        <rect x="620" y="310" width="14" height="18" fill="#22c55e"/>
+      </g>
+
+      <!-- centerline -->
+      <line x1="60" y1="328" x2="740" y2="328" stroke="#a8a29e" stroke-width="0.5" stroke-dasharray="2 3"/>
+      <text x="50" y="332" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">F=0</text>
+
+      <!-- Distribution callout -->
+      <line x1="220" y1="110" x2="220" y2="78" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <text x="220" y="68" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#7f1d1d" font-style="italic">Distribution</text>
+      <text x="220" y="265" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#1c1917">Funding extreme + ↑</text>
+      <text x="220" y="280" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#1c1917">Price stalls. Longs paying.</text>
+
+      <!-- Capitulation callout -->
+      <line x1="600" y1="280" x2="600" y2="312" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <text x="600" y="155" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#365314" font-style="italic">Capitulation</text>
+      <text x="600" y="175" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#1c1917">Funding extreme − ↓</text>
+      <text x="600" y="190" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#1c1917">Price stalls. Shorts paying.</text>
+
+      <!-- side labels -->
+      <text x="60" y="350" text-anchor="start" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1.5">PRICE (top) · FUNDING RATE (bottom)</text>
+
+    </svg>
+    <div class="svg-caption">Crowded positioning into stalling price is the structural top/bottom signal — funding extreme without continuation means the marginal trader is paying to hold a position that the market is no longer rewarding.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading the regime · trading the transitions</div>
+    </div>
+  </div>
+
+  <div class="skim">The trade is at the regime <em>transition</em> — when the market shifts from new shorts to short squeeze, or from new longs to distribution, the edge is the flip itself, not the regime in steady state.</div>
+
+  <p>The decoder is not a pattern that fires entries. It is a state classifier. Most of the time the market is simply in one of the four regimes, and your job is to know which one. The trades come at the <strong>transitions</strong> — the bar where OI starts to fall while price keeps rising (new longs → short squeeze, fade), or the bar where funding flips negative while price holds (new longs → distribution risk, lean short).</p>
+
+  <div class="practice">
+
+    <div class="practice-card">
+      <div class="num">1.</div>
+      <div>
+        <h4>Read OI direction first</h4>
+        <p>OI direction is the cleanest signal of the three. Rising OI = new positioning, falling OI = unwinding. Look at OI <em>before</em> looking at price. A move on falling OI is mechanically self-limiting; a move on rising OI has continuation potential — both look identical on a candle.</p>
+      </div>
+    </div>
+
+    <div class="practice-card">
+      <div class="num">2.</div>
+      <div>
+        <h4>Use funding to identify who is trapped</h4>
+        <p>Funding tells you who is paying. Persistent positive funding into a flat or falling price means crowded longs are bleeding — they will eventually fold. Persistent negative funding into a flat or rising price means crowded shorts are bleeding — squeeze fuel is loaded. The trapped side is the one paying.</p>
+      </div>
+    </div>
+
+    <div class="practice-card">
+      <div class="num">3.</div>
+      <div>
+        <h4>Cross-check perp regime against spot CVD</h4>
+        <p>A "new longs" regime that is leveraged-only (rising perp OI, flat spot CVD) is fragile — it is paper bull. A "new longs" regime confirmed by spot CVD is real. Same logic for the short side. Cross-checking with spot is what separates a sustainable trend from a wick waiting to happen.</p>
+      </div>
+    </div>
+
+    <div class="practice-card">
+      <div class="num">4.</div>
+      <div>
+        <h4>Trade the transition, not the steady state</h4>
+        <p>Steady-state regimes give you bias. Transitions give you entries. The bar where new longs flips to short squeeze (OI rolls over) — that is where the fade lives. The bar where capitulation flips to new longs (funding crosses zero, OI base) — that is where the long lives.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — short-squeeze setup, BTC perp</h5>
+    <table>
+      <tr><td>Pre-condition</td><td>BTC −12% over 5 sessions. Funding has driven from +0.005% to <strong>−0.022%</strong> per 8h on Binance. Long/short ratio: 37% long, 63% short.</td></tr>
+      <tr><td>Trigger</td><td>Price reclaims a swing-high level on the 1H chart; OI <em>flat</em> on the bar (existing shorts not adding); funding still −0.018% (shorts still paying).</td></tr>
+      <tr><td>Read</td><td>Crowded short, no new short pressing — squeeze fuel intact. Reclaim invalidates the short thesis structurally.</td></tr>
+      <tr><td>Entry</td><td>Long on retest of reclaimed level. Stop below the swing low that defined the short trap.</td></tr>
+      <tr><td>Risk</td><td>Stop ~1.8% below entry. First target = next major liquidity pool above (where the cluster of shorts get force-closed). R:R ≈ 1:3.</td></tr>
+      <tr><td>Exit</td><td>Trail as OI drops on the way up — when OI bleeds 8–12% from the local high, the squeeze is mostly out of fuel. Take the rest off into the next obvious resistance.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 1H–4H execution, 1D bias. Funding cycles are 8h on Binance/Bybit — anything below 1H gets noisy. Above 1D the decoder still works but the entries become positional.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC sitting on a textbook squeeze setup as of this morning</div>
+    </div>
+  </div>
+
+  <div class="skim">As of the early-May Sydney session BTC perp shows the precise cocktail of negative funding, top-heavy short positioning, and prior-week OI build that defines a primed-short setup.</div>
+
+  <div class="tape">
+    <div class="tape-label">Live · 5 May 2026 · BTC/USDT Perpetual · Binance</div>
+    <h4>BTC perp: shorts paying, longs sitting on the floor</h4>
+
+    <p>BTC trades around the <strong>$76k</strong> region after a multi-week drawdown. The Binance perp <strong>long/short account ratio</strong> sits at roughly <strong>37% long / 63% short</strong> — a meaningful skew given that Binance retail traders tend to lean long structurally. Funding rate prints <strong>−0.0051% / 8h</strong> (annualised ≈ −5.6%), and Binance perp OI sits near <strong>$8.0B</strong>.</p>
+
+    <p>That is the textbook <em>new shorts</em> regime tipping into <em>capitulation</em>: OI has built on the way down (new shorts pressed weakness), funding has gone negative and stayed there (shorts are paying), and the recent price action has flattened rather than continued lower. Per the decoder, this is squeeze fuel sitting on a desk waiting for a match. <strong>The match would be a clean reclaim of the recent swing-high zone</strong> on rising spot CVD — that is the transition bar.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>BTC spot proxy</td><td>~$76,000</td></tr>
+        <tr><td>Binance perp funding (8h)</td><td>−0.0051%</td></tr>
+        <tr><td>Annualised funding</td><td>≈ −5.6%</td></tr>
+        <tr><td>Long/short ratio</td><td>37% / 63%</td></tr>
+        <tr><td>Binance perp OI</td><td>~$8.0B</td></tr>
+        <tr><td>ETH long/short (contrast)</td><td>61.6% / 38.4%</td></tr>
+        <tr><td>Reading</td><td>Late-stage NEW SHORTS / early CAPITULATION</td></tr>
+      </table>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <p style="font-size:12.5px;color:#a8a29e;margin-top:6px">Source: long/short ratio and funding figures published this week on the Binance futures dashboard and CoinGlass; reproduced here as the live tape snapshot for the decoder. The point is the <em>regime</em>, not the exact decimal — funding has printed clearly negative on BTC for several consecutive cycles while ETH positioning remains long-skewed.</p>
+
+    <div class="read">
+      <b>Read</b>
+      The asymmetry between BTC (short-skewed, negative funding) and ETH (long-skewed, mixed funding) tells you where the squeeze fuel is concentrated. If a market-wide rally trigger lands today, BTC has more mechanical room to run than ETH on a percentage basis — because ETH is already positioned for it and BTC is not.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The architects · the practitioners</div>
+    </div>
+  </div>
+
+  <div class="skim">Hayes invented the funding mechanic; the modern desk reads it through the lens of crowded positioning.</div>
+
+  <div class="quote">
+    <p>"The funding rate is the mechanism that tethers the perpetual contract price to the underlying spot price."</p>
+    <div class="attr"><b>Arthur Hayes</b> · BitMEX founder, perpetual swap whitepaper · <a href="https://lucylabs.medium.com/cryptos-greatest-financial-innovation-the-perpetual-swap-1389df0aa05e">Lucy Labs reproduction</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"High funding rate paired with rising open interest means the market is overloaded with longs. Correction likely."</p>
+    <div class="attr"><b>Tradelink desk note</b> · 2025 educational primer · <a href="https://tradelink.pro/blog/funding-rate-open-interest/">tradelink.pro</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Open Interest is directionally neutral; it only reveals the total scale of the standoff between long and short positions. Its interpretation must be placed within a broader framework alongside price action, volume, funding rates, and liquidation data."</p>
+    <div class="attr"><b>CoinGlass</b> · Open Interest learning page, 2026 · <a href="https://www.coinglass.com/learn/open-interests-en">coinglass.com/learn</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Extremely high positive funding rates indicate that the market is overly optimistic — extremely negative funding rates suggest the market may be in a state of panic. Both are reversal-prone."</p>
+    <div class="attr"><b>CoinGlass</b> · How to judge the market by funding rate, 2026 · <a href="https://www.coinglass.com/learn/how-to-judge-market-by-fr-en">coinglass.com/learn</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the decoder breaks down · what to ignore</div>
+    </div>
+  </div>
+
+  <div class="skim">Reading any one of the three variables in isolation is the most common, most expensive mistake in perp trading.</div>
+
+  <div class="trap">
+    <div class="num">1.</div>
+    <div>
+      <h5>Treating high funding as a contrarian signal on its own</h5>
+      <p>Funding can sit elevated for weeks during a healthy trend. The signal is funding extreme <em>plus stalling price</em> — if price is still making new highs while funding is high, longs are getting paid back through price appreciation faster than they pay funding. Don't fade trend just because funding is positive.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2.</div>
+    <div>
+      <h5>Reading exchange-aggregated OI when the divergence is the point</h5>
+      <p>Aggregated OI smooths out the most useful information: where positioning is concentrated. A spike on a single venue (Binance, Bybit, Hyperliquid) often precedes a venue-specific squeeze that aggregated charts will mute. Look at per-exchange OI for the leading edge.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3.</div>
+    <div>
+      <h5>Confusing OI ↓ for closing-the-book vs forced flush</h5>
+      <p>OI can drop because traders rationally take profits at a target — not because they got liquidated. Cross-check OI drops against the liquidation feed: a clean OI bleed with no liquidation prints is healthy unwinding; an OI cliff with a liquidation cluster is the flush. Different setups, different trades.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4.</div>
+    <div>
+      <h5>Ignoring the spot side</h5>
+      <p>Perpetual decoders read positioning, not demand. A flawless "new longs" regime that is unconfirmed by spot is paper bull — it sells off the moment funding gets uncomfortable. Always cross-check perp positioning against spot CVD or spot volume; the perp tape lies more often than the spot tape.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5.</div>
+    <div>
+      <h5>Overhyped: precise funding-rate "thresholds"</h5>
+      <p>You will see content claiming 0.05% / 8h is "the squeeze threshold" or 0.1% means "imminent reversal." There is no universal threshold. Funding is relative to the asset, the regime, and the cycle — what is extreme for BTC in a low-vol chop is normal for a meme perp in a mania. Use percentile context (where does this print sit versus the trailing 90 days?) not absolute cutoffs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Primary sources · practitioner explanations</div>
+    </div>
+  </div>
+
+  <div class="skim">Skip the SEO content farms — these are the four sources actually worth your time.</div>
+
+  <div class="fr">
+
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/learn/how-to-judge-market-by-fr-en">CoinGlass — How to Judge the Market by Funding Rates</a>
+        <span>The clearest plain-English primer on the four-scenario framework. Read this first.</span>
+      </div>
+    </div>
+
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/learn/open-interests-en">CoinGlass — Open Interest in Crypto Perpetuals: Core Concepts</a>
+        <span>The accounting rules and why aggregated OI hides the most useful information.</span>
+      </div>
+    </div>
+
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://tradelink.pro/blog/funding-rate-open-interest/">Tradelink — Funding Rate + Open Interest: How to Spot Liquidations</a>
+        <span>Three-scenario framework with worked language for each combination.</span>
+      </div>
+    </div>
+
+    <div class="fr-item">
+      <div class="fr-type">Origin</div>
+      <div class="fr-body">
+        <a href="https://lucylabs.medium.com/cryptos-greatest-financial-innovation-the-perpetual-swap-1389df0aa05e">Lucy Labs — Crypto's Greatest Financial Innovation: The Perpetual Swap</a>
+        <span>Hayes-derived explainer on why funding exists at all and what it is mechanically doing.</span>
+      </div>
+    </div>
+
+    <div class="fr-item">
+      <div class="fr-type">Live data</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/FundingRate">CoinGlass — Funding Rate Live Dashboard</a>
+        <span>The desk standard. Aggregate funding across venues, BTC/ETH/altcoin breakdown, history charts.</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources cited</b>
+    <a href="https://www.coinglass.com/learn/how-to-judge-market-by-fr-en">CoinGlass · Funding rate framework</a>
+    <a href="https://www.coinglass.com/learn/open-interests-en">CoinGlass · Open Interest core concepts</a>
+    <a href="https://www.coinglass.com/FundingRate">CoinGlass · Funding rate live</a>
+    <a href="https://tradelink.pro/blog/funding-rate-open-interest/">Tradelink · Funding + OI primer</a>
+    <a href="https://lucylabs.medium.com/cryptos-greatest-financial-innovation-the-perpetual-swap-1389df0aa05e">Lucy Labs · Perpetual swap origin</a>
+    <a href="https://www.coinbase.com/learn/perpetual-futures/understanding-funding-rates-in-perpetual-futures">Coinbase Learn · Funding rates</a>
+  </div>
+  <div>Alpha · Issue #13 · 5 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /outer -->
+</body>
+</html>
