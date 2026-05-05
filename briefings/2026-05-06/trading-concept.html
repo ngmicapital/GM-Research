@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Auction Market Theory | May 6, 2026</title>
+<meta property="og:description" content="Alpha — Auction Market Theory | May 6, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+.tape .read a{color:var(--terminal-accent);border-bottom-color:rgba(190,242,100,0.4)}
+
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<div class="content">
+
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Auction Market Theory</h1>
+  <div class="meta">
+    <span>Wednesday · 6 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #14</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Auction Market Theory (AMT) is the meta-framework underneath every orderflow concept covered in this series — markets are continuous two-way auctions where price advertises opportunity, time validates value, and volume confirms acceptance.</strong> The practical edge: once you can label whether the tape is in <strong>balance</strong> (fade the edges) or <strong>imbalance</strong> (trade with the initiative), every other tool — CVD, footprint, heatmaps, absorption — slots into a coherent decision tree instead of firing context-free signals.</p>
+</div>
+
+<!-- §01 WHAT IT IS -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Steidlmayer 1980s · the framework all orderflow lives inside</div>
+    </div>
+  </div>
+
+  <div class="skim">AMT is the philosophy that every market is an organised auction whose only job is to find the price at which the maximum number of transactions can occur — that price is "value", and price oscillates around it.</div>
+
+  <p>The framework comes from <strong>J. Peter Steidlmayer</strong>, a CBOT trader in the late 1970s and early 1980s who built the original Market Profile to organise intraday data into a statistical distribution. The thesis is simple and physical: a market doesn't move because of an indicator crossing a level — it moves because aggressive participants are willing to <em>pay the spread</em> to get filled, and the price travels until it finds enough resting liquidity on the other side to satisfy them. Everything you watch on a footprint, a CVD chart, or a liquidity heatmap is a measurement of that one mechanic.</p>
+
+  <p>AMT replaces the indicator-based mental model with a process-based one. Instead of asking "is RSI overbought?" or "did the EMA cross?", you ask three questions: <strong>where is value</strong>, <strong>are we accepting it or rejecting it</strong>, and <strong>who is the aggressor</strong>. Those three questions cover every trade decision a discretionary orderflow trader needs to make. Wyckoff's accumulation/distribution schematics, Dalton's Market Profile day-types, ICT's "liquidity runs" — all of them are dialects of the same underlying language.</p>
+
+  <p>The reason it matters now, in 2026, with HFT bots dominating the book and ETF flows distorting spot vs perp, is that <strong>the auction mechanic itself hasn't changed</strong>. Bots still need a price to advertise at, time to wait for the other side, and volume to confirm. AMT abstracts away from the participant identity (pit trader vs market-making algo vs spot ETF authorised participant) and stays focused on the function: where does this market believe value is, and is it changing?</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>VALUE AREA</b><span>Range where ~70% of session volume traded (one std dev)</span></span>
+    <span class="pill-term"><b>POC</b><span>Point of Control — single price with the most volume or time</span></span>
+    <span class="pill-term"><b>VAH / VAL</b><span>Value Area High / Low — the edges of the value range</span></span>
+    <span class="pill-term"><b>BALANCE</b><span>Two-sided auction; price oscillating inside value</span></span>
+    <span class="pill-term"><b>IMBALANCE</b><span>One-sided auction; price seeking new value</span></span>
+    <span class="pill-term"><b>TPO</b><span>Time-Price Opportunity — one unit of time at one price</span></span>
+    <span class="pill-term"><b>EXCESS</b><span>Sharp rejection at an extreme — the auction was wrong there</span></span>
+    <span class="pill-term"><b>INITIATIVE</b><span>Aggression that moves price out of value</span></span>
+    <span class="pill-term"><b>RESPONSIVE</b><span>Aggression that defends value when price tries to leave</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Price is not value. Price advertises; value is where time and volume agree to do business. Most of trading is correctly identifying when price is leaving an old value zone for a new one.
+  </div>
+</section>
+
+<!-- §02 MECHANICS -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">The three components · the four phases · balance vs imbalance</div>
+    </div>
+  </div>
+
+  <div class="skim">AMT decomposes every market into three measurable components — price, time, volume — and uses their interaction to classify the auction as either balanced (rotational) or imbalanced (directional).</div>
+
+  <p>The components are deliberately reductive. <strong>Price</strong> is the auction's advertisement: it moves up to attract sellers and down to attract buyers. <strong>Time</strong> is its validation mechanic: a price the market "accepts" gets revisited; a price it "rejects" prints once and never returns. <strong>Volume</strong> is the confirmation: lots of business done at a price means the market agrees that's fair; little business means it's not. Plot all three and you get the bell-curve shape of a Market Profile — the densest section is the value area, the tails are excess.</p>
+
+  <div class="formula">
+<b>Value Area (VA):</b>
+VA = price range containing ~70% of session volume (one std dev)
+VAH = upper edge · VAL = lower edge · POC = densest price
+
+<b>Acceptance test:</b>
+price stays inside VA for ≥ 2 TPO periods → ACCEPTED
+price prints once and reverses → REJECTED (single print / excess)
+
+<b>Balance condition:</b>
+day's VA ⊆ prior day's VA (or substantial overlap) → BALANCE
+two-way rotation likely; fade the extremes
+
+<b>Imbalance condition:</b>
+day's VA fully above or fully below prior VA → IMBALANCE
+trend day; trade with initiative, not against it
+
+    <div class="note">Note: the 70% figure is convention, not law — TradingView and most platforms default to 70%. Steidlmayer's original used a normal-distribution one-sigma assumption (~68.27%); the rounding doesn't matter for trade decisions.</div>
+  </div>
+
+  <p>Steidlmayer's original framing identified <strong>four phases</strong> of any auction. <em>Phase 1 — Initiation:</em> price probes a direction, often violently. <em>Phase 2 — Discovery:</em> price travels until it finds resting liquidity strong enough to push back. <em>Phase 3 — Acceptance:</em> participants on both sides agree the new range is fair; volume builds. <em>Phase 4 — Reversal or continuation:</em> the auction either rotates back inside (balance) or breaks out again to repeat the cycle. Every Wyckoff schematic Tony recognises (accumulation, distribution, re-accumulation) is a stitched-together sequence of these four phases on a longer timeframe.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Auction state</th><th>Tape signature</th><th>How to trade it</th></tr>
+    <tr><td>Balance</td><td>Price rotates inside prior VA; volume builds at POC; rejections at VAH/VAL</td><td>Fade the edges back to POC; tight stops; fail-fast bias</td></tr>
+    <tr><td>Initiative breakout</td><td>Price exits VA on rising volume + aggressive CVD; no return inside</td><td>Trade in the direction of initiative; trail behind structure</td></tr>
+    <tr><td>Failed breakout</td><td>Price exits VA but volume doesn't follow; quick return inside</td><td>Fade the failure back to opposite extreme — high R setup</td></tr>
+    <tr><td>Excess (tail)</td><td>Single prints at session high/low; sharp rejection wick</td><td>That extreme is "wrong" — sell rallies into it / buy dips off it</td></tr>
+  </table>
+  </div>
+
+  <p>The crucial distinction is <strong>initiative vs responsive</strong> activity. Initiative buying is aggression that pushes price <em>out</em> of value upward — somebody decided the prior value zone is too cheap. Responsive buying is aggression that defends a level <em>at or below</em> value — somebody decided this is a bargain and stepped in to absorb. Same buy print on the tape, different meaning. AMT trains you to ask which one you're seeing before you act on it.</p>
+</section>
+
+<!-- §03 VISUAL -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — balance profile + balance-to-imbalance break</div>
+    </div>
+  </div>
+
+  <div class="skim">The first diagram is a textbook balanced session profile with VAH/VAL/POC labelled; the second is a balance-break showing the transition from rotational to initiative auction.</div>
+
+  <!-- SVG 1 — Market Profile bell curve -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Market Profile bell curve diagram with value area, POC, and excess tails">
+
+      <defs>
+        <linearGradient id="vaFill" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.08"/>
+        </linearGradient>
+      </defs>
+
+      <text x="400" y="28" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#1c1917">Balanced Session Profile</text>
+      <text x="400" y="46" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE (Y) · VOLUME / TIME AT PRICE (X) · ~70% INSIDE VA</text>
+
+      <!-- Axes -->
+      <line x1="80" y1="70" x2="80" y2="400" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="80" y1="400" x2="760" y2="400" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="44" y="78" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">PRICE</text>
+      <text x="760" y="416" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">VOLUME / TIME →</text>
+
+      <!-- Price labels -->
+      <text x="74" y="84" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">82.0k</text>
+      <text x="74" y="124" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">81.0k</text>
+      <text x="74" y="180" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">80.0k</text>
+      <text x="74" y="240" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">79.0k</text>
+      <text x="74" y="296" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">78.0k</text>
+      <text x="74" y="350" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">77.0k</text>
+      <text x="74" y="395" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">76.0k</text>
+
+      <!-- Profile bars (horizontal histogram, bell-shape) -->
+      <!-- Tail top (excess) -->
+      <rect x="80"  y="80"  width="40"  height="14" fill="#fbbf24" opacity="0.7"/>
+      <rect x="80"  y="98"  width="60"  height="14" fill="#a3e635" opacity="0.6"/>
+      <rect x="80"  y="116" width="100" height="14" fill="#a3e635" opacity="0.7"/>
+      <!-- VAH band starts -->
+      <rect x="80"  y="134" width="160" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="152" width="220" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="170" width="290" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="188" width="360" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <!-- POC: widest bar -->
+      <rect x="80"  y="206" width="430" height="14" fill="#a3e635" stroke="#3f6212" stroke-width="1.2"/>
+      <rect x="80"  y="224" width="380" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="242" width="310" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="260" width="240" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <!-- VAL band ends -->
+      <rect x="80"  y="278" width="170" height="14" fill="url(#vaFill)" stroke="#a3e635" stroke-width="0.5"/>
+      <rect x="80"  y="296" width="110" height="14" fill="#a3e635" opacity="0.7"/>
+      <rect x="80"  y="314" width="70"  height="14" fill="#a3e635" opacity="0.6"/>
+      <!-- Tail bottom (excess) -->
+      <rect x="80"  y="332" width="50"  height="14" fill="#fbbf24" opacity="0.7"/>
+      <rect x="80"  y="350" width="30"  height="14" fill="#fbbf24" opacity="0.6"/>
+      <rect x="80"  y="368" width="20"  height="14" fill="#ef4444" opacity="0.6"/>
+
+      <!-- VA bracket -->
+      <line x1="555" y1="134" x2="555" y2="292" stroke="#3f6212" stroke-width="2"/>
+      <line x1="550" y1="134" x2="560" y2="134" stroke="#3f6212" stroke-width="2"/>
+      <line x1="550" y1="292" x2="560" y2="292" stroke="#3f6212" stroke-width="2"/>
+      <text x="568" y="216" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">VALUE AREA</text>
+      <text x="568" y="232" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212">~70% volume</text>
+
+      <!-- VAH label -->
+      <line x1="80" y1="134" x2="555" y2="134" stroke="#3f6212" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="568" y="138" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">VAH ≈ 81.2k</text>
+
+      <!-- POC label -->
+      <line x1="80" y1="213" x2="540" y2="213" stroke="#1c1917" stroke-width="0.8" stroke-dasharray="3,3"/>
+      <text x="568" y="184" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917" font-weight="700">POC ≈ 79.5k</text>
+      <text x="568" y="198" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">most time / volume</text>
+
+      <!-- VAL label -->
+      <line x1="80" y1="292" x2="555" y2="292" stroke="#3f6212" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="568" y="296" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">VAL ≈ 77.8k</text>
+
+      <!-- Excess tail labels -->
+      <text x="135" y="89" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">EXCESS HIGH</text>
+      <text x="40"  y="345" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f" font-weight="700">EXCESS</text>
+      <text x="40"  y="358" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f" font-weight="700">LOW</text>
+
+      <!-- Footnote -->
+      <text x="80" y="426" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">Profile orientation: longest bar = POC. Value area brackets one std dev around it. Tails = single-print excess.</text>
+    </svg>
+    <div class="svg-caption">Textbook balanced profile — bell-shape distribution with POC at the densest price (~79.5k), value area covering 77.8k–81.2k (~70% of volume), and single-print excess at both ends marking where the auction tried, failed, and turned. Trade rule for a balance day: fade VAH/VAL back toward POC.</div>
+  </div>
+
+  <!-- SVG 2 — Balance to Imbalance transition -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Balance to imbalance transition diagram showing breakout from prior value area">
+
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#1c1917">Balance → Imbalance Transition</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRIOR VALUE AREA · BREAKOUT · NEW VALUE DISCOVERY</text>
+
+      <!-- Axes -->
+      <line x1="60" y1="60" x2="60" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="330" x2="760" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Prior VA shaded zone (left half) -->
+      <rect x="60" y="180" width="380" height="100" fill="#a3e635" opacity="0.12"/>
+      <line x1="60" y1="180" x2="440" y2="180" stroke="#3f6212" stroke-width="1" stroke-dasharray="5,4"/>
+      <line x1="60" y1="280" x2="440" y2="280" stroke="#3f6212" stroke-width="1" stroke-dasharray="5,4"/>
+      <line x1="60" y1="230" x2="440" y2="230" stroke="#1c1917" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+
+      <text x="68" y="174" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">PRIOR VAH</text>
+      <text x="68" y="225" font-family="JetBrains Mono,monospace" font-size="10" fill="#1c1917" font-weight="700">PRIOR POC</text>
+      <text x="68" y="296" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">PRIOR VAL</text>
+
+      <!-- Phase labels -->
+      <line x1="440" y1="60" x2="440" y2="330" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="245" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" letter-spacing="0.5" font-weight="700">BALANCE</text>
+      <text x="245" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">rotational · fade edges</text>
+      <text x="600" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78350f" letter-spacing="0.5" font-weight="700">IMBALANCE</text>
+      <text x="600" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">initiative · go with</text>
+
+      <!-- Price candles - balance phase (left) - rotating between VAH and VAL -->
+      <rect x="80"  y="240" width="14" height="22" fill="#22c55e"/>
+      <rect x="105" y="220" width="14" height="20" fill="#22c55e"/>
+      <rect x="130" y="195" width="14" height="22" fill="#22c55e"/>
+      <rect x="155" y="190" width="14" height="14" fill="#ef4444"/>
+      <rect x="180" y="208" width="14" height="20" fill="#ef4444"/>
+      <rect x="205" y="234" width="14" height="22" fill="#ef4444"/>
+      <rect x="230" y="262" width="14" height="14" fill="#ef4444"/>
+      <rect x="255" y="252" width="14" height="14" fill="#22c55e"/>
+      <rect x="280" y="232" width="14" height="20" fill="#22c55e"/>
+      <rect x="305" y="210" width="14" height="22" fill="#22c55e"/>
+      <rect x="330" y="195" width="14" height="14" fill="#22c55e"/>
+      <rect x="355" y="200" width="14" height="14" fill="#ef4444"/>
+      <rect x="380" y="215" width="14" height="18" fill="#22c55e"/>
+      <rect x="405" y="190" width="14" height="22" fill="#22c55e"/>
+
+      <!-- Breakout candle - the initiative move -->
+      <rect x="445" y="155" width="14" height="32" fill="#22c55e" stroke="#3f6212" stroke-width="1.5"/>
+      <line x1="452" y1="148" x2="452" y2="155" stroke="#3f6212" stroke-width="1.5"/>
+
+      <!-- Imbalance phase - trending up (right) -->
+      <rect x="475" y="148" width="14" height="22" fill="#22c55e"/>
+      <rect x="500" y="128" width="14" height="20" fill="#22c55e"/>
+      <rect x="525" y="105" width="14" height="22" fill="#22c55e"/>
+      <rect x="550" y="115" width="14" height="14" fill="#ef4444"/>
+      <rect x="575" y="100" width="14" height="14" fill="#22c55e"/>
+      <rect x="600" y="85"  width="14" height="14" fill="#22c55e"/>
+      <rect x="625" y="95"  width="14" height="14" fill="#ef4444"/>
+      <rect x="650" y="80"  width="14" height="14" fill="#22c55e"/>
+
+      <!-- New developing VA (right) -->
+      <rect x="470" y="80" width="280" height="100" fill="#22c55e" opacity="0.08"/>
+      <line x1="470" y1="80" x2="750" y2="80" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="470" y1="180" x2="750" y2="180" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="695" y="74" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">NEW VAH</text>
+      <text x="695" y="195" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">NEW VAL</text>
+
+      <!-- Initiative arrow -->
+      <path d="M 440 305 Q 470 300 470 270" stroke="#fbbf24" stroke-width="2.5" fill="none"/>
+      <polygon points="465,275 470,265 477,272" fill="#fbbf24"/>
+      <text x="448" y="320" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">INITIATIVE</text>
+
+      <!-- Acceptance label -->
+      <text x="600" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">ACCEPTANCE</text>
+      <text x="600" y="214" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">price holds outside; new value forms</text>
+
+      <!-- Time axis labels -->
+      <text x="245" y="350" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">PRIOR SESSION (rotational)</text>
+      <text x="600" y="350" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">CURRENT SESSION (trend)</text>
+    </svg>
+    <div class="svg-caption">The most actionable AMT pattern — a tight balance day caps off, then a session opens with initiative buying that punches through prior VAH and refuses to come back. Once price <em>accepts</em> outside (two periods or more without rotation back inside), a new value area starts forming above. Don't fade an accepted breakout; trade with the initiative.</div>
+  </div>
+</section>
+
+<!-- §04 IN PRACTICE -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Three rules · one heuristic · a worked example</div>
+    </div>
+  </div>
+
+  <div class="skim">The single rule that matters: identify the auction state <em>first</em>, pick a setup <em>second</em>. Trading a balance setup in an imbalance market (or the reverse) is the most expensive mistake in this framework.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Label the auction before you look for a trade</h4>
+        <p>First chart open of the session: is today's developing value above, below, or overlapping yesterday's? Overlapping = balance, fade extremes back to POC. Above/below with no overlap = imbalance, trade with initiative. Don't take a single ticket until that label is on the chart.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Use VAH, VAL, and POC as the only structural levels that matter</h4>
+        <p>Forget Fibonacci, forget round numbers, forget pivots. The only levels with mechanical relevance are the ones the market built itself: prior session VAH/VAL/POC and the developing day's. Stops go behind them, targets at the next one. Everything else is decoration.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Trade acceptance, not the breakout candle</h4>
+        <p>The breakout candle is bait — most fail. The trade is when price <em>holds</em> outside the prior VA for two TPO periods and starts building a new value range. You'll miss the first 30bps, but you'll skip every false break, which is a much better deal in the long run.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>The POC is a magnet only inside balance</h4>
+        <p>In a balance day, price returns to POC like a homing pigeon — fade VAH/VAL with POC as target. In an imbalance day, the prior POC gets abandoned and the new POC develops mid-trend. Never assume a POC is a target without checking which auction state you're in.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — fading a balance VAH</h5>
+    <table>
+      <tr><td>Auction state</td><td>Balance — today's developing VA fully inside prior VA (overlap &gt; 80%)</td></tr>
+      <tr><td>Setup</td><td>Price grinds up to prior VAH ≈ 81,200 on declining CVD; rejection wick prints; tape pace slows</td></tr>
+      <tr><td>Entry</td><td>Short on confirmed rejection — first lower high after VAH tag, ≈ 81,150</td></tr>
+      <tr><td>Stop</td><td>Above prior session high + ATR buffer ≈ 81,420 (270 pts risk)</td></tr>
+      <tr><td>Target 1</td><td>Prior POC ≈ 79,500 → 1,650 pts → 6.1R</td></tr>
+      <tr><td>Target 2</td><td>Prior VAL ≈ 78,300 → 2,850 pts → 10.5R</td></tr>
+      <tr><td>Invalidation</td><td>Acceptance above prior VAH (price holds &gt; VAH for 2 × 30-min TPOs on rising volume) — auction has flipped to imbalance, exit immediately regardless of stop level</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 30m TPO is the canonical session profile. For execution use 5–15m. AMT scales: weekly profiles drive swing positioning, daily profiles drive intraday bias, hourly drive entries.</div>
+</section>
+
+<!-- §05 LIVE TAPE -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC May 6 · the imbalance break above $81k</div>
+    </div>
+  </div>
+
+  <div class="skim">Today is the textbook AMT case in real-time: BTC just broke a multi-week balance zone (~$77–80k) into initiative buying above $81k, with ETF inflows confirming acceptance — exactly the transition the second SVG above describes.</div>
+
+  <div class="tape">
+    <div class="tape-label">▎ LIVE TAPE · BTC/USD · WED 6 MAY 2026</div>
+    <h4>Balance → Imbalance, in real time</h4>
+    <p>For the past three weeks BTC traded inside a tight value zone roughly bounded by <strong>$77,000 (VAL)</strong> and <strong>$80,000 (VAH)</strong>, with a developed POC around <strong>$78,300</strong>. Every test of $80k since mid-April faded back to POC — a textbook balance, fade-the-extremes regime. CVD was flat across the whole zone. Funding stayed muted. The auction was rotational, not directional.</p>
+
+    <p>Today changed that. BTC broke above <strong>$81,000</strong> — the first print outside the prior VAH since January — and crucially, <em>it's holding</em>. The break came on <strong>$532M of single-day spot ETF inflows</strong> per this morning's Morning Edge, with simultaneous perp short liquidations on Binance. That's not a single-candle pop; that's <strong>initiative buying with acceptance</strong>: real spot demand absorbing the prior VAH, then leveraged shorts forced out, then a new value zone starting to form above.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>Prior VAH</td><td>≈ 80,000 (3-week balance ceiling)</td></tr>
+        <tr><td>Prior POC</td><td>≈ 78,300 (3-week balance centre)</td></tr>
+        <tr><td>Prior VAL</td><td>≈ 77,000 (3-week balance floor)</td></tr>
+        <tr><td>Breakout level</td><td>81,000 (first acceptance above prior VAH since Jan)</td></tr>
+        <tr><td>ETF inflow today</td><td>$532M (initiative confirmation)</td></tr>
+        <tr><td>Air pocket above</td><td>$80k → $90k+ (thin volume in profile per Coinotag)</td></tr>
+        <tr><td>Failure level</td><td>Loss of 80,000 with rotation back to POC = balance restored</td></tr>
+      </table>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The auction has flipped from balance to imbalance — meaning the trading rulebook flips with it. The "fade $80k" trade that worked five times in the last three weeks now becomes "fade $80k" = stand in front of initiative. The new playbook is "buy pullbacks toward $80k that don't return inside the prior VA". That single re-classification is what AMT buys you. <em>(See today's <a href="market-briefing.html">Morning Edge</a> for the full ETF-inflow and short-squeeze context.)</em>
+    </div>
+  </div>
+</section>
+
+<!-- §06 QUOTES -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Steidlmayer · Dalton · Adam (Trading Riot) · @abetrade</div>
+    </div>
+  </div>
+
+  <div class="skim">One foundational voice (Steidlmayer), one bridge from theory to desk (Dalton), and one current crypto-native articulator (Adam at Trading Riot).</div>
+
+  <div class="quote">
+    <p>"Price advertises opportunity by moving up or down in order to make the market attractive for participants to enter."</p>
+    <div class="attr"><b>J. Peter Steidlmayer</b> · <em>Markets and Market Logic</em> · 1986 · <a href="http://www.r-5.org/files/books/trading/charts/market-profile/Peter_Steidlmayer_Kevin_Koy-Markets_and_Market_Logic-EN.pdf">PDF</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"When the local grocer priced his peanut butter below value in the 'peanut butter extravaganza,' the consumer bought in a frenzy."</p>
+    <div class="attr"><b>Jim Dalton</b> · <em>Mind Over Markets</em> (paraphrased in Topstep AMT primer) · <a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Topstep</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Prices move because aggressive participants are willing to pay the spread to get filled immediately. Auction market theory breaks down the market's primary purpose — to facilitate trade by discovering the price where the maximum number of transactions can occur."</p>
+    <div class="attr"><b>Adam (@abetrade)</b> · Trading Riot blog · 2024 · <a href="https://blog.tradingriot.com/p/auction-market-theory">tradingriot.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The market is a continuous two-way auction. Its only job is to find the price where the most business can be done. Everything else is just a tool to measure how that auction is progressing."</p>
+    <div class="attr"><b>Adam (@abetrade)</b> · X thread on AMT · 2023 · <a href="https://x.com/abetrade/status/1704224031321235513">x.com</a></div>
+  </div>
+</section>
+
+<!-- §07 COMMON TRAPS -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where AMT rookies and AMT veterans both bleed</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: applying balance-day rules in an imbalance market. Fading a trend day to POC will systematically empty an account.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Fading every VAH/VAL without checking auction state</h5>
+      <p>Mean-reversion to POC is real <em>only</em> in balance. In an imbalance day, VAH gets sliced through and the "fade" becomes a face-rip short. Always classify the auction first — overlap with prior VA = balance; no overlap = imbalance.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Treating the breakout candle as the trade</h5>
+      <p>Most VAH breakouts fail and snap back inside. The actual edge is in <em>acceptance</em>: two TPO periods outside without rotation back. Yes, you sacrifice the first move; you also skip every fakeout, which is the bigger statistical win.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Mixing volume profile and TPO profile interchangeably</h5>
+      <p>They produce different POCs and different VAs. Volume profile shows where business was done; TPO shows where time was spent. In low-liquidity hours TPO POC and volume POC can be 50bps apart. Pick one and stay consistent — most crypto desks default to volume profile, which is correct for 24/7 markets.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Using daily profiles in 24/7 crypto without defining a session</h5>
+      <p>Crypto has no closing bell. A "daily" profile is whatever 24-hour window you choose — UTC midnight, your local close, the CME futures session. Different choices give different VAs. Pick one (UTC daily is standard) and never compare across windows.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The "AMT-as-vibes" trap (overhyped)</h5>
+      <p>Honest read: a non-trivial slice of trading-X uses AMT vocabulary — "value", "POC", "rotation", "initiative" — as decoration on what's still a vibes-based call. AMT is a measurement framework. If someone says "we're in balance" without showing you a profile with a VAH/VAL on it, they're using the words, not the framework. Be one of the people who actually puts the levels on the chart.</p>
+    </div>
+  </div>
+</section>
+
+<!-- §08 FURTHER READING -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">One canonical book · one blog · one X thread · one PDF · one primer</div>
+    </div>
+  </div>
+
+  <div class="skim">Start with Trading Riot for the crypto-native version, then go to Dalton's <em>Mind Over Markets</em> for the canonical desk reference; Steidlmayer's PDF is the source.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Blog</div>
+      <div class="fr-body"><a href="https://blog.tradingriot.com/p/auction-market-theory">Auction Market Theory — Trading Riot</a><span>The cleanest crypto-native explainer. Adam writes how a working trader thinks; this is the primer that ties balance/imbalance to actual orderflow tools. Dc's existing reference source.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body"><a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">Markets in Profile — Jim Dalton (2007)</a><span>The desk-reference upgrade after <em>Mind Over Markets</em>. Full taxonomy of day types, balance/imbalance rules, and the four phases — applied to liquid futures and equity index markets. Translates 1:1 to crypto.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">PDF</div>
+      <div class="fr-body"><a href="http://www.r-5.org/files/books/trading/charts/market-profile/Peter_Steidlmayer_Kevin_Koy-Markets_and_Market_Logic-EN.pdf">Markets and Market Logic — Steidlmayer &amp; Koy (1986)</a><span>The original document. Dense, slim, foundational. The "price advertises opportunity" formulation comes from here. Read it once for the heritage; come back to Dalton for the application.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Thread</div>
+      <div class="fr-body"><a href="https://x.com/abetrade/status/1704224031321235513">Adam (@abetrade) — AMT TLDR thread on X</a><span>A 2-minute version of the Trading Riot blog. Save it, screenshot the diagrams, refer back when you forget which way the value-overlap rule cuts.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Primer</div>
+      <div class="fr-body"><a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Intro to AMT and Market Profile — Topstep</a><span>Plain-English Topstep primer with the peanut-butter analogy and clean definitions of TPO, VA, POC. Good 5-minute refresher.</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — AMT</a>
+    <a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Topstep — Intro to AMT</a>
+    <a href="https://x.com/abetrade/status/1704224031321235513">Adam (@abetrade) X thread</a>
+    <a href="http://www.r-5.org/files/books/trading/charts/market-profile/Peter_Steidlmayer_Kevin_Koy-Markets_and_Market_Logic-EN.pdf">Steidlmayer &amp; Koy — Markets and Market Logic (PDF)</a>
+    <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">Dalton — Markets in Profile</a>
+    <a href="https://en.coinotag.com/analysis/btc-technical-analysis-may-1-2026-volume-and-accumulation">Coinotag — BTC May 2026 volume/accumulation</a>
+    <a href="market-briefing.html">Morning Edge — 6 May 2026</a>
+  </div>
+  <div>Alpha · Issue #14 · 6 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div>
+</div>
+</body>
+</html>
