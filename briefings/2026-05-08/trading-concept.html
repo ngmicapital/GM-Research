@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Orderbook Depth & Spread | May 8, 2026</title>
+<meta property="og:description" content="Alpha — Orderbook Depth & Spread | May 8, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+.tape a{color:#bef264;border-bottom-color:#bef264}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- Left TOC -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- Main column -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Orderbook Depth &amp; Spread</h1>
+  <div class="meta">
+    <span>Friday · 8 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #15</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Orderbook depth and the bid-ask spread are the two static measurements of a market's capacity to absorb size — depth is how much resting limit-order volume sits at each price level, spread is the cost of crossing from buyer to seller right now.</strong> Every dynamic concept on this curriculum — sweeps, absorption, spoofing, liquidity voids — is something <em>happening to</em> the depth map. Learn to read the static map first; the dynamic events become readable as deviations from it. The practical payoff: when spread widens and top-of-book depth thins simultaneously, the market has lost confidence in the current price and is repricing risk in real time.</p>
+</div>
+
+<!-- §01 WHAT IT IS -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The static map · resting size at each level + the cost of crossing</div>
+    </div>
+  </div>
+
+  <div class="skim">Depth is the cumulative resting limit-order volume at each price level on both sides of the book; spread is the gap between the best bid and the best ask.</div>
+
+  <p>Every centralised exchange runs a <strong>limit order book (LOB)</strong> — a price-time-priority queue of unmatched limit orders waiting to be filled. The book has two sides: <strong>bids</strong> (buyers willing to wait at or below a price) and <strong>asks</strong> (sellers willing to wait at or above a price). The highest bid and lowest ask define the inside market; everything else is queued behind them at progressively worse prices. The vertical stack of resting size at each price level is the <strong>depth</strong>. The horizontal distance between best bid and best ask is the <strong>spread</strong>.</p>
+
+  <p>These are the two atomic primitives of microstructure. Larry Harris, in the canonical reference <em>Trading and Exchanges</em>, defines them as orthogonal axes of liquidity: <strong>spread measures tightness</strong> (how cheap it is to round-trip a small order), <strong>depth measures resilience</strong> (how much you can transact before the price moves against you). A market can be tight but shallow (penny spread, but only 1 BTC available at top of book) or wide but deep (10-tick spread, but every level holds 50 BTC). Both measurements are needed to characterise a market — neither is sufficient alone.</p>
+
+  <p>Crypto traders typically encounter depth in three forms: the raw <strong>DOM</strong> (depth of market) ladder showing levels-x-size, the <strong>depth chart</strong> (cumulative bid/ask volume plotted as a curve away from mid-price), and the <strong>liquidity heatmap</strong> (a time-x-price grid that animates depth changes — Bookmap, Coinglass, Hyblock). Each is the same data viewed differently. The DOM is the literal queue; the depth chart is a snapshot of cumulative liquidity at any distance from mid; the heatmap is the time series.</p>
+
+  <p>The reason this matters for everything else on the curriculum: <strong>order flow only has meaning relative to the depth it consumes.</strong> A 100 BTC market buy means very different things if it eats 0.5% of the visible asks (routine) versus 80% of them (sweep). A widening spread on flat depth means makers are stepping back. Both are reads <em>off</em> the book. Learn the static map first; the dynamic events become readable as deviations from it.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>BID</b><span>Highest price a passive buyer is queued to pay</span></span>
+    <span class="pill-term"><b>ASK</b><span>Lowest price a passive seller is queued to accept</span></span>
+    <span class="pill-term"><b>SPREAD</b><span>Best ask minus best bid — the cost to cross</span></span>
+    <span class="pill-term"><b>DEPTH</b><span>Cumulative resting limit-order size at each price level</span></span>
+    <span class="pill-term"><b>DOM</b><span>Depth of market — the literal level-x-size ladder</span></span>
+    <span class="pill-term"><b>SLIPPAGE</b><span>Average fill price minus expected price for a given order size</span></span>
+    <span class="pill-term"><b>MID</b><span>Arithmetic centre between best bid and best ask</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Depth tells you how much the book can absorb; spread tells you how nervous the makers are. When both deteriorate together, the market is repricing risk in real time — get smaller, not bigger.
+  </div>
+</section>
+
+<!-- §02 MECHANICS -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How matching engines walk the book · slippage math · why spread = adverse-selection rent</div>
+    </div>
+  </div>
+
+  <div class="skim">A market order walks the book until it's filled, paying progressively worse prices at each level — depth determines slippage; spread is what makers charge to compensate for the risk of trading against informed flow.</div>
+
+  <p>When an aggressor sends a market buy, the matching engine fills it against resting asks in price-time priority: cheapest ask first, then the next-cheapest, then the next, until the order's full size is consumed. Each level it eats is a price level higher than the last. The effective fill price is a size-weighted average of every level it touched.</p>
+
+  <div class="formula">
+<b>Slippage on a market buy of size Q:</b>
+Σ(qᵢ × pᵢ) for i = 1..n  where Σqᵢ = Q
+Effective fill = Σ(qᵢ × pᵢ) / Q
+Slippage  = Effective fill − Best ask at submit
+
+<b>Top-of-book depth imbalance:</b>
+DI = (Bid₁ size − Ask₁ size) / (Bid₁ size + Ask₁ size)
+DI &gt; 0 → bid-heavy   DI &lt; 0 → ask-heavy   DI ∈ [−1, +1]
+
+<b>Cumulative depth ratio at ±X bps from mid:</b>
+CDR(X) = Σ bid size within X bps / Σ ask size within X bps
+CDR &gt; 1 → buy-side dominant within that band
+CDR &lt; 1 → sell-side dominant
+
+<b>Effective spread (Roll, 1984 — practitioner version):</b>
+Spread_eff = 2 × |Trade_price − Mid_at_trade|
+
+    <div class="note">Note: most exchange-published spreads are quoted spreads (Ask₁ − Bid₁). The realised spread that traders actually pay can differ — large orders eat through multiple levels (slippage component); aggressive flow against fast-moving makers can fill <em>through</em> the quoted spread (price-improvement, rare in crypto). Use Roll's measure for what you actually paid; use the quoted measure for what's posted.</div>
+  </div>
+
+  <p>Spread is not arbitrary. It's the rent market makers charge to compensate for two costs they can't avoid: <strong>inventory risk</strong> (holding the asset while it moves against them) and <strong>adverse selection</strong> (the certainty that some of their counterparties know more than they do). When uncertainty rises — major data print, geopolitical shock, exchange outage — both costs rise, and makers widen the spread to stay solvent. As the academic microstructure literature puts it: <em>"a market maker who fails to widen their spread during high-volatility regimes essentially subsidises informed traders."</em> Spread widening is therefore a leading-indicator stress signal — it's the first thing to move when makers lose confidence in fair value.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Regime</th><th>Spread</th><th>Top-of-book depth</th><th>Read</th></tr>
+    <tr><td>Healthy liquid</td><td>Tight (≤1 tick)</td><td>Thick &amp; symmetric</td><td>Two-sided market — makers competing, fair value agreed</td></tr>
+    <tr><td>Trending into supply</td><td>Tight</td><td>Thick bids · thin asks</td><td>Asks are getting eaten or pulled — uptrend in progress</td></tr>
+    <tr><td>Pre-event uncertainty</td><td>Widening</td><td>Thinning both sides</td><td>Makers stepping back ahead of news — get smaller</td></tr>
+    <tr><td>Stress / dislocation</td><td>Wide ≥3 ticks</td><td>Thin or fragmented</td><td>Adverse-selection mode — execute at risk, big slippage</td></tr>
+    <tr><td>Post-shock recovery</td><td>Compressing</td><td>Refilling slowly</td><td>Makers re-entering — fair value being rediscovered</td></tr>
+  </table>
+  </div>
+
+  <p>Crucially, <strong>depth-of-book is an unreliable measure of intent.</strong> Resting orders can be cancelled instantly. The CME's own market-quality research (<em>"Reassessing Liquidity: Beyond Order Book Depth"</em>, 2025) concedes that <strong>visible depth overstates true willingness to transact</strong> — what matters more is depth that <em>holds</em> as price approaches it. Bookmap calls this distinction "real liquidity vs fake liquidity": real liquidity remains in the book and executes; fake liquidity (spoofing, layering, optical-illusion size) is pulled before fill. The depth you trust is the depth that has survived previous tests at the same level.</p>
+</section>
+
+<!-- §03 VISUAL -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — the DOM ladder · deep vs thin book depth curves</div>
+    </div>
+  </div>
+
+  <div class="skim">The first diagram is a literal DOM ladder showing depth + spread; the second contrasts a deep market and a thin market on the same depth-chart axes — same trade size, very different slippage.</div>
+
+  <!-- SVG 1 — The DOM Ladder -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Depth-of-Market ladder showing bid and ask sides with size bars at each level">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">The DOM Ladder — Anatomy of an Order Book</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE-TIME PRIORITY · ASK STACK ABOVE · BID STACK BELOW</text>
+
+      <!-- Headers -->
+      <text x="170" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="1">SIZE (BTC)</text>
+      <text x="400" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="1">PRICE (USD)</text>
+      <text x="630" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#78716c" letter-spacing="1">SIZE (BTC)</text>
+
+      <!-- Side labels -->
+      <text x="170" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#ef4444" font-weight="700" letter-spacing="0.8">ASKS (SELLERS)</text>
+      <text x="630" y="430" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700" letter-spacing="0.8">BIDS (BUYERS)</text>
+
+      <!-- Center column: prices -->
+      <!-- Asks: prices descending from top, level 5 highest price -->
+      <rect x="350" y="110" width="100" height="22" fill="#ffffff" stroke="#fecaca" stroke-width="1"/>
+      <text x="400" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,400</text>
+      <rect x="350" y="135" width="100" height="22" fill="#ffffff" stroke="#fecaca" stroke-width="1"/>
+      <text x="400" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,300</text>
+      <rect x="350" y="160" width="100" height="22" fill="#ffffff" stroke="#fecaca" stroke-width="1"/>
+      <text x="400" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,250</text>
+      <rect x="350" y="185" width="100" height="22" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="400" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#991b1b" font-weight="700">82,228</text>
+
+      <!-- Spread band -->
+      <rect x="320" y="208" width="160" height="32" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="400" y="222" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700" letter-spacing="1">SPREAD</text>
+      <text x="400" y="234" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">$28 · 3.4 bps</text>
+
+      <!-- Mid line -->
+      <line x1="60" y1="224" x2="740" y2="224" stroke="#78716c" stroke-width="0.8" stroke-dasharray="3,3"/>
+      <text x="752" y="227" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">MID 82,214</text>
+
+      <!-- Bids: prices descending into deeper book -->
+      <rect x="350" y="241" width="100" height="22" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="400" y="256" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#166534" font-weight="700">82,200</text>
+      <rect x="350" y="266" width="100" height="22" fill="#ffffff" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="400" y="281" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,150</text>
+      <rect x="350" y="291" width="100" height="22" fill="#ffffff" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="400" y="306" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,100</text>
+      <rect x="350" y="316" width="100" height="22" fill="#ffffff" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="400" y="331" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">82,000</text>
+      <rect x="350" y="341" width="100" height="22" fill="#ffffff" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="400" y="356" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#1c1917" font-weight="600">81,900</text>
+
+      <!-- Ask side bars (LEFT, growing leftward from x=350) - thin top -->
+      <!-- 82,228: 4 BTC -->
+      <rect x="310" y="187" width="40" height="18" fill="#fca5a5" opacity="0.85"/>
+      <text x="265" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b" font-weight="700">4.2</text>
+      <text x="220" y="200" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#dc2626" letter-spacing="0.5">THIN TOP</text>
+      <!-- 82,250: 8 BTC -->
+      <rect x="270" y="162" width="80" height="18" fill="#fca5a5" opacity="0.7"/>
+      <text x="245" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b" font-weight="700">8.0</text>
+      <!-- 82,300: 22 BTC -->
+      <rect x="130" y="137" width="220" height="18" fill="#fca5a5" opacity="0.55"/>
+      <text x="170" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b" font-weight="700">22.0</text>
+      <!-- 82,400: 35 BTC -->
+      <rect x="50" y="112" width="300" height="18" fill="#fca5a5" opacity="0.4"/>
+      <text x="120" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b" font-weight="700">35.0</text>
+
+      <!-- Bid side bars (RIGHT, growing rightward from x=450) - thick top -->
+      <!-- 82,200: 18 BTC -->
+      <rect x="450" y="243" width="180" height="18" fill="#86efac" opacity="0.85"/>
+      <text x="540" y="256" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">18.0</text>
+      <text x="690" y="256" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#16a34a" letter-spacing="0.5">THICK BID</text>
+      <!-- 82,150: 12 BTC -->
+      <rect x="450" y="268" width="120" height="18" fill="#86efac" opacity="0.7"/>
+      <text x="510" y="281" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">12.0</text>
+      <!-- 82,100: 28 BTC (large bid wall) -->
+      <rect x="450" y="293" width="280" height="18" fill="#22c55e" opacity="0.7"/>
+      <text x="590" y="306" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">28.0</text>
+      <text x="740" y="306" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#16a34a" letter-spacing="0.5">WALL</text>
+      <!-- 82,000: 14 BTC -->
+      <rect x="450" y="318" width="140" height="18" fill="#86efac" opacity="0.55"/>
+      <text x="520" y="331" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">14.0</text>
+      <!-- 81,900: 9 BTC -->
+      <rect x="450" y="343" width="90" height="18" fill="#86efac" opacity="0.4"/>
+      <text x="495" y="356" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">9.0</text>
+
+      <!-- Asymmetry annotation -->
+      <line x1="100" y1="385" x2="320" y2="385" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <text x="210" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#991b1b" font-weight="700">ASK SIDE: 69.2 BTC</text>
+      <text x="210" y="415" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">(thin top, fattening)</text>
+
+      <line x1="490" y1="385" x2="710" y2="385" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <text x="600" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#166534" font-weight="700">BID SIDE: 81.0 BTC</text>
+      <text x="600" y="415" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">(thick top, stacked walls)</text>
+
+      <!-- DI annotation -->
+      <text x="400" y="445" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">DI = (81.0 − 69.2) / (81.0 + 69.2) = +0.079 → mildly bid-heavy</text>
+
+    </svg>
+    <div class="svg-caption">A snapshot of the BTC/USDT.P book around the 200-day MA. Asks are thin at the inside (only 4.2 BTC at 82,228), fattening into the upper levels. Bids stack thicker right at the inside (18 BTC) and a 28-BTC wall at 82,100 anchors the support. The mild positive depth imbalance (+7.9%) tells you the book leans buy-side, but the thin top-of-ask is the more interesting story: any clean push is going to cover ground fast until it hits the 82,300+ stacks.</div>
+  </div>
+
+  <!-- SVG 2 — Deep vs Thin Market Depth Curves -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Depth chart contrasting deep and thin markets — same trade size, different slippage">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Deep vs Thin Book — Same Trade, Different Slippage</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">CUMULATIVE LIQUIDITY CURVES · A 50 BTC BUY EATS BOTH BOOKS</text>
+
+      <!-- Axes -->
+      <line x1="70" y1="60" x2="70" y2="320" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="70" y1="320" x2="750" y2="320" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Y-axis label -->
+      <text x="22" y="190" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1" transform="rotate(-90 22 190)">CUMULATIVE SIZE (BTC)</text>
+
+      <!-- X-axis label -->
+      <text x="400" y="345" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE (USD)</text>
+
+      <!-- Mid line -->
+      <line x1="410" y1="60" x2="410" y2="320" stroke="#78716c" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="410" y="55" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">MID</text>
+
+      <!-- X-axis price ticks -->
+      <text x="120" y="335" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">81,800</text>
+      <text x="265" y="335" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,000</text>
+      <text x="410" y="335" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,200</text>
+      <text x="555" y="335" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,400</text>
+      <text x="700" y="335" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,600</text>
+
+      <!-- Y-axis ticks -->
+      <text x="64" y="324" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">0</text>
+      <text x="64" y="259" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">50</text>
+      <text x="64" y="194" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">100</text>
+      <text x="64" y="129" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">150</text>
+      <text x="64" y="69" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">200</text>
+
+      <!-- Grid lines -->
+      <line x1="70" y1="259" x2="750" y2="259" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="194" x2="750" y2="194" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="129" x2="750" y2="129" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- DEEP MARKET ASK SIDE (thin solid line, steep) -->
+      <!-- Cumulative volume rises rapidly from mid going right -->
+      <polyline points="410,320 425,295 445,265 470,228 500,190 540,155 590,120 660,85" fill="none" stroke="#3f6212" stroke-width="2.5"/>
+      <!-- DEEP MARKET BID SIDE (thin solid line) going left -->
+      <polyline points="410,320 395,295 375,265 350,228 320,190 280,155 230,120 160,85" fill="none" stroke="#3f6212" stroke-width="2.5"/>
+
+      <!-- THIN MARKET ASK SIDE (dashed orange/red line, shallow) -->
+      <polyline points="410,320 430,310 460,295 510,275 560,250 620,220 690,180" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <!-- THIN MARKET BID SIDE (dashed) -->
+      <polyline points="410,320 390,310 360,295 310,275 260,250 200,220 130,180" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4"/>
+
+      <!-- 50 BTC line -->
+      <line x1="70" y1="259" x2="750" y2="259" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="76" y="252" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700" letter-spacing="0.5">50 BTC TARGET</text>
+
+      <!-- Crossover points -->
+      <!-- Deep market hits 50 BTC at ~82,250 (x≈470) -->
+      <circle cx="470" cy="259" r="5" fill="#3f6212"/>
+      <text x="470" y="280" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">+5 bps</text>
+      <text x="470" y="293" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,250</text>
+
+      <!-- Thin market hits 50 BTC at ~82,500 (x≈580) -->
+      <circle cx="555" cy="259" r="5" fill="#ef4444"/>
+      <text x="555" y="280" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" font-weight="700">+34 bps</text>
+      <text x="555" y="293" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82,484</text>
+
+      <!-- Slippage difference annotation -->
+      <line x1="470" y1="259" x2="555" y2="259" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowOrange)"/>
+      <defs>
+        <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,5 L0,10 z" fill="#fbbf24"/>
+        </marker>
+      </defs>
+
+      <!-- Legend -->
+      <rect x="500" y="60" width="240" height="56" fill="#ffffff" stroke="#e7e5e4" stroke-width="1" rx="4"/>
+      <line x1="510" y1="76" x2="535" y2="76" stroke="#3f6212" stroke-width="2.5"/>
+      <text x="540" y="80" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917">DEEP BOOK · 5 bps slip</text>
+      <line x1="510" y1="100" x2="535" y2="100" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <text x="540" y="104" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917">THIN BOOK · 34 bps slip</text>
+
+      <!-- Mid annotations on curves -->
+      <text x="135" y="78" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">DEEP BIDS</text>
+      <text x="685" y="78" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">DEEP ASKS</text>
+
+    </svg>
+    <div class="svg-caption">Same trade — a 50 BTC market buy — into two different books. The deep book has steep cumulative-liquidity curves: 50 BTC eats only 5 bps of slippage and the fill comes back close to mid. The thin book has shallow curves: the same 50 BTC walks through 7× the price distance and pays 34 bps. The depth curve <em>is</em> the slippage function.</div>
+  </div>
+</section>
+
+<!-- §04 IN PRACTICE -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">The four heuristics · sizing to the book · worked example</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never size a position to the visible depth — size it to the depth that has held through previous tests at the level.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Read Spread First, Depth Second</h4>
+        <p>Spread is the leading indicator; depth is the lagging confirmation. Makers widen spread before they pull depth. If the BTC/USDT.P spread on Binance widens from $5 to $40 ahead of a CPI print, makers are stepping back — your depth read from 30 seconds ago is already stale. Always check the spread first; if it's compressed, the depth chart is meaningful. If it's blown out, the depth chart is decoration.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Trust Depth That Has Survived a Test</h4>
+        <p>The 28 BTC wall at $82,100 means nothing on its first appearance — it could be a 30-second spoof. But if price taps $82,100 three times over an hour and the wall absorbs the prints without flinching, that depth has earned its weight. Bookmap's heuristic is the cleanest: <strong>"Real liquidity remains in the order book and executes; fake liquidity appears temporarily and is removed before execution."</strong> Track the wall's behaviour through tests, not its raw size.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Size Trades to the 1% Depth Bracket, Not the Inside</h4>
+        <p>The number worth memorising for any market you trade: how much resting liquidity sits within ±1% of mid? On BTC/USDT.P that's typically 200–400 BTC across all venues. Your sizing should not exceed 5–10% of that bracket on a single market order — beyond that you're paying meaningful slippage and signalling your size to algos that detect order-book impact. For larger size, work the order via TWAP or iceberg, not single market sweeps.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Watch the Depth Imbalance Around Key Levels</h4>
+        <p>At a structural level (prior swing high, VWAP, 200-day MA), the depth-imbalance ratio (DI) is the cleanest single read. DI strongly positive into a level = bid-stacking, level expected to hold or be reclaimed. DI strongly negative into a level = ask-stacking, breakout into resistance is being faded. DI flipping sign during the test = makers changing their mind in real time — that's the inflection.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — Sizing a BTC Long at the 200-day Tap</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>BTC re-tests the 200-day MA at $82,228 for the eighth time. Look to short the rejection or long the reclaim — sizing depends on depth.</td></tr>
+      <tr><td>Spread check</td><td>BTC/USDT.P quoted spread = $4 (0.5 bps). Tight. The depth chart is meaningful right now.</td></tr>
+      <tr><td>Inside-book read</td><td>Best ask 82,228 with 4.2 BTC. Best bid 82,200 with 18 BTC. DI = +0.62 within ±2 ticks — strongly bid-leaning.</td></tr>
+      <tr><td>±1% depth bracket</td><td>Total resting liquidity within ±1% of mid (~$821) = 290 BTC bid, 240 BTC ask. CDR = 1.21. Bid-side dominant by ~20%.</td></tr>
+      <tr><td>Sizing rule</td><td>Max market-order size = 8% of inside ±1% ask depth = ~19 BTC. Anything larger gets worked via TWAP.</td></tr>
+      <tr><td>Trigger</td><td>Spread compresses below $3 AND DI flips above +0.7 on a successful retest of $82,200 → enter long with 12 BTC market order, 7 BTC TWAP'd over 2 minutes.</td></tr>
+      <tr><td>Stop</td><td>Below the 28 BTC wall at $82,100. Risk = ~$140/BTC (~0.17%). Invalidation is the wall pulling, not just being touched.</td></tr>
+      <tr><td>Target</td><td>$82,500 (next ask cluster) for first scale; $83,000 for runner if depth thins overhead.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Depth and spread are tick-level instruments — the read is real-time, refreshed sub-second. Use them for execution timing on whatever bias-timeframe you trade off (4h+ bias, 5–15m execution). Depth chart is useful at any timeframe; spread is only useful in real time.</p>
+</section>
+
+<!-- §05 LIVE TAPE -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC's seventh 200-day rejection · structural sell-side scarcity meets thin book</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC has been rejected at the 200-day MA at $82,228 seven times since October 2025; today's eighth attempt happened on a structurally thin sell-side as ETF accumulation drains exchange supply. The depth map is the trade.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 8 May 2026</div>
+    <h4>The 200-day Wall — Thin Asks Above, Stacked Bids Below</h4>
+
+    <p>BTC opened the Sydney session today at <strong>$81,540</strong>, ran into the <strong>200-day MA at $82,228</strong>, spiked to <strong>$82,500</strong>, got rejected, and dropped back to <strong>$80,900</strong> within hours — the eighth touch of that level since October 2025 and the seventh rejection. Why does the same level keep working, and why is the rejection so violent each time? Read the depth.</p>
+
+    <p>The structural backdrop is the cleanest case of <strong>sell-side scarcity</strong> in this cycle: <strong>exchange reserves at a 7-year low</strong>, <strong>whale wallets net-bought 270,000 BTC over the past 30 days</strong> (the largest monthly accumulation since 2013), and spot ETFs have logged <strong>9 consecutive inflow days totalling $2.7B</strong>. That structural buying drains the ask side of the book — there are simply fewer coins offered above the inside. So when price taps the 200-day, the asks are <em>thin</em>; a small push covers ground fast. But there's a wall above the rejection level too: passive sellers waiting for a confirmed break — these aren't aggressors, they're makers re-pricing risk into the prior all-time-high zone. The pattern that keeps repeating: thin top-of-ask gets eaten quickly, price hits the upper-level seller stack, makers widen the spread on the rejection, depth collapses, price snaps back. <em>Effort with no result</em> — Wyckoff's old law, re-told in microstructure.</p>
+
+    <p>Below price the geometry inverts. The same ETF buying that thinned the asks <strong>stacks</strong> the bids: every $500 lower is a deeper wall. <strong>Exchange balance fell 439 BTC on the day</strong> (per the May 7 Morning Edge), funding is flat near zero, Fear &amp; Greed at <strong>46 (Neutral)</strong>. The book leans bid-heavy. Until that geometry breaks — until a session reverses with depth imbalance flipping decisively negative — the structural read is re-accumulation under a hard ceiling.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Spot price (8 May open)</td><td>$81,540 (recovered from $80,900 low)</td></tr>
+        <tr><td>200-day MA · key resistance</td><td>$82,228 — 7th rejection since Oct 2025</td></tr>
+        <tr><td>Today's session high</td><td>$82,500 (rejected) → $80,900 (low)</td></tr>
+        <tr><td>Exchange reserves</td><td>7-year low — sell-side supply structurally thin</td></tr>
+        <tr><td>Whale net accumulation (30d)</td><td>+270,000 BTC — largest monthly since 2013</td></tr>
+        <tr><td>Spot ETF flow streak</td><td>9 consecutive inflow days · $2.7B total</td></tr>
+        <tr><td>Funding</td><td>Near zero — leverage light</td></tr>
+        <tr><td>Exchange balance Δ (May 7)</td><td>−439 BTC on the day</td></tr>
+        <tr><td>Depth read</td><td>Thin asks above 82,228 · stacked bids below 82,200</td></tr>
+        <tr><td>Source</td><td>Morning Edge 7 May 2026 · CoinDesk · Blockchain Reporter</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>For a real-time read: pull up the BTC <a href="https://www.coinglass.com/pro/depth-delta">Coinglass depth-delta chart</a> and watch the ±1% bracket as price approaches $82,228 again. If the ask side starts <em>refilling</em> (makers stepping back in with conviction), that's the hint a real break is loading. If the ask side stays thin and the spread widens on each push, the eighth rejection is the base case. <strong>→ See <a href="../2026-05-07/market-briefing.html">Morning Edge — 7 May 2026</a></strong> for the full macro/Wyckoff re-accumulation read.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Depth and spread aren't just execution tools — at a contested level they reveal the underlying geometry of supply and demand. BTC's seventh rejection at the 200-day is not happening because the chart says so; it's happening because the book's thin asks get eaten, hit the upper seller stack, and the rejection makers widen spreads while depth collapses. The chart pattern is the <em>echo</em> of the microstructure event.
+    </div>
+  </div>
+</section>
+
+<!-- §06 QUOTES -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">From canonical microstructure to current crypto depth-readers</div>
+    </div>
+  </div>
+
+  <div class="skim">The most useful voices on depth and spread span a century — from Wyckoff's effort/result law to Larry Harris's microstructure canon to live Coinglass depth posts.</div>
+
+  <div class="quote">
+    <p>"The bid-ask spread measures the tightness of the book; depth is a complementary aspect of liquidity, examining the amounts offered to indicate how deep the book is and the cost of executing a market order."</p>
+    <div class="attr"><b>Larry Harris</b> · <em>Trading and Exchanges: Market Microstructure for Practitioners</em> · Oxford University Press · 2003 · <a href="https://global.oup.com/academic/product/trading-and-exchanges-9780195144703">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"BTC whale orderbook update — current structure: 74k–75k heavy sell walls (resistance), 71k–72k thin liquidity (easy to move, choppy), 69k–70k large bids (solid support)."</p>
+    <div class="attr"><b>@coinglass_com</b> · X · 2026 · <a href="https://x.com/coinglass_com/status/2043606111140581801">whale orderbook update</a> · the working language of depth reading on live tape</div>
+  </div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows a poor response to effort — a wide spread, heavy volume, and little price movement — the experienced tape reader recognises that the market is meeting with supply or demand stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · the original formulation that maps perfectly onto modern depth/spread reads</div>
+  </div>
+
+  <div class="quote">
+    <p>"Real liquidity remains in the order book and executes; fake liquidity appears temporarily and is removed before execution. Visible depth overstates true willingness to transact — what matters is depth that holds as price approaches it."</p>
+    <div class="attr"><b>Bookmap</b> · <em>Heatmap Trading: The Complete Guide</em> · 2026 · <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Prices move because aggressive participants are willing to pay the spread to get filled immediately. The spread is the toll. Depth is what they're driving through."</p>
+    <div class="attr"><b>Adam · Trading Riot</b> · <em>Auction Market Theory</em> · Feb 2026 · <a href="https://blog.tradingriot.com/p/auction-market-theory">source</a> · the practitioner restatement of Harris</div>
+  </div>
+</section>
+
+<!-- §07 COMMON TRAPS -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways traders misread depth and spread</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: trusting visible depth as a measure of real intent — most of what's visible is conditional, and most of what matters is hidden.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Treating Visible Depth as Committed Capital</h5>
+      <p>Resting limit orders can be cancelled instantly. A 50 BTC bid wall at $80,000 is meaningful only if it survives a test — until then it's an option that costs the maker nothing to walk away from. The CME's own market-quality research (2025) concedes that visible depth systematically overstates true willingness to transact. Track wall behaviour through tests, not raw size.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Ignoring Iceberg and Hidden Orders</h5>
+      <p>Sophisticated participants on BTC/ETH execute via iceberg orders (only a fraction of true size visible) and hidden orders (zero visible). What you see in the DOM is a lower bound, not the truth. If an apparent 5 BTC ask absorbs 30 BTC of buying without printing the next price level, you just hit an iceberg — the real depth was 6× what the screen showed. Bookmap's iceberg-detector is the production tool; the heuristic without it is "size that absorbs more than it shows is hidden size."</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Trading the Quoted Spread When the Realised Spread Is Wider</h5>
+      <p>The exchange-published spread (Ask₁ − Bid₁) is the cost of a 1-tick round-trip in zero size. The realised spread on a 20 BTC market order can be 5×–20× wider once you walk through multiple ask levels. If you size off the quoted spread and execute against a thin book, slippage will eat your edge before you've even taken risk. Always estimate effective fill price using cumulative depth — never the inside.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Mistaking Depth Imbalance for a Directional Signal</h5>
+      <p>A strongly positive depth imbalance (lots of bid size vs ask size) does <em>not</em> mean price will rise — it often means the book is set up for a sweep <em>through</em> that imbalance. Algorithmic flow specifically targets visible imbalance because resting size is a known source of fills. Use DI as a context input alongside aggressive flow direction (CVD, tape pace), not as a standalone bias indicator.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Thinking Depth-Reading Alone Is Edge</h5>
+      <p>Honest read: depth and spread are the foundational language of microstructure, but in 2026 they are widely watched. Every serious crypto desk reads Coinglass, Bookmap, or Hyblock; HFT firms see far more granular versions in nanoseconds. Trading off raw depth signals as a retail discretionary trader, against algos with sub-millisecond cancellation latency, is not a fair fight. Use depth reading as <strong>execution intelligence</strong> (where to place orders, how to size, when to step aside) and as <strong>confluence</strong> with structure and flow — not as a standalone alpha generator.</p>
+    </div>
+  </div>
+</section>
+
+<!-- §08 FURTHER READING -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">The canonical book · the live data tools · the practitioner threads</div>
+    </div>
+  </div>
+
+  <div class="skim">Six verified sources — the canonical microstructure text, the institutional research on depth's limitations, and live tools you can pull up right now.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://global.oup.com/academic/product/trading-and-exchanges-9780195144703">Larry Harris — <em>Trading and Exchanges: Market Microstructure for Practitioners</em> (Oxford UP, 2003)</a>
+        <span>The canonical text. Part IV (Origins of Liquidity and Volatility) is the gold standard on spread, depth, and the economics of resting size. Long but every chapter pays back. Full draft <a href="https://www.acsu.buffalo.edu/~keechung/MGF743/Readings/Trading-Exchanges-Market-Microstructure-Practitioners%20Draft%20Copy.pdf">PDF here</a>.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Research</div>
+      <div class="fr-body">
+        <a href="https://www.cmegroup.com/articles/2025/reassessing-liquidity-beyond-order-book-depth.html">CME Group — <em>Reassessing Liquidity: Beyond Order Book Depth</em> (2025)</a>
+        <span>The exchange's own research conceding that visible depth systematically overstates true liquidity. Quantifies the gap between quoted depth and depth that actually executes. Required reading for anyone trusting raw DOM numbers.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Bookmap — <em>Heatmap Trading: The Complete Guide to Market Depth Visualization</em></a>
+        <span>The most rigorous practitioner guide to reading depth as a heatmap — colour intensity, real vs spoofed liquidity, iceberg detection, and how depth behaves through tests of a level. Pair with their step-by-step <a href="https://bookmap.com/blog/trade-via-bookmap-detailed-step-step-guide">Bookmap trading guide</a>.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Live Data</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/pro/depth-delta">Coinglass — Aggregated Orderbook Liquidity Delta</a>
+        <span>Live aggregated bid/ask depth deltas across major venues. The single fastest way to see whether depth is being added or pulled in real time. Pair with the <a href="https://x.com/coinglass_com/status/2043606111140581801">@coinglass_com whale orderbook posts</a> for the working narrative read.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.theblock.co/learn/251471/what-is-order-book-depth-and-why-does-it-matter">The Block — <em>What is order book depth and why does it matter?</em></a>
+        <span>Clean entry-grade primer on the depth concept and the depth/slippage relationship. Useful as a baseline before pushing into Harris and CME.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — <em>Auction Market Theory</em> (Feb 2026)</a>
+        <span>The conceptual layer beneath depth reading: aggressive vs passive, value area, POC, balanced vs imbalanced markets. Read this to understand <em>why</em> depth matters where price-only TA doesn't.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Tape</div>
+      <div class="fr-body">
+        <a href="https://www.coindesk.com/markets/2026/05/07/three-signals-pointing-to-a-possible-bitcoin-move-to-usd85-000">CoinDesk — <em>Three signals pointing to a possible Bitcoin move to $85,000</em> (7 May 2026)</a>
+        <span>Yesterday's tape walkthrough — the structural sell-side scarcity setup that's framing the live 200-day rejection used in §05. Cross-references dealer gamma at $82K, ETF flow streak, and exchange-reserve drawdown.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://global.oup.com/academic/product/trading-and-exchanges-9780195144703">Larry Harris · Trading and Exchanges · 2003</a>
+    <a href="https://www.cmegroup.com/articles/2025/reassessing-liquidity-beyond-order-book-depth.html">CME · Reassessing Liquidity Beyond Order Book Depth · 2025</a>
+    <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Bookmap · Heatmap Guide</a>
+    <a href="https://bookmap.com/blog/inside-the-market-order-books-and-what-youre-missing-out-on">Bookmap · Inside the Market</a>
+    <a href="https://www.coinglass.com/pro/depth-delta">Coinglass · Depth Delta</a>
+    <a href="https://x.com/coinglass_com/status/2043606111140581801">@coinglass_com whale orderbook</a>
+    <a href="https://www.theblock.co/learn/251471/what-is-order-book-depth-and-why-does-it-matter">The Block · Order Book Depth</a>
+    <a href="https://whaleportal.com/blog/order-book-depth-explained/">Whaleportal · Order Book Depth Explained</a>
+    <a href="https://bitmart.zendesk.com/hc/en-us/articles/360045109174-Understanding-the-Liquidity-from-your-Order-Book-Spread-Depth-and-Slippage">BitMart · Liquidity from Your Order Book</a>
+    <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot · Auction Market Theory · Feb 2026</a>
+    <a href="https://www.coindesk.com/markets/2026/05/07/three-signals-pointing-to-a-possible-bitcoin-move-to-usd85-000">CoinDesk · BTC May 7 2026</a>
+    <a href="https://blockchainreporter.net/bitcoin-price-today-btc-at-81540-after-rejecting-82500-one-key-level-could-change-everything/">Blockchain Reporter · BTC May 7 2026</a>
+    <a href="https://www.bis.org/publ/cgfs11mura_a.pdf">BIS · Market Microstructure and Liquidity (Muranaga &amp; Shimizu)</a>
+    <a href="https://www.federalreserve.gov/econres/feds/files/2025014pap.pdf">Federal Reserve · Market Depth and Liquidity (2025)</a>
+  </div>
+  <div>Alpha · Issue #15 · 8 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
