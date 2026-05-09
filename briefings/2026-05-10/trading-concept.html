@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Market Maker vs Taker Dynamics | May 10, 2026</title>
+<meta property="og:description" content="Alpha — Market Maker vs Taker Dynamics | May 10, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pills */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Remember callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- Left TOC -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- Main column -->
+<div class="content">
+
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Market Maker vs Taker</h1>
+  <div class="meta">
+    <span>Sunday · 10 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #17</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Market Maker vs Taker is the structural divide of every order book — makers sit on the book quoting two-sided prices and get paid (or paid less) for providing liquidity, takers cross the spread and pay a premium for immediacy.</strong> The practical edge: when makers widen spreads, pull quotes, or quote-skew aggressively to one side, you are reading their inventory and toxicity assumptions in real time — and that read tells you when the book is thin enough for cascading liquidations and when it's deep enough to fade.</p>
+</div>
+
+<!-- §01 WHAT IT IS -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Two roles, one trade · liquidity provider vs liquidity consumer</div>
+    </div>
+  </div>
+
+  <div class="skim">Every executed trade has a maker and a taker — the maker put a passive limit order on the book first; the taker crossed the spread to hit it. Different roles, different incentives, different fees.</div>
+
+  <p>Every fill on every exchange order book is a transaction between two roles. The <strong>maker</strong> is whoever's resting limit order was sitting on the book waiting; the <strong>taker</strong> is whoever sent the marketable order that lifted it. Makers build the book. Takers consume it. The price you see flicker on screen is the price at which a taker just paid the spread to a maker who was patient enough to wait there.</p>
+
+  <p>This is not a cosmetic distinction. It governs almost every economic incentive in the market. Makers get paid in two ways: they collect the bid-ask spread (buy at bid, sell at ask, net the difference), and most exchanges charge them a lower fee — sometimes a negative fee (a rebate) — for the service of populating the book. Takers pay for the privilege of immediate execution: a higher fee, plus the spread itself. On <strong>Binance</strong> spot, base fees are 0.075%/0.075% maker/taker (BNB-discounted); on <strong>Bybit</strong> futures, 0.02% maker / 0.055% taker; institutional MMs on Bybit's incentive program receive rebates as deep as <strong>−0.015%</strong> for high-quality flow. <em>[<a href="https://www.bybit.com/en/help-center/article/Trading-Fee-Structure">Bybit fee schedule</a>, <a href="https://www.bitdegree.org/crypto/tutorials/binance-fees">Binance fees breakdown</a>]</em></p>
+
+  <p>The ecosystem this creates is asymmetric by design. Professional crypto market makers — <strong>Wintermute</strong>, <strong>B2C2</strong>, <strong>GSR</strong>, <strong>DWF Labs</strong> — run continuous two-sided quotes across hundreds of pairs, capture the spread thousands of times per minute, and earn rebates on top. Wintermute alone trades <strong>$5B+/day</strong> across CEX and DEX. Retail discretionary traders, by contrast, are taker-side approximately 95% of the time — they want in <em>now</em>, not eventually. The result: makers extract a continuous edge, takers pay a continuous tax, and price discovery happens at the seam between them.</p>
+
+  <p>The Wyckoff frame names this directly. The <strong>Composite Operator</strong> — Wyckoff's mental model of "the market" as a single coordinated entity — is, in modern microstructure terms, the assembly of professional market makers and large desks who quote the book and accumulate or distribute inventory across long ranges. Reading maker-vs-taker behaviour isn't separate from Wyckoff; it's Wyckoff with a microscope.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>MAKER</b><span>Posts a limit order that rests on the book — adds liquidity</span></span>
+    <span class="pill-term"><b>TAKER</b><span>Sends a marketable order that crosses the spread — removes liquidity</span></span>
+    <span class="pill-term"><b>POST-ONLY</b><span>Order flag that cancels if it would execute as a taker</span></span>
+    <span class="pill-term"><b>REBATE</b><span>Negative fee — exchange pays the maker for providing liquidity</span></span>
+    <span class="pill-term"><b>INVENTORY RISK</b><span>The maker's exposure when one side fills faster than the other</span></span>
+    <span class="pill-term"><b>ADVERSE SELECTION</b><span>The risk that whoever just hit your quote knew something you didn't</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Makers want both sides of the book to fill at roughly equal rates so they collect the spread without accumulating directional risk. Anything that breaks that balance — a sudden one-sided flow, a regime shift, a thin weekend — forces them to widen, skew, or pull. Watching that adjustment is watching the market's nervous system.
+  </div>
+</section>
+
+<!-- §02 MECHANICS -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Spread capture · inventory skew · toxicity defence</div>
+    </div>
+  </div>
+
+  <div class="skim">Makers earn the spread but bleed when one side fills more than the other; they manage that by skewing quotes, widening, or pulling — every visible spread change is an inventory and toxicity signal.</div>
+
+  <p>The maker's economics are simple in concept. Quote a bid below mid-price and an offer above it. If both fill at roughly equal rates, the maker pockets the difference times volume — a continuous statistical edge. The complication: fills don't arrive symmetrically. A maker quoting <strong>$100,000 / $100,010</strong> who suddenly absorbs only sell market orders at the bid is left long inventory in a falling market — exactly the trade you don't want to be on the wrong side of.</p>
+
+  <div class="formula">
+<b>Spread capture (per round-trip):</b>
+PnL_round = (ask_fill − bid_fill) × size − fees
+
+<b>Inventory skew adjustment:</b>
+quote_bid = mid − (½ · spread) − (β · inventory)
+quote_ask = mid + (½ · spread) − (β · inventory)
+where β &gt; 0  →  pulls quotes away from over-filled side
+
+<b>Toxicity-driven spread widening:</b>
+spread_t = spread_baseline + α · OFI_t  + γ · vol_t
+OFI = order flow imbalance · vol = realised volatility
+
+    <div class="note">Hummingbot, the open-source MM framework, exposes <code>inventory_skew_enabled</code> and <code>inventory_target_base_pct</code> directly — the bot biases order placement toward a desired portfolio split, more eager to buy when inventory drifts low and more eager to sell when it drifts high. Professional desks run far more sophisticated variants of the same equation.</div>
+  </div>
+
+  <p>The second adjustment lever is <strong>toxicity defence</strong>. A maker's worst nightmare is being adversely selected: an informed trader (or another HFT) hits the maker's quote because the maker's price is already stale relative to the next tick. The mathematical response — formalised in the <strong>Easley-Lopez de Prado VPIN model</strong> — is to widen the spread when order flow becomes imbalanced or when realised volatility spikes. You see this every news event: spreads on Binance BTC perp can quadruple in 200ms when a Trump headline hits, then refill 20 seconds later once MMs have repriced.</p>
+
+  <table class="cmp">
+    <thead><tr><th>Behaviour</th><th>What you observe</th><th>What it tells you</th></tr></thead>
+    <tbody>
+      <tr><td>Tight spread</td><td>$1–$3 on BTC perp</td><td>MMs confident in inventory and information; healthy two-way flow</td></tr>
+      <tr><td>Sudden widening</td><td>Spread jumps 5–10×</td><td>Toxicity / volatility spike — MMs raising the price of immediacy</td></tr>
+      <tr><td>One-sided skew</td><td>Bid further below mid than ask above</td><td>MMs long-heavy and want to bleed inventory — bias-by-quote</td></tr>
+      <tr><td>Quote pulls</td><td>Visible size disappears at top of book</td><td>MMs stepping back; liquidity is now thin and fragile</td></tr>
+      <tr><td>Refresh latency</td><td>Quotes lag price by 100–300ms</td><td>Either an outage or a deliberate "pause" while MMs re-baseline</td></tr>
+    </tbody>
+  </table>
+
+  <p>The asymmetry traders most often miss: <strong>a limit order does not automatically make you a maker</strong>. If your limit buy price sits at or above the lowest ask, it executes immediately and you pay the taker fee. To guarantee maker status you must use <strong>post-only</strong>. This single setting is the difference between paying 0.055% and earning 0.005% over thousands of round-trips — a structural edge for any system running passive entries.</p>
+</section>
+
+<!-- §03 VISUAL -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Inventory skew · the maker's two-sided quote in motion</div>
+    </div>
+  </div>
+
+  <div class="skim">A market maker's quotes move with their inventory — bid pulls back when they are long-heavy, offer pulls back when they are short-heavy. Reading the asymmetry is reading their book.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bidGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#22c55e" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="#22c55e" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="askGrad" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0%" stop-color="#ef4444" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="#ef4444" stop-opacity="0.5"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="22" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212" letter-spacing="2">MAKER INVENTORY SKEW · THREE STATES</text>
+
+      <!-- ========== STATE 1: BALANCED ========== -->
+      <text x="135" y="55" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1c1917">BALANCED BOOK</text>
+      <text x="135" y="70" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78716c">inventory ≈ 0</text>
+
+      <!-- mid line -->
+      <line x1="135" y1="100" x2="135" y2="280" stroke="#a3e635" stroke-width="1" stroke-dasharray="2,3"/>
+      <text x="135" y="295" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#3f6212">MID 100,005</text>
+
+      <!-- bids state 1 -->
+      <rect x="35" y="190" width="100" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5"/>
+      <rect x="55" y="208" width="80" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5"/>
+      <rect x="75" y="226" width="60" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5"/>
+      <text x="40" y="201" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,003</text>
+      <text x="60" y="219" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,001</text>
+      <text x="80" y="237" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,999</text>
+
+      <!-- asks state 1 -->
+      <rect x="135" y="170" width="60" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <rect x="135" y="152" width="80" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <rect x="135" y="134" width="100" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <text x="155" y="181" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,007</text>
+      <text x="155" y="163" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,009</text>
+      <text x="155" y="145" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,011</text>
+
+      <text x="135" y="320" text-anchor="middle" font-family="Inter" font-size="10" fill="#44403c">Spread $4 · symmetric · MM happy</text>
+
+      <!-- ========== STATE 2: LONG-HEAVY ========== -->
+      <text x="400" y="55" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1c1917">LONG INVENTORY</text>
+      <text x="400" y="70" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78716c">+5 BTC absorbed at bid</text>
+
+      <line x1="400" y1="100" x2="400" y2="280" stroke="#a3e635" stroke-width="1" stroke-dasharray="2,3"/>
+      <text x="400" y="295" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#3f6212">MID 100,005</text>
+
+      <!-- bids state 2 — pulled back -->
+      <rect x="280" y="208" width="80" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5" opacity="0.6"/>
+      <rect x="270" y="226" width="60" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5" opacity="0.6"/>
+      <rect x="260" y="244" width="50" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5" opacity="0.6"/>
+      <text x="285" y="219" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,999</text>
+      <text x="275" y="237" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,995</text>
+      <text x="265" y="255" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,990</text>
+      <!-- pull arrow -->
+      <path d="M 365 215 Q 380 215 385 220" stroke="#fbbf24" stroke-width="1.5" fill="none"/>
+      <polygon points="383,217 388,221 384,224" fill="#fbbf24"/>
+      <text x="368" y="195" font-family="'JetBrains Mono',monospace" font-size="8" fill="#fbbf24" font-style="italic">bids pulled</text>
+
+      <!-- asks state 2 — closer / aggressive -->
+      <rect x="400" y="170" width="80" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <rect x="400" y="152" width="100" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <rect x="400" y="134" width="120" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5"/>
+      <text x="420" y="181" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,006</text>
+      <text x="420" y="163" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,008</text>
+      <text x="420" y="145" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,010</text>
+      <path d="M 510 168 Q 525 162 525 145" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+      <text x="510" y="195" font-family="'JetBrains Mono',monospace" font-size="8" fill="#ef4444" font-style="italic">asks closer in</text>
+
+      <text x="400" y="320" text-anchor="middle" font-family="Inter" font-size="10" fill="#44403c">MM wants to bleed inventory — sell faster, buy reluctantly</text>
+
+      <!-- ========== STATE 3: TOXIC FLOW / WIDEN ========== -->
+      <text x="665" y="55" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1c1917">TOXICITY EVENT</text>
+      <text x="665" y="70" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78716c">news / vol spike</text>
+
+      <line x1="665" y1="100" x2="665" y2="280" stroke="#a3e635" stroke-width="1" stroke-dasharray="2,3"/>
+      <text x="665" y="295" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#3f6212">MID 100,005</text>
+
+      <!-- bids state 3 — far away, thin -->
+      <rect x="540" y="226" width="40" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5" opacity="0.4"/>
+      <rect x="525" y="244" width="30" height="14" fill="url(#bidGrad)" stroke="#22c55e" stroke-width="0.5" opacity="0.4"/>
+      <text x="540" y="237" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,975</text>
+      <text x="528" y="255" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">99,950</text>
+
+      <!-- asks state 3 — far away, thin -->
+      <rect x="730" y="170" width="40" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5" opacity="0.4"/>
+      <rect x="745" y="152" width="30" height="14" fill="url(#askGrad)" stroke="#ef4444" stroke-width="0.5" opacity="0.4"/>
+      <text x="734" y="181" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,035</text>
+      <text x="748" y="163" font-family="'JetBrains Mono',monospace" font-size="8" fill="#1c1917">100,070</text>
+
+      <!-- void shading -->
+      <rect x="580" y="120" width="150" height="170" fill="#fef3c7" opacity="0.35"/>
+      <text x="665" y="200" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78350f" font-weight="700">VOID</text>
+      <text x="665" y="215" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="8" fill="#78350f" font-style="italic">no quotes</text>
+
+      <text x="665" y="320" text-anchor="middle" font-family="Inter" font-size="10" fill="#44403c">Spread $60 · MMs raised price of immediacy 15×</text>
+
+      <!-- Bottom legend / annotations -->
+      <line x1="35" y1="360" x2="765" y2="360" stroke="#e7e5e4" stroke-width="1"/>
+
+      <text x="400" y="385" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1c1917">→ How to read it</text>
+
+      <text x="135" y="410" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#44403c">Tight, symmetric spread =</text>
+      <text x="135" y="424" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#3f6212" font-weight="600">healthy two-way flow</text>
+
+      <text x="400" y="410" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#44403c">Skewed quotes =</text>
+      <text x="400" y="424" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#3f6212" font-weight="600">MM telling you their position</text>
+
+      <text x="665" y="410" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#44403c">Wide / thin book =</text>
+      <text x="665" y="424" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#ef4444" font-weight="600">cascade risk loaded</text>
+
+    </svg>
+    <div class="svg-caption">A market maker's two-sided quote tells you their inventory and their toxicity assumptions. Symmetry → balance. Skew → exposure. Voids → fragility. Read the spread, not just the price.</div>
+  </div>
+</section>
+
+<!-- §04 IN PRACTICE -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading MM behaviour · structuring entries as a maker · fading toxic flow</div>
+    </div>
+  </div>
+
+  <div class="skim">If you cross the spread on every entry, you are subsidising the market makers. The first practical move is restructuring entries so you sit on the book whenever risk allows — and reading their quote behaviour to time it.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Default to Maker — Use Post-Only</h4>
+        <p>Anywhere your edge does not depend on a sub-second entry, route through post-only limits at the bid (long) or ask (short). On a $50K position trading 30 round-trips a month, the 0.05% fee differential is ~$750 saved monthly. More importantly, sitting on the bid forces you into patience — you only get filled when the tape comes to your level, which is usually when the trade is structurally better.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Read the Spread Before Sizing</h4>
+        <p>Before any entry, eyeball the top-of-book spread relative to its 1h baseline. Spread &gt; 3× baseline = MMs pricing in toxicity; expect slippage on takers and asymmetric risk on stops. Spread tight = healthy book; entries fill cleanly. The check takes two seconds and prevents the worst execution disasters — chasing fills into a spread that just gapped open.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Fade Toxic Flow at the Wick</h4>
+        <p>When you see a violent one-way wick — the kind that prints when MMs pull and a sweep order finds nothing under the book — the next 30–120 seconds usually mean-revert sharply as MMs reload at fresh inventory levels. This is the cleanest "fade the wick" trade: you are providing the liquidity the MMs just refused to provide, at prices the MMs will themselves come back to defend. Tight invalidation, fast targets.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Watch Weekend / Off-Hours MM Withdrawal</h4>
+        <p>Crypto's continuous market is structurally fragile during APAC/EU off-hours and weekends — top MMs reduce capital deployment, spreads widen, depth thins. Coingecko and CoinGlass weekend data consistently show 30–50% lower top-of-book depth Saturday/Sunday vs Tuesday/Wednesday. This is when small flow moves big price — both an opportunity (low-conviction takers can trigger big runs) and a risk (your stop can get swept on $20M of OI).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — Post-Only Bid into a Wyckoff Spring</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>BTC range-bound between $100,800 and $103,500 for 9 days. Volume contracting. CVD flat. Classic late-stage accumulation.</td></tr>
+      <tr><td>Spring trigger</td><td>$100,500 sweep — clears 8 days of stop liquidity below the range low. Spread widens from $4 to $22 during the sweep, then retightens within 90s.</td></tr>
+      <tr><td>Maker entry</td><td>Place post-only bids stacked at $100,650 / $100,900 / $101,100 (tier-in). Fill on first leg as MMs reload after the sweep — earn maker rebate, not pay taker fee.</td></tr>
+      <tr><td>Stop</td><td>Below sweep low: $100,200. Risk = ~$450/BTC (~0.45%) on the first leg.</td></tr>
+      <tr><td>Target</td><td>Range high $103,500 / extension $105,200. R:R = 6:1+ on average fill.</td></tr>
+      <tr><td>MM-confirmation</td><td>Once filled, watch the bid stack rebuild beneath you within 60s — confirms MMs are willing to defend the new floor. If quotes thin instead, scratch the trade.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Spread reading is real-time / sub-minute. MM weekend behaviour is daily/weekly tape. Post-only structuring applies to anything 15m+ where execution timing &gt; sub-second matters less than fee/slippage edge.</p>
+</section>
+
+<!-- §05 LIVE TAPE -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Weekend MM withdrawal · the recurring fragility pattern</div>
+    </div>
+  </div>
+
+  <div class="skim">Crypto's worst weekend cascades — including the early-2026 BTC slide toward $74,500–$77,000 — are not random; they are the market makers refusing to defend prices they would defend on a Wednesday at 14:00 UTC.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 4H</div>
+    <h4>Weekend Withdrawal — The Pattern That Keeps Re-Printing</h4>
+
+    <p>Crypto looks like a continuous 24/7 market on the surface; structurally, it isn't. <strong>Top MMs (Wintermute, B2C2, GSR, Cumberland)</strong> reduce capital deployment during APAC weekend hours when their on-call risk teams are thin and their cost of inventory is highest. The result is a recurring pattern: thin order books, wide spreads, and price that travels distances on small flow that would be fully absorbed mid-week.</p>
+
+    <p>The clearest 2026 print: the early-February <strong>weekend slide toward $74,500–$77,000</strong> documented by CoinDesk and MEXC News. Cascading liquidity events triggered roughly <strong>$100M in long liquidations almost instantly</strong>, with analysts attributing the move to a "brittle" weekend book where MMs had stepped back. Coindesk's Feb 1, 2026 framing was direct: a market increasingly "bifurcated between deep liquidity weekdays and ghost-town weekends." The reflexive loop is mechanical — thin books create gaps, gaps trigger liquidations, liquidations hollow the book further, MMs widen or pull, repeat.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Pattern type</td><td>Weekend MM withdrawal · recurring</td></tr>
+        <tr><td>Reference event</td><td>BTC weekend slide → $74.5K–$77K (early Feb 2026)</td></tr>
+        <tr><td>Long liquidations</td><td>~$100M cascading — single window</td></tr>
+        <tr><td>Top-of-book depth (typ. weekend)</td><td>30–50% below mid-week baseline</td></tr>
+        <tr><td>MMs implicated</td><td>Wintermute, B2C2, GSR — reduced quote presence</td></tr>
+        <tr><td>Warning indicator</td><td>OI +20–30% / 48h with no price move = deleveraging within 72h</td></tr>
+        <tr><td>Sources</td><td>CoinDesk · MEXC News · CryptoSlate (NYE 2025–26 Wintermute offload, 1,213 BTC)</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>Today is Sunday — the live read matters. Pull <a href="https://www.coinglass.com/pro/futures/LiquidationHeatMap" style="color:#bef264;border-bottom-color:#bef264">CoinGlass liquidation heatmap</a> and <a href="https://www.coinglass.com/pro/depth-delta" style="color:#bef264;border-bottom-color:#bef264">CoinGlass depth-delta</a>. If BTC's spread on the perp top-of-book is more than 2–3× its weekday baseline, MMs are quoting defensively and any catalyst will travel further than it should. The play is not to chase — it is either to fade extremes back to mid-week MM-defended levels, or stand aside until the desks return Monday APAC open.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Maker absence is the precondition for cascade. When you see the book thin, the spread widen, and OI elevated — those are not three independent signals, they are one signal: the market makers have stepped back, and the book is now structurally fragile until they return.
+    </div>
+  </div>
+</section>
+
+<!-- §06 QUOTES -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Wyckoff's Composite Operator · Easley on toxic flow · the modern MM voice</div>
+    </div>
+  </div>
+
+  <div class="skim">The maker-taker frame is older than crypto — Wyckoff named the same actor a century ago. Modern microstructure quantified it. The voices below tie the two together.</div>
+
+  <div class="quote">
+    <p>"The market is made by the mind, the heart, and the pocketbook of the buyers and sellers — but the Composite Operator is the entity who plans, executes, and concludes successful campaigns."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · The Richard D. Wyckoff Method of Trading and Investing in Stocks · 1931 · <a href="https://chartschool.stockcharts.com/table-of-contents/market-analysis/wyckoff-analysis-articles/the-wyckoff-method-a-tutorial">ChartSchool reference</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Order flow is toxic when it adversely selects market makers who may be unaware they are providing liquidity at a loss."</p>
+    <div class="attr"><b>David Easley, López de Prado, O'Hara</b> · "Flow Toxicity and Liquidity in a High Frequency World" · Stern NYU · 2012 · <a href="https://www.stern.nyu.edu/sites/default/files/assets/documents/con_035928.pdf">PDF</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Inventory management is vital — continuous scalping can unintentionally build up directional exposure if the market suddenly trends, exposing the trader to potentially outsized losses."</p>
+    <div class="attr"><b>Hummingbot Foundation</b> · What is Inventory Risk · 2024 · <a href="https://hummingbot.org/blog/what-is-inventory-risk/">hummingbot.org</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Market makers want both sides to fill. The moment one side stops filling, you stop being a market maker and start being a position."</p>
+    <div class="attr"><b>Trader / MM operator</b> · paraphrasing widely repeated principle on crypto MM Discords · 2026 · <a href="https://www.dwf-labs.com/news/4-common-strategies-that-crypto-market-makers-use">DWF Labs · 4 Core MM Strategies</a></div>
+  </div>
+</section>
+
+<!-- §07 COMMON TRAPS -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Fee theatre · maker-taker fairy tales · the rebate-chasing dead end</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest trap is treating maker fees as a strategy. They are an edge multiplier, not an edge — a great strategy with taker fees beats a bad strategy with rebates, every single time.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Limit Order ≠ Maker</h5>
+      <p>A limit buy at or above the best ask executes immediately as a taker — you eat the fee and get no rebate. To guarantee maker status, every entry must be flagged <strong>post-only</strong>. This is the single most common fee-model mistake retail makes; check the order ticket every time.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Confusing MM Skew with "Smart Money" Direction</h5>
+      <p>When the bid is $20 below mid and the ask is $5 above mid, MMs are <em>not</em> "going short". They are bleeding inventory they accumulated involuntarily — a defensive reflex, not a directional bet. Reading skew as a directional signal is reverse-engineering a hedge.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>The Rebate-Chasing Dead End</h5>
+      <p>Some retail traders try to mimic MM behaviour by quoting both sides of small books for rebates. Without colocation, sub-millisecond infrastructure, and inventory-management algorithms, you are the slowest, dumbest provider of liquidity in the queue — adversely selected on every fill. Don't compete with Wintermute on their game; compete elsewhere.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">4</div>
+    <div>
+      <h5>Honesty Callout — "Maker-Taker" as Marketed Fairness</h5>
+      <p>Exchanges sell the maker-taker model as encouraging "healthy liquidity provision". The academic evidence (SEC, Foresight, Stern) is more mixed — the rebate is mostly captured by professional HFTs who do not pass it on as tighter spreads, and adverse-selection cost rises to roughly the size of the rebate. Translation: the model is closer to a transfer between informed and uninformed retail than a free liquidity subsidy. Useful to use the structure; do not romanticise it.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">5</div>
+    <div>
+      <h5>Mistaking Quote Withdrawal for Manipulation</h5>
+      <p>When MMs pull during a news event or weekend, retail forums fill with "they're hunting stops" narratives. Usually false. They are managing risk in line with their internal VPIN/toxicity models — pulling is the safest action they can take. Calling it manipulation is misreading the mechanic. The actual signal is "the book is now fragile" — that's the trade-relevant fact.</p>
+    </div>
+  </div>
+</section>
+
+<!-- §08 FURTHER READING -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Primary microstructure sources · MM operator perspectives</div>
+    </div>
+  </div>
+
+  <div class="skim">Skip the SEO-bait explainers. The genuinely high-signal sources on maker-taker are academic microstructure papers and the engineering blogs of MM platforms.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Academic</div>
+      <div class="fr-body">
+        <a href="https://www.stern.nyu.edu/sites/default/files/assets/documents/con_035928.pdf">Easley, López de Prado, O'Hara — Flow Toxicity and Liquidity in a High Frequency World (Stern NYU)</a>
+        <span>The canonical paper on order-flow toxicity and the VPIN metric — explains exactly why MMs widen when they widen.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Engineering</div>
+      <div class="fr-body">
+        <a href="https://hummingbot.org/strategies/v1-strategies/strategy-configs/inventory-skew/">Hummingbot — Inventory Skew Strategy Configuration</a>
+        <span>Open-source MM bot documentation: shows in plain English how a real market maker biases quotes against accumulated inventory.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Operator</div>
+      <div class="fr-body">
+        <a href="https://www.dwf-labs.com/news/4-common-strategies-that-crypto-market-makers-use">DWF Labs — 4 Core Crypto Market-Making Strategies Explained</a>
+        <span>Insider walk-through of grid making, delta-neutral, inventory-managed, and arbitrage variants — written by a top-20 desk.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Critique</div>
+      <div class="fr-body">
+        <a href="https://insights.deribit.com/market-research/maker-taker-fees-on-crypto-exchanges-a-market-structure-analysis/">Deribit Insights — Maker-Taker Fees on Crypto Exchanges: A Market Structure Analysis</a>
+        <span>Deribit's own deconstruction of why the maker-taker model isn't a clean liquidity subsidy — closer to a hidden transfer.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Foundation</div>
+      <div class="fr-body">
+        <a href="https://chartschool.stockcharts.com/table-of-contents/market-analysis/wyckoff-analysis-articles/the-wyckoff-method-a-tutorial">ChartSchool — The Wyckoff Method: A Tutorial</a>
+        <span>If maker behaviour is the modern Composite Operator, this is the original framing — read it as the first microstructure paper, written in 1931.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Tape</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/pro/depth-delta">CoinGlass — Aggregated Orderbook Liquidity Delta</a>
+        <span>The live read of MM behaviour — depth changes by side, by exchange, in real time. The dashboard for "are makers there or not".</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://blog.valr.com/blog/market-maker-vs-taker-in-crypto-trading">VALR · Maker vs Taker</a>
+    <a href="https://academy.binance.com/en/articles/what-are-makers-and-takers">Binance Academy · Makers and Takers</a>
+    <a href="https://www.bybit.com/en/help-center/article/Trading-Fee-Structure">Bybit · Trading Fee Structure</a>
+    <a href="https://www.bitdegree.org/crypto/tutorials/binance-fees">BitDegree · Binance Fees 2026</a>
+    <a href="https://hummingbot.org/strategies/v1-strategies/strategy-configs/inventory-skew/">Hummingbot · Inventory Skew</a>
+    <a href="https://hummingbot.org/blog/what-is-inventory-risk/">Hummingbot · Inventory Risk</a>
+    <a href="https://www.dwf-labs.com/news/4-common-strategies-that-crypto-market-makers-use">DWF Labs · MM Strategies</a>
+    <a href="https://www.stern.nyu.edu/sites/default/files/assets/documents/con_035928.pdf">Easley · Flow Toxicity (Stern NYU)</a>
+    <a href="https://insights.deribit.com/market-research/maker-taker-fees-on-crypto-exchanges-a-market-structure-analysis/">Deribit Insights · Maker-Taker Analysis</a>
+    <a href="https://www.mexc.com/news/1058969">MEXC · Weekend liquidity cascade</a>
+    <a href="https://www.coindesk.com/markets/2026/02/01/bitcoin-s-hopium-for-bulls-may-be-over-and-this-weekend-s-slide-could-be-just-the-beginning">CoinDesk · Feb 2026 weekend slide</a>
+    <a href="https://cryptoslate.com/major-market-maker-secretly-offloaded-1213-btc-onto-binance-during-new-years-eve-thin-liquidity/">CryptoSlate · Wintermute NYE offload</a>
+    <a href="https://chartschool.stockcharts.com/table-of-contents/market-analysis/wyckoff-analysis-articles/the-wyckoff-method-a-tutorial">ChartSchool · Wyckoff Method</a>
+    <a href="https://www.coinglass.com/pro/depth-delta">CoinGlass · Depth Delta</a>
+  </div>
+  <div>Alpha · Issue #17 · 10 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /.content -->
+</div><!-- /.outer -->
+</body>
+</html>
