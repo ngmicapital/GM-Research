@@ -73,13 +73,13 @@ function extractTags(html, key) {
   let tags = [...found].slice(0, 3);
   // Rabbit-hole fallback: extract capitalised words from <strong> blocks
   if (key === 'rabbit-hole' && tags.length === 0) {
-    const fallbackRe = /<strong>([A-Z][A-Za-z\u00C0-\u024F]{2,}(?:\s[A-Z][A-Za-z\u00C0-\u024F]{2,})?)/g;
+    const fallbackRe = /<strong>([A-Z][A-Za-zÀ-ɏ]{2,}(?:\s[A-Z][A-Za-zÀ-ɏ]{2,})?)/g;
     const skipWords = new Set(['The','This','That','These','Those','When','What','Why','How','Who','Where','More','Less','Most','Just','Also','Only','Even','Very','Much','Many','Some','Other','Such','Each','Both','Then','They','With','From','Into','About','After','Before','During','Through','While','Which','Their','There']);
     const fb = new Set();
     let fm;
     fallbackRe.lastIndex = 0;
     while ((fm = fallbackRe.exec(html)) && fb.size < 10) {
-      const word = fm[1].split(/[\s:,\u2013\u2014]/)[0];
+      const word = fm[1].split(/[\s:,–—]/)[0];
       if (!skipWords.has(word) && word.length >= 3) fb.add(word);
     }
     tags = [...fb].slice(0, 3);
@@ -169,7 +169,7 @@ function fixImageMaxWidth(html) {
     count++;
     if (/\bstyle\s*=/i.test(attrs)) {
       // Append to existing style
-      return match.replace(/(\bstyle\s*=\s*["'])([^"']*)(["'])/i, (_, open, val, close) => {
+      return match.replace(/(\bstyle\s*=\s*["'])([^"']*?)(["'])/i, (_, open, val, close) => {
         const semi = val.trimEnd().endsWith(';') ? '' : ';';
         return `${open}${val}${semi}max-width:100%;height:auto${close}`;
       });
@@ -359,6 +359,46 @@ for (const dateDir of dateDirs) {
         html = fixedHtml;
         imgsFixed += count;
         fixed({ type: 'image-max-width', file: `briefings/${dateDir}/${filename}`, count });
+      }
+    }
+  }
+}
+
+// ── 3b. Missing briefing detection ───────────────────────────────────────────
+// For each of the last LOOKBACK_DAYS date dirs, tally which briefing types appeared.
+// Any type present on ≥ REQUIRED_APPEARANCES days is considered "active".
+// Flag it as needs_human for any recent date (last RECENT_DAYS) where it's absent.
+{
+  const LOOKBACK_DAYS    = 7;
+  const REQUIRED_APPEARANCES = 2;  // must appear in at least 2 of last 7 days to be "active"
+  const RECENT_DAYS      = 3;      // only flag missing items within the last 3 date dirs
+
+  const recentDirs = dateDirs.slice(-LOOKBACK_DAYS);
+  const typeCounts = {};  // type -> number of days it appeared
+
+  for (const d of recentDirs) {
+    const files = fs.readdirSync(path.join(BRIEFINGS_DIR, d)).filter(f => f.endsWith('.html'));
+    const types = new Set(files.map(f => f.replace('.html', '')));
+    for (const t of types) {
+      typeCounts[t] = (typeCounts[t] || 0) + 1;
+    }
+  }
+
+  const activeTypes = Object.keys(typeCounts).filter(t => typeCounts[t] >= REQUIRED_APPEARANCES);
+  const flagDirs = dateDirs.slice(-RECENT_DAYS);
+
+  for (const d of flagDirs) {
+    const files = fs.readdirSync(path.join(BRIEFINGS_DIR, d)).filter(f => f.endsWith('.html'));
+    const present = new Set(files.map(f => f.replace('.html', '')));
+    for (const t of activeTypes) {
+      if (!present.has(t)) {
+        needsHuman({
+          type: 'missing-briefing',
+          date: d,
+          briefing: `${t}.html`,
+          file: `briefings/${d}/${t}.html`,
+          message: `${t}.html absent for ${d} but appeared on ${typeCounts[t]}/${recentDirs.length} recent days`,
+        });
       }
     }
   }
