@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Volume Profile &amp; Point of Control | May 14, 2026</title>
+<meta property="og:description" content="Alpha — Volume Profile & Point of Control | May 14, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Volume Profile &amp; Point of Control</h1>
+  <div class="meta">
+    <span>Thursday · 14 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #20</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Volume Profile flips the volume chart on its side and shows where trade actually happened — the Point of Control (POC) is the single price where the most contracts changed hands, and it acts as the market's gravitational centre.</strong> The practical takeaway: in a balanced market, price rotates around the POC like a magnet; in a trending market, the POC migrates with the new value area, and the prior POC becomes a "naked" magnet that gets revisited ~80% of the time within ten sessions. Trade <em>to</em> the POC in balance, <em>through</em> low-volume nodes in discovery, and <em>back</em> to the naked POC when nothing else is in the way.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Horizontal volume · the market's fair-price ledger</div>
+    </div>
+  </div>
+
+  <div class="skim">Volume Profile is a horizontal histogram of volume traded at each price — not over time. The price with the fattest bar is the Point of Control, where the most business got done.</div>
+
+  <p>Standard volume bars sit on the time axis: they tell you <em>when</em> volume printed but not <em>where</em>. Volume Profile rotates the analysis 90 degrees and answers the more useful question: <strong>at what prices did trade actually clear?</strong> Each horizontal bar is the total contracts traded at that price during the chosen window. The longest bar is the <strong>Point of Control (POC)</strong> — the most accepted price, where the most buyers and sellers agreed to do business.</p>
+
+  <p>The tool was built by <strong>J. Peter Steidlmayer</strong> at the Chicago Board of Trade in the late 1970s, originally as the time-based <em>Market Profile</em>; volume-weighted derivatives followed. The framing he wanted to give traders was philosophical, not statistical: markets aren't drifting randomly, they are conducting a continuous two-sided auction, and the histogram is the running record of where that auction has spent its time. <strong>James Dalton's</strong> <em>Markets in Profile</em> (2007) is the canonical extension — the framework most institutional desks still teach against.</p>
+
+  <p>The reason this matters more than raw volume: a market that's accepted a price (high volume there) is structurally different from one that's rejected it (thin volume). High-volume zones are <strong>fair value</strong> — price will return to them, churn there, and treat them as gravitational. Low-volume zones are <strong>rejected</strong> — price moves through them fast in both directions because there's nothing structural to slow it down. The chart is a map of where supply and demand have actually been settled, not a guess about where they might go.</p>
+
+  <p>In crypto, the volume profile is the missing structural layer above the order book. The book shows you what's <em>resting</em> right now; the profile shows you what's been <em>filled</em> over the relevant window. One is intent; the other is fact. Both matter, but the profile is what tells you which levels carry historical conviction — and which were just air.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>POC</b><span>Price level with the highest traded volume in the window</span></span>
+    <span class="pill-term"><b>VA</b><span>Value Area — the range containing 70% of volume around POC</span></span>
+    <span class="pill-term"><b>VAH / VAL</b><span>Value Area High / Low — upper and lower edges of the VA</span></span>
+    <span class="pill-term"><b>HVN</b><span>High-Volume Node — a "fat" bar; price slows or balances here</span></span>
+    <span class="pill-term"><b>LVN</b><span>Low-Volume Node — a "thin" bar; price accelerates through</span></span>
+    <span class="pill-term"><b>NAKED POC</b><span>A prior POC price has not yet revisited — acts as magnet</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    The POC is the market's confessed fair price. Price either rotates around it (balance) or migrates away to build a new one (discovery) — and where the old one sits unfilled, it pulls.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How the histogram is built · value area · profile shapes</div>
+    </div>
+  </div>
+
+  <div class="skim">Volume gets bucketed by price (not time): the bucket with the most volume is the POC, and 70% of the volume around it bounds the Value Area.</div>
+
+  <p>At the calculation level, the platform pulls lower-timeframe bars (1-minute is typical for daily profiles), assigns each bar's volume to a price bucket, and aggregates. The bucket with the largest sum is the <strong>POC</strong>. The platform then expands one bucket up, one bucket down, alternately adding whichever side has more volume, until the running sum equals <strong>70% of total volume</strong>. The outer edges of that expansion are <strong>VAH</strong> (top) and <strong>VAL</strong> (bottom). Everything inside is "value"; everything outside is "above value" or "below value".</p>
+
+  <div class="formula">
+<b>Bucketing:</b>
+volume_at_price[p] = Σ volume of all trades printed at p
+
+<b>Point of Control:</b>
+POC = price p* where volume_at_price[p*] = max(volume_at_price)
+
+<b>Value Area expansion (70% rule):</b>
+start with {p*}; running_sum = volume_at_price[p*]
+while running_sum &lt; 0.70 × total_volume:
+    compare volume of two buckets above current top
+    vs two buckets below current bottom
+    add the heavier pair to the value area
+VAH = max price in set; VAL = min price in set
+
+<b>Naked POC (NPOC):</b>
+A POC from a prior session where no subsequent
+session has yet traded back to that price
+→ ~80% historical revisit rate within 10 sessions
+
+    <div class="note">Note: The 70% default comes from market profile convention (roughly one standard deviation of a normal distribution). Some platforms expand bucket-by-bucket rather than in pairs; this changes VAH/VAL slightly but not the POC. The volume-profile variants you'll see on TradingView differ mainly in <em>which window</em> they aggregate over: Session, Fixed Range (FRVP), Visible Range (VRVP), or Anchored from a chosen event.</div>
+  </div>
+
+  <p>Once the histogram is built, two structural readings dominate. The first is the <strong>shape of the profile</strong>. A symmetric, bell-shaped "D" profile means the market spent the session rotating around a single accepted price — that's <em>balance</em>, and rotation trades back to POC are the high-probability play. A "P" profile (heavy top, thin bottom) means buyers pressed up and then balanced — a short squeeze with acceptance on the highs. A "b" profile is the opposite: long liquidation followed by balance on the lows. A "double distribution" with two fat nodes means the market migrated from one accepted price to another during the session — discovery in action.</p>
+
+  <p>The second reading is <strong>value area migration</strong>. <strong>James Dalton</strong> in <em>Markets in Profile</em> frames this as the cleanest read of trend: compare today's VA to yesterday's. Higher VAH and higher VAL = healthy uptrend (value is migrating up). Lower VAH and lower VAL = healthy downtrend. Overlapping value areas = continued balance. Value area drift is what separates a real trend from a noisy chop — when value won't move, neither will conviction.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Profile shape</th><th>Reading</th><th>What it implies</th></tr>
+    <tr><td>"D" — symmetric bell</td><td>Balanced session, single POC</td><td>Rotation regime — fade VAH/VAL, target POC</td></tr>
+    <tr><td>"P" — heavy top</td><td>Short squeeze + balance on highs</td><td>New value above — uptrend likely continues</td></tr>
+    <tr><td>"b" — heavy bottom</td><td>Long liquidation + balance on lows</td><td>New value below — downtrend likely continues</td></tr>
+    <tr><td>Double distribution</td><td>Two POCs, thin LVN between</td><td>Migration day — the LVN becomes a rejection level</td></tr>
+    <tr><td>Trend / thin</td><td>No clear POC, flat distribution</td><td>Pure discovery — no acceptance yet, expect volatility</td></tr>
+  </table>
+  </div>
+
+  <p>The third element — and where the concept earns most of its edge — is the <strong>naked POC</strong>. When a session's POC is never retested in subsequent sessions, the level sits "naked" on the chart. Across futures markets the documented revisit rate is approximately 80% within ten trading sessions. In crypto's 24/7 tape the cadence is similar but compresses — naked POCs from the prior week typically get visited within days. That's the magnet trade.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — profile anatomy + naked POC magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">The first diagram is the anatomy of a single session profile (POC, VAH, VAL, HVN, LVN); the second shows how a naked POC pulls price back through air.</div>
+
+  <!-- SVG 1 — Volume Profile Anatomy -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Volume Profile anatomy — POC, VAH, VAL, HVN, LVN labelled on a session histogram">
+
+      <defs>
+        <linearGradient id="vaGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.18"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.04"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Volume Profile — Anatomy of a Session</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">POC · VALUE AREA (70%) · HIGH/LOW VOLUME NODES</text>
+
+      <!-- Panel boundaries: left = price chart (x 60-440), right = volume profile histogram (x 460-740) -->
+
+      <!-- Y-axis price labels (shared) -->
+      <text x="50" y="80"  font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">82.0k</text>
+      <text x="50" y="130" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">81.0k</text>
+      <text x="50" y="180" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">80.0k</text>
+      <text x="50" y="230" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">79.0k</text>
+      <text x="50" y="280" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">78.0k</text>
+      <text x="50" y="330" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">77.0k</text>
+      <text x="50" y="380" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">76.0k</text>
+
+      <!-- Grid -->
+      <line x1="60" y1="80"  x2="740" y2="80"  stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="130" x2="740" y2="130" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="180" x2="740" y2="180" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="230" x2="740" y2="230" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="280" x2="740" y2="280" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="330" x2="740" y2="330" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="380" x2="740" y2="380" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Value area band (across full width, between VAH 100 and VAL 310) -->
+      <rect x="60" y="100" width="680" height="210" fill="url(#vaGrad)"/>
+
+      <!-- VAH / POC / VAL horizontal reference lines -->
+      <line x1="60" y1="100" x2="740" y2="100" stroke="#3f6212" stroke-width="1" stroke-dasharray="6,4" opacity="0.75"/>
+      <line x1="60" y1="195" x2="740" y2="195" stroke="#a3e635" stroke-width="2"/>
+      <line x1="60" y1="310" x2="740" y2="310" stroke="#3f6212" stroke-width="1" stroke-dasharray="6,4" opacity="0.75"/>
+
+      <!-- Axes -->
+      <line x1="60" y1="60"  x2="60"  y2="410" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="410" x2="740" y2="410" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- ── LEFT: Price candles (session) ── -->
+      <text x="68" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE · 4H SESSION</text>
+
+      <!-- Series of candles approximating rotation around 80k POC -->
+      <!-- (x, y_top, height, fill) -->
+      <rect x="80"  y="225" width="14" height="20" fill="#22c55e"/>
+      <line x1="87"  y1="215" x2="87"  y2="225" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="87"  y1="245" x2="87"  y2="255" stroke="#22c55e" stroke-width="1.5"/>
+
+      <rect x="105" y="205" width="14" height="22" fill="#22c55e"/>
+      <rect x="130" y="190" width="14" height="20" fill="#22c55e"/>
+      <line x1="137" y1="182" x2="137" y2="190" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="137" y1="210" x2="137" y2="215" stroke="#22c55e" stroke-width="1.5"/>
+
+      <rect x="155" y="175" width="14" height="18" fill="#22c55e"/>
+      <line x1="162" y1="165" x2="162" y2="175" stroke="#22c55e" stroke-width="1.5"/>
+
+      <rect x="180" y="160" width="14" height="14" fill="#22c55e"/>
+      <line x1="187" y1="148" x2="187" y2="160" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="187" y1="174" x2="187" y2="180" stroke="#22c55e" stroke-width="1.5"/>
+
+      <!-- Rejection at top -->
+      <rect x="205" y="125" width="14" height="20" fill="#ef4444"/>
+      <line x1="212" y1="105" x2="212" y2="125" stroke="#ef4444" stroke-width="1.5"/>
+
+      <rect x="230" y="148" width="14" height="22" fill="#ef4444"/>
+      <rect x="255" y="170" width="14" height="20" fill="#ef4444"/>
+      <rect x="280" y="190" width="14" height="18" fill="#ef4444"/>
+
+      <!-- Back through POC -->
+      <rect x="305" y="190" width="14" height="14" fill="#22c55e"/>
+      <rect x="330" y="180" width="14" height="14" fill="#22c55e"/>
+      <rect x="355" y="190" width="14" height="14" fill="#ef4444"/>
+      <rect x="380" y="200" width="14" height="20" fill="#ef4444"/>
+
+      <!-- Rotation lower toward VAL -->
+      <rect x="405" y="218" width="14" height="22" fill="#ef4444"/>
+      <line x1="412" y1="240" x2="412" y2="265" stroke="#ef4444" stroke-width="1.5"/>
+
+      <!-- Back to POC -->
+      <rect x="430" y="200" width="14" height="20" fill="#22c55e"/>
+
+      <!-- ── RIGHT: Volume profile histogram ── -->
+      <text x="468" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">VOLUME @ PRICE</text>
+
+      <!-- Bars: each bar represents volume at a price bucket -->
+      <!-- y = price-row centre; width = volume; bars grow from x=460 to right -->
+      <rect x="460" y="73"  width="22" height="14" fill="#cbd5e1"/>           <!-- 82.2k -->
+      <rect x="460" y="88"  width="38" height="14" fill="#cbd5e1"/>           <!-- 82.0k VAH-adjacent -->
+      <rect x="460" y="103" width="62" height="14" fill="#a3e635" opacity="0.85"/> <!-- 81.7k VAH -->
+      <rect x="460" y="118" width="115" height="14" fill="#a3e635" opacity="0.9"/> <!-- 81.4k HVN -->
+      <rect x="460" y="133" width="85" height="14" fill="#a3e635" opacity="0.7"/>  <!-- 81.1k -->
+      <rect x="460" y="148" width="55" height="14" fill="#a3e635" opacity="0.6"/>  <!-- 80.8k -->
+      <rect x="460" y="163" width="42" height="14" fill="#fbbf24" opacity="0.55"/> <!-- 80.5k LVN -->
+      <rect x="460" y="178" width="38" height="14" fill="#fbbf24" opacity="0.55"/> <!-- 80.2k LVN -->
+      <rect x="460" y="193" width="260" height="14" fill="#a3e635"/>               <!-- 80.0k POC (longest) -->
+      <rect x="460" y="208" width="180" height="14" fill="#a3e635" opacity="0.85"/><!-- 79.7k HVN -->
+      <rect x="460" y="223" width="125" height="14" fill="#a3e635" opacity="0.75"/><!-- 79.5k -->
+      <rect x="460" y="238" width="78"  height="14" fill="#a3e635" opacity="0.6"/> <!-- 79.2k -->
+      <rect x="460" y="253" width="52"  height="14" fill="#a3e635" opacity="0.5"/> <!-- 79.0k -->
+      <rect x="460" y="268" width="42"  height="14" fill="#a3e635" opacity="0.4"/> <!-- 78.8k -->
+      <rect x="460" y="283" width="38"  height="14" fill="#a3e635" opacity="0.35"/><!-- 78.5k -->
+      <rect x="460" y="298" width="35"  height="14" fill="#a3e635" opacity="0.3"/> <!-- 78.2k VAL -->
+      <rect x="460" y="313" width="20"  height="14" fill="#cbd5e1"/>               <!-- 77.9k -->
+      <rect x="460" y="328" width="14"  height="14" fill="#cbd5e1"/>               <!-- 77.7k -->
+      <rect x="460" y="343" width="10"  height="14" fill="#cbd5e1"/>               <!-- 77.4k -->
+      <rect x="460" y="358" width="22"  height="14" fill="#cbd5e1"/>               <!-- 77.1k -->
+      <rect x="460" y="373" width="32"  height="14" fill="#cbd5e1"/>               <!-- 76.8k -->
+      <rect x="460" y="388" width="20"  height="14" fill="#cbd5e1"/>               <!-- 76.5k -->
+
+      <!-- Labels on the histogram side -->
+      <text x="730" y="104" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700" text-anchor="end">VAH 81.7k</text>
+      <text x="730" y="135" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700" text-anchor="end">HVN</text>
+      <text x="730" y="174" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700" text-anchor="end">LVN</text>
+      <text x="730" y="202" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700" text-anchor="end">POC 80.0k</text>
+      <text x="730" y="220" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700" text-anchor="end">HVN</text>
+      <text x="730" y="306" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700" text-anchor="end">VAL 78.2k</text>
+
+      <!-- Annotation arrows from histogram to price chart -->
+      <line x1="455" y1="200" x2="60"  y2="200" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+      <line x1="455" y1="100" x2="60"  y2="100" stroke="#3f6212" stroke-width="1" stroke-dasharray="3,4" opacity="0.4"/>
+      <line x1="455" y1="310" x2="60"  y2="310" stroke="#3f6212" stroke-width="1" stroke-dasharray="3,4" opacity="0.4"/>
+
+      <!-- Value Area label -->
+      <text x="240" y="430" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="1">VALUE AREA · 70% OF VOLUME (VAL → VAH)</text>
+
+    </svg>
+    <div class="svg-caption">Anatomy of a session profile. Price action (left) rotates around the heaviest-volume bar (right, at $80,000) — that's the POC. The shaded band shows the Value Area capturing 70% of volume; VAH and VAL are its edges. The two amber bars at $80.2–80.5k are LVNs — thin shelves where price moved through fast.</div>
+  </div>
+
+  <!-- SVG 2 — Naked POC Magnet -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Naked POC magnet — prior session POC pulls price back through low-volume air">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">The Naked POC Magnet</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRIOR SESSION POC · UNFILLED · ~80% REVISITED WITHIN 10 SESSIONS</text>
+
+      <!-- Axes -->
+      <line x1="70" y1="60"  x2="70"  y2="350" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="70" y1="350" x2="770" y2="350" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Grid + price labels -->
+      <text x="62" y="100" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">82k</text>
+      <text x="62" y="160" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">80k</text>
+      <text x="62" y="220" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">78k</text>
+      <text x="62" y="280" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">76k</text>
+      <text x="62" y="340" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" text-anchor="end">74k</text>
+
+      <line x1="70" y1="100" x2="770" y2="100" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="160" x2="770" y2="160" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="220" x2="770" y2="220" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="70" y1="280" x2="770" y2="280" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Session dividers (5 sessions) -->
+      <line x1="200" y1="60"  x2="200" y2="350" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="340" y1="60"  x2="340" y2="350" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="480" y1="60"  x2="480" y2="350" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="620" y1="60"  x2="620" y2="350" stroke="#e7e5e4" stroke-width="1"/>
+
+      <!-- Session labels -->
+      <text x="135" y="76"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" letter-spacing="0.5">SESSION 1</text>
+      <text x="270" y="76"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" letter-spacing="0.5">SESSION 2</text>
+      <text x="410" y="76"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" letter-spacing="0.5">SESSION 3</text>
+      <text x="550" y="76"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" letter-spacing="0.5">SESSION 4</text>
+      <text x="690" y="76"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c" letter-spacing="0.5">SESSION 5</text>
+
+      <!-- Session 1 mini-profile (small histogram inside session column) with POC at 220 -->
+      <rect x="85"  y="194" width="18" height="8" fill="#a3e635" opacity="0.4"/>
+      <rect x="85"  y="204" width="32" height="8" fill="#a3e635" opacity="0.6"/>
+      <rect x="85"  y="214" width="55" height="8" fill="#a3e635"/>
+      <rect x="85"  y="224" width="40" height="8" fill="#a3e635" opacity="0.7"/>
+      <rect x="85"  y="234" width="22" height="8" fill="#a3e635" opacity="0.45"/>
+
+      <!-- Session 1 POC line - this becomes naked POC -->
+      <line x1="85"  y1="218" x2="195" y2="218" stroke="#3f6212" stroke-width="1.5"/>
+      <text x="148" y="213" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212" font-weight="700">POC 78k</text>
+
+      <!-- Session 2 — gap up, builds new value above -->
+      <rect x="220" y="124" width="20" height="8" fill="#a3e635" opacity="0.4"/>
+      <rect x="220" y="134" width="38" height="8" fill="#a3e635" opacity="0.7"/>
+      <rect x="220" y="144" width="50" height="8" fill="#a3e635"/>
+      <rect x="220" y="154" width="35" height="8" fill="#a3e635" opacity="0.7"/>
+      <rect x="220" y="164" width="22" height="8" fill="#a3e635" opacity="0.4"/>
+
+      <!-- Naked POC line extends across all subsequent sessions -->
+      <line x1="195" y1="218" x2="765" y2="218" stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,4"/>
+      <text x="745" y="232" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700" text-anchor="end">naked POC — unfilled</text>
+
+      <!-- Session 3 profile -->
+      <rect x="360" y="124" width="22" height="8" fill="#a3e635" opacity="0.4"/>
+      <rect x="360" y="134" width="40" height="8" fill="#a3e635" opacity="0.7"/>
+      <rect x="360" y="144" width="55" height="8" fill="#a3e635"/>
+      <rect x="360" y="154" width="32" height="8" fill="#a3e635" opacity="0.6"/>
+
+      <!-- Session 4 profile -->
+      <rect x="500" y="134" width="20" height="8" fill="#a3e635" opacity="0.4"/>
+      <rect x="500" y="144" width="35" height="8" fill="#a3e635" opacity="0.7"/>
+      <rect x="500" y="154" width="50" height="8" fill="#a3e635"/>
+      <rect x="500" y="164" width="30" height="8" fill="#a3e635" opacity="0.6"/>
+
+      <!-- Price path: starts above naked POC, then session 5 drops back to fill it -->
+      <polyline points="85,210 100,200 120,180 140,160 165,150 195,145
+                       220,140 245,145 270,150 295,148 320,155 340,158
+                       360,140 380,138 405,145 430,150 455,155 480,160
+                       500,155 525,160 550,170 575,175 600,180 620,190
+                       640,200 660,210 685,218 705,224 730,228 760,230"
+                fill="none" stroke="#1c1917" stroke-width="2" opacity="0.85"/>
+
+      <!-- Highlight the LVN traverse on session 5 -->
+      <rect x="618" y="175" width="155" height="55" fill="#fbbf24" opacity="0.07" rx="3"/>
+      <text x="695" y="170" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f" font-weight="700" letter-spacing="0.3">price slices LVN air → magnet fill</text>
+
+      <!-- Arrow showing magnet pull -->
+      <path d="M 685 195 L 700 215" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arrowWarn2)"/>
+      <defs>
+        <marker id="arrowWarn2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L6,4 L0,8 z" fill="#fbbf24"/>
+        </marker>
+      </defs>
+
+      <!-- Fill marker -->
+      <circle cx="690" cy="218" r="6" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+      <text x="690" y="248" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">REVISIT</text>
+
+      <!-- Footer caption inside SVG -->
+      <text x="400" y="385" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5">SESSION 1 BUILDS POC AT 78K · SESSIONS 2–4 BUILD VALUE ABOVE · SESSION 5 FILLS THE NAKED POC</text>
+    </svg>
+    <div class="svg-caption">A naked POC anatomy. Session 1 prints heaviest volume at 78k and price gaps up. Subsequent sessions build new value higher — but the 78k POC sits unfilled. On session 5, with no high-volume support between current price and 78k (a continuous LVN corridor), price slices back through the thin air and tags the level. Across futures and crypto, this fills roughly 80% of the time within ten sessions.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Regime first · then the three setups · with a worked example</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: identify whether the market is in balance or discovery <em>before</em> picking the setup — the same level fires opposite trades in the two regimes.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Regime Before Setup — Balance vs Discovery</h4>
+        <p>Compare today's value area to yesterday's. Overlapping VAs = balance (rotation regime — fade VAH/VAL, target POC). Migrating VAs = discovery (trend regime — fade the prior POC on retest, target the next HVN in the direction of travel). The same POC is a magnet in one regime and a rejection in the other. Get the regime right or every setup is wrong.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Three Setups, Three Tape Reads</h4>
+        <p><strong>Rotation</strong> (balance): price tags VAH or VAL, prints rejection with order-flow confirmation (CVD divergence, absorption), target POC. <strong>Breakout</strong> (discovery): price closes outside VA on volume, retests the broken edge, target the prior HVN beyond. <strong>Naked POC fill</strong> (any regime): no fresh high-volume node between price and the naked POC, scale in as price approaches, target the POC itself. Don't trade the level — trade the setup the level enables.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Stops Behind the Profile Structure, Not the Price</h4>
+        <p>Tight stops below VAL or above VAH get harvested by anyone running stop-cluster targeting (see <a href="../2026-05-02/trading-concept.html">May 2 — Stop Clusters</a>). Park stops behind the <em>next</em> structural level: behind the prior session's POC, on the far side of the HVN, or outside the prior week's value area. The cost is wider risk; the benefit is not getting wicked out of a thesis that's still valid.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Use Multiple Timeframes — Composite vs Session</h4>
+        <p>The <strong>session profile</strong> (today's auction) is for execution. The <strong>composite profile</strong> (last 1–4 weeks, FRVP) is for context: where are the multi-session HVNs and naked POCs? When a session POC aligns with a composite POC, that level becomes structural. When today's POC is a thin pin floating inside a composite LVN, it's noise — expect price to leave it quickly.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Rotation Inside the Weekly Value Area</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Context</td><td>BTC range-bound $77.6K–$82K for the past two weeks. Composite POC sits at ~$80,000. Weekly profile is symmetric "D" — pure balance, no migration.</td></tr>
+      <tr><td>Setup</td><td>Price taps VAH zone $81.5K on the 4h, prints a long upper wick and a rejection candle. CVD divergence on the same bar (price HH, CVD LH).</td></tr>
+      <tr><td>Entry</td><td>Short on the close of the rejection candle at ~$81,420. Confluence: VAH + CVD divergence + 200-day MA acting as ceiling ($82,228).</td></tr>
+      <tr><td>Stop</td><td>Above the 200-day MA and prior swing high: $82,420. Risk = ~$1,000 (1.2%).</td></tr>
+      <tr><td>Target 1</td><td>Composite POC at $80,000 — partial close ($1,420 reward; ~1.4R).</td></tr>
+      <tr><td>Target 2</td><td>VAL zone $78,200 — runner. Full reward if reached: ~3.2R.</td></tr>
+      <tr><td>Invalidation</td><td>4h close above $82,228 with rising volume → migration to new value above. Cover and reassess; balance has resolved up.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Composite/weekly profile for bias, daily for value-area migration read, 4h/1h for the setup, 5m–15m for execution. <b>Never</b> use a session profile alone — without composite context you're trading noise.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC pinned between weekly POC and the 200-day · classic balance</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC has spent the past two weeks rotating around a weekly POC near $77.6K, capped by the 200-day MA at $82.2K and floored by the prior swing low $77.5K — a textbook balanced "D" profile.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 4H</div>
+    <h4>BTC Balanced Around the $77.6K Weekly POC (May 14, 2026)</h4>
+
+    <p>BTC opened the week of May 12 at <strong>$81,400</strong>, tapped <strong>$82,000</strong> twice, was rejected at the 200-day MA (<strong>$82,228</strong>) on both attempts, and is now trading near <strong>$80,000–$81,000</strong> heading into Thursday's session. The weekly volume profile from the prior two weeks shows the textbook signature: a single fat POC around <strong>$77,625</strong>, value area roughly <strong>$77,500 → $79,500</strong>, and current price sitting <em>above</em> value with a defined resistance shelf at <strong>$82,000–$82,228</strong>.</p>
+
+    <p>Critically the daily value areas are <strong>overlapping</strong> — VAH and VAL haven't migrated meaningfully in two weeks. That's the structural signature of <strong>balance</strong>, not trend. The 200-day MA has rejected every closing attempt since October 2025; on the volume profile it sits as the upper edge of the recent value area extension, the place where prior sellers stepped in with size and price hasn't been able to walk through.</p>
+
+    <p>The naked POC layer is the other story. The <strong>~$77,625 weekly POC</strong> is the magnet sitting below current price. If $80K gives way on a daily close, the LVN below $79K (relatively thin volume) becomes the highway down to $77.6K — and the historical revisit rate on naked POCs of this scope is high enough that the path to <strong>$77.6K-$77.5K</strong> on a break should be the base case, not the surprise. Above, a daily close through $82.2K with rising volume opens migration to the next composite HVN near <strong>$85,000–$85,100</strong>.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Current BTC</td><td>~$80,500 (May 14, Sydney AM)</td></tr>
+        <tr><td>Weekly POC</td><td>~$77,625 — naked below current price</td></tr>
+        <tr><td>Composite HVN (above)</td><td>~$85,000 — next acceptance shelf</td></tr>
+        <tr><td>VAH (resistance shelf)</td><td>$82,000–$82,228 (200-day MA)</td></tr>
+        <tr><td>VAL (support shelf)</td><td>~$77,500 (prior weekly low)</td></tr>
+        <tr><td>4h consolidation</td><td>$80,300 → $81,500</td></tr>
+        <tr><td>Profile shape</td><td>Symmetric "D" — balanced, single POC dominant</td></tr>
+        <tr><td>Setup bias</td><td>Fade VAH-200dma · target POC · fail if daily closes outside the prior weekly range</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>Live read tools: <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/" style="color:#bef264;border-bottom-color:#bef264">TradingView Volume Profile docs</a> for indicator variants, <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd" style="color:#bef264;border-bottom-color:#bef264">Coinglass</a> for live orderflow overlay, and the prior session profile feeds available across institutional desks.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Balance regime: VAH and VAL aren't migrating, so rotation is the high-probability play. Short the $82K shelf on rejection (CVD confluence), target $80K then $77.6K. The trade fails — and a longer trend trade replaces it — only on a daily close <em>through</em> the $82.2K ceiling or the $77.5K floor. Watch the close, not the wick.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The framework's architects and current practitioners</div>
+    </div>
+  </div>
+
+  <div class="skim">From Steidlmayer's original auction-discovery framing to current practitioners drilling the POC playbook — the same idea, sixty years apart.</div>
+
+  <div class="quote">
+    <p>"The market is a continuously unfolding process of discovery. Price is not value in itself, but the market's best guess at a given moment."</p>
+    <div class="attr"><b>J. Peter Steidlmayer</b> · <em>Markets and Market Logic</em> · 1986 · The original framing of value-as-discovery, from the inventor of Market Profile</div>
+  </div>
+
+  <div class="quote">
+    <p>"If the Value Area resembles a bell and the VAs of several trading days practically coincide, the market is balanced — and trend movements start from a balance."</p>
+    <div class="attr"><b>James F. Dalton</b> · <em>Markets in Profile</em> · 2007 · <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">Wiley</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Point of Control by itself is a very, very strong level. If price does not respect it and just shoots past it, that is very, very important information."</p>
+    <div class="attr"><b>Trader Dale</b> · "What to do when POC fails" · <a href="https://www.trader-dale.com/volume-profile-what-to-do-when-poc-fails-12th-may-26/">trader-dale.com</a> · May 2026</div>
+  </div>
+
+  <div class="quote">
+    <p>"Volume shows where market participants did business. Steady two-way trade signals acceptance; thin participation signals rejection."</p>
+    <div class="attr"><b>International Trading Institute</b> · "Reading the Volume Profile" · <a href="https://internationaltradinginstitute.com/blog/reading-the-volume-profile-from-acceptance-to-rejection/">source</a> · 2026</div>
+  </div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows a poor response to effort — heavy volume with little price movement — the market is meeting with supply or demand stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · The pre-Steidlmayer formulation of the same insight</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways traders mishandle volume profile</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: trading a POC level without first establishing whether the market is in balance or discovery — same level, opposite trades.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Trading the Level Without the Regime</h5>
+      <p>The POC is a magnet in balance and a rejection in discovery. Traders see "price approaching POC" and reflexively look for a fade — but if the value area is migrating, the POC is the <em>last</em> acceptance zone before continuation, not a turning point. Read the value area migration first; pick the setup second.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Using Session-Only Profiles Without Composite Context</h5>
+      <p>A session POC inside a composite LVN is structurally weak — there's no multi-day acceptance behind it. Most beginner setups use the default session profile and miss that the level is sitting in air. Always overlay a Fixed Range or Visible Range profile across the last 1–4 weeks to find the real structural POCs.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Treating Developing vs Final Value Areas as Equivalent</h5>
+      <p>The developing value area shifts as the session unfolds — a 09:00 VAH is not the same level as the 16:00 VAH. Trading developing levels means trading a moving target. Use developing VAH/VAL only for live read; size and stops should reference yesterday's <em>completed</em> value area, which is fixed.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Confusing TradingView Variants</h5>
+      <p>TradingView ships at least five Volume Profile flavours — Session, Session HD, Visible Range, Fixed Range, Anchored. They aggregate over different windows and produce different POCs. The most-cited level in retail charts (Session VP) is the least structural; FRVP across a defined consolidation is usually the more useful read. Know which one you're looking at.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Assuming Naked POC Magnets Are Free Money</h5>
+      <p>The ~80% revisit-within-10-sessions stat is a futures-era heuristic. Reality on crypto: naked POCs do fill at high rates, but the path matters more than the destination. A naked POC can take weeks to fill, can fill on a violent overshoot, and during strong trends will sit unfilled for months. Use it as a target bias, not as a standalone entry signal. Anyone selling "naked POC scalping" as a strategy is mis-selling — the level is real, but it doesn't tell you <em>when</em>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Canonical sources only — all verified</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources worth your time, from the original Steidlmayer book to current practitioner videos.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">James F. Dalton — Markets in Profile (Wiley, 2007)</a>
+        <span>The canonical practitioner extension of Steidlmayer's framework. Covers balance vs imbalance, value area migration, profile shapes, and the auction process. If you read one book on this topic, this is the one.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Source</div>
+      <div class="fr-body">
+        <a href="http://www.r-5.org/files/books/trading/charts/market-profile/Peter_Steidlmayer_Kevin_Koy-Markets_and_Market_Logic-EN.pdf">J. Peter Steidlmayer & Kevin Koy — Markets and Market Logic (1986)</a>
+        <span>The original framing of auction theory and Market Profile from its inventor. Dense and dated in places but indispensable for understanding the philosophical underpinning of the tool.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Docs</div>
+      <div class="fr-body">
+        <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView — Volume Profile Indicators: Basic Concepts</a>
+        <span>The authoritative reference for the five TradingView profile variants (Session, Session HD, Visible Range, Fixed Range, Anchored), POC/VA calculation methodology, and the 70% threshold convention.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.trader-dale.com/volume-profile-what-to-do-when-poc-fails-12th-may-26/">Trader Dale — What To Do When POC Fails (May 2026)</a>
+        <span>Practical recent piece on POC failure handling — the inversion trade after a level breaks. Useful counterweight to the rotation-only treatment most introductions give.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://internationaltradinginstitute.com/blog/reading-the-volume-profile-from-acceptance-to-rejection/">ITI — Reading Volume Profile: Acceptance to Rejection</a>
+        <span>Clean three-behaviour framework (rotation, naked POC rejection, low-volume traverse) that maps the setups onto the underlying market behaviour. Strong on the acceptance/rejection distinction.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — Auction Market Theory (Feb 2026)</a>
+        <span>The conceptual foundation: aggressive vs passive flow, value area, POC, balanced/imbalanced states. Pair this with Volume Profile to understand <em>why</em> the histogram matters — see also our prior <a href="../2026-05-06/trading-concept.html">Alpha #14 on AMT</a>.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://en.wikipedia.org/wiki/Market_profile">Wikipedia — Market Profile</a>
+        <span>Concise summary of Steidlmayer's CBOT-era development of Market Profile (c.1959–1985) and the TPO/volume-profile lineage. Useful as a fact-check anchor for dates and attributions.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView Volume Profile Docs</a>
+    <a href="https://trendspider.com/learning-center/understanding-point-of-control-a-guide-for-investors-and-traders/">TrendSpider — Point of Control Guide</a>
+    <a href="https://www.buildix.trade/blog/volume-profile-trading-strategies-value-area-naked-poc-free-guide-2026">Buildix — Volume Profile Strategies 2026</a>
+    <a href="https://www.trader-dale.com/my-best-trading-strategy-learn-how-to-trade-using-volume-profile-and-poc/">Trader Dale — My Best Trading Strategy</a>
+    <a href="https://www.trader-dale.com/volume-profile-what-to-do-when-poc-fails-12th-may-26/">Trader Dale — When POC Fails (May 2026)</a>
+    <a href="https://internationaltradinginstitute.com/blog/reading-the-volume-profile-from-acceptance-to-rejection/">ITI — Acceptance to Rejection</a>
+    <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">Dalton — Markets in Profile (Wiley)</a>
+    <a href="http://www.r-5.org/files/books/trading/charts/market-profile/Peter_Steidlmayer_Kevin_Koy-Markets_and_Market_Logic-EN.pdf">Steidlmayer & Koy — Markets and Market Logic (1986)</a>
+    <a href="https://en.wikipedia.org/wiki/Market_profile">Wikipedia — Market Profile</a>
+    <a href="https://www.simtrade.fr/blog_simtrade/the-market-is-a-continuously-unfolding-process-of-discovery-peter-steidlmayer/">SimTrade — Steidlmayer Quote Source</a>
+    <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — Auction Market Theory</a>
+    <a href="https://en.coinotag.com/analysis/btc-technical-analysis-may-1-2026-volume-and-accumulation">CoinOtag — BTC Volume Profile Levels (May 2026)</a>
+    <a href="https://blockchainreporter.net/bitcoin-price-today-btc-at-80960-after-a-week-of-rejections-hot-cpi-just-made-82000-harder/">BlockchainReporter — BTC at $80,960 (May 13 2026)</a>
+  </div>
+  <div>Alpha · Issue #20 · 14 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
