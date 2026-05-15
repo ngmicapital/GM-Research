@@ -365,39 +365,46 @@ for (const dateDir of dateDirs) {
 }
 
 // ── 3b. Missing briefing detection ───────────────────────────────────────────
-// For each of the last LOOKBACK_DAYS date dirs, tally which briefing types appeared.
-// Any type present on ≥ REQUIRED_APPEARANCES days is considered "active".
-// Flag it as needs_human for any recent date (last RECENT_DAYS) where it's absent.
+// Hardcoded expected types — never inferred from recent history.
+// Previous logic used a REQUIRED_APPEARANCES threshold which meant a briefing
+// missing long enough would fall below the threshold and stop being flagged
+// (survivorship bias). This version always checks for expected types.
 {
-  const LOOKBACK_DAYS    = 7;
-  const REQUIRED_APPEARANCES = 2;  // must appear in at least 2 of last 7 days to be "active"
-  const RECENT_DAYS      = 3;      // only flag missing items within the last 3 date dirs
+  const RECENT_DAYS = 7;  // flag missing items within the last 7 date dirs
 
-  const recentDirs = dateDirs.slice(-LOOKBACK_DAYS);
-  const typeCounts = {};  // type -> number of days it appeared
+  // Expected daily briefings (always checked regardless of recent history)
+  const EXPECTED_DAILY = [
+    'market-briefing',
+    'legal-brief',
+    'ai-briefing',
+    'rabbit-hole',
+    'trading-concept',
+  ];
 
-  for (const d of recentDirs) {
-    const files = fs.readdirSync(path.join(BRIEFINGS_DIR, d)).filter(f => f.endsWith('.html'));
-    const types = new Set(files.map(f => f.replace('.html', '')));
-    for (const t of types) {
-      typeCounts[t] = (typeCounts[t] || 0) + 1;
-    }
-  }
+  // Briefings on alternating schedules
+  const EXPECTED_ODD_DAY  = ['praxis-brief'];    // odd day-of-month
+  const EXPECTED_EVEN_DAY = ['biohacker-report']; // even day-of-month
 
-  const activeTypes = Object.keys(typeCounts).filter(t => typeCounts[t] >= REQUIRED_APPEARANCES);
   const flagDirs = dateDirs.slice(-RECENT_DAYS);
 
   for (const d of flagDirs) {
+    const dayOfMonth = parseInt(d.split('-')[2], 10);
+    const expected = [
+      ...EXPECTED_DAILY,
+      ...(dayOfMonth % 2 !== 0 ? EXPECTED_ODD_DAY : EXPECTED_EVEN_DAY),
+    ];
+
     const files = fs.readdirSync(path.join(BRIEFINGS_DIR, d)).filter(f => f.endsWith('.html'));
     const present = new Set(files.map(f => f.replace('.html', '')));
-    for (const t of activeTypes) {
+
+    for (const t of expected) {
       if (!present.has(t)) {
         needsHuman({
           type: 'missing-briefing',
           date: d,
           briefing: `${t}.html`,
           file: `briefings/${d}/${t}.html`,
-          message: `${t}.html absent for ${d} but appeared on ${typeCounts[t]}/${recentDirs.length} recent days`,
+          message: `${t}.html absent for ${d} (expected daily type)`,
         });
       }
     }
