@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLMs Are a New Kind of Computer — Karpathy on Agentic Engineering</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf8f4;--bg-card:#fff;--bg-quote:#f5f0e8;--bg-enhancement:#f8f5f0;--bg-toc:#fff;--border:#e0dbd2;--text:#3a3632;--text-muted:#8a8279;--text-heading:#1a1714;--accent-gold:#b8860b;--accent-blue:#2563eb;--accent-teal:#0d7377;--accent-rose:#be3a4a;--accent-purple:#7c3aed;--accent-orange:#c2590a;--accent-green:#16794a;--timestamp:#8a7a6a;--link:#2563eb;--shadow:rgba(0,0,0,0.06);--progress-bar:#b8860b}
+html.dark{--bg:#0c0f14;--bg-card:#13171e;--bg-quote:#181d27;--bg-enhancement:#1a1520;--bg-toc:#13171e;--border:#2a2f3a;--text:#c8cdd8;--text-muted:#7a8194;--text-heading:#e8ecf4;--accent-gold:#d4a853;--accent-blue:#5b8def;--accent-teal:#4ec9b0;--accent-rose:#d4727a;--accent-purple:#a78bfa;--accent-orange:#e8915a;--accent-green:#4ade80;--timestamp:#6b7a99;--link:#5b8def;--shadow:rgba(0,0,0,0.3);--progress-bar:#d4a853}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:16px;line-height:1.72;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+#progress-bar{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--progress-bar);z-index:9999}
+.theme-toggle{position:fixed;top:16px;left:16px;z-index:1000;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px var(--shadow)}
+.theme-toggle .icon-light{display:inline}.theme-toggle .icon-dark{display:none}
+html.dark .theme-toggle .icon-light{display:none}html.dark .theme-toggle .icon-dark{display:inline}
+.toc-sidebar{position:fixed;top:80px;left:max(16px,calc((100vw - 1200px)/2));width:220px;max-height:calc(100vh - 120px);overflow-y:auto;background:var(--bg-toc);border:1px solid var(--border);border-radius:8px;padding:20px;box-shadow:0 2px 12px var(--shadow);z-index:100}
+.toc-sidebar-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:12px}
+.toc-sidebar ul{list-style:none}.toc-sidebar li{font-size:13px;margin-bottom:6px;line-height:1.4}
+.toc-sidebar a{color:var(--text-muted);text-decoration:none;transition:color .2s;display:block;padding:2px 0}
+.toc-sidebar a:hover{color:var(--accent-gold)}.toc-sidebar .toc-h3{padding-left:12px;font-size:12px}
+.toc-hamburger{display:none;position:fixed;top:16px;left:64px;z-index:1001;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;cursor:pointer;align-items:center;justify-content:center;font-size:18px}
+@media(max-width:1100px){.toc-sidebar{display:none;position:fixed;top:64px;left:16px;width:280px;max-height:70vh}.toc-sidebar.open{display:block}.toc-hamburger{display:flex}.main-content{margin-left:auto;margin-right:auto}}
+.page-wrapper{display:flex;max-width:1200px;margin:0 auto}.main-content{flex:1;max-width:820px;margin-left:260px;padding:40px 24px 120px}
+.hero{padding:60px 0 48px;border-bottom:1px solid var(--border);margin-bottom:48px}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:20px}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(26px,4vw,40px);line-height:1.2;color:var(--text-heading);margin-bottom:24px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;font-size:14px;color:var(--text-muted);margin-bottom:16px}
+.meta-grid .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-gold);display:block;margin-bottom:2px}
+.mode-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:4px;margin-top:12px}
+.mode-badge.full{background:var(--accent-teal);color:#fff}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--text-heading);margin:64px 0 8px;padding-top:32px;border-top:1px solid var(--border);scroll-margin-top:24px}
+h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--text-heading);margin:36px 0 12px;scroll-margin-top:24px}
+h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:16px;color:var(--accent-teal);margin:24px 0 8px}
+p{margin-bottom:14px}strong{color:var(--text-heading);font-weight:600}a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+.exec-summary{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:32px;margin-bottom:48px;box-shadow:0 1px 4px var(--shadow)}
+.exec-summary h2{margin-top:0;padding-top:0;border-top:none;font-size:22px;margin-bottom:20px}
+.exec-summary ul{list-style:none}.exec-summary li{position:relative;padding-left:20px;margin-bottom:16px;font-size:15px}
+.exec-summary li::before{content:'▸';position:absolute;left:0;color:var(--accent-gold);font-weight:600}
+blockquote{background:var(--bg-quote);border-left:3px solid var(--accent-gold);padding:16px 20px;margin:16px 0;border-radius:0 6px 6px 0;font-style:italic}
+.ts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--timestamp);background:var(--bg-card);padding:1px 6px;border-radius:3px;border:1px solid var(--border)}
+.enhancement{background:var(--bg-enhancement);border-left:3px solid;padding:14px 18px;margin:16px 0;border-radius:0 6px 6px 0;font-size:14px}
+.enhancement.connection{border-color:var(--accent-blue)}.enhancement.analog{border-color:var(--accent-orange)}.enhancement.tension{border-color:var(--accent-purple)}.enhancement.against{border-color:var(--accent-rose)}.enhancement.insight{border-color:var(--accent-teal)}.enhancement.thesis{border-color:var(--accent-gold)}.enhancement.consensus{border-color:var(--accent-green)}.enhancement.verified{border-color:var(--accent-green)}
+.enhancement-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;display:block}
+.enhancement.connection .enhancement-label{color:var(--accent-blue)}.enhancement.analog .enhancement-label{color:var(--accent-orange)}.enhancement.tension .enhancement-label{color:var(--accent-purple)}.enhancement.against .enhancement-label{color:var(--accent-rose)}.enhancement.insight .enhancement-label{color:var(--accent-teal)}.enhancement.thesis .enhancement-label{color:var(--accent-gold)}.enhancement.consensus .enhancement-label,.enhancement.verified .enhancement-label{color:var(--accent-green)}
+.item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px 28px;margin:20px 0;box-shadow:0 1px 4px var(--shadow)}
+.item-card h3{margin-top:0;font-size:19px;margin-bottom:6px}.item-card .one-liner{font-size:15px;color:var(--text-muted);font-style:italic;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.protocol-box{background:var(--bg-card);border:2px solid var(--accent-teal);border-radius:8px;padding:24px 28px;margin:24px 0}
+.protocol-box-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.protocol-box-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-teal)}
+.copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;background:transparent;border:1px solid var(--accent-teal);color:var(--accent-teal);padding:4px 12px;border-radius:4px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{background:var(--accent-teal);color:#fff}.copy-btn.copied{background:var(--accent-green);border-color:var(--accent-green);color:#fff}
+.protocol-box ul{list-style:none}.protocol-box li{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}.protocol-box li:last-child{border-bottom:none}
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-gold);text-align:left;padding:10px 12px;border-bottom:2px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}tr:last-child td{border-bottom:none}
+.echo-divider{border:none;height:2px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent);margin:80px 0 60px}
+.echo-label{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:40px}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<button class="theme-toggle" aria-label="Toggle dark mode"><span class="icon-light">🌙</span><span class="icon-dark">☀️</span></button>
+<button class="toc-hamburger" aria-label="TOC">☰</button>
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#echo">Echo Briefing</a></li>
+    <li class="toc-h3"><a href="#bottom-line">Bottom Line</a></li>
+    <li><a href="#spark">Spark &amp; Cannon</a></li>
+    <li class="toc-h3"><a href="#sw3">Software 3.0</a></li>
+    <li class="toc-h3"><a href="#jagged">Jagged Intelligence</a></li>
+    <li class="toc-h3"><a href="#vibe-vs-agentic">Vibe vs Agentic</a></li>
+    <li class="toc-h3"><a href="#ghosts">Ghosts Not Animals</a></li>
+    <li class="toc-h3"><a href="#understanding">Understanding</a></li>
+    <li class="toc-h3"><a href="#next">What's Next</a></li>
+    <li class="toc-h3"><a href="#hiring">Hiring</a></li>
+    <li class="toc-h3"><a href="#protocols">Protocols</a></li>
+  </ul>
+</nav>
+<div class="page-wrapper">
+<main class="main-content">
+
+<div class="hero" id="echo">
+  <div class="hero-label">Echo — Decision-Ready Briefing</div>
+  <h1>LLMs Are a New Kind of Computer — Karpathy on Agentic Engineering</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span>Andrej Karpathy · Sequoia Capital · ~30 min</div>
+    <div><span class="label">Domain</span>AI / Software Engineering</div>
+    <div><span class="label">Reliability</span>Expert opinion — co-founder OpenAI, former Tesla AI Director; deep practitioner experience</div>
+    <div><span class="label">Content Type</span>Fireside chat</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<h2 id="bottom-line">⚡ The Bottom Line</h2>
+<ul>
+  <li><strong>December 2024 was a phase transition.</strong> Agentic workflows stopped failing in patches and became reliably end-to-end capable. Not incremental.</li>
+  <li><strong>Software 3.0 invalidates entire app categories.</strong> If a neural net can do a transformation directly, an app that breaks it into coded steps is the wrong abstraction.</li>
+  <li><strong>Vibe coding ≠ agentic engineering.</strong> Vibe coding raises the floor for everyone. Agentic engineering preserves professional quality while going faster. Different disciplines.</li>
+  <li><strong>"You can outsource your thinking, but you can't outsource your understanding."</strong> The human remains the bottleneck for judgment, direction, taste, and system-level oversight.</li>
+  <li><strong>LLMs are ghosts, not animals.</strong> No intrinsic motivation, no genuine curiosity, no self-preservation. Statistical simulation shaped by training choices you can't see.</li>
+</ul>
+
+<h2 id="key-claims">🔑 Key Claims (Ranked)</h2>
+<p><strong>1. LLMs represent a new computing paradigm (Software 3.0), not faster Software 1.0</strong><br>↳ Evidence: MenuGen superseded by a prompt; OpenClaw install as natural language paste<br>↳ Consensus: Influential; contested in research circles, widely accepted by practitioners</p>
+<p><strong>2. Jagged intelligence: capability = verifiability + lab training choices</strong><br>↳ Evidence: Car-wash paradox; chess jump from pre-training curation<br>↳ Consensus: "Jaggedness" acknowledged; mechanism debate ongoing</p>
+<p><strong>3. December 2024 marked a qualitative shift in agentic coherence</strong><br>↳ Evidence: Karpathy's experience + widespread community reports<br>↳ Caveat: Anecdotal; no controlled study</p>
+<p><strong>4. Humans must retain understanding even as agents handle execution</strong><br>↳ Evidence: MenuGen user ID bug — agent made reasonable but wrong assumption<br>↳ Consensus: Current consensus aligns; contested at AGI frontier</p>
+<p><strong>5. Agentic engineering speedups exceed the "10x engineer" framing</strong><br>↳ Evidence: Karpathy's personal observation<br>↳ Consensus: Widely believed; not empirically measured</p>
+
+<h2>⚡ Quick Actions</h2>
+<table>
+<thead><tr><th>Protocol</th><th>Spec</th><th>When</th><th>Key Detail</th></tr></thead>
+<tbody>
+<tr><td>Write spec before delegating</td><td>Document system design + data model first</td><td>Every new project</td><td>Prevents wrong assumptions (e.g., email-based user ID)</td></tr>
+<tr><td>Probe for domain valleys</td><td>Edge-case/common-sense tests in your domain</td><td>Before production</td><td>Find the car-wash failures before users do</td></tr>
+<tr><td>Build personal knowledge base</td><td>LLM-synthesized wiki from articles read</td><td>Ongoing</td><td>Multiple projections = accelerated understanding</td></tr>
+<tr><td>Agent-native docs</td><td>"What to paste to agent" not "what to read"</td><td>Infrastructure</td><td>Shift from human-readable to agent-readable</td></tr>
+<tr><td>Red-team hired candidates</td><td>Large project + attack deployed result with agents</td><td>Hiring</td><td>Test agentic engineering not puzzle-solving</td></tr>
+</tbody>
+</table>
+
+<h2>💬 Best Quotes</h2>
+<blockquote>"You can outsource your thinking, but you can't outsource your understanding." <span class="ts">28:12</span></blockquote>
+<blockquote>"All of my MenuGen is spurious. It's working in the old paradigm. That app shouldn't exist." <span class="ts">06:02</span></blockquote>
+<blockquote>"If you're in the circuits that were part of the RL, you fly. If you're in the circuits that are out of the data distribution, you're going to struggle." <span class="ts">13:13</span></blockquote>
+
+<hr class="echo-divider">
+<div class="echo-label">Spark &amp; Cannon — Deep Archival Transcript</div>
+
+<div class="hero" id="spark">
+  <h1>LLMs Are a New Kind of Computer, Not Better Software — Karpathy on Agentic Engineering</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span>Karpathy · Sequoia Capital</div>
+    <div><span class="label">Domain</span>AI / Software Engineering / Philosophy of Mind</div>
+    <div><span class="label">Duration</span>~30 min</div>
+    <div><span class="label">Speaker</span>Andrej Karpathy — Co-founder OpenAI, former Tesla AI Director</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="exec-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>December 2024 was a phase transition, not an incremental upgrade.</strong> Karpathy identifies a specific month when agentic workflows stopped being useful-in-patches and became reliably end-to-end capable.</li>
+    <li><strong>Software 3.0 is not faster programming — it's a new computing paradigm.</strong> The programming language is natural language; the context window is your lever over the LLM interpreter.</li>
+    <li><strong>Vibe coding raises the floor; agentic engineering preserves the ceiling.</strong> Vibe coding = anyone can build anything. Agentic engineering = professionals going faster without sacrificing quality or security.</li>
+    <li><strong>"You can outsource your thinking, but you can't outsource your understanding."</strong> The human remains the bottleneck for direction, taste, judgment, and system-level comprehension.</li>
+    <li><strong>LLMs are "ghosts," not animals.</strong> No intrinsic drives. Statistical simulation circuits shaped by pre-training and RL. Understanding what they are helps calibrate trust.</li>
+    <li><strong>Jagged intelligence is not a flaw — it's a diagnostic.</strong> The car-wash paradox reveals capability is determined by verifiability + lab training choices, not general intelligence.</li>
+  </ul>
+</div>
+
+<h2 id="sw3">🖥️ Software 3.0 — LLMs as a New Kind of Computer</h2>
+<blockquote>"What's in the context window is your lever over the interpreter that is the LLM." <span class="ts">03:26</span></blockquote>
+<p>Karpathy's taxonomy: <strong>Software 1.0</strong> = explicit code rules · <strong>Software 2.0</strong> = learned neural network weights · <strong>Software 3.0</strong> = the LLM is the interpreter; context is the program.</p>
+<p>The <strong>MenuGen example</strong> makes it visceral: Karpathy built a React/Vercel app to photograph restaurant menus, OCR them, generate food photos. Then saw someone give the photo directly to Gemini with a simple prompt — it worked in-context with no app. His entire codebase "shouldn't exist." It was working in the wrong paradigm. <span class="ts">05:37–06:20</span></p>
+<div class="enhancement insight"><span class="enhancement-label">💡 Key Insight</span>Software 3.0 does not merely accelerate existing workflows — it invalidates entire categories of app. If a neural network can perform a transformation directly, an app that breaks that transformation into coded steps is not "slower Software 3.0" — it's the wrong abstraction entirely.</div>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>Karpathy's 1.0/2.0/3.0 framework is influential but contested. Critics note "3.0" conflates different phenomena. However, as a practitioner mental model for when to stop writing code and start prompting, it has strong utility and has been widely adopted.</div>
+
+<h2 id="jagged">🎯 Verifiability — The Engine of Jagged Intelligence</h2>
+<blockquote>"Traditional computers can easily automate what you can specify in code. LLMs can easily automate what you can verify." <span class="ts">10:02</span></blockquote>
+<p>Frontier labs train models via RL, which requires a verification signal. Tasks with clear verifiable outcomes (code, math) generate training signal. Tasks without verification (aesthetic judgment, common sense) do not. Result: <strong>jagged intelligence</strong>.</p>
+<p>The <strong>car-wash paradox</strong>: Opus can refactor a 100,000-line codebase or find zero-day vulnerabilities — yet recommends walking to a car wash 50m away because your car needs to be clean. A child would never make this mistake. <span class="ts">10:50–11:53</span></p>
+<p><strong>Chess case study:</strong> GPT-3.5 → GPT-4 showed dramatic chess improvement not from scaling but because a huge amount of chess data entered the pre-training set. Someone made a curation decision; a capability peak appeared. <span class="ts">12:28–12:50</span></p>
+<div class="enhancement against"><span class="enhancement-label">🎯 Against Consensus</span>The dominant narrative: scaling laws produce smooth, general capability improvement. Karpathy's jaggedness framing says improvements are granular and domain-specific, driven by what labs choose to include in training distributions. This is a more pessimistic and arguably more accurate view.</div>
+<div class="enhancement connection"><span class="enhancement-label">🔗 Connection</span>Jaggedness → founder advice. Build in verifiable domains the major labs haven't prioritized. That's where fine-tuning can give disproportionate capability that doesn't exist out-of-the-box. <span class="ts">14:05–14:58</span></div>
+
+<h2 id="vibe-vs-agentic">🏗️ Vibe Coding vs. Agentic Engineering — Two Disciplines</h2>
+<p><strong>Vibe coding:</strong> raises the floor for everyone. Anyone can build anything, fast. The floor rises dramatically. <span class="ts">15:57–16:06</span></p>
+<p><strong>Agentic engineering:</strong> preserves the quality bar. Not allowed to introduce vulnerabilities. Still responsible for software quality — but can go faster. An engineering discipline for coordinating "spiky entities — a bit fallible, a little stochastic, but extremely powerful." <span class="ts">16:08–16:46</span></p>
+<div class="enhancement analog"><span class="enhancement-label">📜 Analog</span>Karpathy's "agentic engineer" resembles the historical architect in construction — not laying bricks, but responsible for structural integrity, safety, and design coherence. The bricks (code) are laid by agents; the architect (engineer) ensures the building holds.</div>
+<p><strong>The MenuGen user ID bug:</strong> Karpathy's agent matched Stripe purchase credits to Google email addresses — without a persistent user ID. Different emails for the two services broke the association. A human engineer would never make this mistake. <span class="ts">19:56–20:25</span></p>
+
+<h2 id="ghosts">👻 Ghosts, Not Animals — What LLMs Actually Are</h2>
+<blockquote>"Coming to terms with the fact that these things are not animal intelligences." <span class="ts">24:36</span></blockquote>
+<p><strong>Animals</strong>: driven by intrinsic motivation, curiosity, hunger, fear — shaped by evolution and embodied experience.<br><strong>LLMs (ghosts)</strong>: statistical simulation circuits. Substrate = pre-training statistics. Post-training = RL bolted on top. No intrinsic drives, no genuine curiosity.</p>
+<p>Practical implications: yelling at them doesn't change behavior (no emotional activation). They simulate caring, don't actually care. You must explore the tool — it has "no manual" and works in some circuits but not others. <span class="ts">24:36–25:15</span></p>
+<div class="enhancement insight"><span class="enhancement-label">💡 Key Insight</span>If you model the LLM as an animal-like intelligence, you'll over-attribute reliability and stop checking its work. If you model it as a ghost (statistical simulation), you'll develop appropriate calibration: powerful in trained circuits, unreliable outside them.</div>
+<div class="enhancement tension"><span class="enhancement-label">⚡ Tension</span>Karpathy admits "I don't know that I have five obvious outcomes of how to make your system better" from this framework. The ghost/animal distinction is a mindset tool, not a decision algorithm. Valuable as a culture-setter; not a recipe. <span class="ts">25:05</span></div>
+
+<h2 id="understanding">🎓 What Remains Worth Learning — Understanding Can't Be Outsourced</h2>
+<blockquote>"You can outsource your thinking, but you can't outsource your understanding." <span class="ts">28:12</span></blockquote>
+<p>Karpathy sees himself as a bottleneck — he must know what to build, why it's worth doing, how to direct agents. "Information still has to make it into my brain." <span class="ts">28:21–28:44</span></p>
+<p>What agents take over: API detail recall (dim vs axis, reshape vs permute). What humans must retain: <em>understanding</em> of what the underlying system does (e.g., numpy array view shares storage vs copy — even if you forgot the function name). <span class="ts">21:14–21:46</span></p>
+<p><strong>Knowledge base habit:</strong> Karpathy builds wikis from everything he reads. Different projections onto the same data yield insight. "Anytime I see a different projection onto information, I feel like I gain insight." <span class="ts">28:47–29:11</span></p>
+<div class="enhancement thesis"><span class="enhancement-label">🧵 Running Thesis</span>Human understanding is the irreducible bottleneck even in a world of powerful agents. Status: <strong>holds in current moment</strong> — contested at AGI frontier. Karpathy's uncertainty about whether this remains true in future is genuine.</div>
+
+<h2 id="next">🔭 What's Next — Neural Computers and Agent-Native Infrastructure</h2>
+<blockquote>"I don't want to do anything. What is the thing I should copy-paste to my agent?" <span class="ts">25:57</span></blockquote>
+<p>Two predictions: <strong>Neural computers</strong> — neural nets become the host process; CPUs become co-processors; most app code stops needing to exist. <strong>Agent-native infrastructure</strong> — everything currently written for humans (docs, APIs, UIs) must be rewritten. Test: can you give a prompt and have an agent deploy MenuGen end-to-end without touching settings menus? <span class="ts">25:31–27:30</span></p>
+<p><strong>Sensors + actuators framing:</strong> AI infrastructure needs to be decomposed into what the agent can sense (inputs) and actuate (outputs). Everything in between — human-readable menus, clickable UIs, prose docs — is friction. <span class="ts">26:13–26:30</span></p>
+
+<h2 id="hiring">🤝 Hiring for Agentic Engineering — New Rubric Required</h2>
+<blockquote>"If you're giving out puzzles to solve, this is still the old paradigm." <span class="ts">18:44</span></blockquote>
+<p>Karpathy's proposed hiring rubric: give a large project (e.g., Twitter clone), implement with agents, make it secure, then red-team it with 10 Codex instances trying to break the deployed app. Evaluate: did they coordinate agents well? Did they catch agent mistakes? Is the output professional quality? <span class="ts">18:49–19:28</span></p>
+
+<h2 id="protocols">📋 Agentic Engineering Protocols</h2>
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Protocol Cheat Sheet</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li>Write detailed spec before delegating — agents will design wrong user ID systems if you don't</li>
+    <li>Maintain oversight of system-level decisions (auth, data relationships, security)</li>
+    <li>Probe for "valleys" in your domain before relying on model output</li>
+    <li>Keep API detail recall to agents; retain conceptual understanding yourself</li>
+    <li>Build personal knowledge bases: different projections onto the same data = insight</li>
+    <li>Hiring: large project + red-team with agents, not algorithmic puzzles</li>
+    <li>Infrastructure: move toward agent-native ("what to paste to agent," not "docs to read")</li>
+  </ul>
+</div>
+
+</main>
+</div>
+<script>
+window.addEventListener('scroll',()=>{const p=document.getElementById('progress-bar');const d=document.documentElement;const s=d.scrollTop||document.body.scrollTop;const h=d.scrollHeight-d.clientHeight;p.style.width=(s/h*100)+'%'});
+function copyProtocol(btn){const ul=btn.closest('.protocol-box').querySelector('ul');const text=[...ul.querySelectorAll('li')].map(l=>l.textContent.trim()).join('\n');navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+const saved=localStorage.getItem('theme');if(saved==='dark')document.documentElement.classList.add('dark');
+document.querySelector('.theme-toggle').addEventListener('click',()=>{document.documentElement.classList.toggle('dark');localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light')});
+document.querySelector('.toc-hamburger').addEventListener('click',()=>document.getElementById('toc-sidebar').classList.toggle('open'));
+</script>
+</body>
+</html>
