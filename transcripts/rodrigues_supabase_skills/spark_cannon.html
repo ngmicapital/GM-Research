@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1.0'>
+<title>Skills Beat MCP Alone — Supabase's Playbook for Closing the Context Gap — Spark & Cannon — Deep Archival Transcript</title>
+<style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 24px 80px;background:#faf8f4;color:#3a3632;line-height:1.7;font-size:16px}h1{font-size:2em;color:#1a1714}h2{font-size:1.4em;margin-top:40px;border-top:1px solid #e0dbd2;padding-top:20px;color:#1a1714}h3{font-size:1.15em;color:#1a1714}h4{color:#0d7377}blockquote{background:#f5f0e8;border-left:3px solid #b8860b;padding:12px 18px;margin:16px 0;font-style:italic}pre{background:#f0ede8;border-radius:6px;padding:16px;overflow-x:auto}code{font-family:monospace;font-size:13px;background:#f0ede8;padding:1px 4px;border-radius:3px}pre code{background:none;padding:0}hr{border:none;border-top:1px solid #e0dbd2;margin:32px 0}a{color:#2563eb}.back{display:inline-block;margin-bottom:32px;font-size:13px;color:#8a8279;text-decoration:none}.badge{display:inline-block;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:4px;background:#0d7377;color:#fff;margin-top:12px}</style>
+</head>
+<body>
+<a class='back' href='index.html'>← Back to full document</a><br>
+<span class='badge'>Spark & Cannon — Deep Archival Transcript</span>
+<h1>Skills Beat MCP Alone: Supabase's Lessons from Writing the Hardest Document Since a Master's Thesis</h1>
+<br>
+<p><strong>Source:</strong> Pedro Rodrigues · AI Engineer Conference · ~18 min  </p>
+<p><strong>Domain:</strong> AI Engineering / Developer Tools  </p>
+<p><strong>Mode:</strong> Full</p>
+<br>
+<p><strong>Speakers:</strong></p>
+<li>**Pedro Rodrigues** — AI Tooling Engineer, Supabase; Co-founder, Lisbon AI Week</li>
+<br>
+<hr>
+<br>
+<h2>Phase 1: Executive Summary</h2>
+<br>
+<li>**Skills + MCP outperforms MCP alone on every model tested.** Supabase ran controlled evals across Claude (Opus 4.6, Sonnet 4.6) and OpenAI (GPT-5.4, GPT-5.4 mini) with three conditions — baseline, MCP only, MCP + skill. Skills won on test completeness score every time, across every model. (12:29–12:57)</li>
+<br>
+<li>**The context gap is the problem, not intelligence.** Agents using only MCP tools operated on stale training data and made critical security errors — specifically failing to set `SECURITY INVOKER = TRUE` on Postgres views over RLS-protected tables, silently exposing data. The skill prevented this by making the security checklist impossible to miss. (02:00–04:55)</li>
+<br>
+<li>**"If something can get skipped, it will be skipped."** Reference files in skill folders are frequently ignored by agents. Critical, non-negotiable instructions — especially security rules — must live in `SKILL.md` itself, not in referenced files. This is the single most important operational lesson from Supabase's experience. (07:42–09:09)</li>
+<br>
+<li>**Don't duplicate documentation; point to it.** Skills should direct agents to canonical up-to-date sources (docs, APIs), not reproduce them. The goal is guidance, not encyclopaedia. Combined with exposing docs via SSH filesystem so agents can navigate them like a Unix file tree. (05:56–07:32)</li>
+<br>
+<li>**Be opinionated in your skill.** You know your product's optimal workflows better than any agent. Encode them explicitly. Supabase's schema management workflow — DDL freely on dev → advisor → migration — is in the skill because agents without it create migration files on every schema change, polluting version history. (09:14–10:58)</li>
+<br>
+<li>**Start minimal, iterate.** Every model vendor says this. Rodrigues confirms it from experience: overloading a skill early is counterproductive. Build the minimum viable skill, measure via evals, expand. (13:41–13:56)</li>
+<br>
+<hr>
+<br>
+<h2>Phase 2: Thematic Deep Dives</h2>
+<br>
+<h3>🔑 The Core Problem — Stale Knowledge + No Guardrails</h3>
+<br>
+<blockquote>*"We noticed that they would usually miss some security pitfalls… and they're very lazy and stubborn to admit that they don't know and do need to find fresh information."* (02:08)</blockquote>
+<br>
+<p>Agents suffer from three failure modes on complex products like Supabase:</p>
+<br>
+<li>**Stale training data** — they know a version of the product from pre-training, which may be months or years old</li>
+<li>**Security blindspots** — they default to the "obvious" implementation without knowing product-specific requirements (e.g., `SECURITY INVOKER` on views)</li>
+<li>**Tool laziness** — agents resist web searches and reference file reads because these are expensive (token-wise) compared to defaulting to weights</li>
+<br>
+<p>The Postgres view vulnerability Rodrigues demonstrates is a sharp example: creating a SQL view over an RLS-protected table without <code>SECURITY INVOKER = TRUE</code> causes the view to <strong>bypass row-level security entirely</strong>, silently exposing all user data. An agent without skill context made this mistake; one with the skill did not.</p>
+<br>
+<blockquote>🔍 **Source Verified:**</blockquote>
+<blockquote>✅ The `SECURITY INVOKER` issue is a real and documented Postgres behavior. Per PostgreSQL documentation, views execute with the privileges of the **definer** (usually the superuser) by default. `SECURITY INVOKER = TRUE` (added in PostgreSQL 15) makes the view execute with the caller's privileges, respecting RLS. This is a genuine security risk and Rodrigues' framing is accurate.</blockquote>
+<br>
+<blockquote>🎯 **Against Consensus:** The standard AI community framing is "give the model more context and it will perform better." Rodrigues' finding is more specific: *where* you put the context matters as much as *what* you put there. Context in `SKILL.md` body is reliably ingested; context in reference files is frequently skipped.</blockquote>
+<br>
+<hr>
+<br>
+<h3>📂 Anatomy of a Skill — What Goes Where</h3>
+<br>
+<p>Skills are folders with:</p>
+<pre><code>
+skill-name/
+├── SKILL.md          ← Main file: name, description (front matter), instructions
+├── scripts/          ← Executable helpers agents can run
+└── references/       ← Additional reference files (WARNING: often skipped)
+</code></pre>
+<br>
+<p><strong>Front matter</strong> (name + description) is how agents decide <em>whether to load the skill</em>. This is the trigger mechanism. A poorly written description means the skill never fires.</p>
+<br>
+<p><strong>Rodrigues' hierarchy of what gets read:</strong></p>
+<li>`SKILL.md` body — always read when skill is loaded ✅</li>
+<li>First reference file — sometimes loaded if explicitly needed ⚠️</li>
+<li>Second reference file — rarely loaded 🔴</li>
+<li>Third/fourth reference files — essentially never 🚫</li>
+<br>
+<blockquote>💡 **Key Insight:** The reference file problem is a form of the lazy loading anti-pattern. Agents optimise for token efficiency; every file read costs tokens and time. The practical implication is that any instruction you need the agent to *always* follow must be in the main skill body. Reference files are for "look this up if you're implementing X specifically" content.</blockquote>
+<br>
+<hr>
+<br>
+<h3>🧪 How Supabase Tested the Skill — Running Evals on Markdown</h3>
+<br>
+<blockquote>*"We're living in very interesting times where we can now test documents. This would be completely bonkers to think about years ago. I've basically been testing a markdown file."* (11:00)</blockquote>
+<br>
+<p>Supabase used <strong>Braintrust</strong> to run evals:</p>
+<li>**6 scenarios** covering representative Supabase tasks</li>
+<li>**4 agents**: Claude Opus 4.6, Claude Sonnet 4.6, GPT-5.4, GPT-5.4 mini</li>
+<li>**3 conditions**: baseline (no MCP, no skill), MCP only, MCP + skill</li>
+<li>**Scoring**: completeness score (0–4 graded)</li>
+<br>
+<p><strong>Result:</strong> Skills + MCP outperformed on every model. The improvement was not model-specific — it was a universal signal that context/guidance is the binding constraint, not raw model intelligence.</p>
+<br>
+<blockquote>🌐 **Consensus Check:** Eval frameworks for agent behavior (Braintrust, Langsmith, METR) are an emerging but rapidly solidifying practice. The methodology Rodrigues describes — testing documentation quality through agent performance — represents the state of the art in agentic quality assurance as of 2025.</blockquote>
+<br>
+<hr>
+<br>
+<h3>🗂️ The SSH Docs Experiment — File System as Documentation Interface</h3>
+<br>
+<p>Supabase is exposing its documentation through <strong>SSH</strong>, structured as a filesystem. The hypothesis: agents are deeply familiar with navigating filesystems using Linux tools (<code>ls</code>, <code>find</code>, <code>cat</code>, <code>grep</code>). By exposing docs in that interface rather than as web pages, agents can navigate documentation the way they navigate code.</p>
+<br>
+<p>This is experimental but philosophically aligned with the broader Karpathy-era insight that agents work best when the environment matches their training distribution. Agents trained on billions of lines of bash commands can navigate a Unix tree more naturally than a React SPA.</p>
+<br>
+<blockquote>🔗 **Connection:** SSH docs → agent-native infrastructure. This maps directly to Karpathy's complaint (Video 3) that documentation is still written for humans, not agents. Supabase is directly attacking that problem.</blockquote>
+<br>
+<hr>
+<br>
+<h3>🏗️ The Opinionated Workflow — Schema Management as Case Study</h3>
+<br>
+<p>Supabase's encoded schema workflow in the skill:</p>
+<br>
+<pre><code>
+1. Run DDL freely on development/staging database
+   (change schema without migration files)
+2. When satisfied, run the Supabase Advisor
+   (catches security and performance issues)
+3. Fix any advisor-flagged issues
+4. Only THEN create the migration file
+</code></pre>
+<br>
+<p>Without this workflow encoded, agents create a migration file after <em>every</em> schema change, producing a polluted version history. The skill enforces the correct discipline.</p>
+<br>
+<blockquote>💡 **Key Insight:** This is the core value proposition of opinionated skills — they encode *workflow* knowledge, not just *factual* knowledge. An agent can know what RLS is without knowing that Supabase expects you to run the advisor before migrating. The latter is tribal knowledge that lives in your head and dies when you leave the team.</blockquote>
+<br>
+<hr>
+<br>
+<h3>📦 The Distribution Problem — Skills Need a Package Manager</h3>
+<br>
+<p>When asked about internal skill distribution, Rodrigues acknowledged it remains unsolved:</p>
+<br>
+<p><strong>Current approaches:</strong></p>
+<li>Packaging skills in repos (`.claude/`, `.cursor/` folders)</li>
+<li>Using `skills` package to fetch from open-source repos</li>
+<li>Vercel's skills package</li>
+<li>Anthropic's plugins (bundles MCP + skills)</li>
+<br>
+<p><strong>The problem:</strong> unlike npm for Node or pip for Python, there is no universal, cross-model, cross-IDE skill registry. Every platform is trying to claim the standard. This is a distribution layer problem that predates the technology being mature enough for a solution.</p>
+<br>
+<blockquote>⚡ **Tension:** Rodrigues calls this an "open problem" and is visibly unsure during the Q&A. Yet Anthropic's plugin system (featured in Video 4) appears to be a direct attempt to solve exactly this — bundling MCP servers + skills together. The ecosystem is fragmenting and consolidating simultaneously.</blockquote>
+<br>
+<hr>
+<br>
+<h2>Phase 3: Three Principles Card</h2>
+<br>
+<h3>📋 Principle 1: Don't Duplicate Documentation</h3>
+<blockquote>**What It Means:** Point agents to your canonical source of truth. Don't try to reproduce your docs inside the skill — they'll be stale immediately.  </blockquote>
+<blockquote>**Implementation:** Add instructions to the skill that tell agents *where and how* to find fresh documentation, and be persistent about it: the agent will default to training data unless you explicitly and firmly instruct otherwise.</blockquote>
+<br>
+<h3>📋 Principle 2: If Something Can Be Skipped, It Will Be Skipped</h3>
+<blockquote>**What It Means:** Reference files are often ignored. Critical non-negotiable instructions must live in `SKILL.md` body.  </blockquote>
+<blockquote>**Implementation:** The security checklist at Supabase (RLS, SECURITY INVOKER, etc.) was moved from a reference file to the main skill body after agents routinely missed it. The move to the main body made it impossible to skip.</blockquote>
+<br>
+<h3>📋 Principle 3: Be Opinionated</h3>
+<blockquote>**What It Means:** You know your product's optimal workflows. Encode them. Don't let the agent guess.  </blockquote>
+<blockquote>**Implementation:** Supabase's schema workflow (DDL → advisor → migration) is explicit and step-by-step in the skill. Without this, agents improvise suboptimal paths.</blockquote>
+<br>
+<hr>
+<br>
+<h2>Phase 4: Resources & References</h2>
+<br>
+<p><strong>Tools:</strong></p>
+<li>**Braintrust** — eval platform used by Supabase for skill testing (braintrustdata.com)</li>
+<li>**Supabase** — backend-as-a-service platform (supabase.com)</li>
+<li>**Supabase Agent Skill** — announced at this conference, available via `npx` install command</li>
+<br>
+<p><strong>Platforms/Standards:</strong></p>
+<li>Claude Code skills system (Anthropic)</li>
+<li>Cursor plugin system</li>
+<li>Vercel skills package</li>
+<br>
+<p><strong>Concepts:</strong></p>
+<li>Row Level Security (RLS) — Postgres per-row access control</li>
+<li>`SECURITY INVOKER = TRUE` — Postgres 15+ view security setting</li>
+<li>Braintrust eval framework</li>
+<li>SSH-exposed documentation filesystem (Supabase experimental)</li>
+<br>
+<hr>
+<br>
+<h2>Phase 5: Protocol Cheat Sheet</h2>
+<br>
+<blockquote>📋 **Skill Writing Protocol:**</blockquote>
+<blockquote>- Critical security rules → `SKILL.md` body (never reference files)</blockquote>
+<blockquote>- Doc links → always include "where to find fresh docs" instructions</blockquote>
+<blockquote>- Be stubborn: explicitly tell the agent to go look things up, repeatedly</blockquote>
+<blockquote>- Encode your canonical workflow step-by-step</blockquote>
+<blockquote>- Start minimal, test via evals, iterate</blockquote>
+<blockquote>- Reference files = "nice to have, usually skipped" — treat accordingly</blockquote>
+<blockquote>- Eval framework: Braintrust recommended; test like you're testing code</blockquote>
+<br>
+</body>
+</html>
