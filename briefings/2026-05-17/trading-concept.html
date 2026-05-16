@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Fair Value Gaps (FVG) | May 17, 2026</title>
+<meta property="og:description" content="Alpha — Fair Value Gaps (FVG) | May 17, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Fair Value Gaps (FVG)</h1>
+  <div class="meta">
+    <span>Sunday · 17 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #23</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>A Fair Value Gap (FVG) is a three-candle price pattern where the wicks of candle 1 and candle 3 fail to overlap — a visual proxy for a one-sided, high-displacement move that left a thin-volume pocket the market often revisits to "rebalance".</strong> Treat it as a clean way to mark imbalance zones on a price chart, not as institutional X-ray vision; pair every FVG with a structural level, an orderflow read, and a price-action trigger, or it's just another rectangle in a sea of rectangles.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Three candles · one displacement · a chartist's imbalance proxy</div>
+    </div>
+  </div>
+
+  <div class="skim">An FVG is a three-candle window where candle 1's wick and candle 3's wick don't touch — leaving a visible price gap that price often returns to "fill".</div>
+
+  <p>Strip away the ICT vocabulary and a Fair Value Gap is a simple geometric pattern: three consecutive candles where the middle one moved so violently in one direction that the wick of the prior candle and the wick of the next candle never reach into the body of the displacement candle. The empty zone between them — the gap — is the FVG. <a href="https://www.fluxcharts.com/articles/Trading-Concepts/Price-Action/Fair-Value-Gaps">Flux Charts</a> puts the bullish rule cleanly: <em>"the left candle's high does not overlap with the right candle's low"</em>. Flip it for bearish.</p>
+
+  <p>The conceptual claim — much stronger than the geometric one — is that those untraded prices represent an <strong>imbalance</strong>: aggressive demand or supply pushed price through a level so fast the opposite side never got a fair shot. The mean-reverting tendency of markets means price will often (not always) return to that pocket later to "rebalance" before continuing — which gives traders a defined zone to set entries against.</p>
+
+  <p>This is the central conceit and the place to be careful. As crypto orderflow shop <strong>Buildix</strong> argues bluntly: <em>"Drawing a rectangle on a chart where price reversed and calling it an 'order block' is not the same as seeing actual institutional orders in the order book. One is a guess based on past price action. The other is data."</em> The same critique applies to FVG. The pattern is real; the institutional-footprint narrative draped over it is a vibe, not a measurement.</p>
+
+  <p>That said, the geometry still has utility. A non-overlapping three-candle structure is a clean visual marker of high single-direction displacement — and the orderflow translation is real: in <strong>Volume Profile</strong> terms an FVG corresponds roughly to a <strong>Low Volume Node</strong> (LVN), a thin-traded price area that price tends to cross quickly in either direction. FVG, used honestly, is the chartist's version of "watch this LVN".</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>DISPLACEMENT</b><span>The aggressive single-direction move that creates the middle candle</span></span>
+    <span class="pill-term"><b>BULLISH FVG</b><span>Gap to the upside · candle 1 high &lt; candle 3 low</span></span>
+    <span class="pill-term"><b>BEARISH FVG</b><span>Gap to the downside · candle 1 low &gt; candle 3 high</span></span>
+    <span class="pill-term"><b>MITIGATION</b><span>Price returning to and trading through the gap</span></span>
+    <span class="pill-term"><b>IFVG</b><span>An FVG that's been broken and now flips role — support↔resistance</span></span>
+    <span class="pill-term"><b>LVN</b><span>Low Volume Node — the orderflow equivalent of an FVG</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    An FVG is a visual marker of high-displacement, low-time-spent price — useful as a level. The "institutions left a footprint here" story is interpretation, not measurement.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Identification rules · mitigation · inversion · the orderflow equivalents</div>
+    </div>
+  </div>
+
+  <div class="skim">FVGs are identified mechanically from three candle highs/lows; mitigation, invalidation, and inversion are all defined by whether and how price re-enters the gap.</div>
+
+  <p>The identification is fully mechanical, which is part of why FVGs scale so well as an indicator. <a href="https://www.fluxcharts.com/articles/Trading-Concepts/Price-Action/Fair-Value-Gaps">Flux Charts</a> formalises it cleanly: zone boundaries are simply the inner wicks of the outer candles, and invalidation triggers on a close beyond the far side of the zone.</p>
+
+  <div class="formula">
+<b>Bullish FVG identification:</b>
+candle1.high &lt; candle3.low
+zone = [candle1.high, candle3.low]
+invalidation = price closes below candle1.high
+
+<b>Bearish FVG identification:</b>
+candle1.low &gt; candle3.high
+zone = [candle3.high, candle1.low]
+invalidation = price closes above candle1.low
+
+<b>Mitigation:</b>
+price re-enters the zone (often partial fill at 50% level)
+
+<b>Inversion FVG (IFVG):</b>
+price closes beyond the FVG in the opposite direction
+→ broken bullish FVG becomes resistance
+→ broken bearish FVG becomes support
+
+    <div class="note">Note: many implementations also require that the middle candle is meaningfully larger than the two outer candles (e.g. body ≥ 1.5× the 20-bar average true range) to filter out cosmetic gaps inside chop. Without a displacement filter, every choppy 1m chart prints dozens of FVGs an hour.</div>
+  </div>
+
+  <p>The <strong>mitigation</strong> rule is where the strategy gets contested. The standard ICT framing — codified across <a href="https://www.writofinance.com/fair-value-gap-in-trading/">Writofinance</a>, <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/fair-value-gap-trading-strategy/">LiteFinance</a>, and others — says price will return to the FVG to rebalance liquidity, often to the 50% midpoint, and continue in the original direction. The honest version, from <a href="https://www.earnforex.com/guides/fair-value-gaps-fvg-beginner-guide/">EarnForex</a>: <em>"The theory of Fair Value Gaps states that any FVG will be filled sooner or later. But it does not say how late the 'later' can be."</em> An FVG can sit unfilled for weeks; some are never filled. "Will be filled eventually" is an unfalsifiable claim dressed as a setup.</p>
+
+  <p>The <strong>Inversion FVG (IFVG)</strong> is the more useful evolution. When price closes through an FVG in the opposite direction, the gap "flips role": a broken bullish FVG (formed during an up-move) becomes resistance on the retest, a broken bearish FVG becomes support. The <a href="https://blog.trinitytrading.io/inversion-fair-value-gap-ifvg-ict-guide-2026/">Trinity Trading deep-dive</a> frames it as: <em>"price violates the FVG, but instead of invalidation, it respects it from the other side."</em> Mechanically this is just a classic role-reversal pattern — but pinned to a defined imbalance zone rather than a manually drawn line, which makes it cleaner to backtest.</p>
+
+  <p>Where this matters for an orderflow-native trader: every SMC pattern has a measurable orderflow equivalent. The <a href="https://www.buildix.trade/blog/smart-money-concepts-crypto-trading-institutional-orderflow-2026">Buildix translation table</a> is the most useful single reference for converting between schools:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>SMC / FVG pattern</th><th>Orderflow / data equivalent</th><th>Why it matters</th></tr>
+    <tr><td>Fair Value Gap</td><td>Low Volume Node on Volume Profile</td><td>Same zone, derived from real volume rather than candle geometry</td></tr>
+    <tr><td>Order Block</td><td>High-volume node + directional OBI</td><td>Real institutional concentration vs. a guessed rectangle</td></tr>
+    <tr><td>Break of Structure</td><td>Value Area breakout + above-average delta</td><td>BOS confirmed by CVD/delta, not just price</td></tr>
+    <tr><td>Change of Character</td><td>CVD divergence vs price extreme</td><td>The orderflow tell that ICT's CHoCH is trying to approximate</td></tr>
+    <tr><td>Liquidity Sweep</td><td>Stop-hunt with OBI flipping post-fill</td><td>Visible in the book, not just inferred from a wick</td></tr>
+  </table>
+  </div>
+
+  <p>The practical implication: when an FVG aligns with an LVN on the volume profile, an OI shift, or a CVD divergence — that's confluence between two independent systems and the setup carries weight. When the FVG sits alone on price chart with nothing underneath it, you're trading a rectangle.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — the canonical bullish FVG, and an Inversion FVG flip</div>
+    </div>
+  </div>
+
+  <div class="skim">First diagram shows a textbook bullish FVG identified, retested, and held; second shows a bullish FVG broken and re-tested as resistance — an IFVG.</div>
+
+  <!-- SVG 1 — Bullish FVG textbook -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Bullish Fair Value Gap diagram showing three candles with non-overlapping wicks">
+
+      <defs>
+        <linearGradient id="fvgGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.10"/>
+        </linearGradient>
+        <marker id="arrowAcc" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#3f6212"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Bullish Fair Value Gap — Identification &amp; Retest</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">CANDLE 1 WICK · GAP · CANDLE 3 WICK — NO OVERLAP</text>
+
+      <!-- Axes -->
+      <line x1="60" y1="70" x2="60" y2="380" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="380" x2="770" y2="380" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Gridlines -->
+      <line x1="60" y1="110" x2="770" y2="110" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="160" x2="770" y2="160" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="210" x2="770" y2="210" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="260" x2="770" y2="260" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="310" x2="770" y2="310" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Price labels -->
+      <text x="54" y="113" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">82k</text>
+      <text x="54" y="213" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">80k</text>
+      <text x="54" y="313" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">78k</text>
+      <text x="54" y="363" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">77k</text>
+
+      <!-- Approach candles (left side, small green and reds) -->
+      <line x1="100" y1="340" x2="100" y2="360" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="94" y="342" width="12" height="14" fill="#22c55e"/>
+      <line x1="130" y1="335" x2="130" y2="358" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="124" y="340" width="12" height="14" fill="#ef4444"/>
+      <line x1="160" y1="325" x2="160" y2="352" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="154" y="328" width="12" height="20" fill="#22c55e"/>
+
+      <!-- CANDLE 1 (small green) -->
+      <line x1="200" y1="295" x2="200" y2="335" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="192" y="302" width="16" height="26" fill="#22c55e"/>
+      <text x="200" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">C1</text>
+
+      <!-- CANDLE 1 high marker line (dashed across chart) -->
+      <line x1="200" y1="295" x2="770" y2="295" stroke="#3f6212" stroke-width="1" stroke-dasharray="4,4" opacity="0.55"/>
+      <text x="775" y="298" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212" font-weight="600">C1 high</text>
+
+      <!-- CANDLE 2 (huge displacement green candle — bullish FVG creator) -->
+      <line x1="240" y1="180" x2="240" y2="290" stroke="#22c55e" stroke-width="2"/>
+      <rect x="230" y="186" width="20" height="100" fill="#22c55e"/>
+      <text x="240" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">C2 (displacement)</text>
+
+      <!-- CANDLE 3 (small green continuation) -->
+      <line x1="285" y1="170" x2="285" y2="210" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="277" y="178" width="16" height="22" fill="#22c55e"/>
+      <text x="285" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">C3</text>
+
+      <!-- CANDLE 3 low marker line (dashed across chart) -->
+      <line x1="285" y1="210" x2="770" y2="210" stroke="#3f6212" stroke-width="1" stroke-dasharray="4,4" opacity="0.55"/>
+      <text x="775" y="213" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212" font-weight="600">C3 low</text>
+
+      <!-- FVG ZONE (between C1 high and C3 low) -->
+      <rect x="200" y="210" width="570" height="85" fill="url(#fvgGrad)"/>
+      <rect x="200" y="210" width="570" height="85" fill="none" stroke="#3f6212" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.7"/>
+      <text x="490" y="258" text-anchor="middle" font-family="DM Serif Display,serif" font-style="italic" font-size="18" fill="#3f6212">Fair Value Gap</text>
+      <text x="490" y="277" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">~$79,300 → $80,400</text>
+
+      <!-- Continuation candles after C3 -->
+      <line x1="325" y1="145" x2="325" y2="190" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="317" y="152" width="16" height="30" fill="#22c55e"/>
+      <line x1="360" y1="125" x2="360" y2="170" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="352" y="132" width="16" height="32" fill="#22c55e"/>
+      <line x1="395" y1="115" x2="395" y2="150" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="387" y="120" width="16" height="22" fill="#22c55e"/>
+
+      <!-- Pullback candles (price returning down to FVG) -->
+      <line x1="435" y1="130" x2="435" y2="170" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="427" y="135" width="16" height="28" fill="#ef4444"/>
+      <line x1="470" y1="155" x2="470" y2="195" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="462" y="160" width="16" height="28" fill="#ef4444"/>
+      <line x1="505" y1="180" x2="505" y2="225" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="497" y="185" width="16" height="35" fill="#ef4444"/>
+
+      <!-- Retest candle inside FVG (the test) -->
+      <line x1="540" y1="215" x2="540" y2="265" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="532" y="220" width="16" height="38" fill="#ef4444"/>
+      <text x="540" y="285" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">retest</text>
+
+      <!-- Reaction candles bouncing out of FVG (hold) -->
+      <line x1="580" y1="205" x2="580" y2="265" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="572" y="212" width="16" height="38" fill="#22c55e"/>
+      <line x1="615" y1="170" x2="615" y2="220" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="607" y="178" width="16" height="38" fill="#22c55e"/>
+      <line x1="650" y1="140" x2="650" y2="190" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="642" y="148" width="16" height="38" fill="#22c55e"/>
+      <line x1="685" y1="115" x2="685" y2="165" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="677" y="122" width="16" height="38" fill="#22c55e"/>
+
+      <!-- Annotation: displacement arrow -->
+      <line x1="170" y1="335" x2="240" y2="220" stroke="#3f6212" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6" marker-end="url(#arrowAcc)"/>
+      <text x="142" y="402" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">DISPLACEMENT</text>
+
+      <!-- Annotation: retest arrow -->
+      <line x1="540" y1="100" x2="540" y2="210" stroke="#78716c" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+      <text x="500" y="402" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">RETEST &amp; HOLD</text>
+      <text x="635" y="402" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">CONTINUATION</text>
+
+    </svg>
+    <div class="svg-caption">A textbook bullish FVG: the displacement candle (C2) leaves a gap between C1's high and C3's low. Price extends, pulls back to retest the zone — the test holds, buyers defend at the 50% midpoint, and the trend resumes. The retest into the FVG is the entry window; a clean close below C1's high invalidates.</div>
+  </div>
+
+  <!-- SVG 2 — Inversion FVG -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Inversion Fair Value Gap diagram showing a bullish FVG broken and re-tested as resistance">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Inversion FVG — Bullish Gap Breaks, Flips to Resistance</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">FAILED FVG → RETEST FROM BELOW → REJECTION</text>
+
+      <!-- Axes -->
+      <line x1="60" y1="60" x2="60" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="330" x2="770" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Gridlines -->
+      <line x1="60" y1="100" x2="770" y2="100" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="150" x2="770" y2="150" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="200" x2="770" y2="200" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="250" x2="770" y2="250" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="300" x2="770" y2="300" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Original bullish FVG zone (now broken — shaded grey) -->
+      <rect x="170" y="155" width="600" height="55" fill="#e7e5e4" opacity="0.4"/>
+      <rect x="170" y="155" width="600" height="55" fill="none" stroke="#78716c" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.7"/>
+      <text x="640" y="184" text-anchor="middle" font-family="DM Serif Display,serif" font-style="italic" font-size="14" fill="#78716c">Broken bullish FVG</text>
+      <text x="640" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5">now acts as RESISTANCE</text>
+
+      <!-- Original up-move that created the bullish FVG -->
+      <line x1="95" y1="240" x2="95" y2="280" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="87" y="248" width="16" height="22" fill="#22c55e"/>
+      <line x1="125" y1="200" x2="125" y2="260" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="117" y="206" width="16" height="50" fill="#22c55e"/>
+      <line x1="155" y1="140" x2="155" y2="210" stroke="#22c55e" stroke-width="2"/>
+      <rect x="147" y="148" width="16" height="55" fill="#22c55e"/>
+      <text x="155" y="135" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212" font-weight="700">C2-up</text>
+      <line x1="185" y1="135" x2="185" y2="170" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="177" y="140" width="16" height="22" fill="#22c55e"/>
+
+      <!-- Initial up-leg continues briefly -->
+      <line x1="215" y1="120" x2="215" y2="160" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="207" y="125" width="16" height="30" fill="#22c55e"/>
+
+      <!-- Reversal: red candles plunging through FVG -->
+      <line x1="245" y1="125" x2="245" y2="180" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="237" y="130" width="16" height="42" fill="#ef4444"/>
+      <line x1="275" y1="160" x2="275" y2="220" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="267" y="165" width="16" height="50" fill="#ef4444"/>
+      <line x1="305" y1="200" x2="305" y2="260" stroke="#ef4444" stroke-width="2"/>
+      <rect x="297" y="205" width="16" height="52" fill="#ef4444"/>
+      <text x="305" y="278" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#ef4444" font-weight="700">break</text>
+      <line x1="335" y1="240" x2="335" y2="285" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="327" y="245" width="16" height="38" fill="#ef4444"/>
+
+      <!-- Consolidation below the broken FVG -->
+      <line x1="365" y1="260" x2="365" y2="295" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="357" y="265" width="16" height="25" fill="#22c55e"/>
+      <line x1="395" y1="245" x2="395" y2="280" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="387" y="252" width="16" height="22" fill="#22c55e"/>
+
+      <!-- Retest from below: price grinds back up into broken FVG -->
+      <line x1="425" y1="225" x2="425" y2="260" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="417" y="232" width="16" height="22" fill="#22c55e"/>
+      <line x1="455" y1="205" x2="455" y2="245" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="447" y="212" width="16" height="28" fill="#22c55e"/>
+      <line x1="485" y1="185" x2="485" y2="220" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="477" y="190" width="16" height="22" fill="#22c55e"/>
+
+      <!-- Retest candle INTO the broken FVG -->
+      <line x1="515" y1="160" x2="515" y2="200" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="507" y="165" width="16" height="28" fill="#22c55e"/>
+      <text x="515" y="155" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">IFVG retest</text>
+
+      <!-- Rejection candle (long upper wick into FVG, body lower) -->
+      <line x1="545" y1="155" x2="545" y2="220" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="537" y="195" width="16" height="22" fill="#ef4444"/>
+      <text x="545" y="148" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#ef4444" font-weight="700">reject</text>
+
+      <!-- Sell-off resumes -->
+      <line x1="575" y1="210" x2="575" y2="260" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="567" y="215" width="16" height="42" fill="#ef4444"/>
+      <line x1="605" y1="245" x2="605" y2="290" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="597" y="250" width="16" height="38" fill="#ef4444"/>
+      <line x1="635" y1="275" x2="635" y2="315" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="627" y="280" width="16" height="32" fill="#ef4444"/>
+
+      <!-- Annotations -->
+      <text x="160" y="365" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="0.5">FVG CREATED</text>
+      <text x="290" y="365" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" letter-spacing="0.5">VIOLATED</text>
+      <text x="520" y="365" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="0.5">RETEST FROM BELOW</text>
+      <text x="640" y="365" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" letter-spacing="0.5">REJECTION</text>
+
+    </svg>
+    <div class="svg-caption">Inversion FVG (IFVG): an FVG created during an up-move is broken to the downside (a strong close beyond the gap). On the retest from below, what used to be support flips role and acts as resistance — the rejection is the entry trigger. This is just classical role-reversal pinned to a mechanically defined zone.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Higher-TF first · confluence is non-negotiable · the trigger is price action</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never trade an isolated FVG. Use it as a level inside a higher-timeframe directional bias, with at least one orderflow confluence and a price-action trigger.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Top-Down: Bias on 4H/Daily, Execute on 15m/1H</h4>
+        <p>Mark FVGs only on the 1H and 4H — those carry structural weight. Use them as zones in the direction of the daily trend. <strong>LiteFinance</strong> calls out M15–H1 as the sweet spot for execution; treat 5m FVGs as noise unless they sit inside a higher-TF zone. A 1h FVG aligned with daily structure is signal; a 1m FVG inside chop is decoration.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Apply a Displacement Filter</h4>
+        <p>Require the middle candle's body to be at least 1.5× the 20-bar ATR. Without this filter every choppy session prints a dozen "FVGs" and the indicator becomes wallpaper. The whole point of an FVG is that the move was <em>aggressive enough that the other side couldn't respond</em> — a half-ATR move doesn't qualify.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Confluence or Pass</h4>
+        <p>An FVG alone is a rectangle. An FVG that sits at a prior swing high/low, on a volume-profile LVN, at the daily VWAP, at a session high/low, or at a high-density liquidation cluster — that's a level with multiple reasons to react. Pair the FVG with at least one orderflow/structural input. Without confluence, fade or ignore.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>The Trigger is Always Price Action, Never the Gap Itself</h4>
+        <p>The FVG is the <em>where</em>. The entry is a price-action signal <em>at</em> the where: a rejection wick into the zone, a 50%-fill bounce, a failed breakdown that closes back inside, or an IFVG-style failed retest. Entering on the tap alone runs you straight into the "FVGs that get filled and keep going" problem that breaks newcomers.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Long off the 4H Bullish FVG Retest</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Higher-TF bias</td><td>Daily structure: HHs and HLs intact. Bullish until a daily close below $76,000.</td></tr>
+      <tr><td>FVG identified</td><td>4H bullish FVG formed during the displacement off the $76K low, zone = $79,300 → $80,400 (C1 high to C3 low).</td></tr>
+      <tr><td>Confluence</td><td>The same zone aligns with the 200-day EMA cluster and the new-whale cost basis at $80,300 — three independent levels stacking inside one FVG.</td></tr>
+      <tr><td>Trigger</td><td>Price pulls into $79,800 (50% of the zone). 1H candle prints a long lower wick into $79,300, closes back above $80,100 — failed flush-through. Enter long at $80,150.</td></tr>
+      <tr><td>Stop</td><td>Below the FVG's lower boundary + ATR buffer: $79,000. Risk = $1,150 (~1.4%).</td></tr>
+      <tr><td>Target</td><td>Prior local resistance at $82,500 (R:R ~2.0) → next leg to $85,000 (R:R ~4.2). Trail above $81,500.</td></tr>
+      <tr><td>Invalidation</td><td>1H close below $79,000 → FVG is now an IFVG candidate. Flip the framing: short the next retest from below, not the long.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> 4H and daily FVGs for swing zones, 1H for tactical pullbacks, 15m for execution triggers. Anything below 15m is noise unless it nests inside a 1H+ structure. A daily FVG that's been mitigated cleanly is the most reliable variant; a fresh, untested 4H FVG is second tier.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">The active BTC daily FVG at $76K–$78K · why this week matters</div>
+    </div>
+  </div>
+
+  <div class="skim">There is a live, unmitigated daily bullish FVG between roughly $76,000 and $78,000 on BTC — the zone that the May 2026 push back above $80K left behind.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 1D</div>
+    <h4>BTC's $76K–$78K Daily FVG — The Live Zone</h4>
+
+    <p>The May 2026 BTC rally off the early-month lows printed a clean displacement on the daily — large green body off the $76K base that left a <strong>daily bullish FVG roughly between $76,000 and $78,000</strong>. The zone is meaningful because it stacks two independent inputs: the gap aligns directly with the <strong>200-day EMA</strong>, and sits just below the <strong>$80,300 new-whale cost basis</strong> flagged by on-chain analysts. As of May 16, BTC closed around <strong>$79,500–$80,000</strong>, with this FVG sitting as the most obvious unmitigated long zone if the May ETF inflow streak (~$1.69B over five sessions per <a href="https://www.theblock.co/data/etfs/bitcoin-etf/spot-bitcoin-etf-flows">The Block</a>) pauses.</p>
+
+    <p>This is the textbook scenario the concept is built for. The zone gives you a defined level; the higher-timeframe daily trend (HHs/HLs intact above $75K) gives you direction; the trigger is whatever price action prints if BTC dips back to $77K–$78K — a long lower wick, a failed flush of the EMA, a 50% bounce off ~$77K. Without that trigger, the zone is just a rectangle; with the trigger, you have a defined-risk long against the ETF-flow tailwind.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Daily FVG zone</td><td>~$76,000 – $78,000 (top of C1 wick to bottom of C3 wick)</td></tr>
+        <tr><td>Aligned 200d EMA</td><td>~$76,500–$77,500 (sitting inside the FVG)</td></tr>
+        <tr><td>New-whale cost basis</td><td>$80,300 — just above the gap top</td></tr>
+        <tr><td>BTC close · May 16</td><td>~$79,500–$80,000 (UTC)</td></tr>
+        <tr><td>Spot ETF inflows (5d streak)</td><td>~$1.69B — longest since Jul 2025</td></tr>
+        <tr><td>Critical invalidation</td><td>Daily close below $75,000 → FVG fully mitigated, IFVG framing activates</td></tr>
+        <tr><td>Bullish trigger</td><td>1H/4H rejection wick into $77K–$78K with reclaim of $78,500 close</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>For the live read: pull up <a href="https://www.tradingview.com/symbols/BTCUSDT.P/" style="color:#bef264;border-bottom-color:#bef264">BTCUSDT.P on TradingView</a> on the daily and mark the displacement candle off the early-May low — C1 high and C3 low define the zone exactly. Cross-reference the volume profile to confirm it sits in a low-volume node (the orderflow equivalent), and check <a href="https://www.coinglass.com/etf/bitcoin" style="color:#bef264;border-bottom-color:#bef264">Coinglass BTC ETF flows</a> for whether institutional bid is still active.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=D&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The $76K–$78K FVG is the cleanest pullback zone for the May 2026 BTC up-move. It tells you <em>where</em> to act — the trigger and the orderflow confirmation tell you <em>whether</em> to act. If BTC closes a daily below $75K, the entire framing flips: the unfilled FVG becomes an IFVG candidate and the same zone becomes resistance on any retest from below.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Practitioners, the orderflow critique, and the original effort/result law</div>
+    </div>
+  </div>
+
+  <div class="skim">The most useful voices on FVG sit on both sides — practitioner explainers and the orderflow critique that keeps the concept honest.</div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows a poor response to effort — a wide spread, heavy volume, and little price movement — the experienced tape reader recognises that the market is meeting with supply or demand that is stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · The original imbalance principle that FVG mechanically approximates</div>
+  </div>
+
+  <div class="quote">
+    <p>"Drawing a rectangle on a chart where price reversed and calling it an 'order block' is not the same as seeing actual institutional orders in the order book. One is a guess based on past price action. The other is data."</p>
+    <div class="attr"><b>Buildix</b> · <em>SMC in Crypto: How Institutions Actually Trade</em> · 2026 · <a href="https://www.buildix.trade/blog/smart-money-concepts-crypto-trading-institutional-orderflow-2026">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"A Fair Value Gap is a price imbalance where buyers and sellers didn't overlap. Price is drawn back to these zones like a magnet."</p>
+    <div class="attr"><b>@CryptoPatel</b> · X · SMC/ICT Mastery thread · 2026 · <a href="https://x.com/CryptoPatel/status/2042158074090176629">thread</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The theory of Fair Value Gaps states that any FVG will be filled sooner or later. But it does not say how late the 'later' can be. It is impossible to determine ahead of time whether the particular FVG will be filled or not."</p>
+    <div class="attr"><b>EarnForex · FVG Beginner Guide</b> · 2026 · The honest version of the "all gaps get filled" claim · <a href="https://www.earnforex.com/guides/fair-value-gaps-fvg-beginner-guide/">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Most FVGs are noise, and trading every gap you see is a fast way to bleed out an account."</p>
+    <div class="attr"><b>Daily Price Action · FVG Guide</b> · 2026 · The single most useful sentence ever written about FVG · <a href="https://dailypriceaction.com/blog/fair-value-gap/">source</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways FVG turns into a losing edge</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating FVG as an institutional-footprint X-ray rather than what it is — a geometric pattern marking high-displacement zones.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Trading Every FVG You See</h5>
+      <p>On a 1m chart in a volatile session a chart prints dozens of FVGs an hour. Without a displacement filter (e.g. middle body ≥ 1.5× ATR) and a higher-timeframe bias, you are trading random rectangles. Restrict to 1H and 4H for zones, 15m and below only for triggers inside an established zone.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Believing "All Gaps Get Filled"</h5>
+      <p>This is the most-repeated and most-misleading FVG claim. As <strong>EarnForex</strong> puts it: the theory says gaps get filled <em>"sooner or later"</em> but never says how late later is. Some FVGs stay unfilled for months — sometimes forever. "Eventually" is not a tradable timeframe; the unfalsifiability of the claim is exactly what makes it dangerous as a thesis.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing the FVG With the Setup</h5>
+      <p>The FVG is a level, not a trade. Tapping into the zone is necessary, never sufficient. Entering on the touch alone runs you straight into the "FVG that gets fully filled and keeps going" — the most common stop-out pattern. The entry is always a price-action signal <em>at</em> the level: rejection wick, failed flush, IFVG retest. Without that trigger, sit out.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Treating FVGs as Institutional X-Ray</h5>
+      <p>An FVG is a chart pattern, not a view of the order book. Real institutional flow is measurable through Volume Profile, CVD, and exchange-side OI data — none of which require interpretation of three candle shapes. The "smart money left a footprint here" narrative is interpretation. When the FVG corresponds to an LVN on volume profile, the institutional claim has data behind it; otherwise it's storytelling.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Buying the ICT/SMC Hype Wholesale</h5>
+      <p>FVG, Order Blocks, BOS, CHoCH, liquidity sweeps — the SMC vocabulary has rebranded several classical price-action concepts (role reversal, supply/demand zones, false breakouts, stop-hunts) in new language and sold them as institutional insider knowledge. A valid academic critique notes <em>"SMC's terminology hides simple mechanics under sophisticated jargon"</em>. Backtests of strict SMC rules typically deliver 50–65% win rates — better than random, no better than disciplined classical price action. FVG works <em>when it works</em> as one more zone-identification tool. Treat it as such. Anyone selling it as standalone institutional alpha in 2026 is selling a course, not a system.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Mixing the explainer canon with the critique that keeps you honest</div>
+    </div>
+  </div>
+
+  <div class="skim">Six verified sources — the cleanest explainers plus the orderflow critique you need to read alongside them.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.fluxcharts.com/articles/Trading-Concepts/Price-Action/Fair-Value-Gaps">Flux Charts — Fair Value Gaps Explained</a>
+        <span>The cleanest technical write-up of the mechanical rules: exact zone boundaries, bullish vs bearish identification, invalidation criteria. Start here for the geometry.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Critique</div>
+      <div class="fr-body">
+        <a href="https://www.buildix.trade/blog/smart-money-concepts-crypto-trading-institutional-orderflow-2026">Buildix — SMC in Crypto: How Institutions Actually Trade</a>
+        <span>The single best critique of SMC/FVG from an orderflow practitioner. Includes the SMC→orderflow translation table that lets you convert FVG and OB framing into measurable Volume Profile / CVD / OBI equivalents. Read alongside any FVG explainer.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.writofinance.com/fair-value-gap-in-trading/">Writofinance — Complete FVG Guide (2026)</a>
+        <span>Comprehensive ICT-aligned walkthrough: bullish/bearish patterns, mitigation rules, multi-timeframe alignment. The mainstream version — useful to understand what the community is taught.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Skeptic</div>
+      <div class="fr-body">
+        <a href="https://www.earnforex.com/guides/fair-value-gaps-fvg-beginner-guide/">EarnForex — FVG Beginner Guide (with critique section)</a>
+        <span>Goes through the standard rules but pulls no punches on the limitations: false signals, gap-fill uncertainty, range-bound failure modes, subjective entries. The "but does it actually work" section is essential.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Deep Dive</div>
+      <div class="fr-body">
+        <a href="https://blog.trinitytrading.io/inversion-fair-value-gap-ifvg-ict-guide-2026/">Trinity Trading — Inversion Fair Value Gap (IFVG) Guide 2026</a>
+        <span>The clearest treatment of IFVG mechanics: how a broken FVG flips into resistance/support, the four-condition formation checklist, and why IFVG is the more useful evolution for traders who care about backtestable rules.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Crypto</div>
+      <div class="fr-body">
+        <a href="https://www.altrady.com/blog/crypto-trading-strategies/fair-value-gap">Altrady — FVG in Crypto Trading</a>
+        <span>Crypto-specific application: why 24/7 markets and thin off-hours produce frequent FVGs, optimal timeframes (15m/1H/4H), and how to handle leveraged-futures amplification. The closest to a crypto-native field guide.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/fair-value-gap-trading-strategy/">LiteFinance — FVG Strategy Guide (2026)</a>
+        <span>Lists statistical context, optimal timeframes, and worked examples. Treat the win-rate figures cautiously — they're community-reported, not independently verified — but the structural framework is sound.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.fluxcharts.com/articles/Trading-Concepts/Price-Action/Fair-Value-Gaps">Flux Charts · FVG Explained</a>
+    <a href="https://www.writofinance.com/fair-value-gap-in-trading/">Writofinance · Complete FVG Guide</a>
+    <a href="https://www.litefinance.org/blog/for-beginners/trading-strategies/fair-value-gap-trading-strategy/">LiteFinance · FVG Strategy 2026</a>
+    <a href="https://www.earnforex.com/guides/fair-value-gaps-fvg-beginner-guide/">EarnForex · FVG Critique</a>
+    <a href="https://dailypriceaction.com/blog/fair-value-gap/">Daily Price Action · FVG Guide</a>
+    <a href="https://www.buildix.trade/blog/smart-money-concepts-crypto-trading-institutional-orderflow-2026">Buildix · SMC vs Orderflow</a>
+    <a href="https://blog.trinitytrading.io/inversion-fair-value-gap-ifvg-ict-guide-2026/">Trinity Trading · IFVG Guide</a>
+    <a href="https://www.altrady.com/blog/crypto-trading-strategies/fair-value-gap">Altrady · FVG in Crypto</a>
+    <a href="https://tradingwyckoff.com/en/smart-money-concepts/">Trading Wyckoff · SMC Guide</a>
+    <a href="https://x.com/CryptoPatel/status/2042158074090176629">@CryptoPatel · X · FVG Thread</a>
+    <a href="https://www.theblock.co/data/etfs/bitcoin-etf/spot-bitcoin-etf-flows">The Block · BTC ETF Flows</a>
+    <a href="https://www.coinglass.com/etf/bitcoin">Coinglass · BTC ETF</a>
+  </div>
+  <div>Alpha · Issue #23 · 17 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
