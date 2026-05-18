@@ -30,3 +30,14 @@ node scripts/health-check.js          # run health check, auto-fixes tables
 node scripts/generate-index.js        # regenerate index.html
 node scripts/generate-visualizations.js
 ```
+
+## generate-index.js warnings are BLOCKING — fix before committing
+
+Any `⚠️` line in `generate-index.js` output is a defect in the published site. **Do not commit until all warnings are resolved.**
+
+The most common warning is `RAW HTML ENTITY in headline` — this means an HTML entity (e.g. `&minus;`, `&times;`, `&plusmn;`) survived into the extracted headline text and will display as literal jibberish on the index page. Fix it one of two ways (do both if the entity is new):
+
+1. **Fix the source briefing** — replace the entity with the actual Unicode character in any text that gets extracted as a headline (the `.tldr-text` or `.tldr p` element). E.g. replace `&minus;` with `−`.
+2. **Fix the extractor** — add the entity to the `stripHtml` named-entity replacement list in `scripts/generate-index.js` (line ~31). This prevents recurrence in all future briefings.
+
+Re-run `node scripts/generate-index.js` after the fix and confirm the output ends with `✓  UI validator: all card extractions look clean` before proceeding.
