@@ -1,8 +1,32 @@
-# Market Intelligence Briefing
+# Market Intelligence Briefing (The Morning Edge ☀️)
 
 Produce a daily pre-market intelligence briefing for an independent crypto trader using Wyckoff
 methodology, based in Sydney, Australia. Every section must contain a stated view or thesis — not
 just a summary of news. Think am/FX by Brent Donnelly: opinionated, specific, trader-first.
+
+## CANONICAL DESIGN REFERENCE
+
+**The template to follow is `briefings/2026-05-15/market-briefing.html`.** Read that file first to understand the design system. Future briefings MUST match its visual style — do NOT use older templates from before 2026-05-15.
+
+Key visual elements (all required):
+- **Inter + JetBrains Mono fonts** from Google Fonts (preconnect + stylesheet links in `<head>`)
+- **Reading time badge** in the header ("~10 min read")
+- **Conviction badge** at top right with color-coded background
+- **Catalyst banner** (dark red) under the header for major event days
+- **TOC strip** (dark blue) with 8 numbered section anchors (s1–s8)
+- **TradingView iframe widgets** (`.tv-widget`) — 3-column grid in macro and crypto sections
+- **8 sections** in this order: Macro / Equities / Crypto / Regulatory / AI & Semis / Prediction / Geopolitical / Watchlist
+- **Section number circles** (`.section-num`) prefixing each section title
+- **Analysis blocks** (`.analysis`) blue / **Geo alerts** (`.geo-alert`) amber / **Pred blocks** (`.pred-block`) green / **Learn blocks** (`.learn-block`) purple / **Callouts** (`.callout`) orange
+- **Implications** (`.implication--macro/equities/crypto/ai/pred/reg/geo`) themed by section
+- **Key boxes** (`.key-boxes`) 4-column metric display
+- **Fear & Greed gauge** with linear-gradient bar and marker
+- **Live / Est / Vol Spike / Event** badges in tables
+- **`td.pos` and `td.neg`** with gradient backgrounds (not flat color)
+- **Footer** with data sources + disclaimer
+
+## CRITICAL: DO NOT INCLUDE
+- **No "← All Briefings" back navigation bar** at the top of the body. Begin `<body>` directly with `<div class="page-wrap">`. The site already handles navigation via the index page. This bar was removed on 2026-05-20.
 
 ## Trigger
 
@@ -15,205 +39,154 @@ If the user has pasted any of the following, incorporate it directly before gene
 
 ---
 
-## Step 1: Fetch Live Data (MCP tools first, browser only as fallback)
+## Step 1: Fetch Live Data (MCP tools FIRST, browser only as fallback)
 
 Use MCP tools for ALL data collection before writing. These always work without a browser.
 
-### Crypto Prices & Global Data — CoinGecko MCP (ALWAYS USE FIRST)
+### Crypto prices & global — CoinGecko MCP (ALWAYS USE FIRST)
 ```
-mcp__coingecko__execute — get prices for: bitcoin, ethereum, solana, ripple, hyperliquid, dogecoin
-mcp__coingecko__execute — get global market data (dominance, total market cap, volume)
+mcp__coingecko__execute — markets.get for: bitcoin, ethereum, solana, ripple, hyperliquid, dogecoin
+mcp__coingecko__execute — global.get for dominance, total market cap, volume
 ```
-Extract: price, 1h%, 24h%, 7d%, market cap, volume, circulating supply
 
-### Crypto Derivatives — TrueNorth MCP (PRIMARY — replaces Velo for most data)
+### Derivatives — TrueNorth MCP (PRIMARY for liquidation map & funding)
 ```
 mcp__truenorth__derivatives_analysis — token: "bitcoin"
 mcp__truenorth__derivatives_analysis — token: "ethereum"
 ```
-Extract: OI, funding rate (annualised), liquidation map (long/short clusters, distances), imbalance ratio
+Returns: OI, funding rate (annualised), liquidation map (long/short clusters with USD amounts and distance %), imbalance ratio
 
-### Market Indices — TrueNorth MCP
+### Market indices — TrueNorth MCP
 ```
 mcp__truenorth__market_index_price — index: "all"
 ```
-Extract: SPX, NDX, NASDAQ, DJI, VIX, TNX (10Y yield), DXY, FTSE, DAX, Nikkei, Hang Seng
+Returns: SPX, NDX, NASDAQ, DJI, VIX, TNX (10Y), DXY, FTSE, DAX, Nikkei, Hang Seng
 
-### Equity Snapshots — TrueNorth MCP
+### Equity snapshots — TrueNorth MCP
 ```
-mcp__truenorth__stock_price_snapshot — key stocks (NVDA, INTC, SPY, QQQ, etc.)
+mcp__truenorth__stock_price_snapshot — NVDA, INTC, SPY, QQQ, plus any session-relevant tickers
 ```
 
-### Prediction Markets — prediction-markets-mcp
+### Prediction markets
 ```
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "bitcoin"
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "federal reserve"
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "recession"
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "inflation"
-mcp__prediction-markets-mcp__get-prediction-markets — keyword: "Trump"
 ```
-Extract: market name, platform, odds (%), volume ($). If Polymarket times out, flag as estimated and use web search.
+If Polymarket times out, flag data as `<span class="est-badge">EST</span>` + a `<span class="est-badge">Polymarket MCP Timeout</span>` next to the section title.
 
-### Macro & News — WebSearch
+### News & macro — WebSearch
 ```
-WebSearch: "SPX NDX DXY gold WTI crude oil prices [date]"
-WebSearch: "crypto bitcoin news today [date] ETF flows"
-WebSearch: "NVDA nvidia AI news [date]"
-WebSearch: "geopolitical risk market news [date]"
-WebSearch: "most active stocks today [date]"
-WebSearch: "bitcoin fear greed index [date]"
-WebSearch: "ASX 200 [date]"
+WebSearch — "crypto bitcoin news today [date] ETF flows whale"
+WebSearch — "NVDA nvidia AI semiconductor news [date]"
+WebSearch — current major macro story (Fed, Moody's, CPI, etc.)
+WebSearch — "geopolitical risk market [date]"
+WebSearch — "most active stocks today [date]"
+WebSearch — "bitcoin fear greed index [date]"
+WebSearch — "ASX 200 [date]"
+WebSearch — "DXY gold WTI crude [date]"
 ```
 
-### Top Volume Stocks — Yahoo Finance
+### Top volume stocks
 ```
-WebFetch: https://finance.yahoo.com/markets/stocks/most-active/
+WebFetch — https://finance.yahoo.com/markets/stocks/most-active/
 ```
-Extract top 10 by volume: ticker, price, change%, volume, driver
+Extract top 8–10: ticker, sector, price, change%, volume, driver
 
-### Velo.xyz — Browser ONLY if TrueNorth doesn't cover CVD/per-exchange data
-If TrueNorth derivatives_analysis doesn't return CVD by exchange (Binance, Bybit, OKX):
-- Navigate to https://velo.xyz/futures/BTC → wait 10s → screenshot
-- Navigate to https://velo.xyz/futures/ETH → wait 10s → screenshot
-- Extract: CVD, funding APR, OI by exchange
-- If Velo fails after 3 attempts → tag all data (est.) with amber badge
-
-### CoinGlass — Browser ONLY for Fear & Greed if not available elsewhere
-Navigate to https://coinglass.com → extract Fear & Greed index, BTC dominance, long/short ratio
+### Velo.xyz — Browser ONLY if TrueNorth doesn't return CVD by exchange
+Only fall back to browser if `mcp__truenorth__derivatives_analysis` doesn't provide per-exchange CVD (Binance, Bybit, OKX). Otherwise skip.
 
 ---
 
 ## Step 2: Write the Briefing
 
-After all data is collected, write the full briefing as a single HTML file.
+After all data is collected, write the full HTML following the May 15 template.
 
 ### Voice & Style
-- Each section opens with 1–3 sentences of actual analysis — a stated view, not a recap
+- Each section opens with a bold one-sentence directional view, then 2–3 sentences of analysis
 - Take a position. Say what the path of least resistance is. Say what you would watch.
-- Short, punchy paragraphs (3–5 sentences max per block)
 - Bold tickers, prices, bill numbers, key names
 - **Banned phrases**: "markets face uncertainty", "crypto remains volatile", "mixed signals"
-- Flag data limitations inline with `(estimated)` or `(est.)` badges
-- Prediction market / Polymarket odds cited as probability % (e.g. "67% Yes"), never as prices
+- Flag data limitations inline with `<span class="est-badge">EST</span>` badges
+- Live MCP data gets `<span class="live-badge">LIVE</span>` next to section titles
+- Prediction market odds cited as probability % (e.g. "62% Yes"), never as prices
 
-### HTML Output Format
-Render as a styled HTML file with this color system:
-- Background: `#F4F6FB` | Body text: `#1a1a2e`
-- Header + TL;DR: dark navy `#1B3A6B` / `#243F70`
-- Analysis blocks: blue left border `#185FA5`, background `#EBF3FC`
-- Geopolitical alerts: amber left border `#EF9F27`, background `#FEF3E0`
-- Prediction market section: green left border `#3B6D11`, background `#EAF3DE`
-- Positive values: `#3B6D11` | Negative values: `#A32D2D`
-- LIVE data badges: green `#D4EDDA` text `#3B6D11`
-- Estimated data badges: amber `#FFF3CD` text `#856404`
-
-### Required CSS classes (use consistently)
-```css
-.analysis-block  /* blue left-border analysis callout */
-.geo-alert       /* amber left-border geopolitical/risk alert */
-.pred-block      /* green left-border prediction market callout */
-.implication     /* ⚡ Implication footer for each section */
-.level-box       /* 4-column key levels grid */
-.two-col         /* 2-column card grid */
-.badge-live      /* green LIVE badge */
-.badge-est       /* amber estimated badge */
-.badge-vol       /* red Vol Spike badge */
-.badge-event     /* dark red event badge (earnings, votes, etc.) */
-.pos / .neg / .neutral  /* colored change values */
-```
+### HTML Structure (in order)
+1. `<head>` with Inter + JetBrains Mono Google Fonts preconnect/link
+2. Full `<style>` block (copy from 2026-05-15 template)
+3. `<body>` → directly `<div class="page-wrap">` (NO back-nav bar)
+4. `.header` with title "The Morning Edge ☀️", date, reading time, conviction badge
+5. `.catalyst-banner` (if major event day) — dark red, single line
+6. `.toc-strip` with 8 anchor links (#s1 through #s8)
+7. `.tldr` with thesis paragraph
+8. `.container` wrapping all 8 sections
+9. `.footer` with data sources
 
 ### Title
-The HTML header title must read: **"The Morning Edge ☀️"** (with sun emoji after the name).
-The `<title>` tag must also include the ☀️ emoji.
+HTML `<title>` tag: `The Morning Edge ☀️ - [DD Month YYYY]`
+Header `<h1>`: `The Morning Edge &#9728;&#65039;` (renders as "The Morning Edge ☀️")
 
-### Back navigation
-Always include at the very top before `.page-wrap`:
-```html
-<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;">
-  <a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">← All Briefings</a>
-</div>
-```
-
-### File naming & saving
-Save as `market-briefing.html` in `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\`
-Use today's actual date. HTML only — no PDF.
+### File saving
+Save to: `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\market-briefing.html`
 
 ---
 
 ## Section Order & Requirements
 
-Run sections in this order. Every section MUST contain a stated position/view.
+Every section MUST contain a stated position/view. Use the May 15 template's exact structure.
 
 ### 1. 🌍 Global Macro Snapshot
-Analysis: What is the single dominant macro variable today? State the path of least resistance.
-Include RBA/APAC context if any rate decisions or data releases are due.
-Table: SPX, NDX, Dow, VIX, ASX 200, Nikkei, Hang Seng, 10Y yield, 30Y yield, DXY, Gold, WTI — level, 1D, read.
-Flag any prediction market signal that contradicts or confirms the macro view.
-⚡ Implication: One sentence on positioning.
+- Bold one-sentence thesis (dominant macro variable today)
+- 3-column TradingView grid: SPX, US 10Y (or WTI), DXY
+- Table: SPX, Nasdaq 100, Dow, ASX 200, Nikkei, Hang Seng, VIX, 30Y, 10Y, DXY, Gold, WTI
+- `.analysis` block with deeper context
+- `.implication implication--macro` footer
 
 ### 2. 📈 Equities & Sector Rotation
-Analysis: Risk-on or risk-off? What is rotating and why? Take a view on whether the trend continues.
-Two-column cards: Overweight/Into vs Underweight/Avoid with specific reasoning.
-Top Volume Table: Top 8–10 highest-volume stocks. Show: Ticker | Sector | Price | Change% | Volume | Driver.
-Bold any unusual volume spikes (>2x average) with a `Vol Spike` badge. State what the volume signals.
-Include earnings or calendar events with an `Event` badge.
-⚡ Implication: One sentence on the rotation trade.
+- Thesis
+- 2-col cards: Overweight (green dot) vs Underweight (red dot)
+- Top Volume Stocks table (8–10 rows) with Vol Spike / Event badges as appropriate
+- `.callout` for key signal
+- `.implication implication--equities`
 
 ### 3. 💹 Bitcoin & Crypto Markets
-Analysis: What is BTC's structural setup — accumulating or distributing? State a directional view.
-Use TrueNorth derivatives as the primary smart-money signal. Use Fear & Greed for sentiment.
-Callout box: Major developments from past 48h (ETF flows, regulatory actions, whale moves).
-Main table: BTC, ETH, SOL, XRP, HYPE, DOGE — price, 1D, 7D, funding (annualised), OI, 24h vol, MCap.
-Key Level Boxes (4-column): BTC Price / Fear & Greed / BTC Dominance / Short Liq Trigger
-Two-column cards:
-  Left — Derivatives detail: OI, funding, liquidation map, imbalance (from TrueNorth)
-  Right — ETF flow detail + whale intelligence (from web search)
-⚡ Implication: One sentence on the crypto trade.
+- Thesis (Wyckoff phase context: accumulation / markup / distribution / markdown)
+- 3-column TradingView grid: BTC/USD, ETH/USD, **Fear & Greed gauge** (third widget is a custom div with the gauge)
+- `.callout` for 48h developments
+- Crypto market table: BTC, ETH, SOL, XRP, HYPE, DOGE — Price, 1D, 7D, Funding (ann.), 24h Vol, OI, MCap
+- `.key-boxes` 4-column: BTC Key Levels, F&G, BTC Dominance, Short Liq Trigger
+- 2-col cards: Derivatives Detail (TrueNorth) / ETF & Whale Intelligence
+- `.implication implication--crypto`
 
-### 4. 🎯 Prediction Market Intelligence
-Analysis: What are prediction markets signalling that price action and media aren't?
-Lead with what the volume data shows — where are bettors putting the most money today?
-Top Markets Table: Top markets by volume. Columns: Market Name | Category | Leading Outcome | Odds | Volume
-Flag estimated data clearly. Note Polymarket timeout if it occurred.
-Two-column cards: Macro/Geopolitical markets (Left) vs Crypto/Tech markets (Right)
-⚡ Implication: One sentence on what prediction markets are pricing that traditional markets aren't.
+### 4. ⚖️ Regulatory & Legal Radar
+- Thesis (active bills/rulemakings today)
+- 2-col cards: Active Legislation / Today's Decision Points
+- `.implication implication--reg`
 
 ### 5. 🤖 AI & Semiconductor Watch
-Analysis: AI capex supercycle accelerating or showing fatigue? Take a view on NVDA and semis.
-Two-column cards: Key stock/event detail / Broader landscape (TSMC, AMD, Broadcom, export controls)
-⚡ Implication: One sentence on the trade.
+- Thesis on AI capex cycle (accelerating/broadening/fatiguing)
+- 2-col cards: Key earnings/movers / Broader landscape
+- `.learn-block` purple for educational context
+- `.implication implication--ai`
 
-### 6. 🌐 Geopolitical Calendar
-Amber alert boxes: One box per active risk event.
-For each: explain the TRANSMISSION MECHANISM (how it's moving markets) + what the reversal looks like.
-Don't just state the event — explain exactly how it flows through to asset prices.
+### 6. 🎯 Prediction Market Intelligence
+- Thesis on what prediction markets signal vs equity markets
+- Top Markets by Volume table (8–10 rows)
+- `.pred-block` for trending
+- 2-col cards: Macro & Geopolitical / Crypto & Tech
+- `.implication implication--pred`
 
-### 7. 🔭 Today's Watchlist
-Exactly 5 items. Format: numbered list with bold title, level/event, one sentence on why it matters today.
-Items should be specific and actionable — a price level, a scheduled event, or a data release.
+### 7. 🌐 Geopolitical Calendar
+- 3–5 `.geo-alert` blocks (amber). Each has:
+  - **Status:** current state
+  - **Transmission Mechanism:** how it flows to asset prices
+  - **Reversal:** what signal would change the read
+- `.implication implication--geo`
 
----
-
-## Source Priority
-
-### Crypto Derivatives & Sentiment
-1. TrueNorth MCP (`mcp__truenorth__derivatives_analysis`) — OI, funding, liquidation map (PRIMARY)
-2. CoinGecko MCP (`mcp__coingecko__execute`) — prices, market caps, volumes (PRIMARY)
-3. Velo.xyz (browser) — CVD per exchange, basis (use only if TrueNorth doesn't cover it)
-4. CoinGlass (browser) — Fear & Greed, dominance (use only if not available via web search)
-
-### Prediction Markets
-1. prediction-markets-mcp (`mcp__prediction-markets-mcp__get-prediction-markets`) — PRIMARY
-2. polymarketanalytics.com (browser) — if MCP fails
-3. Web search for Polymarket data — fallback if all above fail; flag as estimated
-
-### Market Indices & Equities
-1. TrueNorth MCP (`mcp__truenorth__market_index_price` + `mcp__truenorth__stock_price_snapshot`) — PRIMARY
-2. Web search (Reuters, CNBC, Yahoo Finance) — for context and news drivers
-
-### Macro & News
-1. WebSearch — for news, context, earnings, geopolitical events
-2. WebFetch Yahoo Finance — for top volume stocks
+### 8. 🔭 Today's Watchlist
+- Exactly 5 numbered items in an `<ol>`
+- Each: bold title, level/event, one specific actionable sentence
 
 ---
 
@@ -221,8 +194,10 @@ Items should be specific and actionable — a price level, a scheduled event, or
 - Vague language ("markets face uncertainty", "crypto remains volatile")
 - Sections with no stated view
 - Generic summaries without specific data points
+- **The "← All Briefings" back-nav bar** (removed 2026-05-20)
+- Using the older April template style (no Inter font, no TOC, no TradingView widgets)
 - Skipping the liquidation map data from TrueNorth derivatives
 - Skipping the Top Volume Stocks table — mandatory every briefing
 - Skipping the Prediction Market section even if data is estimated
-- Citing paywall bypass tool — always cite the original publication
 - Using the browser when MCP tools can provide the same data
+- Citing paywall bypass tools — always cite the original publication
