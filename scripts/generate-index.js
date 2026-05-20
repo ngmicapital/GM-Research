@@ -219,7 +219,7 @@ function extractBriefingMeta(filePath, key) {
       const found = new Set();
       let m;
       while ((m = tagRe.exec(html))) {
-        const val = (m[1] || m[2] || '').trim();
+        const val = stripHtml((m[1] || m[2] || '').trim());
         if (!val) continue;
         // header-category may be "History · Biography" — split into individual tags
         if (val.includes('·')) {
@@ -841,7 +841,7 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
   e.briefings.forEach(key => {
     const m = BRIEFING_META[key];
     const filePath = path.join(BRIEFINGS_DIR, e.date, m.filename);
-    const { headline, preview } = extractBriefingMeta(filePath, key);
+    const { headline, preview, tags } = extractBriefingMeta(filePath, key);
     const warn = (msg) => { console.warn(`  ⚠️  [${e.date}/${key}] ${msg}`); issues++; };
     if (!headline)                                    warn('EMPTY headline — falling back to default');
     if (headline.length < 15)                         warn(`SHORT headline (${headline.length} chars): "${headline}"`);
@@ -849,6 +849,7 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
     if (preview.length > 190)                         warn(`LONG preview (${preview.length} chars) — may overflow card`);
     if (/&[a-zA-Z]+;/.test(headline))                warn(`RAW HTML ENTITY in headline: "${headline}"`);
     if (/&[a-zA-Z]+;/.test(preview))                 warn(`RAW HTML ENTITY in preview: "${preview}"`);
+    tags.forEach(t => { if (/&[a-zA-Z]+;/.test(t)) warn(`RAW HTML ENTITY in tag: "${t}"`); });
     SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
   });
 });

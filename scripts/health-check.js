@@ -31,6 +31,17 @@ const DEPLOY_YML      = path.join(ROOT, '.github', 'workflows', 'deploy.yml');
 const TODAY = new Date().toISOString().slice(0, 10);
 const REPORT_FILE = path.join(REPORTS_DIR, `${TODAY}.json`);
 
+// ─── Minimal HTML entity decoder (for raw-HTML tag text) ─────────────────────
+function decodeEntities(s) {
+  return s
+    .replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&middot;/g, '·')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&hellip;/g, '…').replace(/&ldquo;/g, '"').replace(/&rdquo;/g, '"')
+    .replace(/&lsquo;/g, '‘').replace(/&rsquo;/g, '’')
+    .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#([0-9]+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)));
+}
+
 // ─── Tag extraction (mirrors generate-index.js logic) ─────────────────────────
 
 const TAG_PATTERNS = {
@@ -61,7 +72,7 @@ function extractTags(html, key) {
   const found = new Set();
   let m;
   while ((m = tagRe.exec(html))) {
-    const val = (m[1] || m[2] || '').trim();
+    const val = decodeEntities((m[1] || m[2] || '').trim());
     if (!val) continue;
     // header-category may be "History · Biography" — split into individual tags
     if (val.includes('·')) {
