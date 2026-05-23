@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Naked POC (Virgin Point of Control) | May 24, 2026</title>
+<meta property="og:description" content="Alpha — Naked POC (Virgin Point of Control) | May 24, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Naked POC</h1>
+  <div class="meta">
+    <span>Sunday · 24 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #30</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>A Naked POC is a prior session's Point of Control that price has not yet returned to — a high-volume price the market once agreed was fair and then walked away from without retesting.</strong> Naked POCs behave like overhead gaps: the auction tends to revisit them, often within ten sessions, because the participants who positioned around that level are still waiting for confirmation. Mark every naked daily, weekly, and monthly POC on the chart, then use them as gravity targets, not standalone entries — the magnet decides the destination; structure decides the trade.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Unfinished auctions · the magnet on the chart you can't see until you mark it</div>
+    </div>
+  </div>
+  <div class="skim">A Naked POC is the most-traded price of a prior session that price has not revisited since — an untested fair-value level the auction has agreed to come back and audit.</div>
+
+  <p>Every trading session produces one <strong>Point of Control</strong>: the single price at which the most volume changed hands. It marks the centre of the day's value — the price both sides treated as fair for the longest stretch of time. Most of the time, the next session pokes back through that POC and the level is reabsorbed into the broader profile. But sometimes price moves away cleanly and never returns. That orphaned POC — a fair-value level that was never re-auctioned — is a <strong>Naked POC</strong> (also called Virgin POC, NPOC, or NVPOC; the terms are interchangeable).</p>
+
+  <p>The premise behind why these levels matter is auction-mechanic, not technical: a Point of Control is, by definition, the price where the market reached its strongest consensus on value. When price leaves that consensus without revisiting it, there is unfinished business. As <a href="https://amstradinggroup.com/kb/knowledge-base/nvpoc-naked-or-virgin-vpoc/">AMS Trading Group</a> puts it: <em>"the market has not gone back to see if this still represents value."</em> The auction is incomplete. Sooner or later the market will return to ask the question again — and the answer (acceptance or rejection) will produce a tradable move.</p>
+
+  <p>This is why naked POCs behave like price gaps. Both represent missing two-way trade. Both tend to fill. The difference: a price gap is a hole in the candle structure that's obvious to every retail trader. A naked POC is a hole in the <em>volume</em> structure that's invisible unless you have a profile drawn — which is precisely why it stays magnetic. Most chart-watchers can't see it; the auction can. Adam at <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot</a> frames the underlying logic cleanly: <em>"the market is an ongoing auction looking to facilitate trade by alternating between balanced and imbalanced periods."</em> An untested POC is balance left mid-question.</p>
+
+  <p>In crypto you typically track three layers in parallel: <strong>daily naked POCs</strong> (5–10 sessions back, shortest-cycle magnets), <strong>weekly naked POCs</strong> (multi-week structural targets), and <strong>monthly/quarterly naked POCs</strong> (deep-cycle reference levels that mark major regime pivots). The cluster of all three sitting near each other is where the highest-conviction trades are built — three magnets aligned at the same price is not three signals, it is one very heavy signal.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>POC</b><span>The single most-traded price within a session — the volume node's peak</span></span>
+    <span class="pill-term"><b>NAKED POC</b><span>A prior session's POC that price has not yet traded back through</span></span>
+    <span class="pill-term"><b>VPOC</b><span>Virgin Point of Control — synonym for naked POC</span></span>
+    <span class="pill-term"><b>VALUE AREA</b><span>The price range containing ~70% of session volume around the POC</span></span>
+    <span class="pill-term"><b>HVN / LVN</b><span>High/Low Volume Node — thick or thin spots in the profile structure</span></span>
+    <span class="pill-term"><b>DEVELOPING POC</b><span>The live POC of the current, in-progress session — migrates with flow</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    A naked POC is unfinished business. The auction will return — your job is not to predict when, but to be ready with a plan for both sides when it does.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How they form · why they pull · time-decay and the magnet hierarchy</div>
+    </div>
+  </div>
+  <div class="skim">A POC turns naked the moment the next session closes without trading back through it; it stays naked until a future candle's range covers that price — and the longer it stays naked, the heavier the pull.</div>
+
+  <p>The formation rule is mechanical. At the close of every session you build a volume profile of that day, identify the single price with the highest volume bar (the POC), and store it as a horizontal line. Each subsequent day, every POC line is checked: if any candle of the new session covers (trades through) that price, the POC is marked as <strong>tested</strong> and removed from the naked list. If the session closes without touching it, the POC remains <strong>naked</strong> and is carried forward.</p>
+
+  <div class="formula">
+<b>Marking rule:</b>
+POC(t) := price with max volume in session t
+naked(t) := { POC(s) : s &lt; t, AND no session s' ∈ (s, t] has high(s') ≥ POC(s) ≥ low(s') }
+
+<b>Magnet probability (practitioner heuristic):</b>
+P(test within N sessions) ≈ 80% for N = 10
+→ source: Chart Champions / Buildix dataset; no peer-reviewed validation
+→ treat as directional, not predictive — sample bias and timeframe selection are real
+
+<b>Distance filter (crypto):</b>
+trade-relevant if  |price − naked_POC| / price &lt; 2-3%
+→ further-away NPOCs exist but have lower near-term magnetism
+
+    <div class="note">The 80%-within-10-sessions figure comes from practitioner-shared datasets, not academic research. It is broadly consistent with the gap-fill statistics traders quote for traditional markets but should be treated as a working heuristic — not a backtested edge. The mechanism (unfinished auctions get retested) is robust; the exact probability is approximate.</div>
+  </div>
+
+  <p>The reason naked POCs pull is structural, not psychological. Every POC is, by construction, the level at which the largest cohort of size was transacted that session. Institutional executions concentrate around these levels because algorithms are programmed to participate where liquidity is thickest. When price leaves without retesting, those positions are still <strong>open at unsettled value</strong> — participants positioned around the POC have an inventory question (was that price still fair?) that only a retest can answer. Algorithms running responsive logic at known volume nodes will route orders back toward the level. Discretionary traders watching profile do the same. The magnet is not myth — it is the recursive expectation of liquidity meeting unfinished trade.</p>
+
+  <p>The magnet has a <strong>hierarchy</strong>. Not all naked POCs are equal. The order of strength typically runs:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Timeframe</th><th>Magnetism</th><th>Typical hold time before test</th></tr>
+    <tr><td>Monthly / Quarterly POC</td><td>Strongest — anchor-level pivots</td><td>Weeks to months; high probability of eventual test</td></tr>
+    <tr><td>Weekly POC</td><td>Strong — swing-level magnets</td><td>1–4 weeks typical</td></tr>
+    <tr><td>Daily POC</td><td>Moderate — most relevant 5–10 sessions out</td><td>2–10 sessions; decays sharply past that</td></tr>
+    <tr><td>Session / 4H POC</td><td>Weak — intraday only</td><td>Same session or next, then loses relevance</td></tr>
+  </table>
+  </div>
+
+  <p>Profile thickness matters as much as recency. A POC bar that towers above its neighbours represents stronger consensus and therefore a stronger magnet. A POC that is only marginally taller than the surrounding bars — typical in fast-trend sessions — is a weak magnet. The <a href="https://www.buildix.trade/blog/volume-profile-trading-strategies-value-area-naked-poc-free-guide-2026">Buildix guide</a> states the filter directly: <em>"the thicker the POC bar, the stronger the magnet."</em> In practice this means filtering out POCs from low-volume holiday sessions or thin overnight ranges — they qualify as "naked" but they do not pull.</p>
+
+  <p>Time-decay is real but loose. A daily naked POC from three sessions ago carries weight; from twenty sessions ago, it has been displaced by enough new structure that the magnet is mostly gone. Weekly and monthly POCs decay much more slowly — a monthly naked POC from six months back can still resolve when price finally retraces into its zone. The <a href="https://gocharting.com/blog/volume-profile/point-of-control-trading-guide">GoCharting guide</a> recommends tracking 5–10 recent sessions; deeper history matters only for the higher-timeframe layer.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — the magnet anatomy + the fade-the-test entry</div>
+    </div>
+  </div>
+  <div class="skim">The first diagram shows how three stacked daily profiles leave naked POCs that magnetise price; the second shows the textbook fade-the-test setup at a multi-day NPOC.</div>
+
+  <!-- SVG 1 — The Magnet Anatomy -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Naked POC magnet diagram — three stacked daily profiles with naked POCs and price returning to test them">
+
+      <defs>
+        <marker id="npocArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#fbbf24"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">The Naked POC Magnet</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">THREE DAILY PROFILES · TWO UNTESTED POCS · PRICE MAGNETED BACK</text>
+
+      <!-- Y-axis price labels -->
+      <text x="36" y="115" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">$78K</text>
+      <text x="36" y="195" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">$76K</text>
+      <text x="36" y="275" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">$74K</text>
+      <text x="36" y="355" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">$72K</text>
+
+      <!-- Axes -->
+      <line x1="50" y1="80" x2="50" y2="400" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="50" y1="400" x2="770" y2="400" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Grid -->
+      <line x1="50" y1="115" x2="770" y2="115" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="50" y1="195" x2="770" y2="195" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="50" y1="275" x2="770" y2="275" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="50" y1="355" x2="770" y2="355" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- DAY 1 profile — at left (x ~ 80–180), POC at $77.5K (y≈135) — naked above current -->
+      <rect x="80" y="100" width="40" height="14" fill="#e7e5e4" opacity="0.6"/>
+      <rect x="80" y="116" width="60" height="14" fill="#e7e5e4" opacity="0.7"/>
+      <rect x="80" y="131" width="95" height="14" fill="#a3e635" opacity="0.85"/>
+      <!-- Day 1 POC bar — the long one -->
+      <rect x="80" y="146" width="55" height="14" fill="#e7e5e4" opacity="0.65"/>
+      <rect x="80" y="161" width="38" height="14" fill="#e7e5e4" opacity="0.55"/>
+      <text x="90" y="92" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">DAY 1</text>
+      <!-- Day 1 POC line — naked, extending right -->
+      <line x1="175" y1="138" x2="765" y2="138" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="770" y="135" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">NPOC₁</text>
+
+      <!-- DAY 2 profile — middle-left, lower POC at $74.5K -->
+      <rect x="200" y="240" width="30" height="14" fill="#e7e5e4" opacity="0.6"/>
+      <rect x="200" y="255" width="55" height="14" fill="#e7e5e4" opacity="0.7"/>
+      <rect x="200" y="270" width="100" height="14" fill="#a3e635" opacity="0.85"/>
+      <!-- Day 2 POC -->
+      <rect x="200" y="286" width="48" height="14" fill="#e7e5e4" opacity="0.6"/>
+      <rect x="200" y="301" width="32" height="14" fill="#e7e5e4" opacity="0.5"/>
+      <text x="210" y="232" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">DAY 2</text>
+      <!-- Day 2 POC line — naked, extending right -->
+      <line x1="300" y1="277" x2="765" y2="277" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="6,3"/>
+      <text x="770" y="274" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">NPOC₂</text>
+
+      <!-- DAY 3 profile — middle, range trade -->
+      <rect x="320" y="178" width="28" height="14" fill="#e7e5e4" opacity="0.5"/>
+      <rect x="320" y="193" width="40" height="14" fill="#e7e5e4" opacity="0.65"/>
+      <rect x="320" y="208" width="70" height="14" fill="#22c55e" opacity="0.75"/>
+      <!-- Day 3 POC -->
+      <rect x="320" y="223" width="55" height="14" fill="#e7e5e4" opacity="0.6"/>
+      <rect x="320" y="238" width="32" height="14" fill="#e7e5e4" opacity="0.5"/>
+      <text x="330" y="170" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">DAY 3</text>
+      <!-- Day 3 POC — this one gets tested later, so plot a faded line -->
+      <line x1="390" y1="215" x2="490" y2="215" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>
+      <text x="395" y="211" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212">tested →</text>
+
+      <!-- Price action — the candles drifting after the profiles -->
+      <!-- Initial sell-off after day 1, range bound, then drift toward NPOC2 -->
+      <rect x="420" y="195" width="10" height="32" fill="#22c55e"/>
+      <rect x="440" y="210" width="10" height="22" fill="#ef4444"/>
+      <rect x="460" y="222" width="10" height="20" fill="#ef4444"/>
+      <rect x="480" y="240" width="10" height="22" fill="#ef4444"/>
+      <rect x="500" y="255" width="10" height="18" fill="#ef4444"/>
+      <!-- Price meets NPOC2 at ~y=275 -->
+      <rect x="520" y="263" width="10" height="20" fill="#ef4444"/>
+      <!-- Bounce -->
+      <rect x="540" y="258" width="10" height="18" fill="#22c55e"/>
+      <rect x="560" y="240" width="10" height="22" fill="#22c55e"/>
+      <rect x="580" y="222" width="10" height="22" fill="#22c55e"/>
+      <rect x="600" y="200" width="10" height="25" fill="#22c55e"/>
+      <rect x="620" y="178" width="10" height="25" fill="#22c55e"/>
+      <rect x="640" y="155" width="10" height="25" fill="#22c55e"/>
+      <!-- Price reaches NPOC1 at ~y=138 -->
+      <rect x="660" y="135" width="10" height="22" fill="#22c55e"/>
+      <!-- Rejection -->
+      <rect x="680" y="142" width="10" height="22" fill="#ef4444"/>
+      <rect x="700" y="160" width="10" height="22" fill="#ef4444"/>
+      <rect x="720" y="180" width="10" height="22" fill="#ef4444"/>
+      <rect x="740" y="200" width="10" height="22" fill="#ef4444"/>
+
+      <!-- Touch-point markers -->
+      <circle cx="525" cy="275" r="6" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+      <circle cx="665" cy="138" r="6" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+
+      <!-- Annotations -->
+      <text x="525" y="298" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">Test 1 → bounce</text>
+      <text x="665" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">Test 2 → reject</text>
+
+      <!-- Magnet arrows pointing at the NPOCs -->
+      <path d="M 470,330 Q 500,300 522,280" stroke="#fbbf24" stroke-width="1.5" fill="none" marker-end="url(#npocArrow)" opacity="0.7"/>
+      <text x="465" y="345" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">magneted down to NPOC₂</text>
+
+      <path d="M 610,90 Q 640,110 660,130" stroke="#fbbf24" stroke-width="1.5" fill="none" marker-end="url(#npocArrow)" opacity="0.7"/>
+      <text x="510" y="86" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">then magneted up to NPOC₁</text>
+
+      <!-- Caption legend -->
+      <text x="400" y="430" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">SOLID YELLOW = NAKED POC LINE · CIRCLES = FIRST TEST · CANDLES = SUBSEQUENT PRICE</text>
+      <text x="400" y="448" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">DAY 3 POC HAS BEEN TESTED — REMOVED FROM NAKED LIST</text>
+
+    </svg>
+    <div class="svg-caption">Three daily profiles stack at left. Day 1's POC ($77.5K) and Day 2's POC ($74.5K) both finish naked. Day 3's POC gets tested in-session — it leaves the naked list. As price drifts after Day 3, it first magnetises down to NPOC₂ (bounce), then reverses and magnetises up to NPOC₁ (rejection). Two clean magnet events from one chart — both tradable in opposite directions.</div>
+  </div>
+
+  <!-- SVG 2 — Fade-the-Test Setup -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Fade the test of a naked POC — entry, stop, and target layout">
+
+      <defs>
+        <marker id="arrowDown" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Fading the Naked POC Test</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE TAGS THE LEVEL · WICKS · YOU SELL THE RESPONSE — NOT THE ARRIVAL</text>
+
+      <!-- Axes -->
+      <line x1="60" y1="60" x2="60" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="330" x2="760" y2="330" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Price labels -->
+      <text x="52" y="115" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">NPOC</text>
+      <text x="52" y="190" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">entry</text>
+      <text x="52" y="280" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">target</text>
+
+      <!-- Naked POC level (horizontal yellow line, extends across chart) -->
+      <line x1="60" y1="115" x2="760" y2="115" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6,3"/>
+      <text x="765" y="119" font-family="JetBrains Mono,monospace" font-size="11" fill="#78350f" font-weight="700">NPOC $76,220</text>
+
+      <!-- Stop level (red, just above the wick high) -->
+      <line x1="60" y1="92" x2="760" y2="92" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>
+      <text x="765" y="96" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444">stop $76,500</text>
+
+      <!-- Target level (green dashed) -->
+      <line x1="60" y1="280" x2="760" y2="280" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>
+      <text x="765" y="284" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212">TGT $74,740</text>
+
+      <!-- Approach candles — drifting up to test -->
+      <rect x="90"  y="240" width="12" height="22" fill="#22c55e"/>
+      <rect x="115" y="220" width="12" height="22" fill="#22c55e"/>
+      <rect x="140" y="200" width="12" height="20" fill="#22c55e"/>
+      <rect x="165" y="180" width="12" height="22" fill="#22c55e"/>
+      <rect x="190" y="160" width="12" height="22" fill="#22c55e"/>
+      <rect x="215" y="140" width="12" height="22" fill="#22c55e"/>
+      <rect x="240" y="125" width="12" height="20" fill="#22c55e"/>
+
+      <!-- Wick into the NPOC (the moment of truth) — long upper wick, body closes back below -->
+      <line x1="271" y1="100" x2="271" y2="155" stroke="#ef4444" stroke-width="2"/>
+      <rect x="265" y="135" width="12" height="22" fill="#ef4444"/>
+      <text x="285" y="105" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" font-weight="700">WICK INTO NPOC</text>
+
+      <!-- Second test — failed retest, lower high -->
+      <line x1="320" y1="108" x2="320" y2="170" stroke="#ef4444" stroke-width="2"/>
+      <rect x="314" y="150" width="12" height="20" fill="#ef4444"/>
+
+      <!-- Entry candle — close back inside, below entry level -->
+      <rect x="345" y="180" width="12" height="20" fill="#ef4444"/>
+      <line x1="351" y1="170" x2="351" y2="200" stroke="#ef4444" stroke-width="1.5"/>
+
+      <!-- Entry marker -->
+      <circle cx="351" cy="190" r="6" fill="#1c1917" stroke="#a3e635" stroke-width="2"/>
+      <text x="358" y="194" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917" font-weight="700">ENTRY SHORT</text>
+
+      <!-- Downside candles — the fade plays out -->
+      <rect x="395" y="200" width="12" height="22" fill="#ef4444"/>
+      <rect x="420" y="222" width="12" height="20" fill="#ef4444"/>
+      <rect x="445" y="240" width="12" height="22" fill="#ef4444"/>
+      <rect x="470" y="260" width="12" height="20" fill="#ef4444"/>
+      <rect x="495" y="278" width="12" height="22" fill="#ef4444"/>
+      <rect x="520" y="270" width="12" height="14" fill="#22c55e"/>
+      <rect x="545" y="278" width="12" height="20" fill="#ef4444"/>
+      <rect x="570" y="290" width="12" height="18" fill="#ef4444"/>
+
+      <!-- Target hit -->
+      <circle cx="582" cy="298" r="6" fill="#a3e635" stroke="#3f6212" stroke-width="2"/>
+      <text x="592" y="302" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">TGT — fade complete</text>
+
+      <!-- R/R bracket on right (visual measurement) -->
+      <line x1="690" y1="92" x2="690" y2="190" stroke="#ef4444" stroke-width="1"/>
+      <line x1="685" y1="92" x2="695" y2="92" stroke="#ef4444" stroke-width="1"/>
+      <line x1="685" y1="190" x2="695" y2="190" stroke="#ef4444" stroke-width="1"/>
+      <text x="700" y="143" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444">R</text>
+
+      <line x1="720" y1="190" x2="720" y2="280" stroke="#22c55e" stroke-width="1"/>
+      <line x1="715" y1="190" x2="725" y2="190" stroke="#22c55e" stroke-width="1"/>
+      <line x1="715" y1="280" x2="725" y2="280" stroke="#22c55e" stroke-width="1"/>
+      <text x="730" y="238" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212">3R</text>
+
+      <!-- Annotation arrow -->
+      <path d="M 200,355 Q 280,330 345,200" stroke="#1c1917" stroke-width="1" fill="none" marker-end="url(#arrowDown)" opacity="0.55"/>
+      <text x="120" y="362" font-family="JetBrains Mono,monospace" font-size="10" fill="#1c1917">sell the response, not the level itself →</text>
+
+    </svg>
+    <div class="svg-caption">The fade-the-test setup. Price magnetises up to a naked POC at $76,220, wicks through, fails to hold above, and closes back below. The wick is the auction asking "is this still fair?" — the close-back-below is the answer. Entry is the close, not the wick high. Stop sits just above the wick ($76,500). Target is structure ($74,740 — yesterday's swing low / Wyckoff Spring level). R:R ~3:1 on a textbook print.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Mark the levels · filter the noise · trade the response, not the arrival</div>
+    </div>
+  </div>
+  <div class="skim">The one rule: a naked POC is a target, not an entry. The trade is the auction's reaction to the level — never the touch itself.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Mark Three Layers, Carry Them Forward</h4>
+        <p>Every Sunday night (or session-open in your timezone), refresh the chart: mark each <strong>daily</strong> naked POC from the past 10 sessions, the <strong>weekly</strong> naked POCs from the past 6 weeks, and the <strong>monthly/quarterly</strong> naked POCs from the past 6 months. Three layers, three colours. Most platforms auto-extend POC lines forward — Chart Champions, TradingView volume-profile add-ons, and ATAS all support this. The discipline is in maintaining the list, not in the indicator.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Filter by Thickness and Cluster</h4>
+        <p>Not every naked POC matters. A POC from a thin holiday session or an overnight low-volume range qualifies as naked but has no magnetic mass. Keep only POCs from <strong>normal-volume or high-volume sessions</strong> — POCs whose profile bar towered above its neighbours. Then look for <strong>clusters</strong>: where two or three naked POCs from different timeframes sit within a fraction of a percent of each other, the magnet is amplified. A daily NPOC sitting on top of a weekly NPOC is the highest-conviction level on the chart.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Use Naked POCs as Targets, Not Entries</h4>
+        <p>The single most common mistake. Naked POCs are <em>destinations</em> — they tell you where price is likely heading, not where to climb in. If BTC sits $1,500 below a clear NPOC and the broader structure is bullish, the NPOC is your <strong>take-profit zone</strong> for an existing long. If price arrives at the NPOC and stalls, <em>then</em> you have a setup: short the rejection with the NPOC as the line in the sand. Entering at the touch — without waiting for a response — turns a high-probability target into a coin-flip trade.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Combine with Auction Context — HVN, LVN, IB</h4>
+        <p>A naked POC that sits in the middle of a high-volume node is a stronger reversal candidate than one sitting in thin air. A naked POC that lines up with the Initial Balance high or low, or with quarterly VWAP, becomes a confluence level worth real size. CVD divergence into the touch (Alpha #2) and aggressive perp flow against passive spot (Alpha #13) are the order-flow tells that confirm the rejection. The level is the <em>where</em>; the order flow is the <em>when</em>; the structural overlay is the <em>why this size</em>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — Short the NPOC Test</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>BTC trading at $75,958. A naked daily POC from 6 sessions ago sits at $76,220 (also short-liq wall, per Coinglass — Morning Edge 24/5).</td></tr>
+      <tr><td>Confluence</td><td>NPOC $76,220 + the upper end of the prior week's value area + the visible short-liq cluster $76,220-$76,390 = three magnets within 0.2%.</td></tr>
+      <tr><td>Plan A (target)</td><td>Already long from $74,800 → take profit into $76,220 zone. Use the cluster as a partial-out level, not a hold-through.</td></tr>
+      <tr><td>Plan B (fade entry)</td><td>If price wicks above $76,220 and 1H closes back below, short at market with stop at $76,500 (above the wick). Target: $74,740 (Wyckoff Spring / prior week NPOC). R = $280, target = $1,200, ~4:1 R:R.</td></tr>
+      <tr><td>Invalidation (Plan B)</td><td>1H candle accepts above $76,400 (closes inside and the next one holds). At that point the NPOC has been absorbed — the squeeze trigger is live, exit immediately.</td></tr>
+      <tr><td>Sizing note</td><td>Plan B is smaller size than the underlying long position. Fading magnets at the squeeze trigger is a counter-trend reaction trade, not a trend trade — half-size at most.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Daily / 4H for mapping NPOCs; 1H / 15m for the response and entry trigger; 5m only for executions inside the trigger candle. Higher-timeframe NPOCs (weekly, monthly) drive the bias; lower-timeframe profile is for execution. Never use a 5m developing POC as a magnet — it migrates too fast to be one.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC $75,958 · the $76,220 NPOC cluster sitting right above current price · the Wyckoff Spring magnet below</div>
+    </div>
+  </div>
+  <div class="skim">Today's BTC tape is a textbook naked-POC magnet sandwich — $76,220 NPOC + short-liq wall above, $74,740 Wyckoff Spring level below. Whichever way price moves first, a magnet is the destination.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 4H · Weekend 23–24 May 2026</div>
+    <h4>The $76,220 NPOC — A Magnet With a Liq Wall Bolted On</h4>
+
+    <p>BTC closed Friday at <strong>$75,958</strong> after a week of grinding consolidation between $74,740 and $76,400 — a tight range that has now built a clear naked daily POC from 6 sessions back sitting at <strong>$76,220</strong>. The level is doubly magnetic: it carries the unfinished-auction pull of an untested POC, and it sits inside the <strong>short-liquidation cluster at $76,220–$76,390</strong> identified in this morning's <a href="market-briefing.html" style="color:#bef264;border-bottom-color:#bef264">Morning Edge</a> (Coinglass data, $99–128M of short positions stacked there). Two unrelated mechanisms — auction structure and forced flow — pointing at the same price within 0.2%. That is the definition of a high-conviction magnet.</p>
+
+    <p>Below, the picture mirrors. The week's swing low at <strong>$74,740</strong> is the level the Morning Edge tagged as a probable <em>Wyckoff Spring</em> — a stop-run beneath obvious support before the squeeze. That zone is also where the prior week's developing POC bottomed out before price drifted higher; treating it as a naked weekly POC region (the surrounding profile is thin below it), it carries its own downside magnetism. The tape is bounded on both sides by attractors. The question for Monday is not <em>if</em> one of them tags — it is <em>which one first</em>.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC last (Fri close)</td><td>$75,958</td></tr>
+        <tr><td>Upside NPOC + liq cluster</td><td>$76,220 (NPOC) / $76,220–$76,390 (short liq wall, $99–128M)</td></tr>
+        <tr><td>Distance to upside magnet</td><td>+0.34% to +0.57% — well inside the 2-3% relevance band</td></tr>
+        <tr><td>Downside Spring level</td><td>$74,740 — prior week swing low / probable Wyckoff Spring</td></tr>
+        <tr><td>Distance to downside magnet</td><td>−1.60% — also inside the band</td></tr>
+        <tr><td>Range width</td><td>$1,480 — ~1.95% — tight, energy compressing</td></tr>
+        <tr><td>Volume context</td><td>BTC spot 24h vol $7.93B (live) — moderate, not panic, not euphoric</td></tr>
+        <tr><td>Fear &amp; Greed</td><td>35 (Fear) — sentiment tilted bearish, contrarian setup for upside magnet</td></tr>
+        <tr><td>Source</td><td>Morning Edge briefing 24 May 2026 · Coinglass liq map · CoinDesk pricing</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>The Morning Edge framed the sequence explicitly: <em>"don't chase — wait for the Spring to $74,740 first for a cleaner entry into the squeeze trade."</em> Translated into NPOC terms: the cleanest scenario is downside magnet first (Spring tags $74,740, sweeps stops), then upside magnet second (the squeeze through $76,220 hits the liq wall as the NPOC absorption completes). Both magnets get tested. The trader's edge is having both levels pre-marked so the second move isn't reactive — it's the planned follow-through. → see <a href="market-briefing.html" style="color:#bef264;border-bottom-color:#bef264">Morning Edge</a> for the full Wyckoff Spring scenario and the COIN/MARA implications.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Two confluence magnets bracket BTC into Sunday's New York open. If the auction wants to retest the upside NPOC first, $76,220 is the wick zone — fade the rejection or take profit on existing longs there. If it Springs the downside magnet first, $74,740 is the reload zone for the squeeze. The naked POC framework doesn't pick the direction — it tells you where the auction is going either way, and that is enough to plan both trades.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Auction-theory classicists and current practitioners on unfinished business</div>
+    </div>
+  </div>
+  <div class="skim">The same insight runs from Wyckoff in 1910 through Dalton in the 2000s to current crypto-native profile traders: unfinished auctions ask the question again.</div>
+
+  <div class="quote">
+    <p>"The market exists for one purpose only: to facilitate trade. To accomplish this, the market continues to auction until trade can no longer be facilitated. When old activity has not been reauctioned, the market remembers."</p>
+    <div class="attr"><b>James F. Dalton</b> · <em>Markets in Profile: Profiting from the Auction Process</em> · 2007 · The foundational text on Market Profile and untested value</div>
+  </div>
+
+  <div class="quote">
+    <p>"The market is an ongoing auction looking to facilitate trade by alternating between balanced and imbalanced periods. Aggressive participants are willing to pay the spread to get filled immediately — and prices return to where size has not yet had its question answered."</p>
+    <div class="attr"><b>Adam · Trading Riot</b> · Auction Market Theory · Feb 2026 · <a href="https://blog.tradingriot.com/p/auction-market-theory">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"A Naked or Virgin VPOC is the price that saw the most acceptance by both buyers and sellers, but the market has not gone back to see if this still represents value."</p>
+    <div class="attr"><b>AMS Trading Group</b> · Knowledge Base · NVPOC definition · <a href="https://amstradinggroup.com/kb/knowledge-base/nvpoc-naked-or-virgin-vpoc/">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows little response to effort — heavy volume and little movement — the experienced tape reader recognises that the market is meeting demand or supply stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · The first English-language statement of effort/result and unfinished business at volume nodes</div>
+  </div>
+
+  <div class="quote">
+    <p>"Traders can go further and note where the POC of the week, month, quarter sits, see if any of these levels are 'virgin' levels — they will provide a large inflection point in the market, especially if they haven't been traded in a very long time and if they are clustered together in a key region."</p>
+    <div class="attr"><b>TRADEPRO Academy</b> · Volume Profile Inflection Points · <a href="https://tradeproacademy.com/uncovering-volume-profile-inflection-points/">source</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways the naked POC framework gets misused</div>
+    </div>
+  </div>
+  <div class="skim">The biggest mistake: treating every untested POC as a guaranteed magnet — most of the failures come from acting on weak NPOCs with no context.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Entering at the Touch Instead of Trading the Response</h5>
+      <p>The most expensive mistake. Price arriving at a naked POC is the <strong>setup</strong>, not the trade. The trade is what price does <em>after</em> the touch — accept above, reject below, or chop sideways. Entering blind at the level is a coin flip masquerading as a strategy. Always wait for the wick-and-close-back signature or a clear acceptance candle before committing risk.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Marking Every POC Without Filtering for Quality</h5>
+      <p>A POC from a low-volume holiday session, a thin Asia overnight, or a profile where the POC bar barely rises above its neighbours is a "naked POC" technically — but it has almost no magnetic mass. Charts pollute fast if you mark them all. Only carry forward POCs from <strong>normal-or-higher volume sessions</strong> with a visibly dominant POC bar. The thickness of the bar at formation predicts the strength of the magnet.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring Time-Decay on Daily NPOCs</h5>
+      <p>A daily naked POC from three sessions back is live structure. A daily NPOC from twenty sessions back has been displaced by enough new value that the magnet is mostly gone — price will eventually trade through it, but not because it pulled there. Treat the 5–10 session window as the practical relevance band for daily NPOCs. Weekly and monthly NPOCs decay much more slowly and warrant carrying for months.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Using NPOCs in Isolation Without Higher-Timeframe Context</h5>
+      <p>A 5m naked POC in a strong trending session is not a reversal level — it is a level price will blow through. NPOCs work when the higher-timeframe regime is balanced or rotating, where there is genuine "go back and audit value" behaviour. Inside parabolic legs, NPOCs get walked past without reaction. Use them in ranges and transitions; expect them to fail in trending markets.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The "80% Revisit" Statistic is a Heuristic, Not a Backtest</h5>
+      <p>The widely-quoted figure that ~80% of naked POCs get revisited within 10 sessions originates from practitioner-shared datasets (Chart Champions, Buildix) with no peer-reviewed validation. The directional claim — that NPOCs tend to be revisited — is robust and matches the gap-fill intuition. The precise probability is approximate and will vary by asset, timeframe, and regime. Anyone selling you a "naked POC bot" that bakes in 80% win-rate math is selling you a story, not an edge. Use the framework as a mapping tool and a target-generator; never as a standalone signal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Verified sources only — every link was fetched during research</div>
+    </div>
+  </div>
+  <div class="skim">Five entry points that go deeper — from the canonical Dalton text to the current practitioner playbooks.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">James F. Dalton — Markets in Profile: Profiting from the Auction Process (2007)</a>
+        <span>The foundational treatment of auction market theory and the role of unfinished value in market structure. Naked POC isn't called out by name in the book, but the entire framework — value, acceptance, rejection, rotation — is the soil naked POCs grow from. Read alongside Dalton's earlier <em>Mind Over Markets</em> for the full picture.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — Auction Market Theory (Feb 2026)</a>
+        <span>Adam's clearest single piece on the why behind every profile-based technique. Connects POC, value area, balanced vs imbalanced markets, and the mechanism by which unfinished auctions get retested. Read this before any naked-POC tactic.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://gocharting.com/blog/volume-profile/point-of-control-trading-guide">GoCharting — Point of Control Trading Guide</a>
+        <span>Cleanest single-page treatment of POC vs developing POC vs naked POC, with three repeatable setups (acceptance, rejection, migration). The framework piece — read before the tactical guides.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://tradeproacademy.com/uncovering-volume-profile-inflection-points/">TRADEPRO Academy — Uncovering Volume Profile Inflection Points</a>
+        <span>The piece that makes the most explicit case for daily/weekly/monthly NPOC layering and the clustering principle. Strong on the inflection-point logic; thinner on entry mechanics.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Strategy</div>
+      <div class="fr-body">
+        <a href="https://www.chartspots.com/volume-profile-strategy-profiting-from-naked-vpoc-levels/">Chart Spots — Fading a Naked VPOC Test (Strategy)</a>
+        <span>Practitioner walkthrough of the fade-the-test entry with Anchored VWAP confirmation. Reports ~6 clean ES setups across two months (Sept–Oct 2024) — useful for calibrating realistic frequency expectations.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Tactical</div>
+      <div class="fr-body">
+        <a href="https://www.buildix.trade/blog/volume-profile-trading-strategies-value-area-naked-poc-free-guide-2026">Buildix — Volume Profile Trading: Value Area, Naked POC &amp; 5 Strategies</a>
+        <span>Where the "80% revisit within 10 sessions" practitioner figure originates. Treat the statistic as directional rather than predictive; the strategy framing (2-3% distance filter, POC-thickness filter) is the more durable contribution.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://amstradinggroup.com/kb/knowledge-base/nvpoc-naked-or-virgin-vpoc/">AMS Trading Group — NVPOC Definition</a>
+        <span>The cleanest one-paragraph definition: a NVPOC is "the price that saw the most acceptance by both buyers and sellers, but the market has not gone back to see if this still represents value." Bookmark for explaining the concept in one sentence.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.amazon.com/Markets-Profile-Profiting-Auction-Process/dp/0470039094">Dalton · Markets in Profile · 2007</a>
+    <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot · Auction Market Theory · Feb 2026</a>
+    <a href="https://gocharting.com/blog/volume-profile/point-of-control-trading-guide">GoCharting POC Guide</a>
+    <a href="https://tradeproacademy.com/uncovering-volume-profile-inflection-points/">TRADEPRO Academy VP Inflection Points</a>
+    <a href="https://www.chartspots.com/volume-profile-strategy-profiting-from-naked-vpoc-levels/">Chart Spots Fade-the-Test Strategy</a>
+    <a href="https://www.buildix.trade/blog/volume-profile-trading-strategies-value-area-naked-poc-free-guide-2026">Buildix Naked POC Guide</a>
+    <a href="https://amstradinggroup.com/kb/knowledge-base/nvpoc-naked-or-virgin-vpoc/">AMS Trading NVPOC Definition</a>
+    <a href="https://www.mypivots.com/dictionary/definition/442/naked-point-of-control-npoc">MyPivots NPOC Definition</a>
+    <a href="https://www.shadowtrader.net/glossary/vpoc-virgin-point-of-control/">Shadow Trader VPOC Glossary</a>
+    <a href="https://optionstradingiq.com/volume-profile/">Options Trading IQ VPOC</a>
+    <a href="https://phemex.com/academy/point-of-control-how-to-use-poc-in-crypto-trading">Phemex Academy POC</a>
+    <a href="market-briefing.html">Morning Edge · 24 May 2026 · NGM Capital</a>
+  </div>
+  <div>Alpha · Issue #30 · 24 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
