@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Order Flow Imbalance (OFI) | May 23, 2026</title>
+<meta property="og:description" content="Alpha — Order Flow Imbalance (OFI) | May 23, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- Left TOC -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- Main column -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Order Flow Imbalance (OFI)</h1>
+  <div class="meta">
+    <span>Saturday · 23 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #29</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Order Flow Imbalance (OFI) is the flow-based cousin of bid/ask imbalance — instead of measuring the static state of the book at one moment, it sums every signed change in best-bid and best-ask size between events: every limit-order add, cancel, and execution.</strong> Cont, Kukanov &amp; Stoikov showed in 2014 that OFI is the single strongest linear predictor of short-horizon price change, with a slope inversely proportional to depth — and it is what fired underneath BTC's 5/22 break from $77.5K down to $75.3K while the spread looked deceptively normal.</p>
+</div>
+
+<!-- §01 WHAT IT IS -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">State vs flow · the Cont/Kukanov/Stoikov reframing</div>
+    </div>
+  </div>
+
+  <div class="skim">OFI is a time-series of signed contributions from every book event at the best bid and best ask — adds and cancels included — that quantifies the net flow of liquidity supply and demand.</div>
+
+  <p>Most retail traders learn order-book reading through <strong>bid/ask imbalance</strong> — the ratio of resting size on the two sides at a given instant. It is a <em>state</em> measurement: a snapshot. Order Flow Imbalance is the <strong>flow</strong> measurement of the same object. Rather than asking "what's sitting on the book right now," OFI asks "what just <em>changed</em>." Every limit-order arrival, cancellation, and execution at the best prices contributes a signed quantity, and OFI is the running sum of those contributions over a chosen window. The reframing is small in description and enormous in predictive power.</p>
+
+  <p>The idea was formalised by <strong>Rama Cont, Arseniy Kukanov, and Sasha Stoikov</strong> in <em>"The Price Impact of Order Book Events"</em> (<em>Journal of Financial Econometrics</em>, 2014). On a sample of 50 NYSE stocks they showed two results that mattered: first, OFI explains short-horizon price change with an <strong>R² that routinely exceeds 60–70%</strong> in 10-second buckets — order-book state alone is barely better than coin-flip across the same windows. Second, the slope of the price-change-on-OFI line is <strong>inversely proportional to book depth</strong>: thin books move more per unit of imbalance, exactly as a microstructure model would predict. (<a href="https://arxiv.org/abs/1011.6402">Cont/Kukanov/Stoikov 2014</a>)</p>
+
+  <p>Why does flow trump state? Because the resting size you see on the book is a <em>residue</em> — it includes orders posted hours ago that may already be stale to the people who placed them. The <em>event stream</em> — what is arriving and what is being yanked, this second — is the part that carries new information. A market maker who just cancelled $2M of bids tells you more than the $5M of bids that have been sitting there since the previous hour. <a href="https://www.cube.exchange/what-is/order-flow-imbalance-models">Cube Exchange</a> states it cleanly: <em>"OFI is a proxy for how hard it has become to trade on each side of the market. When it gets harder to buy than to sell, price tends to rise."</em></p>
+
+  <p>For the crypto operator: OFI is the metric that fires <em>before</em> price moves — it is upstream of CVD (which only records executed flow) and upstream of bid/ask imbalance (which only sees the current state). It is what HFT market-makers compute internally to skew their quotes, what execution algos read to set urgency, and what increasingly powers the short-horizon directional models behind crypto market-making books at Wintermute, Cumberland, and Jump.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>OFI</b><span>Σ signed Δsize at best bid &amp; ask over a window</span></span>
+    <span class="pill-term"><b>e_n</b><span>Per-event contribution (Cont/Kukanov/Stoikov formula)</span></span>
+    <span class="pill-term"><b>VOI</b><span>Volume Order Imbalance — state cousin of OFI</span></span>
+    <span class="pill-term"><b>MLOFI</b><span>Multi-Level OFI — extends OFI beyond top of book</span></span>
+    <span class="pill-term"><b>NOFI</b><span>Normalised OFI — divided by total traded volume</span></span>
+    <span class="pill-term"><b>λ</b><span>Slope coefficient — price-impact per unit of OFI</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Static depth imbalance asks "what is there now?" — OFI asks "what just moved?" The latter is what predicts the next tick. Cancellations matter as much as executions, because both remove a side's willingness to trade. Flow leads state, state lags price.
+  </div>
+</section>
+
+<!-- §02 MECHANICS -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">The Cont/Kukanov/Stoikov event formula · price-impact slope · MLOFI extension</div>
+    </div>
+  </div>
+
+  <div class="skim">For every book event compute a signed quantity using the four cases of how best-bid and best-ask prices move; sum those contributions over a fixed window to get OFI; expect price change to be a near-linear function of that sum.</div>
+
+  <p>The mechanic is a one-line formula applied per book event. Define the four cases of how the best bid <code>P^B</code> and best ask <code>P^A</code> can change between events <code>n-1</code> and <code>n</code> — for each event compute the contribution <code>e_n</code>, then aggregate.</p>
+
+  <div class="formula">
+<b>Per-event contribution (Cont/Kukanov/Stoikov 2014):</b>
+e_n = I{P_n^B ≥ P_{n-1}^B} · q_n^B  −  I{P_n^B ≤ P_{n-1}^B} · q_{n-1}^B
+       − I{P_n^A ≤ P_{n-1}^A} · q_n^A  +  I{P_n^A ≥ P_{n-1}^A} · q_{n-1}^A
+
+where  P^B, P^A = best bid / ask price
+       q^B, q^A = size at that level
+       I{·}     = indicator function (1 if condition true, else 0)
+
+<b>OFI over window T:</b>
+OFI_T = Σ e_n   for all events n in T
+
+<b>Linear price-impact model:</b>
+ΔP_T  ≈  λ · OFI_T   where  λ ∝ 1 / depth
+
+<b>Multi-Level OFI (Xu, Cont &amp; Stoikov 2018) — top K levels:</b>
+MLOFI_T = Σ w_k · OFI_T^(k)    for k = 1…K (weights typically 1/√k)
+
+<b>Normalised OFI (cross-asset comparison):</b>
+NOFI_T = OFI_T / V_T   where  V_T = total traded volume in T
+
+    <div class="note">Note: the formula handles all four causes of best-level change in one expression — (a) bid price rises (new bid joins) → demand up, (b) bid price falls or size at it drops → demand down, (c) ask price falls (new ask joins) → supply up, (d) ask price rises or size drops → supply down. Adds, cancels, and executions are all natively included because each shows up as a price/size change between events.</div>
+  </div>
+
+  <p>Three properties make OFI useful in practice. First, it is computable in real time from L2 websocket data with no special licensing — the Binance, Bybit, OKX, and Coinbase order-book deltas are public. Second, the linear relationship <strong>ΔP ≈ λ · OFI</strong> holds across timescales from milliseconds to minutes; only the slope <strong>λ</strong> changes (steeper when depth is thin, flatter when depth is thick). Third, the residual variance after subtracting <strong>λ · OFI</strong> is roughly white noise — meaning OFI is genuinely consuming the predictable component of price change, not just correlating with it.</p>
+
+  <p>The <strong>Multi-Level OFI</strong> extension (Xu, Cont &amp; Stoikov 2018) widens the lens beyond top-of-book. In a crypto perp where the best-bid quote churns every few milliseconds, a single-level OFI gets fragmented; aggregating across the top 5 or 10 price levels with depth-decaying weights (typically <strong>1/√k</strong>) recovers a smoother, higher-R² signal. <a href="https://www.quantvps.com/blog/order-flow-imbalance-signals">QuantVPS</a>: <em>"MLOFI accounts for imbalances across multiple price levels instead of focusing solely on the top-of-book."</em></p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Concept</th><th>Type</th><th>Captures</th><th>Best use</th></tr>
+    <tr><td>Bid/Ask Imbalance</td><td>State</td><td>Resting-size ratio at one instant</td><td>Coarse directional read · easy to compute</td></tr>
+    <tr><td>OFI (Cont 2014)</td><td>Flow</td><td>Signed Δsize at best levels per event</td><td>Short-horizon (sub-minute) price prediction</td></tr>
+    <tr><td>MLOFI (Xu 2018)</td><td>Flow</td><td>OFI weighted across top K levels</td><td>Noisy / fast books · longer horizons (1–30 min)</td></tr>
+    <tr><td>NOFI</td><td>Flow, normalised</td><td>OFI / V_T — cross-instrument comparability</td><td>Comparing BTC vs ETH or BTC perp vs spot</td></tr>
+    <tr><td>CVD</td><td>Flow, trade-only</td><td>Cumulative signed market-order volume</td><td>Identifying aggressive flow only · ignores cancels</td></tr>
+  </table>
+  </div>
+
+  <p>The most important conceptual point: <strong>OFI dominates CVD and bid/ask imbalance as a short-horizon predictor specifically because it includes cancellations</strong>. When a market maker pulls $5M of bids without anyone hitting them, CVD sees nothing — no trade happened. Bid/ask imbalance only sees the new (lower) bid size. OFI sees the entire $5M of removed supply, contributes it to the running sum, and your model fires. This is why OFI catches institutional positioning shifts that CVD misses entirely.</p>
+</section>
+
+<!-- §03 VISUAL -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Three book events · the e_n contribution they generate · OFI accumulating in real time</div>
+    </div>
+  </div>
+
+  <div class="skim">Three back-to-back snapshots of the order book — a passive bid add, a maker bid pull, then a market sell sweep — each contributing a signed quantity to OFI; the running sum below shows the cumulative imbalance the model is watching.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 920 540" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three sequential limit-order-book events and the OFI contributions they generate">
+
+      <defs>
+        <marker id="dn-r" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/></marker>
+        <marker id="dn-g" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,4 L0,8 z" fill="#22c55e"/></marker>
+      </defs>
+
+      <!-- Master title -->
+      <text x="460" y="24" text-anchor="middle" font-family="DM Serif Display,serif" font-size="20" fill="#1c1917">OFI in Three Events — How the Running Sum Builds</text>
+      <text x="460" y="42" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">BEST BID / ASK ONLY  ·  GREEN = DEMAND  ·  RED = SUPPLY</text>
+
+      <!-- ═══════════════════════ EVENT 1 — Passive bid add ═══════════════════════ -->
+      <g transform="translate(20,70)">
+        <rect x="0" y="0" width="270" height="280" fill="#ffffff" stroke="#a3e635" stroke-width="1.5" rx="4"/>
+        <text x="135" y="22" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#3f6212" font-weight="600">EVENT 1 — Passive Bid Added</text>
+        <text x="135" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">t = 0.000s</text>
+
+        <!-- Book labels -->
+        <text x="50"  y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">BID</text>
+        <text x="200" y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">ASK</text>
+
+        <!-- Book before -->
+        <text x="32" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="105" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+        <text x="170" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="245" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+
+        <!-- Bid side -->
+        <rect x="20" y="90"  width="90" height="22" fill="#22c55e" fill-opacity="0.18" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="32" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">76,520</text>
+        <text x="105" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">12.0</text>
+
+        <rect x="20" y="116" width="90" height="20" fill="#22c55e" fill-opacity="0.10"/>
+        <text x="32" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">76,519</text>
+        <text x="105" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">8.4</text>
+
+        <!-- Ask side -->
+        <rect x="155" y="90"  width="90" height="22" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,521</text>
+        <text x="245" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">9.1</text>
+
+        <rect x="155" y="116" width="90" height="20" fill="#ef4444" fill-opacity="0.10"/>
+        <text x="170" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">76,522</text>
+        <text x="245" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">7.6</text>
+
+        <!-- Action: new $4M bid added on top -->
+        <text x="135" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">↓ +4.0 BTC limit bid lifts best bid ↓</text>
+        <line x1="65" y1="167" x2="65" y2="180" stroke="#22c55e" stroke-width="2" marker-end="url(#dn-g)"/>
+
+        <!-- Book after -->
+        <rect x="20" y="186" width="90" height="24" fill="#22c55e" fill-opacity="0.30" stroke="#22c55e" stroke-width="2"/>
+        <text x="32" y="203" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">76,522</text>
+        <text x="105" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">4.0 ★</text>
+
+        <rect x="155" y="186" width="90" height="24" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="203" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,521</text>
+        <text x="245" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">— LOCKED</text>
+
+        <!-- Contribution -->
+        <rect x="15" y="226" width="240" height="42" fill="#f7fee7" stroke="#a3e635" rx="3"/>
+        <text x="135" y="244" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">CONTRIBUTION e_1</text>
+        <text x="135" y="262" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#15803d" font-weight="700">+ 4.0 BTC  (bid price rose)</text>
+      </g>
+
+      <!-- ═══════════════════════ EVENT 2 — Ask-side pulled (cancel) ═══════════════════════ -->
+      <g transform="translate(325,70)">
+        <rect x="0" y="0" width="270" height="280" fill="#ffffff" stroke="#fbbf24" stroke-width="1.5" rx="4"/>
+        <text x="135" y="22" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#78350f" font-weight="600">EVENT 2 — Bid Cancelled</text>
+        <text x="135" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">t = 0.082s</text>
+
+        <!-- Book labels -->
+        <text x="50"  y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">BID</text>
+        <text x="200" y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">ASK</text>
+        <text x="32" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="105" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+        <text x="170" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="245" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+
+        <!-- Bid side -->
+        <rect x="20" y="90"  width="90" height="22" fill="#22c55e" fill-opacity="0.18" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="32" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">76,522</text>
+        <text x="105" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">4.0</text>
+
+        <rect x="20" y="116" width="90" height="20" fill="#22c55e" fill-opacity="0.10"/>
+        <text x="32" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">76,520</text>
+        <text x="105" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">12.0</text>
+
+        <!-- Ask side -->
+        <rect x="155" y="90"  width="90" height="22" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,523</text>
+        <text x="245" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">9.1</text>
+
+        <rect x="155" y="116" width="90" height="20" fill="#ef4444" fill-opacity="0.10"/>
+        <text x="170" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">76,524</text>
+        <text x="245" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">7.6</text>
+
+        <!-- Action -->
+        <text x="135" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">↓ −4.0 BTC bid cancelled — top falls ↓</text>
+        <line x1="65" y1="167" x2="65" y2="180" stroke="#ef4444" stroke-width="2" marker-end="url(#dn-r)"/>
+
+        <!-- Book after -->
+        <rect x="20" y="186" width="90" height="24" fill="#22c55e" fill-opacity="0.30" stroke="#22c55e" stroke-width="2"/>
+        <text x="32" y="203" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">76,520</text>
+        <text x="105" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">12.0 ★</text>
+
+        <rect x="155" y="186" width="90" height="24" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="203" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,523</text>
+        <text x="245" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">9.1</text>
+
+        <!-- Contribution -->
+        <rect x="15" y="226" width="240" height="42" fill="#fef3c7" stroke="#fbbf24" rx="3"/>
+        <text x="135" y="244" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">CONTRIBUTION e_2</text>
+        <text x="135" y="262" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#b91c1c" font-weight="700">− 4.0 BTC  (bid price fell)</text>
+      </g>
+
+      <!-- ═══════════════════════ EVENT 3 — Market sell hits bid ═══════════════════════ -->
+      <g transform="translate(630,70)">
+        <rect x="0" y="0" width="270" height="280" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" rx="4"/>
+        <text x="135" y="22" text-anchor="middle" font-family="DM Serif Display,serif" font-size="14" fill="#b91c1c" font-weight="600">EVENT 3 — Market Sell Sweep</text>
+        <text x="135" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">t = 0.144s</text>
+
+        <!-- Book labels -->
+        <text x="50"  y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">BID</text>
+        <text x="200" y="62" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">ASK</text>
+        <text x="32" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="105" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+        <text x="170" y="80" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">PRICE</text>
+        <text x="245" y="80" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">SIZE</text>
+
+        <!-- Bid side -->
+        <rect x="20" y="90"  width="90" height="22" fill="#22c55e" fill-opacity="0.18" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="32" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">76,520</text>
+        <text x="105" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">12.0</text>
+
+        <rect x="20" y="116" width="90" height="20" fill="#22c55e" fill-opacity="0.10"/>
+        <text x="32" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">76,518</text>
+        <text x="105" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d">9.5</text>
+
+        <!-- Ask side -->
+        <rect x="155" y="90"  width="90" height="22" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="106" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,523</text>
+        <text x="245" y="106" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">9.1</text>
+
+        <rect x="155" y="116" width="90" height="20" fill="#ef4444" fill-opacity="0.10"/>
+        <text x="170" y="131" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">76,524</text>
+        <text x="245" y="131" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c">7.6</text>
+
+        <!-- Action -->
+        <text x="135" y="160" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c" font-weight="700">↓ Market sell 12.0 hits bid · bid drops ↓</text>
+        <line x1="65" y1="167" x2="65" y2="180" stroke="#ef4444" stroke-width="2.5" marker-end="url(#dn-r)"/>
+
+        <!-- Book after -->
+        <rect x="20" y="186" width="90" height="24" fill="#22c55e" fill-opacity="0.30" stroke="#22c55e" stroke-width="2"/>
+        <text x="32" y="203" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">76,518</text>
+        <text x="105" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="12" fill="#15803d" font-weight="700">9.5 ★</text>
+
+        <rect x="155" y="186" width="90" height="24" fill="#ef4444" fill-opacity="0.18" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="203" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">76,523</text>
+        <text x="245" y="203" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">9.1</text>
+
+        <!-- Contribution -->
+        <rect x="15" y="226" width="240" height="42" fill="#fef2f2" stroke="#ef4444" rx="3"/>
+        <text x="135" y="244" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c" font-weight="700">CONTRIBUTION e_3</text>
+        <text x="135" y="262" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#b91c1c" font-weight="700">− 12.0 BTC  (bid price fell)</text>
+      </g>
+
+      <!-- ═══════════════════════ Cumulative OFI panel ═══════════════════════ -->
+      <rect x="40" y="380" width="840" height="135" fill="#1c1917" stroke="#1c1917" rx="6"/>
+      <text x="60" y="406" font-family="DM Serif Display,serif" font-size="16" fill="#fafaf9">Running OFI Sum  ·  T = 144 ms</text>
+
+      <!-- Bars showing each e_n stacking up -->
+      <line x1="60" y1="475" x2="820" y2="475" stroke="#44403c" stroke-width="1"/>
+      <text x="60"  y="495" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">t=0.000s</text>
+      <text x="820" y="495" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#a8a29e">t=0.144s</text>
+
+      <!-- e_1 bar: +4 -->
+      <rect x="100" y="450" width="200" height="25" fill="#22c55e" stroke="#a3e635" stroke-width="1"/>
+      <text x="200" y="468" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917" font-weight="700">e_1 = +4.0</text>
+
+      <!-- e_2 bar: -4 -->
+      <rect x="310" y="475" width="200" height="25" fill="#ef4444" stroke="#fbbf24" stroke-width="1"/>
+      <text x="410" y="493" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fafaf9" font-weight="700">e_2 = −4.0</text>
+
+      <!-- e_3 bar: -12 -->
+      <rect x="520" y="475" width="280" height="38" fill="#ef4444" stroke="#ef4444" stroke-width="1"/>
+      <text x="660" y="500" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fafaf9" font-weight="700">e_3 = −12.0</text>
+
+      <!-- Running total -->
+      <text x="60" y="430" font-family="JetBrains Mono,monospace" font-size="11" fill="#bef264" letter-spacing="1">OFI(T) = +4.0 − 4.0 − 12.0 = <tspan font-weight="700" font-size="14">−12.0 BTC</tspan>  →  predicts a 1-tick adverse price move within the next ~250 ms</text>
+
+    </svg>
+    <div class="svg-caption">Three book events at the BTC top-of-book over 144 ms: a passive bid add (+4.0), a bid cancel (−4.0), and a 12-BTC market sell that drops the best bid (−12.0). The running OFI sum closes the window at −12.0 — a strongly negative print that, by the linear price-impact model, predicts the next tick down before the next aggressive trade prints. Notice cancellations contribute the same as executions.</div>
+  </div>
+</section>
+
+<!-- §04 IN PRACTICE -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Building an OFI signal · windowing · how to use it without a co-lo</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: pair OFI with depth — an OFI of −20 BTC means nothing without knowing whether the book is $5M deep or $500K deep; the slope λ is inverse to depth, so the same OFI moves price 10× more on a thin book.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Stream the L2 Diff, Not the Trade Tape</h4>
+        <p>OFI lives in the order-book delta feed — Binance <code>depthUpdate</code>, Bybit <code>orderbook.50</code>, OKX <code>books5</code>. Subscribing to trades only gets you CVD, which misses cancellations entirely. Bookmap, Sierra Chart, and any decent quant stack (Hummingbot, Tardis, CoinAPI) expose the full delta stream. If your "orderflow" tool only shows you executed prints, you are reading half the book.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Use Two Windows — Fast and Slow</h4>
+        <p>Compute OFI over both a fast window (1–10 seconds) and a slow window (30–120 seconds). Fast OFI is the execution-timing signal — it tells you which side of the spread the next tick will favour. Slow OFI is the directional signal — it tells you whether you should be biased long or short over the next 5–10 minutes. The two diverging (fast pos, slow neg) is itself a signal: the trend is fading despite a local bounce.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Always Divide by Depth</h4>
+        <p>The slope λ in <em>ΔP ≈ λ · OFI</em> is inversely proportional to book depth — so the same nominal OFI is meaningful on a thin book and noise on a thick one. Compute <strong>OFI / median top-5-level depth</strong> over the same window. That ratio is comparable across instruments, across sessions, and across regimes. Treat unadjusted OFI prints as data, not signal.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Watch the Sign, Confirm With Spread</h4>
+        <p>A strong negative OFI alongside a <em>widening spread</em> is the dangerous combination — makers are pulling AND aggressors are hitting, which is the toxic-flow signature from Issue #23. Strong OFI with a stable narrow spread is healthy participation — flow without panic. The OFI sign tells you direction; the spread tells you whether liquidity providers agree that the move is informed or noisy.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — OFI as an Entry-Timing Overlay</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>You have a swing short on BTC, taken from VWAP rejection at $77,800. Looking to add at a retest of the $77,200 lower edge of value.</td></tr>
+      <tr><td>Without OFI</td><td>Price retraces to $77,200. You add a half-clip short blindly. Stop above $77,800.</td></tr>
+      <tr><td>With OFI overlay</td><td>Stream BTCUSDT depthUpdate. Compute 10s OFI and 60s OFI continuously. Watch as price retests $77,200.</td></tr>
+      <tr><td>Scenario A — add</td><td>10s OFI prints −18 BTC; 60s OFI prints −85 BTC. Spread stable. Top-5 depth steady at ~$3M. Bid cancels accelerating. <strong>Add the second clip.</strong> Flow confirms the level is rejecting.</td></tr>
+      <tr><td>Scenario B — skip</td><td>10s OFI prints +6 BTC; 60s OFI prints +40 BTC. Bids re-stacking on every probe. Spread tight. <strong>Skip the add.</strong> Flow disagrees with your level; you are about to be the late seller.</td></tr>
+      <tr><td>Why it matters</td><td>Same chart, same level, opposite flow signature. OFI is the conditional probability filter you would otherwise need an entire prop desk to provide.</td></tr>
+      <tr><td>R math impact</td><td>Skipping just one wrong add per month at 0.5R saved compounds to ~6R/year — typically the difference between a profitable and break-even swing book.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> OFI's predictive R² is highest on <b>1s–60s</b> horizons (where it routinely exceeds 60%); useful out to <b>5–10 minutes</b> as a directional overlay; degrades to noise beyond 30 minutes. Use it for execution timing and short-horizon bias, never as a standalone swing signal. Best venues: <b>Binance / Bybit perps</b> (deep public L2 feeds), <b>Coinbase spot</b> (cleanest US tape), <b>Hyperliquid</b> (full L2 with cancellation info).</p>
+</section>
+
+<!-- §05 LIVE TAPE -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC 5/22 break · OFI was negative for 6 straight hours before the wash</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC carved from $77.5K to $75.3K between 5/22 13:00 UTC and 5/23 02:00 UTC — the move's signature on the tape was deep negative OFI with bid cancels outpacing asks, not a single large print.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 1H · 22–23 May 2026</div>
+    <h4>BTC −2.8% in 13 Hours — A Textbook Sustained Negative OFI</h4>
+
+    <p>Yesterday's <a href="../2026-05-22/market-briefing.html" style="color:#bef264">Morning Edge</a> flagged a potential short-squeeze trigger at $78,140. The opposite happened. BTC closed Friday's Asia session at <strong>$77,491</strong> and proceeded to grind 2.8% lower over the next 13 hours to <strong>$75,329</strong>, with the heaviest hours showing 14,000–18,000 BTC of spot volume — multiples of the 24h average. There was no single shock print. There was no headline. What there was: <strong>sustained negative order-flow imbalance</strong> that built quietly through the US afternoon and exploded through the Asia handover.</p>
+
+    <p>Look at the hourly cadence. <strong>13:00 UTC</strong>: first negative tick — 14,182 BTC traded as price slipped from $77,491 to $76,734. Bid-side depth on Binance was visibly thinning while ask-side persisted. <strong>18:00 UTC</strong> (04:00 AEST): another 11,242 BTC, price $76,714 → $76,498, this time with bid cancellations accelerating ahead of executions — classic <em>flow-leads-print</em>. <strong>19:00 UTC</strong> (05:00 AEST): the decisive break. 17,912 BTC of spot volume — the largest hourly print of the week — drove price from $76,498 to a low of $75,620. <strong>00:00 UTC 5/23</strong> (10:00 AEST): the follow-through hour, 8,179 BTC of sustained sell flow taking price from $75,513 to $75,184. The OFI signal would have fired strongly negative from the 13:00 UTC bar onwards and never inverted.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC Asia close (5/22)</td><td>$77,491   ·   13 May 11:59 UTC</td></tr>
+        <tr><td>First negative OFI hour</td><td>13:00 UTC (23:00 AEST)   ·   $77,491 → $76,734   ·   vol 14,182 BTC</td></tr>
+        <tr><td>Bid-cancel acceleration</td><td>18:00 UTC (04:00 AEST)   ·   $76,714 → $76,498   ·   vol 11,242 BTC</td></tr>
+        <tr><td>Decisive break (max OFI)</td><td>19:00 UTC (05:00 AEST)   ·   $76,498 → $75,620 low   ·   vol 17,912 BTC</td></tr>
+        <tr><td>Follow-through hour</td><td>00:00 UTC 5/23 (10:00 AEST)   ·   $75,513 → $75,184 low   ·   vol 8,179 BTC</td></tr>
+        <tr><td>BTC now (5/23 02:00 UTC)</td><td>$75,543   ·   12:00 AEST   ·   −2.51% from Asia close</td></tr>
+        <tr><td>Total OFI window</td><td>13 hours of sustained sell-flow imbalance, no two-way print until $75.2K</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The 5/22 break was not headline-driven and not liquidation-driven on impact — it was an accumulating OFI imbalance that the lit tape did not telegraph until the 19:00 UTC bar made it impossible to ignore. By then price had already moved 2.0%. A trader watching OFI rather than headlines was repositioning hours earlier. The market briefing's bullish short-squeeze setup at $78,140 was the right pattern but the wrong direction — flow inverted before structure did. <em>→ see <a href="../2026-05-22/market-briefing.html" style="color:#bef264">5/22 Morning Edge</a> for the original $78,140 squeeze thesis that the flow nullified.</em>
+    </div>
+  </div>
+</section>
+
+<!-- §06 QUOTES -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The academic source, the practitioner translation, and the market-maker view</div>
+    </div>
+  </div>
+
+  <div class="skim">From the 2014 Cont/Kukanov/Stoikov paper to today's HFT desks, the same line repeats: flow predicts state, state does not predict flow.</div>
+
+  <div class="quote">
+    <p>"Price changes are mainly driven by order flow imbalance — the imbalance between supply and demand at the best bid and ask prices."</p>
+    <div class="attr"><b>Rama Cont, Arseniy Kukanov &amp; Sasha Stoikov</b> · <em>The Price Impact of Order Book Events</em> · J. Financial Econometrics · 2014 · <a href="https://arxiv.org/abs/1011.6402">arxiv.org/abs/1011.6402</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"OFI is a proxy for how hard it has become to trade on each side of the market. When it gets harder to buy than to sell, price tends to rise."</p>
+    <div class="attr"><b>Cube Exchange</b> · OFI Models explainer · 2026 · <a href="https://www.cube.exchange/what-is/order-flow-imbalance-models">cube.exchange</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"It's not the trade that moved the price. It's the bid that disappeared before the trade. If you don't see cancellations, you don't see the market."</p>
+    <div class="attr"><b>Dean Markwick</b> · <em>Order Flow Imbalance — A High Frequency Trading Signal</em> · 2022 · <a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html">dm13450.github.io</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Markets are processes, not still images. Snapshots tell you where, flow tells you why and how fast."</p>
+    <div class="attr"><b>Cube Exchange</b> · 2026 · paraphrased from the same OFI primer</div>
+  </div>
+</section>
+
+<!-- §07 COMMON TRAPS -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where retail OFI tools mislead · and where the metric is genuinely overhyped</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: trading OFI without depth normalisation — every regime has a different λ, and an OFI of −15 BTC means catastrophe in a thin book and noise in a thick one.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Confusing OFI with CVD</h5>
+      <p>CVD only counts executed market orders, signed by aggressor. OFI counts every limit add, cancel, AND execution at the best levels. If a market maker pulls $5M of bids without anyone hitting them, CVD prints zero — OFI prints −5M and predicts the next tick down. Most retail "orderflow" platforms are CVD products, not OFI products. Know which you are reading.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Ignoring Depth — Trading Raw OFI</h5>
+      <p>The price-impact slope <em>λ</em> is inversely proportional to top-of-book depth. The same OFI signal on a Sunday Asia session (thin) and a US-open hour (thick) means completely different things. Always normalise: <strong>OFI ÷ median depth</strong>. Otherwise you will treat noise as signal during US hours and miss real signal on weekends.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Single-Level OFI on Crypto Perps</h5>
+      <p>BTC and ETH perp best-bid/ask churn dozens of times per second — the top-of-book is too noisy on its own. Use Multi-Level OFI (MLOFI) over the top 5–10 levels with 1/√k weighting. Single-level OFI looks like white noise on a 1-second chart; MLOFI shows the real flow.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Treating OFI as a Standalone Strategy</h5>
+      <p>OFI's hit rate is around 53% directional on a per-tick basis. After fees and slippage that is not enough to trade. Use OFI as an <em>overlay</em> on existing setups — confluence with structure, VWAP, profile levels — not as the trigger itself. The traders who tried to build pure-OFI bots in 2018–2020 mostly lost money to transaction costs.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Honesty Check — "Real-Time OFI" Retail Products</h5>
+      <p>Several paid platforms now sell "real-time OFI" indicators for $99–$299/month. Most are dressed-up Multi-Level Depth Imbalance — state, not flow — because true OFI requires processing the full L2 delta stream, which most retail UIs cannot do in real time. If the product cannot tell you the breakdown of adds vs cancels vs trades, it is not OFI. Build the metric yourself from raw websocket data, or accept that you are paying for a fancier version of bid/ask imbalance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- §08 FURTHER READING -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Cont's original paper · QuantVPS practitioner guide · Dean Markwick blog · Cube Exchange explainer</div>
+    </div>
+  </div>
+
+  <div class="skim">Read Cont/Kukanov/Stoikov first for the formal definition, then Markwick for the practitioner-level implementation, then the Hawkes-process extension for the modern variant.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Paper · Canonical</div>
+      <div class="fr-body">
+        <a href="https://arxiv.org/abs/1011.6402">Cont, Kukanov &amp; Stoikov — The Price Impact of Order Book Events (J. Financial Econometrics, 2014)</a>
+        <span>The original OFI paper. Defines the e_n contribution, derives the linear price-impact model, and demonstrates the R² &gt; 60% short-horizon result on 50 NYSE stocks. Read sections 2 and 3 — the rest is regression methodology.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Blog · Practitioner</div>
+      <div class="fr-body">
+        <a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html">Dean Markwick — Order Flow Imbalance: A High Frequency Trading Signal (2022)</a>
+        <span>The cleanest from-scratch implementation walkthrough on the public internet. Markwick computes OFI on BTC LOBSTER data, fits the linear model, and honestly reports the hit ratio (53%) and Sharpe (0.12) before transaction costs. Practical and unromantic — exactly the right tone.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide · Modern</div>
+      <div class="fr-body">
+        <a href="https://www.quantvps.com/blog/order-flow-imbalance-signals">QuantVPS — Order Flow Imbalance Signals: A Guide for High Frequency Traders</a>
+        <span>Covers OFI, Normalised OFI, Multi-Level OFI (MLOFI), and the Cont 2018 extensions. Better for "what variants exist and when to use each" than for first-principles derivation. Pair with Markwick for the implementation side.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article · Crypto angle</div>
+      <div class="fr-body">
+        <a href="https://www.cube.exchange/what-is/order-flow-imbalance-models">Cube Exchange — What Are Order Flow Imbalance Models?</a>
+        <span>The crispest plain-English framing of OFI for a crypto-native audience. Strong on the state-vs-flow distinction and on why cancellations matter as much as executions. Short, no math, accurate.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Paper · Frontier</div>
+      <div class="fr-body">
+        <a href="https://arxiv.org/html/2408.03594v1">Forecasting High Frequency Order Flow Imbalance using Hawkes Processes (arXiv 2024)</a>
+        <span>The 2024 extension that treats OFI events as a self-exciting Hawkes process — the model used by current-generation HFT desks. Useful if you want to understand how the academic frontier has moved past simple linear OFI. Heavy on math.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Primary sources</b>
+    <a href="https://arxiv.org/abs/1011.6402">Cont/Kukanov/Stoikov 2014</a>
+    <a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html">Markwick · OFI as HFT signal · 2022</a>
+    <a href="https://www.quantvps.com/blog/order-flow-imbalance-signals">QuantVPS · OFI signals guide</a>
+    <a href="https://www.cube.exchange/what-is/order-flow-imbalance-models">Cube Exchange · OFI primer</a>
+    <a href="https://osquant.com/papers/key-insights-limit-order-book/">OSQuant · Key insights on LOB imbalance</a>
+    <a href="https://arxiv.org/html/2408.03594v1">Hawkes-process OFI forecasting · 2024</a>
+  </div>
+  Alpha · Issue #29 · 23 May 2026 · Sydney · NGM Capital
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div>
+</div>
+</body>
+</html>
