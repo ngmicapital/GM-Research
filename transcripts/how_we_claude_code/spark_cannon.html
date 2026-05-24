@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spark & Cannon — How We Claude Code: HTML Specs, Verification & Agent-Native Workflows</title><style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#06b6d4;--accent-dim:#164e63;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#06b6d4,#164e63);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #06b6d4;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #06b6d4;}
+.block.tension{border-left:3px solid #f59e0b;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#06b6d4;}
+.block.tension .block-label{color:#f59e0b;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#06b6d4;border-bottom-color:#06b6d4;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>📋 Spark & Cannon · How We Claude Code: HTML Specs, Verification & Agent-Native Workflows</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=IlqJqcl8ONE" target="_blank">▶ Watch</a>
+</div>
+<div class="layout">
+  <nav class="toc">    <a href="#overview">Overview</a>
+    <a href="#context">Context</a>
+    <a href="#settings">Settings</a>
+    <a href="#phase1">Phase 1: Spec Extraction</a>
+    <a href="#phase2">Phase 2: HTML Design</a>
+    <a href="#phase3">Phase 3: Verification</a>
+    <a href="#workflow">Full Loop</a>
+    <a href="#implications">Implications</a></nav>
+  <main><div style="padding-top:0;">
+    <h1>How We Claude Code: HTML Specs, Verification & Agent-Native Workflows</h1>
+    <div class="meta">
+      <span>Ara · Anthropic Applied AI</span><span>·</span><span>Code with Claude Conference 2026</span><span>·</span><span>May 2026</span>
+      <span class="tag">Claude Code</span><span class="tag">HTML Specs</span><span class="tag">Verification</span><span class="tag">Workshop</span>
+    </div>
+
+    <div class="hero" id="overview">
+      <p><strong>Core argument:</strong> The way Anthropic's own Claude Code team builds software is a three-phase loop: interactive spec extraction via AskUserQuestion, visual exploration via HTML design directions, and agent-native verification via Storybook fixtures + Playwright MCP. This is built on "The Unreasonable Effectiveness of HTML Files" — the insight that rich, interactive artifacts communicate intent far better than markdown, enabling faster iteration with fewer misalignments.</p>
+    </div>
+
+    <h2 id="context">Context</h2>
+    <p>Ara is an architect on Anthropic's Applied AI team. This workshop is based on a talk by "Tar" (a team member) published as a blog post called "The Unreasonable Effectiveness of HTML Files" — arguing that the field should move from markdown-centric workflows to HTML-first development with Claude. Ara presents the three-phase workflow that Tar's team uses in production, with a live coding demo on a bill-splitting app and a to-do app verification framework.</p>
+    <div class="block connection">
+      <div class="block-label">📡 Source Reference</div>
+      <p>The methodology is from the Claude Code team's internal practice, published approximately 1.5 weeks before this conference as a blog post. The workshop repo (CWC Workshops / "how we claude code") contains all three phases with detailed documentation.</p>
+    </div>
+
+    <h2 id="settings">Settings: Non-Negotiables</h2>
+    <p>Before any other workflow: three settings that Ara treats as non-negotiable.</p>
+    <ul>
+      <li><strong>Auto mode:</strong> Always use auto mode in Claude Code. It dramatically simplifies the interaction model. Ara specifically called this out to the audience and confirmed everyone should be using it.</li>
+      <li><strong>Effort parameter:</strong> Set to X-HIGH. The team's standard recommendation. MAX effort also works — it's even more thorough.</li>
+      <li><strong>Model:</strong> Opus 4.7 for any work involving visual feedback or frontend development. The improved vision model is what makes the screenshot feedback loop effective.</li>
+    </ul>
+    <p>Fast mode is also recommended during HTML spec generation — it costs more per token but the faster iteration speed is worth it when exploring design directions.</p>
+
+    <h2 id="phase1">Phase 1: Interactive Spec Extraction</h2>
+    <p>The core insight: the longer an agent run you're planning, the more important it is that the spec is comprehensive — and the less likely you are to upfront-specify everything correctly without help.</p>
+    <p>Solution: prompt Claude to use the AskUserQuestion tool to interview you on requirements before generating anything. Claude asks turn-by-turn questions; you answer incrementally. By the end, Claude has extracted a far more complete picture of what you want than you could have written in a single upfront prompt.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Prompt Pattern</div>
+      <p>In your initial prompt, explicitly reference the AskUserQuestion tool and instruct Claude to use it to extract requirements. The more specific this instruction, the better the interview will be. The repo contains example prompts for this pattern.</p>
+    </div>
+    <p>The workflow then continues: Claude generates a spec from the interview. That spec is the input to Phase 2.</p>
+
+    <h2 id="phase2">Phase 2: HTML Design Exploration</h2>
+    <p>Rather than committing to implementation from a text spec, generate 4 different HTML design directions first. This is the "Unreasonable Effectiveness of HTML Files" insight in practice.</p>
+    <p>Why HTML over markdown specs:</p>
+    <ul>
+      <li><strong>Information density:</strong> A visual prototype communicates layout, interaction, and aesthetic in a single artifact. A markdown spec requires the reader to mentally simulate all of this.</li>
+      <li><strong>Readability:</strong> Markdown specs over ~200 lines don't get read — by you or your colleagues. HTML files get opened and clicked through.</li>
+      <li><strong>Feedback precision:</strong> Giving Claude feedback on "the button is slightly misaligned" or "this aesthetic isn't right" is far easier when you can screenshot the rendered HTML and show it, rather than trying to articulate it from a markdown description.</li>
+      <li><strong>Opus 4.7 vision:</strong> The improved vision model makes screenshot → feedback → iterate loops highly effective for frontend alignment.</li>
+    </ul>
+    <div class="block insight">
+      <div class="block-label">💡 The 4-Direction Prompt</div>
+      <p>Ask Claude to "explore 4 different design directions, generate each as HTML, and annotate the design philosophy of each." You get visual options across aesthetic dimensions (brutalist, refined, minimal, expressive) before committing to any direction. Much faster than discovering the direction was wrong mid-implementation.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Common Objection: Token Cost</div>
+      <p>HTML specs use more tokens than markdown on initial generation. The rebuttal: you iterate less with HTML specs because visual miscommunication is caught early. Over the full build cycle, HTML specs reduce total token spend. The right unit is cost per shipped feature, not cost per spec generation.</p>
+    </div>
+
+    <h2 id="phase3">Phase 3: Agent-Native Verification</h2>
+    <p>This is the most sophisticated part of the workflow, and what makes it "agent-native" rather than just "Claude-assisted."</p>
+    <h3>The Core Concept: DOM as Data Contract</h3>
+    <p>Rather than writing traditional tests that Claude then has to understand and run, the team embeds data contracts directly into the DOM using data attributes. Each component exposes its expected state through these attributes — making the component's behavior machine-readable without requiring Claude to understand the test framework.</p>
+    <p>With this structure, Claude uses Playwright MCP to navigate the app, read the data attributes, and verify that actual state matches expected state. It doesn't need to understand React, the component library, or the test runner — it just reads DOM attributes.</p>
+    <h3>The Verification Artifact</h3>
+    <p>Verification runs are recorded. The recording becomes a shareable artifact — a video or log that colleagues can review to see exactly what the agent verified and how. This is how the Claude Code team provides verification evidence without requiring human re-running of tests.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Storybook Integration</div>
+      <p>Storybook fixtures provide the isolated component environment where Claude can test each component state independently. Combined with data attributes, each Storybook story is a precise, machine-readable specification of a component's expected behavior in a given state.</p>
+    </div>
+    <div class="block connection">
+      <div class="block-label">📡 Playwright MCP Role</div>
+      <p>Playwright MCP gives Claude browser control: navigate to the Storybook story, interact with the component, read the data attributes, compare to expected values, report pass/fail. The agent generates and runs the verification — minimal human touchpoints once the fixtures are in place.</p>
+    </div>
+
+    <h2 id="workflow">The Full Loop</h2>
+    <ol>
+      <li>AskUserQuestion interview → comprehensive spec</li>
+      <li>HTML design directions → visual exploration, screenshot feedback</li>
+      <li>Implementation with data attributes embedded in DOM</li>
+      <li>Storybook fixtures for each component state</li>
+      <li>Playwright MCP verification run, recorded as artifact</li>
+      <li>Iterate on failures, re-run verification</li>
+    </ol>
+    <p>The loop gets tighter over time because: (a) the spec is comprehensive from Phase 1, (b) the visual alignment is confirmed in Phase 2, and (c) failures in Phase 5 are precise and machine-verifiable.</p>
+
+    <h2 id="implications">Implications</h2>
+    <div class="block analog">
+      <div class="block-label">🔁 Analog: Infrastructure as Code</div>
+      <p>Making your app agent-native via data attributes is analogous to Infrastructure as Code — you're making system state machine-readable so it can be managed programmatically. The same instinct (make implicit state explicit) applies to both.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">💡 The Modularity Point</div>
+      <p>Ara briefly notes that sensible modularization is key to making Phase 3 scale — each component in its own Storybook story, data contracts per component, no cross-component dependencies in the fixture state. This becomes clear from the repo. The principle: design your app for the agent to verify, not just for humans to use.</p>
+    </div>
+</div></main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body></html>
