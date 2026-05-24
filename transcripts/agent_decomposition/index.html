@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Decomposition: From Monolith to Modular AI Systems — GM Research</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#10b981;--accent-dim:#065f46;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#10b981,#065f46);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #10b981;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #10b981;}
+.block.tension{border-left:3px solid #f59e0b;}
+.block.connection{border-left:3px solid #0ea5e9;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#10b981;}
+.block.tension .block-label{color:#f59e0b;}
+.block.connection .block-label{color:#0ea5e9;}
+.block.analog .block-label{color:#6366f1;}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:6px 16px;font-size:14px;}
+.kv dt{color:var(--muted);font-weight:500;}
+.kv dd{color:var(--text);}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0;}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#10b981;border-bottom-color:#10b981;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>Agent Decomposition: From Monolith to Modular AI Systems</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=mWvtOHlZM-I" target="_blank">▶ Watch</a>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <a href="#overview">Overview</a>
+    <a href="#case-study">StockPilot Case Study</a>
+    <a href="#skills">Skills & Progressive Disclosure</a>
+    <a href="#primitives">Humanlike Primitives</a>
+    <a href="#sub-agents">Sub-Agents</a>
+    <a href="#mcp">MCP Usage</a>
+    <a href="#code-execution">Code Execution</a>
+    <a href="#evals">Eval-Driven Dev</a>
+    <a href="#implications">Implications</a>
+  </nav>
+  <main>
+    <div class="tab-group">
+      <div class="tab-bar">
+        <div class="tab active" data-panel="p-spark">📋 Spark & Cannon</div>
+        <div class="tab" data-panel="p-echo">⚡ Echo</div>
+      </div>
+      <div id="p-spark" class="tab-panel active"><div style="padding-top:24px;">
+    <h1>Agent Decomposition: From Monolith to Modular AI Systems</h1>
+    <div class="meta">
+      <span>Will · Anthropic</span><span>·</span><span>Code with Claude Conference 2026</span><span>·</span><span>May 2026</span>
+      <span class="tag">Agent Architecture</span><span class="tag">Skills</span><span class="tag">Sub-Agents</span>
+    </div>
+
+    <div class="hero" id="overview">
+      <p><strong>Core argument:</strong> The first generation of production agents — monolithic prompts, dozens of custom tools, flat architectures — is hitting a ceiling. Will presents a systematic decomposition methodology that transforms these systems into modular, eval-driven architectures. The StockPilot inventory agent went from 62% to 92% success rate by applying five principles: skills for progressive disclosure, humanlike primitives for tools, sub-agents only for parallelization/fresh-eyes, MCP only for multi-client tool sharing, and code execution over data injection.</p>
+    </div>
+
+    <h2 id="case-study">StockPilot Case Study</h2>
+    <p>StockPilot is an inventory management agent that monitors stock levels, predicts demand, and triggers purchase orders. Classic first-gen architecture: a 400-line monolithic prompt embedding all business logic, 12 custom tools for every data access and action, no evals, 62% task success rate in production.</p>
+    <p>Will's team applied the decomposition methodology over several weeks:</p>
+    <ul>
+      <li><strong>Week 1:</strong> Added evals. Baseline: 62%. Identified top failure categories.</li>
+      <li><strong>Week 2:</strong> Extracted business logic into skills. Prompt: 400 lines → 15 lines.</li>
+      <li><strong>Week 3:</strong> Replaced custom tools with bash/read/write. 12 tools → 3 primitives.</li>
+      <li><strong>Week 4:</strong> Replaced data injection with code execution. Context reduced from 200K tokens.</li>
+      <li><strong>Week 5:</strong> Added sub-agents for parallel supplier queries. Eval: 92%.</li>
+    </ul>
+    <div class="block connection">
+      <div class="block-label">📡 Key Pattern</div>
+      <p>Evals first, refactor second. Without a baseline eval score, you can't verify that refactoring improves things. The 62%→92% story only exists because the team measured before and after every change.</p>
+    </div>
+
+    <h2 id="skills">Skills: Progressive Disclosure</h2>
+    <p>Skills are packaged information that Claude pulls into context only when needed. Instead of loading every instruction at session start (monolithic prompt), the agent loads a minimal stub for each skill area and fetches full details only when a relevant task arises.</p>
+    <p>Why this dramatically improves performance:</p>
+    <ul>
+      <li><strong>Reduced context noise:</strong> The agent sees only instructions relevant to the current task</li>
+      <li><strong>Longer effective context window:</strong> Less space used on irrelevant instructions = more space for task data</li>
+      <li><strong>Better instruction following:</strong> Focused context → model attends to the right instructions</li>
+      <li><strong>Maintainability:</strong> Each skill is a discrete unit; updating one doesn't require touching the others</li>
+    </ul>
+    <div class="block insight">
+      <div class="block-label">💡 Structure</div>
+      <p>Each skill has a short stub (1-3 sentences) that goes in the base prompt, and a full definition that loads when triggered. The agent reads the stub → decides if this skill is relevant → loads full definition if needed. Same progressive disclosure pattern as documentation-on-demand.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Anti-Pattern</div>
+      <p>Don't decompose into too many micro-skills. If the agent needs to load 10+ skills for a single task, you've over-decomposed. Target: most tasks load 1-3 skills maximum.</p>
+    </div>
+
+    <h2 id="primitives">Humanlike Primitives</h2>
+    <p>The most important architectural question for agent tools: <em>could a skilled human do this task using bash, a text editor, and a web browser?</em> If yes, use those primitives directly. Don't build a custom tool.</p>
+    <p>StockPilot's original 12 custom tools included: get_inventory_levels, get_supplier_prices, get_historical_demand, check_order_status, create_purchase_order, update_inventory_record, get_product_metadata, search_products, get_alerts, update_alert_status, log_action, get_logs.</p>
+    <p>After refactoring: bash (for file operations and system queries), read (for loading data files), write (for updating records and creating orders). The agent uses these to accomplish everything the 12 tools did — with less code, less context, and higher reliability.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Why Primitives Win</div>
+      <p>Custom tools have three costs: implementation, maintenance, and context (each tool definition uses tokens). Bash/read/write have near-zero implementation cost, are maintained by the OS, and are described in a few tokens. The model also has extensive training on bash — it uses it fluently without extensive prompting.</p>
+    </div>
+    <p>Valid reasons to build a custom tool: the action requires an API call with authentication the agent shouldn't handle directly, the tool needs to enforce safety constraints the primitive can't, or the tool wraps a genuinely complex operation that would take many bash commands.</p>
+
+    <h2 id="sub-agents">Sub-Agents: Parallelization and Fresh Eyes</h2>
+    <p>Will's framework for when to spawn a sub-agent has exactly two valid reasons:</p>
+    <h3>Reason 1: Parallelization</h3>
+    <p>When a task can be decomposed into independent units that benefit from concurrent execution. StockPilot's supplier price queries: 5 suppliers, each requires an API call, no dependencies between them. A sub-agent per supplier runs in parallel; the orchestrator aggregates results. Wall-clock time drops by 5×.</p>
+    <h3>Reason 2: Fresh Eyes / Adversarial Review</h3>
+    <p>When a task benefits from a clean context that hasn't accumulated the biases of the working session. A sub-agent spun up with only the artifact to review — no history of how it was created — often catches errors the creating agent missed. This is the adversarial reviewer pattern: sub-agent sees the output, not the reasoning that produced it.</p>
+    <div class="block tension">
+      <div class="block-label">⚠ Wrong Reason to Sub-Agent</div>
+      <p>Don't spawn sub-agents just to decompose complex tasks. Complexity decomposition is what skills are for — they keep everything in one agent's context while still breaking the problem into manageable pieces. Sub-agents add communication overhead; skills don't.</p>
+    </div>
+
+    <h2 id="mcp">MCP: Only for Multi-Client Tool Sharing</h2>
+    <p>MCP (Model Context Protocol) allows multiple clients to share a common set of tools through a server. It's powerful for the specific case where you want multiple agents, applications, or services to have consistent access to the same capabilities.</p>
+    <p>It's overkill — and adds unnecessary complexity — when a single agent needs tool access. In that case, native code execution or bash achieves the same result faster, with less overhead, and without the MCP server maintenance burden.</p>
+    <div class="block connection">
+      <div class="block-label">📡 Decision Rule</div>
+      <p>Ask: "Will more than one client need these tools?" If no, don't use MCP. If yes, MCP is the right choice — consistent interface, centralized updates, single point of maintenance.</p>
+    </div>
+
+    <h2 id="code-execution">Code Execution Over Data Injection</h2>
+    <p>The naive approach to giving an agent data access: fetch the data, inject it into context. This has a hard limit: context windows are finite, and large datasets fill them quickly, leaving less space for reasoning.</p>
+    <p>The better approach: give the agent code execution capability and teach it to write queries. Instead of injecting 50,000 rows of inventory data, the agent writes a Python query that returns the 10 rows relevant to its current task.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Compounding Benefit</div>
+      <p>Code execution also improves accuracy. Raw data injected into context is processed by the language model's pattern matching. Data processed by code is processed by deterministic computation. For numerical analysis, aggregations, and filtering, code is both cheaper and more accurate than asking the model to process raw data.</p>
+    </div>
+    <p>StockPilot went from a 200K token context dominated by raw inventory data to a much smaller context where the agent writes queries and gets targeted results. The reduction in context size compounded with the skills refactoring to make the agent dramatically more focused on each task.</p>
+
+    <h2 id="evals">Eval-Driven Development</h2>
+    <p>Will's most consistent message: evals are not optional infrastructure. They're the mechanism by which you know whether you're improving or regressing. The 62%→92% story exists only because evals were in place to measure every change.</p>
+    <p>Practical eval framework from the talk:</p>
+    <ul>
+      <li><strong>Task distribution sampling:</strong> 50-100 real examples from production (or production-like) workload</li>
+      <li><strong>Deterministic graders:</strong> For tool call correctness, output format, required fields — binary pass/fail, no LLM involved</li>
+      <li><strong>LLM-as-judge:</strong> For quality assessment, reasoning correctness, natural language outputs — use a strong model as grader with a detailed rubric</li>
+      <li><strong>Run after every significant change:</strong> Prompt edit, tool change, architecture change — run evals, look at the delta</li>
+    </ul>
+    <div class="block insight">
+      <div class="block-label">💡 Hill Climbing</div>
+      <p>The development loop is: make a change → run evals → if score improves, keep; if not, revert or adjust. This is hill climbing on your eval metric. It works because the eval metric is a proxy for production performance — measure carefully.</p>
+    </div>
+
+    <h2 id="implications">Strategic Implications</h2>
+    <div class="block analog">
+      <div class="block-label">🔁 Software Engineering Analog</div>
+      <p>The decomposition methodology Will describes maps directly to software engineering's journey from monolithic applications to service-oriented architecture. The same instincts apply: decompose by responsibility, minimize shared state, define clean interfaces. The difference: LLM agents have skills instead of modules, and evals instead of unit tests.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">💡 The 62%→92% is Repeatable</div>
+      <p>The improvement isn't specific to StockPilot — it's a consequence of applying sound architecture principles to a system that was violating them. Any first-gen monolithic agent with these structural problems should see similar gains from systematic refactoring. The methodology is the transferable insight, not the specific numbers.</p>
+    </div>
+</div></div>
+      <div id="p-echo" class="tab-panel"><div style="padding-top:24px;">
+    <h1>⚡ Echo — Agent Decomposition: From Monolith to Modular AI Systems</h1>
+    <div class="meta"><span>Will · Anthropic</span><span>·</span><span>Code with Claude Conference 2026</span><span>·</span><span>May 2026</span></div>
+
+    <div class="hero">
+      <p><strong>Core verdict:</strong> The monolithic agent prompt is a dead end. Will's StockPilot case study is the clearest demonstration yet: shrinking a 400-line prompt to 15 lines via skills, replacing 12 custom tools with bash/read/write, and letting sub-agents handle parallelization moved eval scores from 62% to 92%. The architectural principles generalize directly: skills over long prompts, humanlike primitives over custom tools, sub-agents only for parallelization or fresh-eyes review, MCP only when tools need multi-client access.</p>
+    </div>
+
+    <h2>Hard Numbers — StockPilot Case Study</h2>
+    <dl class="kv">
+      <dt>Prompt reduction</dt><dd>400 lines → 15 lines (via skills)</dd>
+      <dt>Tool reduction</dt><dd>12 custom tools → bash + read + write</dd>
+      <dt>Eval improvement</dt><dd>62% → 92% success rate</dd>
+      <dt>Context reduction</dt><dd>200K token context → significantly reduced via code execution</dd>
+    </dl>
+
+    <h2>Decision Rules</h2>
+    <div class="block insight">
+      <div class="block-label">Rule 1: Skills over long prompts</div>
+      <p>Progressive disclosure: Claude pulls skill definitions into context only when needed. A 400-line monolithic prompt loads every instruction on every request. 15 skill stubs load only what's relevant to the current task.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">Rule 2: Humanlike primitives first</div>
+      <p>Before building a custom tool, ask: could a human do this with bash, a text editor, and a web browser? If yes, use those primitives. Custom tools add maintenance overhead and consume context space — use them only for things humans genuinely can't do.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">Rule 3: Sub-agents only for parallelization or fresh eyes</div>
+      <p>Two valid reasons to spawn a sub-agent: (1) work that can be parallelized and (2) tasks that benefit from a clean context (fresh-eyes review, adversarial checking). Don't sub-agent just to decompose complexity — that's what skills are for.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">Rule 4: MCP only for multi-client tool sharing</div>
+      <p>MCP overhead is justified only when multiple clients (agents, apps, services) need to share the same tools. Single-agent tool access should use native code execution or bash — simpler, faster, cheaper.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">Rule 5: Code execution over data injection</div>
+      <p>Instead of fetching data and injecting it into context, write code that queries data on demand. 200K token context of raw data → agent writes a query, gets exactly what it needs. Token reduction is dramatic.</p>
+    </div>
+
+    <h2>When to Use CMA Callable Agents</h2>
+    <p>CMA callable agents give you sub-agent observability — you can see what sub-tasks the sub-agent took, not just the final answer. Use when: sub-agent failures need to be debugged, sub-agent actions have side effects that need auditing, or the sub-agent's reasoning process matters for compliance.</p>
+
+    <h2>Actions</h2>
+    <ol>
+      <li>Audit your longest agent prompts — anything over 100 lines is a skills refactoring candidate</li>
+      <li>List all custom tools. For each: could it be replaced with bash/read/write? Probably yes for 60%+</li>
+      <li>Review sub-agent usage: is each one justified by parallelization or fresh-eyes review? Remove others</li>
+      <li>Move data access from context injection to code execution — measure the token reduction</li>
+      <li>Add evals before refactoring, track the 62%→92% pattern on your own systems</li>
+    </ol>
+</div></div>
+    </div>
+  </main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>
