@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Conference Intelligence — Routines & Skills Governance</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf8f4;--bg-card:#ffffff;--bg-quote:#f5f0e8;--bg-enhancement:#f8f5f0;--bg-toc:#ffffff;
+  --border:#e0dbd2;--border-accent:#d4cfc5;--text:#3a3632;--text-muted:#8a8279;--text-heading:#1a1714;
+  --accent-gold:#b8860b;--accent-blue:#2563eb;--accent-teal:#0d7377;--accent-rose:#be3a4a;
+  --accent-purple:#7c3aed;--accent-orange:#c2590a;--accent-green:#16794a;--timestamp:#8a7a6a;
+  --link:#2563eb;--shadow:rgba(0,0,0,0.06);--progress-bar:#b8860b;
+}
+html.dark {
+  --bg:#0c0f14;--bg-card:#13171e;--bg-quote:#181d27;--bg-enhancement:#1a1520;--bg-toc:#13171e;
+  --border:#2a2f3a;--border-accent:#3d4555;--text:#c8cdd8;--text-muted:#7a8194;--text-heading:#e8ecf4;
+  --accent-gold:#d4a853;--accent-blue:#5b8def;--accent-teal:#4ec9b0;--accent-rose:#d4727a;
+  --accent-purple:#a78bfa;--accent-orange:#e8915a;--accent-green:#4ade80;--timestamp:#6b7a99;
+  --link:#5b8def;--shadow:rgba(0,0,0,0.3);--progress-bar:#d4a853;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;font-weight:400;font-size:16px;line-height:1.72;-webkit-font-smoothing:antialiased;transition:background 0.3s,color 0.3s;}
+#progress-bar{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--progress-bar);z-index:9999;transition:width 0.1s linear;}
+.theme-toggle{position:fixed;top:16px;left:16px;z-index:1000;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px var(--shadow);}
+.theme-toggle:hover{border-color:var(--accent-gold);}
+.theme-toggle .icon-light{display:inline;}.theme-toggle .icon-dark{display:none;}
+html.dark .theme-toggle .icon-light{display:none;}html.dark .theme-toggle .icon-dark{display:inline;}
+.toc-hamburger{display:none;position:fixed;top:16px;left:64px;z-index:1001;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;cursor:pointer;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px var(--shadow);}
+.page-wrapper{display:flex;max-width:1200px;margin:0 auto;}
+.main-content{flex:1;max-width:820px;margin-left:260px;padding:40px 24px 120px;}
+.toc-sidebar{position:fixed;top:80px;left:max(16px,calc((100vw - 1200px)/2));width:220px;max-height:calc(100vh - 120px);overflow-y:auto;background:var(--bg-toc);border:1px solid var(--border);border-radius:8px;padding:20px;box-shadow:0 2px 12px var(--shadow);z-index:100;}
+.toc-sidebar-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:12px;}
+.toc-sidebar ul{list-style:none;}.toc-sidebar li{font-size:13px;margin-bottom:6px;line-height:1.4;}
+.toc-sidebar a{color:var(--text-muted);text-decoration:none;transition:color 0.2s;display:block;padding:2px 0;}
+.toc-sidebar a:hover,.toc-sidebar a.active{color:var(--accent-gold);}
+.toc-sidebar .toc-h3{padding-left:12px;font-size:12px;}
+.toc-divider{border:none;border-top:1px solid var(--border);margin:10px 0;}
+@media(max-width:1100px){.toc-sidebar{display:none;position:fixed;top:64px;left:16px;width:280px;max-height:70vh;}.toc-sidebar.open{display:block;}.toc-hamburger{display:flex;}.main-content{margin-left:auto;margin-right:auto;}}
+.hero{padding:60px 0 48px;border-bottom:1px solid var(--border);margin-bottom:48px;}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:20px;}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(26px,4vw,40px);line-height:1.2;color:var(--text-heading);margin-bottom:24px;letter-spacing:-0.5px;}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;font-size:14px;color:var(--text-muted);margin-bottom:16px;}
+.meta-grid .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-gold);display:block;margin-bottom:2px;}
+.mode-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-top:12px;}
+.mode-badge.full{background:var(--accent-teal);color:#fff;}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:24px;color:var(--text-heading);margin:56px 0 8px;padding-top:28px;border-top:1px solid var(--border);letter-spacing:-0.3px;line-height:1.3;scroll-margin-top:24px;}
+h3{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--text-heading);margin:32px 0 12px;line-height:1.35;scroll-margin-top:24px;}
+h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:15px;color:var(--accent-teal);margin:20px 0 8px;}
+p{margin-bottom:14px;}strong{color:var(--text-heading);font-weight:600;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.exec-summary{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:32px;margin-bottom:40px;box-shadow:0 1px 4px var(--shadow);}
+.exec-summary h2{margin-top:0;padding-top:0;border-top:none;font-size:20px;margin-bottom:20px;}
+.exec-summary ul{list-style:none;}
+.exec-summary li{position:relative;padding-left:20px;margin-bottom:16px;font-size:15px;}
+.exec-summary li::before{content:'▸';position:absolute;left:0;color:var(--accent-gold);font-weight:600;}
+blockquote{background:var(--bg-quote);border-left:3px solid var(--accent-gold);padding:16px 20px;margin:16px 0;border-radius:0 6px 6px 0;font-style:italic;color:var(--text);}
+.ts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--timestamp);background:var(--bg-card);padding:1px 6px;border-radius:3px;border:1px solid var(--border);}
+.enhancement{background:var(--bg-enhancement);border-left:3px solid;padding:14px 18px;margin:16px 0;border-radius:0 6px 6px 0;font-size:14px;}
+.enhancement.connection{border-color:var(--accent-blue);}.enhancement.analog{border-color:var(--accent-orange);}
+.enhancement.tension{border-color:var(--accent-purple);}.enhancement.against{border-color:var(--accent-rose);}
+.enhancement.insight{border-color:var(--accent-teal);}.enhancement.thesis{border-color:var(--accent-gold);}
+.enhancement.consensus{border-color:var(--accent-green);}.enhancement.verified{border-color:var(--accent-green);background:color-mix(in srgb,var(--accent-green) 8%,var(--bg-enhancement));}
+.enhancement.pattern{border-color:var(--accent-purple);background:color-mix(in srgb,var(--accent-purple) 6%,var(--bg-enhancement));}
+.enhancement-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;display:block;}
+.enhancement.connection .enhancement-label{color:var(--accent-blue);}.enhancement.analog .enhancement-label{color:var(--accent-orange);}
+.enhancement.tension .enhancement-label{color:var(--accent-purple);}.enhancement.against .enhancement-label{color:var(--accent-rose);}
+.enhancement.insight .enhancement-label{color:var(--accent-teal);}.enhancement.thesis .enhancement-label{color:var(--accent-gold);}
+.enhancement.consensus .enhancement-label{color:var(--accent-green);}.enhancement.verified .enhancement-label{color:var(--accent-green);}
+.enhancement.pattern .enhancement-label{color:var(--accent-purple);}
+.item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px 28px;margin:20px 0;box-shadow:0 1px 4px var(--shadow);}
+.item-card h3{margin-top:0;font-size:18px;margin-bottom:6px;}
+.item-card .one-liner{font-size:14px;color:var(--text-muted);font-style:italic;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.protocol-box{background:var(--bg-card);border:2px solid var(--accent-teal);border-radius:8px;padding:24px 28px;margin:24px 0;position:relative;}
+.protocol-box-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.protocol-box-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-teal);}
+.copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;background:transparent;border:1px solid var(--accent-teal);color:var(--accent-teal);padding:4px 12px;border-radius:4px;cursor:pointer;transition:all 0.2s;}
+.copy-btn:hover{background:var(--accent-teal);color:#fff;}.copy-btn.copied{background:var(--accent-green);border-color:var(--accent-green);color:#fff;}
+.protocol-box ul{list-style:none;}.protocol-box li{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;}.protocol-box li:last-child{border-bottom:none;}
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px;}
+th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-gold);text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+.echo-divider{border:none;height:2px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent);margin:80px 0 60px;}
+.echo-label{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-gold);margin-bottom:40px;}
+.video-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-bottom:8px;}
+.video-tag.v1{background:color-mix(in srgb,var(--accent-blue) 15%,var(--bg-card));color:var(--accent-blue);border:1px solid var(--accent-blue);}
+.video-tag.v2{background:color-mix(in srgb,var(--accent-teal) 15%,var(--bg-card));color:var(--accent-teal);border:1px solid var(--accent-teal);}
+.video-tag.cross{background:color-mix(in srgb,var(--accent-gold) 15%,var(--bg-card));color:var(--accent-gold);border:1px solid var(--accent-gold);}
+.references{font-size:14px;color:var(--text-muted);}.references ul{list-style:none;}.references li{padding:4px 0;}
+ul{padding-left:20px;margin-bottom:14px;}ul li{margin-bottom:6px;}
+ol{padding-left:22px;margin-bottom:14px;}ol li{margin-bottom:6px;}
+@media print{.theme-toggle,.toc-sidebar,.toc-hamburger,#progress-bar,.copy-btn{display:none !important;}body{background:#fff;color:#1a1a1a;font-size:11pt;}.main-content{max-width:100%;padding:0;}h1{font-size:24pt;}h2{font-size:18pt;}blockquote{border-left-color:#999;}}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode"><span class="icon-light">🌙</span><span class="icon-dark">☀️</span></button>
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">☰</button>
+
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#echo-v1">Echo: Routines</a></li>
+    <li class="toc-h3"><a href="#v1-bottom-line">Bottom Line</a></li>
+    <li class="toc-h3"><a href="#v1-claims">Key Claims</a></li>
+    <li class="toc-h3"><a href="#v1-actions">Quick Actions</a></li>
+    <hr class="toc-divider">
+    <li><a href="#echo-v2">Echo: Man Group</a></li>
+    <li class="toc-h3"><a href="#v2-bottom-line">Bottom Line</a></li>
+    <li class="toc-h3"><a href="#v2-claims">Key Claims</a></li>
+    <li class="toc-h3"><a href="#v2-actions">Quick Actions</a></li>
+    <hr class="toc-divider">
+    <li><a href="#synthesis">Cross-Video Synthesis</a></li>
+    <li class="toc-h3"><a href="#p1">Pattern 1: Infra Trap</a></li>
+    <li class="toc-h3"><a href="#p2">Pattern 2: Context Ceiling</a></li>
+    <li class="toc-h3"><a href="#p3">Pattern 3: Power Users</a></li>
+    <li class="toc-h3"><a href="#p4">Pattern 4: Autonomy Ladder</a></li>
+    <li class="toc-h3"><a href="#p5">Pattern 5: Teammate Frame</a></li>
+    <li class="toc-h3"><a href="#blueprint">Implementation Blueprint</a></li>
+    <hr class="toc-divider">
+    <li><a href="#sc-v1">Spark &amp; Cannon: Routines</a></li>
+    <li><a href="#sc-v2">Spark &amp; Cannon: Man Group</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+
+<!-- ═══════════════════════ ECHO V1 ═══════════════════════ -->
+
+<div class="hero" id="echo-v1">
+  <div class="hero-label">Echo — Decision-Ready Briefing · Video 1</div>
+  <div class="video-tag v1">Claude Code Conference</div>
+  <h1>Claude Code Routines: Proactive Agents Without the Infra Tax</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Maya, Anthropic Applied AI · ~22 min</div>
+    <div><span class="label">Domain</span> AI Engineering / Developer Productivity</div>
+    <div><span class="label">Reliability</span> First-party Anthropic demo — high credibility on product, unverified on internal stats</div>
+    <div><span class="label">Content Type</span> Product demo + workshop</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<h2 id="v1-bottom-line">⚡ The Bottom Line</h2>
+<ul>
+  <li><strong>Routines eliminates the DIY infrastructure tax for proactive Claude Code agents.</strong> No more managing cron jobs, hosting, auth, or session state — define a prompt, repos, connectors, and trigger. Claude Code handles the rest.</li>
+  <li><strong>The paradigm shifts from agent-as-tool to agent-as-teammate.</strong> A tool waits for you. A teammate notices problems and acts on them.</li>
+  <li><strong>Anthropic's own docs crisis birthed this feature.</strong> Claude Code PRs up 200% — one engineer maintaining documentation. Routines automated the gap.</li>
+  <li><strong>Three decisions define every Routine:</strong> trigger (when), context (what Claude knows), steerability (how you stay honest).</li>
+  <li><strong>Agent-on-agent review is the recommended quality gate.</strong> One Routine generates; a second Routine critiques before any human reviews.</li>
+</ul>
+
+<h2 id="v1-claims">🔑 Key Claims (Ranked)</h2>
+
+<h3>1. Live production use: Anthropic uses Routines internally for docs sync</h3>
+<p>↳ <strong>Evidence:</strong> Demoed live — weekly Routine that diffs Claude Code source vs. docs repo and opens PRs for gaps.<br>
+↳ <strong>Caveat:</strong> Anthropic using its own product — credible but not a neutral third party.</p>
+
+<h3>2. Two trigger types: schedule-based and event-based (GitHub native + custom webhook)</h3>
+<p>↳ <strong>Evidence:</strong> Both demoed — Monday 10am schedule Routine and GitHub <code>issue.opened</code> event Routine.<br>
+↳ <strong>Caveat:</strong> Custom webhook requires your system to POST to the Routine endpoint.</p>
+
+<h3>3. Every Routine is a standard Claude Code session — fully observable, steerable, resumable</h3>
+<p>↳ <strong>Evidence:</strong> Mid-demo, Maya typed into a running session to stop it in real time. Works from web, CLI, desktop.<br>
+↳ <strong>Caveat:</strong> None flagged.</p>
+
+<h3>4. Agent-on-agent review (generator-critique) replicable as two Routines</h3>
+<p>↳ <strong>Evidence:</strong> Described as a pattern; Routine A creates PR → triggers Routine B → B leaves review comments.<br>
+↳ <strong>Caveat:</strong> Quality of critique Routine depends entirely on prompt quality.</p>
+
+<h3>5. Context ceiling rule: Claude's success is bounded by its context</h3>
+<blockquote>"Whatever context Claude has, that's the ceiling of how successful Claude will be." <span class="ts">11:46</span></blockquote>
+
+<h3>6. Progressive autonomy: watch → steer → review → trust → delegate</h3>
+<p>↳ <strong>Evidence:</strong> Deploy verifier use case — human starts reviewing Claude's output, eventually authorises autonomous rollback.<br>
+↳ <strong>Caveat:</strong> Trust progression timeframe not quantified.</p>
+
+<h3>7. Setup is a single <code>/schedule</code> command</h3>
+<p>↳ <strong>Evidence:</strong> Demoed live. Claude asks follow-up questions, generates structured instructions, creates the Routine.<br>
+↳ <strong>Caveat:</strong> None.</p>
+
+<h2 id="v1-actions">⚡ Quick Actions</h2>
+<table>
+  <thead><tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr></thead>
+  <tbody>
+    <tr><td>Create first Routine</td><td><code>/schedule</code> in Claude Code terminal</td><td>Immediately, for any recurring task</td><td>Plain English → Claude generates structured instructions + creates Routine</td></tr>
+    <tr><td>Docs sync Routine</td><td>Weekly schedule, 2 repos (source + docs), GitHub + Slack connectors</td><td>Every Monday or at release</td><td>"Diff changes and open PR if gaps found" — with Slack ping on completion</td></tr>
+    <tr><td>Deploy verifier</td><td>CD pipeline POST to Routine webhook</td><td>After every deploy</td><td>Pass service name and deploy context in webhook payload; give Datadog/Grafana access</td></tr>
+    <tr><td>Agent-on-agent review</td><td>Second Routine triggered by first Routine's PR creation</td><td>Every time generating Routine opens a PR</td><td>Critique prompt: "Review this PR for accuracy before human review"</td></tr>
+    <tr><td>Live steering</td><td>Open claude.ai web → navigate to running session</td><td>Any time Routine is active</td><td>Type directly into session to redirect or stop</td></tr>
+    <tr><td>GitHub event Routine</td><td><code>issue.opened</code> trigger on target repo</td><td>Every new issue with target label</td><td>Add label filter (e.g., <code>needs-docs</code>) to reduce false positives</td></tr>
+  </tbody>
+</table>
+
+<h2>💬 Best Quotes</h2>
+<blockquote>"A teammate notices when something breaks and does something about it. Right now, a tool waits for you to enter your prompt and actually press enter." <span class="ts">02:00</span></blockquote>
+<blockquote>"Maybe eventually as I watch Claude work more and more and trust its decisions, I can let Claude roll back the change itself." <span class="ts">20:21</span></blockquote>
+
+<hr class="echo-divider">
+<div class="echo-label">Echo — Decision-Ready Briefing · Video 2</div>
+
+<!-- ═══════════════════════ ECHO V2 ═══════════════════════ -->
+
+<div class="hero" id="echo-v2">
+  <div class="video-tag v2">Claude Code Conference</div>
+  <h1>Man Group: Skills Governance Is the Enterprise AI Moat</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Tashara Fernando, Head of Data & AI, Man Group · ~20 min</div>
+    <div><span class="label">Domain</span> Enterprise AI / Agentic Systems / Quant Finance</div>
+    <div><span class="label">Reliability</span> First-party practitioner, live production deployment with real capital. High credibility.</div>
+    <div><span class="label">Content Type</span> Executive case study + practitioner lessons</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<h2 id="v2-bottom-line">⚡ The Bottom Line</h2>
+<ul>
+  <li><strong>AI-generated trading signals are in live production at Man Group, running real pension capital.</strong> Full pipeline — idea → data → backtest → proposal → productionisation — AI-driven, human-reviewed.</li>
+  <li><strong>The signal is easy. The governed workflows beneath it are the moat.</strong> Shared backtest infrastructure ensures results are comparable across teams. Without it, you can't trust your own signals.</li>
+  <li><strong>Man Group learned governance the hard way.</strong> Power users, not process owners, built the early skills. Local optimisations spread org-wide. The fix required a complete governance rebuild.</li>
+  <li><strong>Skills governance — not adoption — is the enterprise AI unlock.</strong> A library with ownership, testing, lifecycle, and visibility is the foundation everything else is built on.</li>
+  <li><strong>Your organisational context is your moat. Frontier labs cannot give it to you.</strong> The work is exposing what you already know, not learning new things.</li>
+</ul>
+
+<h2 id="v2-claims">🔑 Key Claims (Ranked)</h2>
+
+<h3>1. AI-driven trading signals live in production at a regulated $200B AUM investment firm</h3>
+<p>↳ <strong>Evidence:</strong> Fernando states directly; describes full pipeline. Humans reviewed but AI was "at the centre of the process."<br>
+↳ <strong>Caveat:</strong> Specific signal, returns, and asset class not disclosed — proprietary IP.<br>
+↳ <strong>Consensus:</strong> Contrarian in degree of automation; AI-assisted quant research is mainstream but full-pipeline AI ownership is at the frontier.</p>
+
+<h3>2. The iceberg problem: workflows beneath the signal must be shared to make results comparable</h3>
+<blockquote>"Think of it like an iceberg. The signal is the tip. Underneath it are all of the workflows that make it possible." <span class="ts">06:24</span></blockquote>
+
+<h3>3. Power users, not process owners, will build your first wave of skills</h3>
+<p>↳ <strong>Evidence:</strong> Expense report story — cost centre hardcoded to one user, distributed org-wide, wrong approval routing across departments.<br>
+↳ <strong>Consensus:</strong> Fernando confirmed audience recognition across the room.</p>
+
+<h3>4. 750 of ~1,700 Man Group employees use Claude Code (44% of the firm)</h3>
+<p>↳ Spans: developers, quants, people team, finance team — all departments. 100+ governed skills, 100+ community skills.</p>
+
+<h3>5. Credit card spend signal outperforms buy-and-hold: $1K in 2021 → ~$2,500</h3>
+<p>↳ <strong>Caveat:</strong> Illustrative demo case; in-sample backtest. Not actual Man Group trading performance.</p>
+
+<h3>6. Frontier labs will not solve organisational context for you</h3>
+<blockquote>"The frontier labs are not going to solve context for you. It's not on the internet. They don't know your workflows. And you already have that context. You have decades of it. The work is on exposing it, not reinventing it." <span class="ts">16:59</span></blockquote>
+
+<h3>7. Plan governance before you plan rollout</h3>
+<blockquote>"Decide this before shipping the first skill, not after the hundredth like us." <span class="ts">17:39</span></blockquote>
+
+<h2 id="v2-actions">⚡ Quick Actions</h2>
+<table>
+  <thead><tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr></thead>
+  <tbody>
+    <tr><td>Governance-first rollout</td><td>Define ownership, review, testing, and retirement process</td><td>Before first skill ships</td><td>Assign workflow owner (not power user) to each managed skill</td></tr>
+    <tr><td>Skills eval requirement</td><td>Every managed skill must have associated evals</td><td>Before promotion from community to managed</td><td>Test with real workflow scenarios, not synthetic inputs</td></tr>
+    <tr><td>Power user audit</td><td>Review existing skills for process-owner sign-off</td><td>Immediately if you have unreviewed skills</td><td>Look for hardcoded values, personal assumptions, missing parameterisation</td></tr>
+    <tr><td>Lifecycle tracking</td><td>Assign create/publish/review/retire dates to all managed skills</td><td>On-going, review quarterly</td><td>Retire unused skills; flag skills with high error rates in evals</td></tr>
+    <tr><td>Skills catalogue</td><td>Searchable, tagged catalogue visible to all employees</td><td>At launch of skills programme</td><td>Separate "managed" from "community" tiers visually</td></tr>
+    <tr><td>Plugin creation</td><td>Group 3–6 related skills into a domain plugin</td><td>When a functional cluster reaches critical mass</td><td>Plugins lower barrier to onboarding for non-technical users</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════ CROSS-VIDEO SYNTHESIS ═══════════════════════ -->
+
+<hr class="echo-divider">
+<div class="echo-label">Cross-Video Synthesis — Patterns &amp; Implementation Intelligence</div>
+
+<div class="hero" id="synthesis">
+  <div class="video-tag cross">Cross-Video Analysis</div>
+  <h1>Five Convergent Patterns: What Both Videos Are Really Saying</h1>
+  <div class="meta-grid">
+    <div><span class="label">Videos Analysed</span> 2 of 3 (Video 3 transcript unavailable — new upload)</div>
+    <div><span class="label">Domain</span> Agentic AI / Enterprise Implementation</div>
+  </div>
+</div>
+
+<div class="exec-summary">
+  <h2>The Convergent Thesis</h2>
+  <ul>
+    <li><strong>Both videos independently arrive at the same root insight:</strong> the constraint is not model intelligence — it is context quality and workflow governance. Fix those, and agents become genuinely powerful. Ignore them, and you get sophisticated chaos.</li>
+    <li><strong>Both videos warn against the same trap:</strong> letting individual teams build ungoverned, locally-optimised solutions that can't be shared or composed. Routines solves this at the infrastructure layer; Man Group solves it at the skills layer.</li>
+    <li><strong>Both videos describe the same trust ladder:</strong> progressive autonomy earned through demonstrated reliability, not granted upfront.</li>
+    <li><strong>Your organisational context is the moat that no frontier lab can replicate.</strong> The work of AI adoption is not learning to use AI — it is exposing your existing institutional knowledge in a form AI can access and act on.</li>
+  </ul>
+</div>
+
+<h2 id="p1">🧱 Pattern 1: The Infrastructure-First Trap</h2>
+
+<div class="enhancement pattern">
+  <span class="enhancement-label">🔄 Cross-Video Pattern</span>
+  Both videos identify the same failure mode: teams default to building their own version of infrastructure-level concerns rather than sharing a common foundation. The cost is duplication, incomparability, and fragility.
+</div>
+
+<p><strong>Video 1 (Routines):</strong> Before Routines, building proactive agents required managing hosting, cron jobs, session state, auth, and observability. Teams spent engineering effort on infra boilerplate instead of domain logic.</p>
+<p><strong>Video 2 (Man Group):</strong> Before governance, teams each built their own backtest workflows, data cleaning logic, and compute infrastructure. Effort was duplicated; results were incomparable across teams.</p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Before building any agent capability, identify what is "infrastructure" (should be shared, governed, maintained) vs. what is "signal" (the domain-specific logic your team actually owns). Build the infrastructure layer once. Let domain experts focus on signal.
+</div>
+
+<h2 id="p2">🎯 Pattern 2: Context Is the Ceiling — Consistently</h2>
+
+<p><strong>Video 1 (Maya, direct):</strong> "Whatever context Claude has, that's the ceiling of how successful Claude will be."</p>
+<p><strong>Video 2 (Fernando, direct):</strong> "Out of the box, Claude is an amazing general purpose tool. It does a lot, but it doesn't know us. It doesn't know our data. It doesn't know our systems. It doesn't know how we work."</p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  Claude's raw intelligence is not the constraint. The constraint is the quality of context it can access at runtime. The competitive advantage is in context, not in the model. Frontier labs cannot give you your organisational context — it's not on the internet. You already have it. The work is <em>exposing</em> it.
+</div>
+
+<p><strong>Actionable:</strong> Treat context assembly as a first-class engineering concern. For every agent workflow, map: What proprietary data does it need? What institutional knowledge must it have? What workflows must it know about? The context map IS the competitive moat.</p>
+
+<h2 id="p3">⚡ Pattern 3: Power User Trap → Governance Must Precede Scale</h2>
+
+<div class="enhancement tension">
+  <span class="enhancement-label">⚡ Cross-Video Tension</span>
+  Adoption energy is valuable but dangerous without governance structure. Man Group: "everybody was writing skills — adoption was out of this world." Then: expense reports routing to the wrong cost centre. The energy of early adoption will outrun governance if you don't build governance first.
+</div>
+
+<p><strong>The specific failure mode:</strong> The person who <em>can</em> build the skill (power user) is not the person who <em>should</em> own the skill (process owner). These are almost always different people. The power user optimises for themselves. The process owner understands downstream consequences.</p>
+
+<p><strong>Before launching any skills programme:</strong></p>
+<ol>
+  <li>Map skills to process owners (not to whoever builds them first)</li>
+  <li>Define: Who reviews? Who approves? Who retires? Who tests?</li>
+  <li>Establish managed vs. community tiers before the first skill ships</li>
+  <li>Build a searchable catalogue — visibility is governance infrastructure</li>
+  <li>Add evals to every managed skill before promotion</li>
+</ol>
+
+<h2 id="p4">📈 Pattern 4: Progressive Autonomy — Both Videos Describe the Same Trust Ladder</h2>
+
+<table>
+  <thead><tr><th>Stage</th><th>Human Role</th><th>Claude Role</th><th>Video 1 Example</th><th>Video 2 Example</th></tr></thead>
+  <tbody>
+    <tr><td><strong>1. Watch</strong></td><td>Monitors every run</td><td>Executes, reports</td><td>Read Claude's analysis in web UI</td><td>Review AI-proposed signal</td></tr>
+    <tr><td><strong>2. Steer</strong></td><td>Available to redirect mid-run</td><td>Executes, adapts</td><td>Type into running Routine session</td><td>Adjust research direction</td></tr>
+    <tr><td><strong>3. Review</strong></td><td>Reviews output before action</td><td>Recommends go/no-go</td><td>Approve rollback decision</td><td>Sign off on signal before production</td></tr>
+    <tr><td><strong>4. Trust</strong></td><td>Notified post-action</td><td>Executes autonomously</td><td>Claude rolls back deploy, notifies you</td><td>AI productionises signal with oversight</td></tr>
+    <tr><td><strong>5. Delegate</strong></td><td>Exception-only alerting</td><td>Full autonomy</td><td>(future)</td><td>"Swarms of agents" finding opportunities</td></tr>
+  </tbody>
+</table>
+
+<div class="enhancement analog">
+  <span class="enhancement-label">📜 Analog</span>
+  The trust ladder mirrors onboarding a junior engineer. You pair-program first (watch), review their PRs (steer/review), then approve merges without reading every line (trust). The Routine or the AI researcher is a new hire that earns autonomy through demonstrated reliability.
+</div>
+
+<h2 id="p5">🤝 Pattern 5: The "Teammate Not Tool" Reframe</h2>
+
+<p><strong>Video 1 (Maya):</strong> "We want to take Claude Code from a tool today into a teammate of tomorrow. A teammate notices when something breaks and does something about it."</p>
+<p><strong>Video 2 (Fernando):</strong> "In the not too distant future, I can see us having swarms of agents leveraging those skills to look for new investment opportunities."</p>
+
+<p>The infrastructure (Routines) and the governance (skills) are the preconditions for this shift. You can't have autonomous teammates without reliable infrastructure and trustworthy workflows. The two talks together describe the full stack: Routines provides the execution layer; governed skills provide the domain knowledge layer.</p>
+
+<h2 id="blueprint">🏗️ Implementation Blueprint</h2>
+
+<div class="item-card">
+  <h3>Phase 1: Context Mapping</h3>
+  <div class="one-liner">Before any code — identify your iceberg</div>
+  <ul>
+    <li>Map the workflows that sit <em>beneath</em> the AI-visible surface of your work</li>
+    <li>For each workflow: what data, terminology, decision rules, and output formats does Claude need?</li>
+    <li>Identify process owners — not "who can build this" but "who is accountable for this in production?"</li>
+  </ul>
+</div>
+
+<div class="item-card">
+  <h3>Phase 2: Governance Architecture</h3>
+  <div class="one-liner">Before first skill ships — build the library</div>
+  <ul>
+    <li>Define managed (formal) vs. community (experimental) skill tiers</li>
+    <li>Assign every managed skill to its process owner, not the developer who built it</li>
+    <li>Build a searchable, tagged catalogue visible to everyone — even with 3 skills</li>
+    <li>Write evals for every managed skill before publishing</li>
+    <li>Define the lifecycle: create → draft → review → publish → track → update → retire</li>
+  </ul>
+</div>
+
+<div class="item-card">
+  <h3>Phase 3: Trigger Architecture</h3>
+  <div class="one-liner">Deciding what fires what — schedule vs. event</div>
+  <ul>
+    <li><strong>Schedule triggers:</strong> What recurring work could Claude do instead? (Docs sync, report generation, backlog review, data pulls)</li>
+    <li><strong>Event triggers:</strong> What events in your systems should kick off an agent? (PR merged, issue opened, deploy completed, alert fired)</li>
+    <li>Define context per trigger: what does the agent need when each event fires? What goes in the payload?</li>
+  </ul>
+</div>
+
+<div class="item-card">
+  <h3>Phase 4: Quality Gates</h3>
+  <div class="one-liner">Steerability and verification before you step back</div>
+  <ul>
+    <li>Build agent-on-agent review: second Routine triggered by first's PR or output</li>
+    <li>Set your current autonomy stage per workflow (stages 1–5 above)</li>
+    <li>Define the evidence required to advance to the next stage</li>
+    <li>Build output verification into the workflow — render, test, or run Claude's outputs before closing the loop</li>
+  </ul>
+</div>
+
+<div class="item-card">
+  <h3>Phase 5: Scaling</h3>
+  <div class="one-liner">Once the foundation is solid</div>
+  <ul>
+    <li>Group skills into domain plugins (Research, Trading, Legal, Engineering, etc.)</li>
+    <li>Track usage — identify what's used, misused, or dormant</li>
+    <li>Enable agent composition: with governed skills, agents can compose them for complex multi-step tasks</li>
+    <li>The Man Group systematic trading pipeline is 4 skills composed: data search → visualisation → backtest → distributed compute</li>
+  </ul>
+</div>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 The Single Most Underrated Insight Across Both Videos</span>
+  <strong>Man Group:</strong> "The frontier labs are not going to solve context for you. It's not on the internet. They don't know your workflows. And you already have that context. You have decades of it. The work is on exposing it, not reinventing it."<br><br>
+  The organisations that win the agentic AI transition will not have the best prompts or the fanciest models. They will be the ones that best capture, govern, and expose their existing institutional knowledge. Your workflows are the moat. Skills are the mechanism. Governance is the prerequisite.
+</div>
+
+<!-- ═══════════════════════ SPARK & CANNON V1 ═══════════════════════ -->
+
+<hr class="echo-divider">
+<div class="echo-label">Spark &amp; Cannon — Deep Archival Transcript · Video 1</div>
+
+<div class="hero" id="sc-v1">
+  <div class="video-tag v1">Claude Code Conference · Video 1</div>
+  <h1>Claude Code Routines: Proactive Agents as Teammates, Not Tools</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Maya, Anthropic Applied AI</div>
+    <div><span class="label">Domain</span> AI Engineering / Developer Productivity</div>
+    <div><span class="label">Duration</span> ~22 min</div>
+    <div><span class="label">Date</span> Code with Claude Conference, 2026</div>
+  </div>
+  <p><strong>Speakers:</strong> Maya — Applied AI team, Anthropic (product &amp; customer deployment) · Sarah (referenced) — Documentation engineer, Anthropic</p>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="exec-summary" id="v1-exec">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>Coding agents should act, not wait — Routines transforms Claude Code from reactive tool to proactive teammate.</strong> The core thesis: "a teammate notices when something breaks and does something about it. A tool waits for you to press enter."</li>
+    <li><strong>Three hard problems with DIY proactive agents are eliminated:</strong> hosting (managed infra), triggering (schedule + event), observability (steerable, resumable sessions from web/CLI/desktop).</li>
+    <li><strong>Anthropic's internal docs team is the proof case.</strong> Weekly PRs up 200%, one engineer maintaining docs. Sarah automated documentation sync with two Routines.</li>
+    <li><strong>Three decisions define every Routine:</strong> trigger (when), context (what Claude knows), steerability (how you keep it honest).</li>
+    <li><strong>Event-based triggers + custom webhooks turn any external system into a Routine trigger.</strong> CD pipeline, monitoring alert, Zapier trigger, Slack slash command — all valid without glue code.</li>
+    <li><strong>Agent-on-agent review (generator-critique pattern) is the recommended quality gate</strong> — borrowed explicitly from multi-agent system design.</li>
+    <li><strong>Progressive autonomy: watch → steer → review → trust → delegate.</strong> Routines are designed for earned, graduated autonomy — not upfront trust.</li>
+  </ul>
+</div>
+
+<h2 id="v1-problem">🧱 The Problem: Three Friction Points in Proactive Agents</h2>
+<blockquote>"We believe coding agents shouldn't wait for you to press enter to get started."</blockquote>
+
+<p><strong>1. Where do agents run?</strong> Running on a local machine means if your laptop closes, the session dies. Managing around this requires hosting, data persistence, and authentication — substantial infrastructure before a single prompt is written. <span class="ts">00:03</span></p>
+<p><strong>2. When do agents trigger?</strong> Today's options are cron jobs or custom webhook endpoints you spin up and maintain yourself. <span class="ts">00:04</span></p>
+<p><strong>3. How do you observe and steer them?</strong> Headless Claude Code sessions give no real-time visibility. No way to watch, steer, bound, or resume. You either babysit it or fly blind. <span class="ts">00:04</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The gap between "reactive tool" and "proactive teammate" is not a model capability gap — it's an infrastructure gap. The model can already do the work. Routines abstracts away the scaffolding to trigger, host, and observe it reliably.
+</div>
+
+<h2 id="v1-architecture">⚙️ What Routines Is — Architecture & Capabilities</h2>
+<blockquote>"It's an automation where you can kick off a remote Claude Code session by only defining the prompt, what repos you want to connect it to, what connectors it has available to work with, and a trigger. Claude Code handles the rest."</blockquote>
+
+<p><strong>Always available:</strong> Runs on Claude Code's managed infrastructure. Hosting, session state, connector auth handled by Anthropic. Nothing depends on your laptop. <span class="ts">00:05</span></p>
+<p><strong>Customisable triggers:</strong> Time-based (cron schedule) or event-based (GitHub events natively, or custom webhook POST from your own code). <span class="ts">00:05</span></p>
+<p><strong>Interactive and steerable:</strong> Every Routine is a regular Claude Code session under the hood. Open on web, CLI, or desktop. Watch live, ask questions mid-session, redirect, resume past sessions. <span class="ts">00:06</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Routines → Claude Code Sessions: "Just a Claude Code session under the hood" means all existing capabilities — tool use, MCP connectors, repo access — are fully available. Routines adds scheduling and lifecycle management on top without replacing the core execution model.
+</div>
+
+<h2 id="v1-three-decisions">🎯 The Three Decisions Framework</h2>
+
+<h3>Decision 1: Trigger — When does it run?</h3>
+<p><strong>Schedule-based:</strong> Deterministic periodic runs. "Every Monday, compare source code changes to docs repo and open a PR for any gaps."</p>
+<p><strong>Event-based options:</strong> Native GitHub events (issue opens, PR merges, label changes, release cuts). Custom webhook: POST from your own code — CD pipeline, monitoring alert, any external system. Event payload passed as context to the session. <span class="ts">00:09–10</span></p>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The custom webhook trigger is underrated. ANY system that can fire a POST request can initiate a Claude Code session with rich context. CI/CD, monitoring alerts, Zapier, Slack slash commands — all become valid Routine triggers without glue code.
+</div>
+
+<h3>Decision 2: Context — What does the agent know?</h3>
+<blockquote>"Whatever context Claude has, that's the ceiling of how successful Claude will be." <span class="ts">11:46</span></blockquote>
+<p>Practical checklist: one or more repos (read + write), external document stores (Drive, Notion), communication connectors (Slack, email), monitoring tools (Datadog, Grafana), domain-specific MCPs.</p>
+
+<h3>Decision 3: Steerability — How do you ensure quality?</h3>
+<p><strong>Agent-on-agent review:</strong> Routine A creates docs PRs. Routine B triggers on PR creation, leaves review comments before humans see it. The generator-critique pattern, natively. <span class="ts">00:12</span></p>
+<p><strong>Live oversight:</strong> Open Claude Code on web, watch live, ask questions or redirect mid-run. Demonstrated live — Maya typed "I've already made these changes" and the session stopped. <span class="ts">00:12–17</span></p>
+<p><strong>Output verification:</strong> Render the actual page Claude changed. Confirm outputs are what you expect. Build verification into the workflow. <span class="ts">00:13</span></p>
+
+<div class="connection enhancement">
+  <span class="enhancement-label">🔗 Connection</span>
+  Generator-Critique Pattern → Routines: Two Routines with the right triggers = a native two-agent QA pipeline. No custom orchestration code required.
+</div>
+
+<h2 id="v1-usecases">🏗️ Use Cases Demonstrated</h2>
+<h3>Weekly Docs Sync (Anthropic Internal)</h3>
+<p>Trigger: Every Monday 10am. Repos: Claude Code source + docs repo. Connectors: GitHub (PRs) + Slack (notifications). Result: Claude reads changelogs, finds gaps, opens PRs automatically. <span class="ts">00:07–15</span></p>
+
+<h3>GitHub Issue → Docs Gap Routine</h3>
+<p>Trigger: <code>issue.opened</code> on docs repo. Prompt: investigate issue, determine if documentation gap, if yes open PR and ping Slack. Event payload (issue content) passed as context. Demoed live — issue created, Routine fires within seconds. <span class="ts">00:15–17</span></p>
+
+<h3>Deploy Verifier</h3>
+<p>Trigger: CD pipeline POSTs after every deploy. Context: Source code + Datadog/Grafana + Slack/Twilio. Progression: Claude gives go/no-go → human decides rollback → eventually Claude rolls back autonomously. <span class="ts">00:17–20</span></p>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Routines Protocol Cheat Sheet</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li>Create Routine: /schedule in Claude Code terminal → describe in plain English → answer Claude's questions</li>
+    <li>Schedule trigger: "Every Monday at 10am", "Daily at 9am", "Weekly on Fridays"</li>
+    <li>GitHub event trigger: issue.opened, pull_request.merged, push (with label filter)</li>
+    <li>Custom webhook: POST to Routine endpoint from any external system (CI/CD, monitoring, etc.)</li>
+    <li>Context must include: repos needed (source + target), notification connectors (Slack/email), monitoring tools (Datadog MCPs)</li>
+    <li>Quality gate: second Routine triggered by first's PR creation for agent-on-agent review</li>
+    <li>Live steer: open claude.ai web → type directly into running session to redirect or stop</li>
+    <li>Output verification: render/test Claude's output before closing the loop</li>
+    <li>Autonomy progression: define current stage (1-5) and criteria to advance before deploying</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════ SPARK & CANNON V2 ═══════════════════════ -->
+
+<hr class="echo-divider">
+<div class="echo-label">Spark &amp; Cannon — Deep Archival Transcript · Video 2</div>
+
+<div class="hero" id="sc-v2">
+  <div class="video-tag v2">Claude Code Conference · Video 2</div>
+  <h1>Skills Governance Is the Enterprise AI Moat — Man Group's $200B Lesson</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Tashara Fernando, Head of Data & AI, Man Group</div>
+    <div><span class="label">Domain</span> Enterprise AI / Quant Finance / Agentic Systems</div>
+    <div><span class="label">Duration</span> ~20 min</div>
+    <div><span class="label">Date</span> Code with Claude Conference, 2026</div>
+  </div>
+  <p><strong>Speaker:</strong> Tashara Fernando — Head of Data & AI, Man Group ($200B+ AUM alternative investment manager)</p>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<div class="exec-summary" id="v2-exec">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>AI-generated trading signals are live in production at Man Group, running real pension capital.</strong> Full pipeline — idea generation, data retrieval, backtesting, strategy write-up, productionisation — AI-driven with human review at the end.</li>
+    <li><strong>The tip of the iceberg problem: the signal is easy, the workflows beneath it are everything.</strong> Shared backtest infrastructure makes results comparable. Without it, you can't trust your own signals.</li>
+    <li><strong>Man Group got adoption right and governance wrong — and had to rebuild.</strong> Power users, not process owners, built early skills. Local optimisations spread org-wide. Skills governance — not adoption — is the real unlock.</li>
+    <li><strong>The fix: a skill library modelled on a real library.</strong> Every skill visible, tagged, tested with evals, owned by the workflow owner, tracked, reviewed on a lifecycle, accessible to all.</li>
+    <li><strong>750 of ~1,700 employees now use Claude Code across every department.</strong> 100+ governed skills. Platform now capable of AI-assisted systematic trading at production scale.</li>
+  </ul>
+</div>
+
+<h2 id="v2-stakes">💰 What's Actually at Stake</h2>
+<blockquote>"We manage real people's money — teachers in Canada, metal workers in Japan. If we get this wrong, we could lose real money."</blockquote>
+<p>This stakes framing explains why governance is non-negotiable. You cannot apply "move fast and iterate" culture to systematic trading at a $200B AUM regulated firm. The standard for AI outputs is: sensible, reviewed, explainable. <span class="ts">00:00–01</span></p>
+
+<h2 id="v2-trading">📊 What AI Is Actually Automating in Systematic Trading</h2>
+<p>A trading signal ranks securities by some factor and goes long the top, short the bottom. Backtest evaluation metrics: annualised return, drawdown (peak-to-trough loss), Sharpe ratio (return vs. volatility). Man Group runs 15+ year historical windows through multiple macro environments. <span class="ts">00:01–04</span></p>
+
+<p><strong>The full AI-driven pipeline Man Group achieved:</strong> AI generated the signal idea → AI retrieved the data → AI ran the backtest → AI wrote the strategy proposal → AI productionised the signal → Humans reviewed for sanity.</p>
+
+<blockquote>"There are trading signals running right now in production at Man Group, a regulated investment firm running real capital, that were researched, backtested and proposed by AI." <span class="ts">04:38</span></blockquote>
+
+<div class="enhancement consensus">
+  <span class="enhancement-label">🌐 Consensus Check</span>
+  AI-assisted quantitative research is mainstream at hedge funds. What is notable is the <em>degree</em> of autonomy — the full pipeline end-to-end — and the use of Claude Code as the orchestration layer rather than traditional quant libraries. This represents a meaningful shift from AI-assisted to AI-driven research.
+</div>
+
+<h2 id="v2-iceberg">🧊 The Iceberg Problem</h2>
+<blockquote>"Think of it like an iceberg. The signal is the tip. Underneath it are all of the workflows that make it possible."</blockquote>
+<p>Beneath the signal: data cleaning, price stitching, outlier detection, backtest infrastructure, distributed execution, result aggregation. <strong>The consistency problem:</strong> If Team A runs backtest workflow v1.2 and Team B runs v1.4, results are incomparable — you can't tell if Signal A genuinely outperforms Signal B or just measures differently. <span class="ts">00:06–07</span></p>
+
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Iceberg → Skills Governance: The workflows beneath the signal are exactly what skills encode. A well-governed backtest skill means every team runs the same version, producing comparable outputs. The skill is a measurement standardisation mechanism.
+</div>
+
+<h2 id="v2-failure">❌ The Power User Trap — What Man Group Got Wrong</h2>
+<blockquote>"It was really the power users that were building the skills. It wasn't the process owners."</blockquote>
+
+<p>Man Group's first wave: workshops, hackathons, show-and-tell sessions, blog posts, Anthropic-assisted training. Adoption was "out of this world." Then the cracks appeared. <span class="ts">00:08–09</span></p>
+
+<p><strong>The expense report story:</strong> A frequent traveller built a skill for expense receipts with Claude. Shared at show-and-tell. Teammates used it. Days later: the Sales expense approver was getting Technology and People Team expenses — because the cost centre code was hardcoded to one user's department. Nobody had reviewed the skill. <span class="ts">00:09–10</span></p>
+
+<blockquote>"People were just codifying their ways of doing things. They weren't the organisational ways of doing things." <span class="ts">10:46</span></blockquote>
+
+<div class="enhancement tension">
+  <span class="enhancement-label">⚡ Tension</span>
+  At (00:08) Fernando celebrates adoption: "everybody was writing skills, out of this world." At (00:09) that same adoption created dysfunction. The lesson: adoption energy and governance structure must be built simultaneously — governance can't be retrofitted after 100 skills.
+</div>
+
+<h2 id="v2-fix">✅ The Fix — Skills Governance as the Secret Sauce</h2>
+<p>The Man Group solution: a <strong>common skills marketplace modelled on a library.</strong> Every skill has visibility, tagging, evals-based testing, clear ownership (workflow owner, not power user), usage tracking, review process, and a retirement path. <span class="ts">00:11–13</span></p>
+
+<p><strong>Managed vs. Community tiers:</strong> Managed = formally governed, owned by workflow owners, tested, maintained. Community = experimental, visible and cared for, lighter governance.</p>
+
+<div class="enhancement analog">
+  <span class="enhancement-label">📜 Analog</span>
+  The library model maps exactly to software package management: npm, PyPI, Homebrew. All solve "anyone can publish, how do we trust it?" with maintainer identity, version history, download counts, deprecation notices. Man Group is building the npm for AI skills — and npm's lesson is that governance matters more than quantity.
+</div>
+
+<h2 id="v2-demo">📊 The Demo: Credit Card Signal in 4 Skills</h2>
+<p>1. Alternative data set skill → identifies US consumer credit card transaction dataset<br>
+2. Visualisation skill → plots Amazon monthly credit card spend vs. stock price; reveals seasonal correlation (Black Friday, Christmas spikes)<br>
+3. Backtesting skill → credit card spend peaks correlate with P&L; $1K in 2021 → ~$2,500; outperforms buy-and-hold<br>
+4. Distributed compute skill → scales across broader retail universe; one worker per security, findings collected centrally <span class="ts">00:13–19</span></p>
+
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The distributed compute pattern — one worker per security, centrally aggregated — is a direct consequence of governed shared infrastructure skills. If every team ran their own compute workflow, you couldn't parallelise like this. Governance enables scale.
+</div>
+
+<h2 id="v2-lessons">🎓 What Man Group Would Tell Their Past Selves</h2>
+<ol>
+  <li><strong>Focus on organisational context — it's your IP and moat.</strong> "The frontier labs are not going to solve context for you." The work is exposing what you already have. <span class="ts">00:16–17</span></li>
+  <li><strong>Treat skills like production code</strong> — because they will run in automated pipelines with dependencies. Plan for versioning, testing, deprecation. <span class="ts">00:17</span></li>
+  <li><strong>Plan governance before rollout.</strong> "Decide this before shipping the first skill, not after the hundredth like us." <span class="ts">00:17</span></li>
+  <li><strong>Adoption is a people problem, not a licensing problem.</strong> Engagement requires outreach, training, and active cultivation — not just access. <span class="ts">00:17–18</span></li>
+  <li><strong>Rethink workflows, don't just augment them.</strong> The real value comes from restructuring how work gets done, not layering AI on top of manual processes. <span class="ts">00:18</span></li>
+</ol>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Man Group Governance Cheat Sheet</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li>BEFORE FIRST SKILL: Define ownership (workflow owner, not power user), review process, eval requirements, retirement path</li>
+    <li>Establish managed (formal) vs. community (experimental) skill tiers before launch</li>
+    <li>Build searchable, tagged catalogue visible to all employees — even if it only has 3 skills at launch</li>
+    <li>Every managed skill requires associated evals tested against real workflow scenarios</li>
+    <li>Assign ownership to process owner, not developer who built it — these are almost always different people</li>
+    <li>Track usage: retire unused skills; update skills with high eval error rates</li>
+    <li>Group related skills into domain plugins (e.g., Data, Backtesting, Research, Legal)</li>
+    <li>Golden path: context exposure → governance → skills composability → agent autonomy</li>
+    <li>4-skill pattern for research: data search → visualise → backtest → distributed compute</li>
+  </ul>
+</div>
+
+<div class="references">
+  <h2>References</h2>
+  <h4>Video 1 — Claude Code Routines</h4>
+  <ul>
+    <li>Claude Code Routines — claude.ai/code (feature accessible via /schedule command)</li>
+    <li>GitHub MCP — native Routines integration for event triggers</li>
+    <li>Slack, Google Drive, Datadog, Grafana, Twilio — example connectors for Routines</li>
+    <li>Generator-critique pattern — multi-agent quality assurance technique</li>
+    <li>Key stat: Claude Code weekly PRs up 200% since start of 2026 (Anthropic internal)</li>
+  </ul>
+  <h4>Video 2 — Man Group Skills Governance</h4>
+  <ul>
+    <li>Man Group — mangroup.com — alternative investment manager, $200B+ AUM, ~1,700 employees</li>
+    <li>Tashara Fernando — Head of Data & AI, Man Group</li>
+    <li>Sharpe ratio: risk-adjusted return metric (annualised return / volatility)</li>
+    <li>Drawdown: peak-to-trough loss measurement during strategy execution</li>
+    <li>Alternative data: non-traditional sources including credit card transactions, satellite data, web traffic</li>
+    <li>Key stats: 750 of ~1,700 employees using Claude Code; 100+ governed skills; 100+ community skills; live trading signals in production</li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<script>
+function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light');}
+(function(){const s=localStorage.getItem('theme');if(s==='dark')document.documentElement.classList.add('dark');})();
+window.addEventListener('scroll',function(){const w=document.documentElement.scrollTop;const h=document.documentElement.scrollHeight-document.documentElement.clientHeight;document.getElementById('progress-bar').style.width=(w/h*100)+'%';});
+(function(){const headings=document.querySelectorAll('h2[id],h3[id]');const links=document.querySelectorAll('.toc-sidebar a');if(!headings.length||!links.length)return;const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=document.querySelector(`.toc-sidebar a[href="#${e.target.id}"]`);if(a)a.classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});headings.forEach(h=>obs.observe(h));})();
+function toggleTocSidebar(){document.getElementById('toc-sidebar').classList.toggle('open');}
+document.querySelectorAll('.toc-sidebar a').forEach(a=>{a.addEventListener('click',()=>{document.getElementById('toc-sidebar').classList.remove('open');});});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});});
+function copyProtocol(btn){const box=btn.closest('.protocol-box');const items=box.querySelectorAll('li');const text=Array.from(items).map(li=>'• '+li.textContent.trim()).join('\n');navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
+</script>
+</body>
+</html>
