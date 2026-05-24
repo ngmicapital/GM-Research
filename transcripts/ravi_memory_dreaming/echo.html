@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Echo — Memory, Dreaming & Persistent Agent State</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#e11d48;--accent-dim:#9f1239;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#e11d48,#9f1239);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.btn:hover{border-color:var(--accent);}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+.toc .toc-h3{padding-left:22px;font-size:12px;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #e11d48;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #e11d48;}
+.block.tension{border-left:3px solid #f59e0b;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#e11d48;}
+.block.tension .block-label{color:#f59e0b;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:6px 16px;font-size:14px;}
+.kv dt{color:var(--muted);font-weight:500;}
+.kv dd{color:var(--text);}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0;}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#e11d48;border-bottom-color:#e11d48;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+blockquote{border-left:3px solid var(--border);padding-left:16px;color:var(--muted);font-style:italic;margin:1em 0;}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:13px;font-family:'JetBrains Mono','Fira Code',monospace;}
+
+.echo-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px;margin-bottom:32px;border-top:4px solid #e11d48;}
+.verdict{background:linear-gradient(135deg,#e11d4815,#9f123908);border:1px solid #e11d4840;border-radius:8px;padding:20px 24px;margin:24px 0;}
+.verdict h3{color:#e11d48;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>⚡ Echo · Memory, Dreaming & Persistent Agent State</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=IGo225tfF2I" target="_blank">▶ Watch</a>
+  <a class="btn" href="ravi_memory_dreaming.html">📋 Full Doc</a>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <a href="#verdict">Verdict</a>
+    <a href="#signals">Key Signals</a>
+    <a href="#primitives">Core Primitives</a>
+    <a href="#numbers">Hard Numbers</a>
+    <a href="#decisions">Decision Points</a>
+    <a href="#actions">Actions</a>
+  </nav>
+  <main>
+    <div class="echo-header">
+      <h1>⚡ Echo</h1>
+      <p style="color:var(--muted);font-size:13px;margin-top:4px;">Ravi · Anthropic · Code with Claude Conference 2026 · May 2026</p>
+      <div class="meta" style="margin-top:16px;">
+        <span class="tag">Agent Infrastructure</span>
+        <span class="tag">Memory Stores</span>
+        <span class="tag">Dreaming</span>
+        <span class="tag">Multi-Agent</span>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict">
+      <h3>⚡ Verdict</h3>
+      <p><strong>Must-implement for any production agent system.</strong> Claude's Managed Agent platform (CMA) solves the three hardest problems in agentic engineering: persistent memory that survives session boundaries, conflict-free multi-agent writes via optimistic concurrency, and async knowledge synthesis via "dreaming." The SRE demo shows real-world impact — shared alert-coordination memory eliminates duplicate incident responses across agent swarms. If you're building agents that need to remember anything across calls, this is the architecture to study.</p>
+    </div>
+
+    <h2 id="signals">Key Signals</h2>
+    <div class="block insight">
+      <div class="block-label">🔥 Top Signal</div>
+      <p><strong>Rakuten: 97% fewer errors</strong> after switching to CMA memory stores. Harvey Law: <strong>6× improvement</strong> on legal benchmarks using dreaming to pre-analyze session transcripts. These aren't benchmark numbers — they're production deployments.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">Signal</div>
+      <p><strong>Opus 4.7 is the current SOTA for file-system style memory tasks.</strong> The model selection matters — CMA lets you route memory read/write tasks to the best model for that operation.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Tension</div>
+      <p><strong>Dreaming is out-of-band and non-destructive</strong> but requires agents to trust that async summaries are accurate. The tradeoff: fresher synthesis vs. potential lag. Ravi's answer: make dreaming idempotent and verifiable.</p>
+    </div>
+
+    <h2 id="primitives">Core Primitives</h2>
+    <ul>
+      <li><strong>Memory Stores:</strong> Persistent file-system-like storage attached to CMA sessions. Agents read/write with bash and grep natively — no special SDK.</li>
+      <li><strong>Dreaming:</strong> Out-of-band batch process that analyzes session transcripts → synthesizes compressed summaries back into memory. Runs asynchronously; doesn't block the agent loop.</li>
+      <li><strong>Optimistic Concurrency:</strong> Multi-agent writes use version-check before commit. Conflict → retry, not lock. Scales horizontally without bottlenecks.</li>
+      <li><strong>Sub-Agent Observability:</strong> CMA callable agents expose full sub-task traces — you see what sub-agents did, not just the final answer.</li>
+    </ul>
+
+    <h2 id="numbers">Hard Numbers</h2>
+    <dl class="kv">
+      <dt>Rakuten error reduction</dt><dd>97% fewer errors post-CMA deployment</dd>
+      <dt>Harvey benchmark gain</dt><dd>6× improvement on legal benchmarks via dreaming</dd>
+      <dt>Memory primitive</dt><dd>File-system style — bash + grep, no special SDK</dd>
+      <dt>Concurrency model</dt><dd>Optimistic (version-check → commit → retry on conflict)</dd>
+      <dt>Best memory model</dt><dd>Opus 4.7 (current SOTA for file-system memory tasks)</dd>
+    </dl>
+
+    <h2 id="decisions">Decision Points</h2>
+    <div class="block">
+      <p><strong>When to use dreaming vs. real-time summarization:</strong> Use dreaming when synthesis can be async (most cases). Use real-time only when the agent needs the summary before its next action.</p>
+    </div>
+    <div class="block">
+      <p><strong>When to use CMA vs. custom memory:</strong> CMA if you need sub-agent observability + managed infra + out-of-box concurrency. Custom if you have very specific storage or latency requirements.</p>
+    </div>
+    <div class="block">
+      <p><strong>Multi-agent write conflicts:</strong> Optimistic concurrency is correct default. Only move to pessimistic locking if your conflict rate is >20% — most agentic systems won't hit this.</p>
+    </div>
+
+    <h2 id="actions">Actions for Your Stack</h2>
+    <ol>
+      <li>Audit any agent that currently loses state between sessions — these are prime candidates for CMA memory stores.</li>
+      <li>For multi-agent systems: implement optimistic concurrency on any shared write path. Version-check + retry is 10 lines of code.</li>
+      <li>Design dreaming jobs for any agent that accumulates session transcripts — the Harvey 6× gain is low-hanging fruit.</li>
+      <li>Use Opus 4.7 specifically for memory read/write routing; don't default to Sonnet for these operations.</li>
+      <li>Instrument sub-agent traces via CMA callable agents — you need to see what sub-agents did to debug production issues.</li>
+    </ol>
+  </main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  // TOC highlight
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  // Theme
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>
