@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spark & Cannon — Claude Code Routines: Proactive Agents as Teammates</title>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#2563eb;--accent-dim:#1e3a6e;}
+  .light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;--accent:#2563eb;--accent-dim:#dbeafe;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;transition:background .2s,color .2s}
+  #pb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#2563eb,#60a5fa);z-index:1000;transition:width .1s}
+  .topbar{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+  .topbar .label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.topbar .label span{color:var(--accent)}
+  .toggle{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1280px;margin:0 auto}
+  .toc{position:sticky;top:49px;height:calc(100vh - 49px);overflow-y:auto;padding:24px 16px;border-right:1px solid var(--border)}
+  .toc h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .toc a{display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:4px;margin-bottom:2px;line-height:1.4;border-left:2px solid var(--accent)}
+  .toc a:hover{background:var(--surface2);color:var(--text)}
+  .main{padding:40px 48px;max-width:900px}
+  .hero{margin-bottom:36px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+  .hero h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px}
+  .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+  h2{font-size:20px;font-weight:700;color:var(--heading);margin:32px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+  h3{font-size:16px;font-weight:600;color:var(--heading);margin:20px 0 8px}
+  h4{font-size:14px;font-weight:600;color:var(--heading);margin:16px 0 6px}
+  p{margin-bottom:14px}
+  ul,ol{padding-left:20px;margin-bottom:14px}
+  li{margin-bottom:5px}
+  blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:16px 0;color:var(--muted);font-style:italic;background:var(--surface2);border-radius:0 6px 6px 0}
+  .enhancement{border-radius:8px;padding:14px 16px;margin:16px 0;font-size:14px}
+  .enhancement-label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+  .enhancement.insight{background:#161b30;border:1px solid #2563eb}.enhancement.insight .enhancement-label{color:#2563eb}
+  .enhancement.connection{background:#0e2020;border:1px solid #0d9488}.enhancement.connection .enhancement-label{color:#0d9488}
+  .enhancement.tension{background:#1e1208;border:1px solid #d97706}.enhancement.tension .enhancement-label{color:#d97706}
+  .enhancement.analog{background:#1a1a1a;border:1px solid #6e7681}.enhancement.analog .enhancement-label{color:#8b949e}
+  .light .enhancement.insight{background:#eff6ff}.light .enhancement.connection{background:#f0fdfa}.light .enhancement.tension{background:#fffbeb}.light .enhancement.analog{background:#f6f8fa}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .protocol-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0}
+  .protocol-box h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+  code{background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;font-size:13px;font-family:monospace}
+  .footer{border-top:1px solid var(--border);padding:20px 0;margin-top:32px;font-size:13px;color:var(--muted)}
+  .footer a{color:var(--link);text-decoration:none}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}.toc{display:none}.main{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div id="pb" style="width:0%"></div>
+<div class="topbar">
+  <div class="label">📋 <span>Spark & Cannon</span> — Deep Archival</div>
+  <button class="toggle" onclick="document.body.classList.toggle('light')">☀ Toggle Light</button>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <h3>Contents</h3>
+    <a href="#exec">Executive Summary</a>
+    <a href="#problem">The Problem</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#three-decisions">Three Decisions</a>
+    <a href="#use-cases">Use Cases</a>
+    <a href="#autonomy">Autonomy Model</a>
+    <a href="#protocol">Protocol Cheat Sheet</a>
+    <a href="#refs">References</a>
+  </nav>
+  <main class="main">
+    <div class="hero">
+      <div class="badge">📋 Spark & Cannon · Video 1</div>
+      <h1>Claude Code Routines — Proactive Agents as Teammates, Not Tools</h1>
+      <div class="meta">
+        <span>👤 Maya · Anthropic Applied AI</span>
+        <span>🎓 Code with Claude Conference · ~22 min</span>
+        <span>🏷 AI Engineering / Developer Productivity / Agentic Systems</span>
+      </div>
+    </div>
+
+    <h2 id="exec">Executive Summary</h2>
+    <p><strong>Coding agents should act, not wait — Routines transforms Claude Code from a reactive tool into a proactive teammate.</strong> The session introduces Routines, a new Claude Code feature that runs managed, scheduled, or event-triggered agent sessions without requiring any user-maintained infrastructure. The core thesis: "a teammate notices when something breaks and does something about it. A tool waits for you to press enter."</p>
+    <p><strong>Three hard problems with DIY proactive agents — hosting, triggering, and observability — are all eliminated.</strong> Running Claude Code on cron jobs requires managing hosting, session state, authentication, and has no way to watch or steer the agent mid-run. Routines handles all of this on Anthropic's managed infrastructure.</p>
+    <p><strong>Anthropic's internal docs team is the proof case: weekly PR velocity up 200%, one engineer maintaining docs.</strong> Sarah automated documentation sync by creating a routine that runs every Monday, compares source code changes to the docs repo, and opens PRs automatically — with a Slack ping on completion.</p>
+    <p><strong>Three decisions define every Routine: trigger, context, and steerability.</strong> The trigger (schedule or event), the context (repos, connectors, external files), and the steerability approach together determine how autonomous and reliable the routine becomes.</p>
+    <p><strong>Event-based triggers unlock reactive architecture without infrastructure.</strong> GitHub events (issue opened, PR merged, label applied) or custom POST webhooks can kick off Claude Code sessions, enabling patterns like "every GitHub issue with label <code>needs-docs</code> spawns a documentation PR."</p>
+    <p><strong>Agent-on-agent review (generator-critique pattern) is the recommended quality gate.</strong> One routine creates output; a second routine, triggered by the first's PR creation, leaves review comments before any human sees it.</p>
+    <p><strong>The end state is progressive autonomy: watch → steer → trust → delegate.</strong></p>
+
+    <hr>
+    <h2 id="problem">🧱 The Problem: Why Proactive Agents Are Hard to Build Today</h2>
+    <blockquote>"We believe coding agents shouldn't wait for you to press enter to get started."</blockquote>
+    <p>The talk opens with a diagnosis of three friction points that make building proactive agents painful today:</p>
+    <p><strong>1. Where do agents run?</strong> Running on a local machine means if your laptop closes, the session dies. Building around this requires managing hosting, data persistence, and authentication — a substantial infrastructure investment before you write a single prompt.</p>
+    <p><strong>2. When do agents trigger?</strong> Options today are cron jobs or custom webhook endpoints you spin up yourself. Both require ongoing infra maintenance — hence the joke about the one person in the audience who enjoyed maintaining their cron job.</p>
+    <p><strong>3. How do you observe and steer them?</strong> Headless Claude Code sessions give no real-time visibility. There's no way to watch, steer, bound, or resume a running session. You either babysit it or fly blind.</p>
+
+    <div class="enhancement insight">
+      <span class="enhancement-label">💡 Key Insight</span>
+      The gap between "reactive tool" and "proactive teammate" isn't a model capability gap — it's an infrastructure gap. The model can already do the work; what's missing is the scaffolding to trigger, host, and observe it reliably. Routines is Anthropic's answer to abstracting that scaffolding away entirely.
+    </div>
+
+    <hr>
+    <h2 id="architecture">⚙️ What Routines Is — Architecture & Capabilities</h2>
+    <blockquote>"It's an automation where you can kick off a remote Claude Code session by only defining the prompt, what repos you want to connect it to, what connectors it has available to work with, and a trigger. Claude Code handles the rest."</blockquote>
+    <p>Routines is a managed execution layer for Claude Code sessions. Three design principles drove its development:</p>
+    <p><strong>Always available:</strong> Routines run on Claude Code's managed infrastructure. Hosting, session state, and connector auth are handled by Anthropic. Nothing depends on your laptop.</p>
+    <p><strong>Customisable triggers — two types:</strong></p>
+    <ul>
+      <li><strong>Time-based:</strong> Run on a cron schedule (e.g., every Monday at 10am)</li>
+      <li><strong>Event-based:</strong> Trigger on GitHub events (issue opened, PR merged, release cut, label applied) or custom webhook POSTs from your own code/CD pipeline</li>
+    </ul>
+    <p><strong>Interactive and steerable:</strong> Every Routine is a regular Claude Code session under the hood. You can open it on web, CLI, or desktop, watch it work in real time, ask questions mid-session, and redirect it.</p>
+
+    <div class="enhancement connection">
+      <span class="enhancement-label">🔗 Connection</span>
+      Routines → Claude Code Sessions: The "just a Claude Code session under the hood" framing is important. It means all existing Claude Code capabilities — tool use, MCP connectors, repo access — are fully available. Routines adds scheduling and lifecycle management on top, it doesn't replace the core execution model.
+    </div>
+
+    <p><strong>The setup flow via <code>/schedule</code>:</strong></p>
+    <ol>
+      <li>Type <code>/schedule</code> in Claude Code terminal</li>
+      <li>Describe the task in plain English</li>
+      <li>Claude asks clarifying questions (timing, notification preferences)</li>
+      <li>Claude generates structured instructions and creates the routine</li>
+      <li>View, manage, and observe from claude.ai web interface</li>
+    </ol>
+
+    <hr>
+    <h2 id="three-decisions">🎯 The Three Decisions: Trigger → Context → Steerability</h2>
+
+    <h3>Decision 1: Trigger</h3>
+    <p><strong>Schedule-based:</strong> Used for periodic reviews — "every Monday, compare source code changes to docs repo and open a PR for any gaps." Deterministic, easy to reason about.</p>
+    <p><strong>Event-based options within Routines:</strong></p>
+    <ul>
+      <li>Native GitHub events: issue opens, PR merges, label changes, release cuts</li>
+      <li>Custom webhook: POST from your own code (e.g., CD pipeline fires after every deploy)</li>
+      <li>The event payload is passed as context to the Claude Code session</li>
+    </ul>
+    <div class="enhancement insight">
+      <span class="enhancement-label">💡 Key Insight</span>
+      The event-based webhook trigger is underrated. It means ANY system that can fire a POST request can now initiate a Claude Code session with rich context. CI/CD pipeline, monitoring alert, Zapier trigger, Slack slash command — all become valid Routine triggers without writing any glue code.
+    </div>
+
+    <h3>Decision 2: Context</h3>
+    <p>What does your agent need to know to succeed? The ceiling of Routine success is the ceiling of its context.</p>
+    <blockquote>"Whatever context Claude has, that's the ceiling of how successful Claude will be."</blockquote>
+    <p><strong>Practical checklist:</strong></p>
+    <ul>
+      <li>One or more codebase repos (read + write access for PRs)</li>
+      <li>External document stores (Google Drive, Notion) for reference material</li>
+      <li>Communication connectors (Slack, email) for notifications</li>
+      <li>Monitoring tools (Datadog, Grafana) for health-check routines</li>
+      <li>Domain-specific MCPs for specialised capabilities</li>
+    </ul>
+
+    <h3>Decision 3: Steerability</h3>
+    <p>How do you ensure quality without babysitting?</p>
+    <p><strong>Agent-on-agent review (recommended):</strong> One Routine creates docs PRs. A second Routine triggers on PR creation and leaves review comments before humans see it. This is the generator-critique pattern from multi-agent system design.</p>
+    <p><strong>Live oversight:</strong> Open Claude Code on web, watch the session live, ask questions or redirect mid-run.</p>
+    <p><strong>Output verification:</strong> Render the actual documentation page Claude changed and confirm it looks right. Build verification into the workflow, not just the prompt.</p>
+
+    <div class="enhancement connection">
+      <span class="enhancement-label">🔗 Connection</span>
+      Generator-Critique Pattern → Routines: Routine A generates; Routine B critiques before human review. This is a native two-agent QA pipeline that requires no custom orchestration code — just two routines with the right triggers.
+    </div>
+
+    <hr>
+    <h2 id="use-cases">🏗️ Real Use Cases</h2>
+
+    <h3>Use Case 1: Automated Documentation Sync (Anthropic Internal)</h3>
+    <p><em>Context: Claude Code PR velocity up 200% YoY. One engineer maintaining docs.</em></p>
+    <p><strong>Routine A — Weekly schedule:</strong> Trigger: Every Monday 10am · Repos: Claude Code source + docs repo · Connectors: GitHub (PR creation), Slack (notifications) · Prompt: Review changes merged to main, compare to docs, create PR if gaps found.</p>
+    <p><strong>Routine B — Event-based (GitHub issue → docs gap investigation):</strong> Trigger: <code>issue.opened</code> on the Claude Code docs repo · Prompt: Investigate the issue, determine if it's a documentation gap, if yes open a PR and ping Slack. Demo: Maya creates a test issue, Routine fires within seconds.</p>
+
+    <h3>Use Case 2: Deploy Verifier</h3>
+    <ul>
+      <li><strong>Trigger:</strong> CD pipeline POSTs to Routine webhook after every deploy</li>
+      <li><strong>Context:</strong> Source code + Datadog/Grafana connector + Slack/email/Twilio for alerts</li>
+      <li><strong>Progression:</strong> Start — Claude gives go/no-go. Mid — human reads analysis, decides. Mature — Claude rolls back automatically, human notified post-facto.</li>
+    </ul>
+    <blockquote>"Maybe eventually as I watch Claude work more and more and trust its decisions, I can let Claude roll back the change itself."</blockquote>
+
+    <h3>Use Case 3: On-Call Investigator</h3>
+    <p>Trigger: Monitoring alert or schedule · Context: GitHub issues, Slack channel, internal runbooks · Behaviour: Reads and triages backlog, prioritises, opens PRs for critical issues.</p>
+
+    <h3>Use Case 4: PM Backlog Reviewer</h3>
+    <p>Trigger: Weekly time-based · Context: GitHub issues + Slack threads · Behaviour: Reads all open issues, surfaces prioritised list, optionally opens PRs for the most important ones.</p>
+
+    <div class="enhancement insight">
+      <span class="enhancement-label">💡 Key Insight</span>
+      Each use case follows the same three-question structure: What triggers it? What context does it need? How do I keep it honest? This is a portable "Routine Design Canvas" that can be applied to any recurring or event-driven workflow.
+    </div>
+
+    <hr>
+    <h2 id="autonomy">📈 The Autonomy Progression Model</h2>
+    <table>
+      <thead><tr><th>Stage</th><th>Human Role</th><th>Claude Role</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Watch</strong></td><td>Observes Claude working in real time</td><td>Executes, reports</td></tr>
+        <tr><td><strong>2. Steer</strong></td><td>Redirects mid-session via web UI</td><td>Executes, adapts</td></tr>
+        <tr><td><strong>3. Review</strong></td><td>Reads Claude's analysis, approves action</td><td>Recommends go/no-go</td></tr>
+        <tr><td><strong>4. Trust</strong></td><td>Notified of actions post-facto</td><td>Executes autonomously</td></tr>
+      </tbody>
+    </table>
+    <div class="enhancement analog">
+      <span class="enhancement-label">📜 Analog</span>
+      This autonomy progression mirrors how you onboard a human junior engineer. You pair-program first (watch), then review their PRs (steer/review), then approve merges without reading every line (trust). The Routine is a new-hire that earns autonomy through demonstrated reliability.
+    </div>
+
+    <hr>
+    <h2 id="protocol">📋 Protocol Cheat Sheet</h2>
+    <div class="protocol-box">
+      <h4>Creating a Routine</h4>
+      <ul>
+        <li>Run <code>/schedule</code> in Claude Code terminal</li>
+        <li>Describe task in plain English</li>
+        <li>Answer Claude's clarifying questions (timing, notifications)</li>
+        <li>Routine appears in claude.ai web under Code → Routines</li>
+      </ul>
+    </div>
+    <div class="protocol-box">
+      <h4>Trigger Types</h4>
+      <ul>
+        <li><strong>Schedule:</strong> "Every Monday at 10am", "Daily at 9am", "Weekly on Fridays"</li>
+        <li><strong>GitHub events:</strong> <code>issue.opened</code>, <code>pull_request.merged</code>, <code>push</code> (with label filter)</li>
+        <li><strong>Custom webhook:</strong> POST to Routine endpoint from any external system</li>
+      </ul>
+    </div>
+    <div class="protocol-box">
+      <h4>Context Checklist (per Routine)</h4>
+      <ul>
+        <li>Repos needed (source + target, read + write)</li>
+        <li>External docs/files (Drive connector, Notion, etc.)</li>
+        <li>Notification connectors (Slack, email, Twilio)</li>
+        <li>Monitoring tools (Datadog, Grafana MCPs)</li>
+      </ul>
+    </div>
+    <div class="protocol-box">
+      <h4>Quality Gates</h4>
+      <ul>
+        <li>Agent-on-agent review: second Routine triggered by first's PR</li>
+        <li>Live steering: open claude.ai web, type in session mid-run</li>
+        <li>Output verification: render/test Claude's outputs before closing loop</li>
+      </ul>
+    </div>
+
+    <hr>
+    <h2 id="refs">📎 References</h2>
+    <ul>
+      <li>Claude Code — Anthropic's coding agent</li>
+      <li>Claude Agent SDK — Agent development framework</li>
+      <li>Routines — new Claude Code feature (as of Code with Claude conference 2026)</li>
+      <li>GitHub MCP — native integration for Routines</li>
+      <li>Slack connector — for Routine notifications</li>
+      <li>Google Drive connector — for external context</li>
+      <li>Datadog / Grafana — mentioned as monitoring tool examples</li>
+      <li>Twilio — mentioned for SMS alerting from Routines</li>
+      <li><strong>Key stat:</strong> Weekly PRs for Claude Code up 200% since beginning of 2026 (Anthropic internal data)</li>
+    </ul>
+
+    <div class="footer">
+      <p>Source: <a href="https://www.youtube.com/watch?v=eSP7PLTXNy8" target="_blank">Build a proactive agent workflow with Claude Code ↗</a> · Code with Claude Conference 2026</p>
+    </div>
+  </main>
+</div>
+<script>
+  window.addEventListener('scroll',()=>{
+    const el=document.documentElement;
+    const st=el.scrollTop||document.body.scrollTop;
+    const sh=el.scrollHeight-el.clientHeight;
+    document.getElementById('pb').style.width=(sh>0?(st/sh*100):0)+'%';
+  });
+</script>
+</body>
+</html>
