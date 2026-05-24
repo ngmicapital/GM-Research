@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spark & Cannon — Evals for Taste: Hill-Climbing a Slide-Generation Agent</title><style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#f59e0b;--accent-dim:#92400e;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#f59e0b,#92400e);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #f59e0b;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #f59e0b;}
+.block.tension{border-left:3px solid #e11d48;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#f59e0b;}
+.block.tension .block-label{color:#e11d48;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:6px 16px;font-size:14px;}
+.kv dt{color:var(--muted);font-weight:500;}
+.kv dd{color:var(--text);}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#f59e0b;border-bottom-color:#f59e0b;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>📋 Spark & Cannon · Evals for Taste: Hill-Climbing a Slide-Generation Agent</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=v9FTCvkV_a0" target="_blank">▶ Watch</a>
+</div>
+<div class="layout">
+  <nav class="toc">    <a href="#overview">Overview</a>
+    <a href="#why-evals">Why Evals</a>
+    <a href="#anatomy">Eval Anatomy</a>
+    <a href="#slide-agent">Case Study</a>
+    <a href="#flywheel">Dev Flywheel</a>
+    <a href="#signals">Multi-Dim Signals</a>
+    <a href="#user-signals">User Signals</a>
+    <a href="#implications">Implications</a></nav>
+  <main><div style="padding-top:0;">
+    <h1>Evals for Taste: Hill-Climbing a Slide-Generation Agent</h1>
+    <div class="meta">
+      <span>Anthropic Engineer · Code with Claude Conference 2026</span><span>·</span><span>Code with Claude Conference 2026</span><span>·</span><span>May 2026</span>
+      <span class="tag">Evals</span><span class="tag">LLM-as-Judge</span><span class="tag">Agent Quality</span>
+    </div>
+
+    <div class="hero" id="overview">
+      <p><strong>Core argument:</strong> Evaluations are the bridge between "it feels like it works" and "we know it works." Built as a rubric-driven, replayable system that tracks quality, cost, latency, and error rate, evals become a development flywheel rather than a testing phase. The talk builds a slide-generation agent live, adding increasingly sophisticated evals, and shows how each eval layer reveals failure modes that intuition would have missed.</p>
+    </div>
+
+    <h2 id="why-evals">Why Evals: The Vibes Problem</h2>
+    <p>Agent development without evals produces "vibes-based" engineering: something feels worse after a change, or better, but you can't be sure. This has two failure modes:</p>
+    <ul>
+      <li><strong>False negatives:</strong> A change that actually improves performance feels neutral — you don't ship it</li>
+      <li><strong>False positives:</strong> A change that hurts performance on the long tail feels good on the cases you tested manually — you ship a regression</li>
+    </ul>
+    <p>Evals replace vibes with measurements. Not because vibes have no place — they're useful for generating hypotheses — but because vibes can't be acted on systematically.</p>
+    <div class="block connection">
+      <div class="block-label">📡 The Benchmarks Parallel</div>
+      <p>Model providers care intensely about benchmarks for the same reason: they need to know if a training change improved or regressed the model. Your application evals serve the same function for your system layer.</p>
+    </div>
+
+    <h2 id="anatomy">Anatomy of an Eval</h2>
+    <p>An eval consists of: task definition (what the agent should do), test cases (inputs representing real usage), and grading logic (criteria for success). The grading logic is where most of the design work happens.</p>
+    <h3>Deterministic Graders</h3>
+    <p>For structured outputs with clear correctness criteria, use deterministic graders: exact match, regex, JSON schema validation, tool call inspection. These are fast, cheap, and perfectly consistent. Use them wherever you can.</p>
+    <h3>LLM-as-Judge</h3>
+    <p>For quality assessment, reasoning correctness, and natural language outputs, use an LLM as judge. The judge receives the task, the agent's output, and a detailed rubric, then scores the output on each rubric dimension.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Rubric Quality is Everything</div>
+      <p>A vague rubric ("is this a good slide?") produces unreliable judges. A specific rubric ("does the slide headline state exactly one core message in under 10 words?") produces consistent, auditable scores. Write the rubric before configuring the judge. If you can't write specific criteria, you don't yet know what "good" means for your task.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Judge Hallucination</div>
+      <p>LLM judges hallucinate scores. Especially on nuanced criteria or when the output is long. Mitigations: run multiple judge passes and average, spot-check judge outputs on a sample weekly, use a stronger judge model than your agent model, give the judge specific examples of good vs bad for each criterion.</p>
+    </div>
+
+    <h2 id="slide-agent">Slide Generation Agent Case Study</h2>
+    <p>The demo agent generates presentation slides from user requirements. Failure modes are rich: wrong number of slides, incorrect content mapping to wrong slide, unclear headlines, visually unstructured content, missing key points, excessive content per slide.</p>
+    <p>Eval layers added progressively:</p>
+    <ol>
+      <li><strong>Layer 1 — Structure:</strong> Does the output have the right number of slides? Are they in the right order? Deterministic.</li>
+      <li><strong>Layer 2 — Content mapping:</strong> Does each slide contain the content specified for that section? Deterministic + LLM check for paraphrase accuracy.</li>
+      <li><strong>Layer 3 — Headline quality:</strong> Is each headline a clear, specific statement (not a label)? LLM-as-judge with rubric.</li>
+      <li><strong>Layer 4 — Cognitive load:</strong> Does each slide have one core message? Is content density appropriate? LLM-as-judge.</li>
+      <li><strong>Layer 5 — User dissatisfaction inputs:</strong> Real failure cases from user feedback, added as test cases.</li>
+    </ol>
+    <p>Each layer revealed failures the previous layers missed. Layer 1 found structural errors. Layer 3 found technically-correct but ineffective headlines. Layer 5 found the most important failure mode: cases where the agent produced valid output that didn't match user intent.</p>
+
+    <h2 id="flywheel">The Development Flywheel</h2>
+    <p>The talk's central claim: evals done right become a self-reinforcing improvement loop. The mechanism:</p>
+    <ol>
+      <li>User reports dissatisfaction → add as test case → reveals failure pattern</li>
+      <li>Failure pattern → prompt change / architecture change</li>
+      <li>Change → run evals → score delta measured</li>
+      <li>If improvement: ship, add to test suite, document what worked</li>
+      <li>If regression: revert, understand why, try different approach</li>
+      <li>Loop continues; each iteration adds to institutional knowledge of what works</li>
+    </ol>
+    <div class="block insight">
+      <div class="block-label">💡 The 6-Hour Threshold</div>
+      <p>The speaker claims a rubric-driven eval system covering quality, cost, latency, and error rate can be set up in under 6 hours. This is a deliberate provocation: there's no valid excuse for not having evals. If your eval setup took longer than a day, something is wrong with the tooling or scope.</p>
+    </div>
+
+    <h2 id="signals">Multi-Dimensional Signals</h2>
+    <p>Quality alone is an incomplete eval signal. A change that improves quality by 5% but doubles latency might be net negative for users. Track all four dimensions:</p>
+    <ul>
+      <li><strong>Quality:</strong> Rubric-scored outputs, task success rate</li>
+      <li><strong>Cost:</strong> Token usage per task, API cost per successful outcome</li>
+      <li><strong>Latency:</strong> Wall-clock time to first token, time to complete</li>
+      <li><strong>Error rate:</strong> Tool call failures, malformed outputs, hard failures</li>
+    </ul>
+    <div class="block analog">
+      <div class="block-label">🔁 Analog: A/B Testing</div>
+      <p>Multi-dimensional eval scoring is the agent equivalent of A/B test analysis. You don't just measure conversion rate — you measure conversion, revenue per user, and churn. Same principle: measure all the dimensions that matter before declaring a winner.</p>
+    </div>
+
+    <h2 id="user-signals">User Dissatisfaction as Ground Truth</h2>
+    <p>The most valuable eval inputs are real user dissatisfaction signals. When a user says "this is wrong" or clicks a thumbs-down, that's a concrete, real-world failure case that your eval suite needs to cover.</p>
+    <p>Pattern for building this into your system:</p>
+    <ol>
+      <li>Log negative user feedback with the input that triggered it</li>
+      <li>Periodically review logged failures, select representative cases</li>
+      <li>Add as eval test cases — verify current system fails them</li>
+      <li>Fix the failure, verify the fix</li>
+      <li>Keep as regression test — never remove</li>
+    </ol>
+    <div class="block insight">
+      <div class="block-label">💡 The Flywheel Compounds</div>
+      <p>As your eval suite grows with real failure cases, it becomes increasingly representative of the actual failure distribution. An eval suite with 500 real user failure cases is qualitatively different from one with 50 synthetic test cases — it surfaces the real edge cases, not the ones you imagined.</p>
+    </div>
+
+    <h2 id="implications">Implications</h2>
+    <div class="block connection">
+      <div class="block-label">📡 Connection to Model Training</div>
+      <p>The reason model providers care so intensely about benchmarks and evals is identical to why you should: it's the only way to know if you're improving. Your application evals are to your system what MMLU and HumanEval are to foundation models.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Goodhart's Law Warning</div>
+      <p>When the eval score becomes the goal, it stops being a useful measure. Watch for prompt changes that game specific test cases rather than genuinely improving quality. Maintain a held-out evaluation set that you don't use during development — only run it at major milestones.</p>
+    </div>
+</div></main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body></html>
