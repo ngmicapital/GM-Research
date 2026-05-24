@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Echo — Evals for Taste: Hill-Climbing a Slide-Generation Agent</title><style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#f59e0b;--accent-dim:#92400e;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#f59e0b,#92400e);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #f59e0b;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #f59e0b;}
+.block.tension{border-left:3px solid #e11d48;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#f59e0b;}
+.block.tension .block-label{color:#e11d48;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:6px 16px;font-size:14px;}
+.kv dt{color:var(--muted);font-weight:500;}
+.kv dd{color:var(--text);}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#f59e0b;border-bottom-color:#f59e0b;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>⚡ Echo · Evals for Taste: Hill-Climbing a Slide-Generation Agent</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=v9FTCvkV_a0" target="_blank">▶ Watch</a>
+</div>
+<div class="layout">
+  <nav class="toc">    <a href="#overview">Overview</a>
+    <a href="#signals">What Evals Give</a>
+    <a href="#architecture">Eval Architecture</a>
+    <a href="#rubric">Rubric Design</a>
+    <a href="#loop">Hill-Climbing Loop</a>
+    <a href="#dissatisfaction">User Signals</a>
+    <a href="#actions">Actions</a></nav>
+  <main><div style="padding-top:0;">
+    <h1>⚡ Echo — Evals for Taste: Hill-Climbing a Slide-Generation Agent</h1>
+    <div class="meta"><span>Anthropic Engineer · Code with Claude Conference 2026</span><span>·</span><span>May 2026</span></div>
+    <div class="hero">
+      <p><strong>Core reframe:</strong> Evals aren't a testing phase — they're a continuous dev flywheel. Build rubric-driven replayable evals early, use LLM-as-judge for taste, and hill-climb on score deltas. The 6-hour setup cost pays back immediately: you go from "it feels worse" to "it's 12% worse on clarity — here's why." The slide-generation agent case study shows how real user dissatisfaction signals, encoded as evals, become the engine of rapid iteration.</p>
+    </div>
+
+    <h2>What Evals Give You</h2>
+    <ul>
+      <li><strong>Quality signals:</strong> What's good, what's bad, and how much — not just pass/fail</li>
+      <li><strong>Actionability:</strong> "Vibes are worse" → "Clarity score dropped 12% after the prompt change"</li>
+      <li><strong>Regression detection:</strong> Any change that hurts known-good cases shows up immediately</li>
+      <li><strong>Cost/latency benchmarking:</strong> Quality isn't the only dimension — evals track all four: quality, cost, latency, error rate</li>
+    </ul>
+
+    <h2>Eval Architecture</h2>
+    <dl class="kv">
+      <dt>Deterministic graders</dt><dd>Tool call correctness, output format, required fields — binary, no LLM</dd>
+      <dt>LLM-as-judge</dt><dd>Quality, reasoning, natural language outputs — rubric-driven, strong model</dd>
+      <dt>Replayability</dt><dd>Same test cases, same graders, run after every change</dd>
+      <dt>Task sampling</dt><dd>50-100 real examples from actual user projects</dd>
+      <dt>Setup time</dt><dd>Under 6 hours for rubric-driven system covering quality/cost/latency/error</dd>
+    </dl>
+
+    <h2>LLM-as-Judge Rubric Design</h2>
+    <div class="block insight">
+      <div class="block-label">💡 Key Principle</div>
+      <p>The rubric is the hard work. Vague criteria ("is this good?") produce unreliable judges. Specific criteria ("does the slide have exactly one core message, stated in the headline?") produce consistent, actionable scores.</p>
+    </div>
+    <ol>
+      <li>Write evaluation criteria as specific, binary-ish questions</li>
+      <li>For each criterion, provide 2-3 examples of good vs bad</li>
+      <li>Use a strong model (Opus-class) as the judge</li>
+      <li>Run multiple judge passes and average — reduces variance</li>
+      <li>Spot-check judge outputs periodically; judge hallucination is real</li>
+    </ol>
+
+    <h2>The Hill-Climbing Loop</h2>
+    <p>Make a change → run evals → if score improves, keep; if not, revert. This is it. Simple, disciplined, effective. The power comes from doing it consistently rather than trusting intuition.</p>
+
+    <h2>User Dissatisfaction as Eval Signal</h2>
+    <div class="block insight">
+      <div class="block-label">💡 Insight</div>
+      <p>The most valuable eval inputs come from real user dissatisfaction. When a user says "this slide is wrong" or "this doesn't match what I meant," that's a concrete failure case. Log it, add it to your eval set, verify the fix doesn't regress it. Your eval suite becomes a curated catalog of real failure modes.</p>
+    </div>
+
+    <h2>Actions</h2>
+    <ol>
+      <li>Pick your top agent task and build an eval within 6 hours — quality + error rate minimum</li>
+      <li>Add 50 real examples from user logs as eval inputs</li>
+      <li>Write a detailed rubric for LLM-as-judge before configuring the judge</li>
+      <li>Instrument your eval runner to track score delta per change, not just absolute score</li>
+      <li>Log user negative feedback directly into the eval test set</li>
+    </ol>
+</div></main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body></html>
