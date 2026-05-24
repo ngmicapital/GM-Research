@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo — Claude Code Routines: Proactive Agents as Teammates</title>
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;
+    --text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;
+    --accent:#2563eb;--accent-dim:#1e3a6e;
+  }
+  .light {
+    --bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;
+    --text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;
+    --accent:#2563eb;--accent-dim:#dbeafe;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;transition:background .2s,color .2s}
+  #pb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#2563eb,#60a5fa);z-index:1000;transition:width .1s}
+  .topbar{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+  .topbar .label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .topbar .label span{color:var(--accent)}
+  .toggle{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1280px;margin:0 auto}
+  .toc{position:sticky;top:49px;height:calc(100vh - 49px);overflow-y:auto;padding:24px 16px;border-right:1px solid var(--border)}
+  .toc h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .toc a{display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:4px;margin-bottom:2px;line-height:1.4;border-left:2px solid var(--accent)}
+  .toc a:hover{background:var(--surface2);color:var(--text)}
+  .main{padding:40px 48px;max-width:900px}
+  .hero{margin-bottom:36px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+  .hero h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px}
+  .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+  h2{font-size:20px;font-weight:700;color:var(--heading);margin:32px 0 12px;padding-top:4px}
+  h3{font-size:16px;font-weight:600;color:var(--heading);margin:20px 0 8px}
+  p{margin-bottom:14px}
+  ul,ol{padding-left:20px;margin-bottom:14px}
+  li{margin-bottom:5px}
+  blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:16px 0;color:var(--muted);font-style:italic;background:var(--surface2);border-radius:0 6px 6px 0}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .bottom-line{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:24px 28px;margin-bottom:32px}
+  .bottom-line h2{margin-top:0;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .bottom-line ul{list-style:none;padding:0}
+  .bottom-line li{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .bottom-line li:last-child{border-bottom:none}
+  .bottom-line li::before{content:"→ ";color:var(--accent);font-weight:700}
+  .claim-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0}
+  .claim{display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  .claim-body{flex:1}
+  .claim-title{font-weight:600;color:var(--heading);margin-bottom:6px;font-size:14px}
+  .claim-detail{font-size:13px;color:var(--muted);margin-bottom:4px}
+  .claim-detail span{color:var(--text);font-weight:500}
+  hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+  .footer{border-top:1px solid var(--border);padding:20px 0;margin-top:32px;font-size:13px;color:var(--muted)}
+  .footer a{color:var(--link);text-decoration:none}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}.toc{display:none}.main{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div id="pb" style="width:0%"></div>
+<div class="topbar">
+  <div class="label">⚡ <span>Echo</span> — Decision Briefing</div>
+  <button class="toggle" onclick="document.body.classList.toggle('light')">☀ Toggle Light</button>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <h3>Contents</h3>
+    <a href="#bottom-line">⚡ Bottom Line</a>
+    <a href="#claims">🔑 Key Claims</a>
+    <a href="#actions">⚡ Quick Actions</a>
+    <a href="#quotes">💬 Best Quotes</a>
+    <a href="#refs">📎 References</a>
+  </nav>
+  <main class="main">
+    <div class="hero">
+      <div class="badge">⚡ Echo · Video 1</div>
+      <h1>Claude Code Routines: Proactive Agents Without the Infra Tax</h1>
+      <div class="meta">
+        <span>👤 Maya · Anthropic Applied AI</span>
+        <span>🎓 Code with Claude Conference · ~22 min</span>
+        <span>🏷 AI Engineering / Developer Productivity</span>
+      </div>
+      <p style="margin-top:14px;font-size:14px;color:var(--muted)">First-party (Anthropic employee demoing Anthropic product) — claims about internal usage stats are unverified externally.</p>
+    </div>
+
+    <div class="bottom-line" id="bottom-line">
+      <h2>⚡ The Bottom Line</h2>
+      <ul>
+        <li><strong>Routines eliminates the DIY infrastructure tax for proactive Claude Code agents.</strong> No more managing cron jobs, hosting, auth, or session state — just define a prompt, repos, connectors, and trigger.</li>
+        <li><strong>The shift is paradigmatic: agent-as-tool → agent-as-teammate.</strong> A tool waits for you. A teammate notices problems and acts on them.</li>
+        <li><strong>Claude Code PRs at Anthropic are up 200% — and Routines was born from the resulting docs crisis.</strong> One engineer, exponentially more code changes.</li>
+        <li><strong>Three decisions determine every Routine's effectiveness:</strong> what triggers it, what context it has, and how you steer it.</li>
+        <li><strong>Agent-on-agent review is the recommended quality gate</strong> — one Routine generates output, a second Routine critiques it before any human reviews.</li>
+      </ul>
+    </div>
+
+    <h2 id="claims">🔑 Key Claims</h2>
+
+    <div class="claim">
+      <div class="claim-num">1</div>
+      <div class="claim-body">
+        <div class="claim-title">Live production use: Anthropic runs Routines internally to automate docs sync</div>
+        <div class="claim-detail"><span>Evidence:</span> Sarah (Anthropic docs engineer) set up a weekly Routine that diffs Claude Code source vs. docs repo and opens PRs for gaps. Demonstrated live in the session.</div>
+        <div class="claim-detail"><span>Caveat:</span> This is Anthropic using its own product — "eating your own dog food" credibility, but not a neutral third-party case.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">2</div>
+      <div class="claim-body">
+        <div class="claim-title">Two trigger types: schedule-based and event-based (GitHub + custom webhook)</div>
+        <div class="claim-detail"><span>Evidence:</span> Demoed both — a Monday 10am schedule routine and a GitHub <code>issue.opened</code> event routine — with live session kickoff visible in the UI.</div>
+        <div class="claim-detail"><span>Caveat:</span> Webhook trigger requires your system to POST to the Routine endpoint; not fully no-code.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">3</div>
+      <div class="claim-body">
+        <div class="claim-title">Every Routine is a standard Claude Code session — fully observable and steerable</div>
+        <div class="claim-detail"><span>Evidence:</span> Mid-demo, Maya typed into a running Routine to stop it: "I've already made these changes." Session halted in real time. Observable from web, CLI, desktop.</div>
+        <div class="claim-detail"><span>Caveat:</span> None flagged.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">4</div>
+      <div class="claim-body">
+        <div class="claim-title">The generator-critique pattern (agent-on-agent review) is replicable as two Routines</div>
+        <div class="claim-detail"><span>Evidence:</span> Described but not fully demoed. Routine A creates docs PR → triggers Routine B → B leaves review comments before human review.</div>
+        <div class="claim-detail"><span>Caveat:</span> Quality of critique Routine depends entirely on prompt quality.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">5</div>
+      <div class="claim-body">
+        <div class="claim-title">Context ceiling rule: Claude's success is bounded by the context it receives</div>
+        <div class="claim-detail"><span>Evidence:</span> Direct quote. Emphasized specifically around connectors — repos, Drive, Slack, monitoring tools.</div>
+        <div class="claim-detail"><span>Caveat:</span> None flagged; applies to all Claude deployments.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">6</div>
+      <div class="claim-body">
+        <div class="claim-title">Progressive autonomy model: watch → steer → review → trust → delegate</div>
+        <div class="claim-detail"><span>Evidence:</span> Deploy verifier use case walked through explicitly — human starts by reading Claude's analysis, eventually authorises Claude to roll back deploys independently.</div>
+        <div class="claim-detail"><span>Caveat:</span> Timeframe for trust progression not quantified.</div>
+      </div>
+    </div>
+
+    <div class="claim">
+      <div class="claim-num">7</div>
+      <div class="claim-body">
+        <div class="claim-title">Setup is a single <code>/schedule</code> command in the Claude Code terminal</div>
+        <div class="claim-detail"><span>Evidence:</span> Demoed live. Claude asks follow-up questions to clarify timing and notifications.</div>
+        <div class="claim-detail"><span>Caveat:</span> None.</div>
+      </div>
+    </div>
+
+    <hr>
+    <h2 id="actions">⚡ Quick Actions</h2>
+    <table>
+      <thead><tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Create first Routine</strong></td><td><code>/schedule</code> in Claude Code terminal</td><td>Immediately, for any recurring task</td><td>Claude generates structured instructions from plain-English description</td></tr>
+        <tr><td><strong>Docs sync Routine</strong></td><td>Weekly schedule trigger, 2 repos (source + docs), GitHub + Slack connectors</td><td>Every Monday or release day</td><td>Use "diff and PR" framing in prompt</td></tr>
+        <tr><td><strong>Deploy verifier</strong></td><td>CD pipeline POST to webhook</td><td>After every deploy</td><td>Pass service name and deploy context in webhook payload</td></tr>
+        <tr><td><strong>Agent-on-agent review</strong></td><td>Second Routine triggered by PR creation</td><td>Every time generating Routine opens a PR</td><td>Critique Routine: "Review this PR for accuracy before human review"</td></tr>
+        <tr><td><strong>Live steering</strong></td><td>Open claude.ai web → navigate to running session</td><td>Any time Routine is active</td><td>Type directly into session to redirect or stop</td></tr>
+        <tr><td><strong>GitHub event Routine</strong></td><td><code>issue.opened</code> trigger on target repo</td><td>Every new issue</td><td>Add label filter (e.g., <code>needs-docs</code>) to reduce false positives</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+    <h2 id="quotes">💬 Best Quotes</h2>
+    <blockquote>"A teammate notices when something breaks and does something about it. Right now, a tool waits for you to enter your prompt and actually press enter." — Maya (02:00)</blockquote>
+    <blockquote>"Whatever context Claude has, that's the ceiling of how successful Claude will be." — Maya (11:46)</blockquote>
+    <blockquote>"Maybe eventually as I watch Claude work more and more and trust its decisions, I can let Claude roll back the change itself." — Maya (20:21)</blockquote>
+
+    <hr>
+    <h2 id="refs">📎 References</h2>
+    <ul>
+      <li>Claude Code — Anthropic's coding agent (claude.ai/code)</li>
+      <li>Claude Code Routines — new feature, accessible via <code>/schedule</code> command</li>
+      <li>GitHub MCP — native integration for Routines event triggers</li>
+      <li>Slack connector — for Routine notifications</li>
+      <li>Google Drive connector — for external context in Routine sessions</li>
+      <li>Datadog / Grafana — example monitoring tool connectors</li>
+      <li>Twilio — example SMS alerting connector</li>
+      <li><strong>Key stat:</strong> Claude Code PRs at Anthropic up 200% YoY (2026)</li>
+    </ul>
+
+    <div class="footer">
+      <p>Source: <a href="https://www.youtube.com/watch?v=eSP7PLTXNy8" target="_blank">Build a proactive agent workflow with Claude Code ↗</a> · Code with Claude Conference 2026</p>
+    </div>
+  </main>
+</div>
+<script>
+  window.addEventListener('scroll',()=>{
+    const el=document.documentElement;
+    const st=el.scrollTop||document.body.scrollTop;
+    const sh=el.scrollHeight-el.clientHeight;
+    document.getElementById('pb').style.width=(sh>0?(st/sh*100):0)+'%';
+  });
+</script>
+</body>
+</html>
