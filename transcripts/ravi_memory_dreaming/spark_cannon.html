@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spark & Cannon — Memory, Dreaming & Persistent Agent State</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#e11d48;--accent-dim:#9f1239;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#e11d48,#9f1239);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.btn:hover{border-color:var(--accent);}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+.toc .toc-h3{padding-left:22px;font-size:12px;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #e11d48;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #e11d48;}
+.block.tension{border-left:3px solid #f59e0b;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#e11d48;}
+.block.tension .block-label{color:#f59e0b;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:6px 16px;font-size:14px;}
+.kv dt{color:var(--muted);font-weight:500;}
+.kv dd{color:var(--text);}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0;}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#e11d48;border-bottom-color:#e11d48;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+blockquote{border-left:3px solid var(--border);padding-left:16px;color:var(--muted);font-style:italic;margin:1em 0;}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:13px;font-family:'JetBrains Mono','Fira Code',monospace;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>📋 Spark & Cannon · Memory, Dreaming & Persistent Agent State</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=IGo225tfF2I" target="_blank">▶ Watch</a>
+  <a class="btn" href="ravi_memory_dreaming.html">Full Doc</a>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <a href="#overview">Overview</a>
+    <a href="#context">Context & Stakes</a>
+    <a href="#memory-stores">Memory Stores</a>
+    <a href="#dreaming">Dreaming Architecture</a>
+    <a href="#concurrency">Optimistic Concurrency</a>
+    <a href="#sre-demo">SRE Demo</a>
+    <a href="#model-selection">Model Selection</a>
+    <a href="#patterns">Implementation Patterns</a>
+    <a href="#implications">Strategic Implications</a>
+  </nav>
+  <main>
+    <h1>Memory, Dreaming & Persistent Agent State</h1>
+    <div class="meta">
+      <span>Ravi · Anthropic</span>
+      <span>·</span>
+      <span>Code with Claude Conference 2026</span>
+      <span>·</span>
+      <span>May 2026</span>
+      <span class="tag">Agent Infrastructure</span>
+      <span class="tag">Memory</span>
+      <span class="tag">Dreaming</span>
+    </div>
+
+    <div class="hero" id="overview">
+      <p><strong>Core argument:</strong> Agents that can't remember are stateless scripts. The Claude Managed Agent (CMA) platform introduces three primitives — persistent memory stores, dreaming (async synthesis), and optimistic concurrency — that together enable agents to accumulate knowledge across sessions, synthesize insights without blocking the agent loop, and coordinate writes safely at scale. Ravi demonstrates a live SRE incident-response agent where a shared memory store prevents duplicate alert handling across an entire agent swarm.</p>
+    </div>
+
+    <h2 id="context">Context & Stakes</h2>
+    <p>The fundamental limitation of current LLM agents is statelessness. Each new session starts cold. For consumer apps this is tolerable — for enterprise agents handling legal research, incident response, or customer support, it's a dealbreaker. Every re-learned fact is wasted compute. Every re-investigated alert is a duplicated incident response.</p>
+    <p>Ravi leads the API Knowledge team at Anthropic, specifically focused on building the infrastructure layer for agents to interact with persistent knowledge. His team built CMA's memory primitives as a direct response to production pain from Anthropic's largest enterprise customers.</p>
+    <div class="block connection">
+      <div class="block-label">📡 Production Evidence</div>
+      <p>Rakuten deployed CMA memory stores and saw 97% error reduction. Harvey Law used dreaming to pre-analyze legal session transcripts — their agents went from baseline to 6× benchmark improvement on legal reasoning tasks. Neither number is a lab result.</p>
+    </div>
+
+    <h2 id="memory-stores">Memory Stores</h2>
+    <p>Memory stores are file-system-like persistent storage attached to CMA agent sessions. The design choice is deliberately primitive: agents interact via bash and grep, the same tools they'd use for any filesystem. No special SDK. No new abstractions to learn.</p>
+    <p>This matters architecturally. By mapping memory to filesystem semantics:</p>
+    <ul>
+      <li>Agents can use existing bash tooling — find, grep, cat, diff — without modification</li>
+      <li>Memory reads are just file reads; memory writes are just file writes</li>
+      <li>The agent's existing code and prompt patterns work unchanged</li>
+      <li>Debugging memory state is as simple as reading a file</li>
+    </ul>
+    <div class="block insight">
+      <div class="block-label">💡 Insight</div>
+      <p>The filesystem metaphor isn't laziness — it's deliberate. Agents already understand file I/O. By mapping memory to this primitive, Anthropic eliminated an entire learning curve and made memory state trivially inspectable.</p>
+    </div>
+    <p>Memory stores persist across session boundaries. When an agent session ends, the store survives. When a new session starts — same agent or different agent — it can read the accumulated state. This is the foundation for agents that learn over time.</p>
+
+    <h2 id="dreaming">Dreaming Architecture</h2>
+    <p>Dreaming is the mechanism by which agents process accumulated experience into structured knowledge. It runs as an out-of-band batch process — completely separate from the main agent loop.</p>
+    <p>The flow:</p>
+    <ol>
+      <li>Agent completes sessions, generating transcripts</li>
+      <li>Dreaming job picks up transcripts asynchronously</li>
+      <li>An LLM (typically Opus 4.7) analyzes transcripts for patterns, decisions, and learnable facts</li>
+      <li>Synthesized summaries are written back to the agent's memory store</li>
+      <li>Next session starts with enriched memory — agent "woke up smarter"</li>
+    </ol>
+    <div class="block insight">
+      <div class="block-label">💡 Key Property</div>
+      <p>Dreaming is non-destructive. The original transcripts are never modified. If a dreaming run produces a bad summary, you can rerun it without data loss. The memory store always reflects the most recent dreaming run, but rollback is possible.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Tradeoff</div>
+      <p>Dreaming introduces a lag between experience and learned knowledge. If an agent makes a critical discovery at 3pm, that knowledge may not be in memory stores until the next dreaming run. For most use cases this is fine. For real-time learning requirements, you need hybrid approaches — real-time writes + batch dreaming for synthesis.</p>
+    </div>
+    <p>Harvey Law's 6× benchmark improvement came specifically from dreaming. Their agents would analyze depositions and legal documents during the day. Overnight dreaming would synthesize case-relevant patterns, precedents, and strategy notes into memory. Morning sessions started with that accumulated analysis — agents could reason at a higher level from the first token.</p>
+
+    <h2 id="concurrency">Optimistic Concurrency</h2>
+    <p>When multiple agents write to the same memory store simultaneously, you get conflicts. The naive solution — locks — creates bottlenecks that negate the benefits of multi-agent parallelism. CMA uses optimistic concurrency instead.</p>
+    <p>The protocol:</p>
+    <ol>
+      <li>Agent reads current memory state, notes version number</li>
+      <li>Agent computes its write</li>
+      <li>Agent attempts to commit: "write this if version is still X"</li>
+      <li>If version matches → commit succeeds</li>
+      <li>If version changed (another agent wrote first) → retry from step 1</li>
+    </ol>
+    <div class="block connection">
+      <div class="block-label">📡 Why This Works for Agents</div>
+      <p>Unlike databases with microsecond write contention, agent memory writes are infrequent (seconds to minutes apart) and semantically meaningful. Conflict rates are low. When conflicts do occur, retrying with updated context often produces a better write — the agent incorporates what the other agent wrote.</p>
+    </div>
+    <div class="block insight">
+      <div class="block-label">💡 Implementation Note</div>
+      <p>Optimistic concurrency at the agent level is ~10 lines of code. Version-check before commit, catch conflict error, retry. This is worth implementing even in custom memory systems — it's far simpler than locking and handles 95%+ of real-world multi-agent scenarios.</p>
+    </div>
+
+    <h2 id="sre-demo">SRE Demo: Shared Alert Coordination</h2>
+    <p>The live demo showed a fleet of SRE agents monitoring different infrastructure components. Classic problem: the same alert fires, multiple agents pick it up, all start investigating the same incident in parallel — duplicated work, potentially conflicting remediation actions.</p>
+    <p>CMA solution: shared alert-coordination memory store. Protocol:</p>
+    <ol>
+      <li>Alert fires</li>
+      <li>First agent to pick it up writes "investigating: [alert_id]" to shared memory</li>
+      <li>Other agents read shared memory before starting — see the claim, skip this alert</li>
+      <li>Investigating agent writes resolution + learnings back to shared memory</li>
+      <li>All future agents benefit from the documented resolution pattern</li>
+    </ol>
+    <p>The shared memory turns a fleet of independent stateless agents into a coordinated team that builds institutional knowledge. Each resolved incident enriches the store — the fleet collectively gets better at incident response over time.</p>
+    <div class="block insight">
+      <div class="block-label">💡 Pattern</div>
+      <p>The "claim before investigate" pattern from the SRE demo is universally applicable to any multi-agent system where work items could be processed by multiple agents. It's a distributed lock implemented via memory — but without the deadlock risks.</p>
+    </div>
+
+    <h2 id="model-selection">Model Selection for Memory Tasks</h2>
+    <p>CMA allows routing different operations to different models. Ravi's recommendation for memory-heavy tasks:</p>
+    <ul>
+      <li><strong>Opus 4.7:</strong> Memory read/write synthesis, dreaming jobs, complex cross-session reasoning</li>
+      <li><strong>Sonnet:</strong> Standard agent tasks, tool use, code execution</li>
+      <li><strong>Haiku:</strong> Simple reads, classification, routing decisions</li>
+    </ul>
+    <p>The key insight: Opus 4.7 is currently SOTA specifically for tasks that require understanding large bodies of prior knowledge and synthesizing them coherently. This is exactly what dreaming requires. Don't default to Sonnet for memory synthesis — the quality difference is significant enough to move benchmarks by multiples.</p>
+
+    <h2 id="patterns">Implementation Patterns</h2>
+    <h3>Pattern 1: Session Handoff Memory</h3>
+    <p>At the end of every agent session, write a structured handoff document to memory: what was accomplished, what was attempted but failed, what the next session should prioritize. Next session reads this first. Simple to implement, immediate value.</p>
+    <h3>Pattern 2: Shared Fact Store</h3>
+    <p>For multi-agent systems working on the same domain, maintain a shared fact store. Agents write verified facts with sources. Other agents read before doing research — avoids re-discovering known information. Dreaming periodically synthesizes the fact store for coherence.</p>
+    <h3>Pattern 3: Dreaming Pipeline</h3>
+    <p>Schedule dreaming jobs as a cron — nightly or post-session. Input: accumulated transcripts since last run. Output: structured summaries, extracted patterns, updated strategy notes. Write outputs to a dedicated "synthesized" directory in memory — agents know synthesized content is higher-quality than raw session notes.</p>
+
+    <h2 id="implications">Strategic Implications</h2>
+    <div class="block insight">
+      <div class="block-label">💡 Strategic Insight</div>
+      <p>Memory stores + dreaming fundamentally change the economics of agent deployment. A stateless agent has constant per-task cost — no learning, no improvement. A memory-enabled agent amortizes its learning cost across all future tasks. Over time, agents with good memory become significantly cheaper per successful outcome than stateless equivalents.</p>
+    </div>
+    <div class="block analog">
+      <div class="block-label">🔁 Analog</div>
+      <p>Dreaming is to agents what sleep is to humans — the period where diffuse experiences are compressed into structured long-term memory. The Harvey 6× gain didn't come from a better model; it came from giving the model access to its own organized prior work.</p>
+    </div>
+    <div class="block tension">
+      <div class="block-label">⚠ Open Question</div>
+      <p>Memory store quality degrades over time if dreaming synthesis is imperfect. Stale or wrong synthesized facts could corrupt future reasoning. Need mechanisms for memory auditing and periodic re-synthesis from raw transcripts. This is an open problem — no clean solution yet.</p>
+    </div>
+  </main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  // TOC highlight
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  // Theme
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>
