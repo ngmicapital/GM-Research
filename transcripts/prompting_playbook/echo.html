@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo — The Prompting Playbook</title>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#7c3aed;--accent-dim:#3b0764;}
+  .light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;--accent:#7c3aed;--accent-dim:#ede9fe;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;transition:background .2s,color .2s}
+  #pb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);z-index:1000;transition:width .1s}
+  .topbar{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+  .topbar .label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.topbar .label span{color:var(--accent)}
+  .toggle{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1280px;margin:0 auto}
+  .toc{position:sticky;top:49px;height:calc(100vh - 49px);overflow-y:auto;padding:24px 16px;border-right:1px solid var(--border)}
+  .toc h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .toc a{display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:4px;margin-bottom:2px;line-height:1.4;border-left:2px solid var(--accent)}
+  .toc a:hover{background:var(--surface2);color:var(--text)}
+  .main{padding:40px 48px;max-width:900px}
+  .hero{margin-bottom:36px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+  .hero h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px}
+  .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+  h2{font-size:20px;font-weight:700;color:var(--heading);margin:32px 0 12px}
+  h3{font-size:16px;font-weight:600;color:var(--heading);margin:20px 0 8px}
+  p{margin-bottom:14px}
+  ul,ol{padding-left:20px;margin-bottom:14px}
+  li{margin-bottom:5px}
+  blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:16px 0;color:var(--muted);font-style:italic;background:var(--surface2);border-radius:0 6px 6px 0}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .bottom-line{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:24px 28px;margin-bottom:32px}
+  .bottom-line h2{margin-top:0;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .bottom-line ul{list-style:none;padding:0}
+  .bottom-line li{padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .bottom-line li:last-child{border-bottom:none}
+  .bottom-line li::before{content:"→ ";color:var(--accent);font-weight:700}
+  .claim-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;margin-right:8px;flex-shrink:0}
+  .claim{display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  .claim-body{flex:1}
+  .claim-title{font-weight:600;color:var(--heading);margin-bottom:6px;font-size:14px}
+  .claim-detail{font-size:13px;color:var(--muted);margin-bottom:4px}
+  .claim-detail span{color:var(--text);font-weight:500}
+  hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+  .footer{border-top:1px solid var(--border);padding:20px 0;margin-top:32px;font-size:13px;color:var(--muted)}
+  .footer a{color:var(--link);text-decoration:none}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}.toc{display:none}.main{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div id="pb" style="width:0%"></div>
+<div class="topbar">
+  <div class="label">⚡ <span>Echo</span> — Decision Briefing</div>
+  <button class="toggle" onclick="document.body.classList.toggle('light')">☀ Toggle Light</button>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <h3>Contents</h3>
+    <a href="#bottom-line">⚡ Bottom Line</a>
+    <a href="#claims">🔑 Key Claims</a>
+    <a href="#actions">⚡ Quick Actions</a>
+    <a href="#quotes">💬 Best Quotes</a>
+    <a href="#refs">📎 References</a>
+  </nav>
+  <main class="main">
+    <div class="hero">
+      <div class="badge">⚡ Echo · Video 3</div>
+      <h1>The Prompting Playbook: Eval-Driven Prompt Iteration</h1>
+      <div class="meta">
+        <span>👤 Margot Vanlar · Applied AI Engineer, Anthropic London</span>
+        <span>🎓 Code with Claude Conference 2026 · ~34 min</span>
+        <span>🏷 AI Engineering / Prompt Engineering</span>
+      </div>
+      <p style="margin-top:14px;font-size:14px;color:var(--muted)">First-party practitioner from Anthropic London. Demonstrations are live eval runs on real prompt examples inspired by actual customer prompts. High credibility on engineering practice; business metrics and company names are illustrative.</p>
+    </div>
+
+    <div class="bottom-line" id="bottom-line">
+      <h2>⚡ The Bottom Line</h2>
+      <ul>
+        <li><strong>Build evals before touching the prompt.</strong> Without a test suite (control cases, edge cases, boundary cases), you cannot tell if a change is an improvement or a regression.</li>
+        <li><strong>Structure beats content — general hygiene alone improves performance.</strong> Adding XML tags to separate role/guidelines/policy/tone improved eval scores before any specific failure modes were addressed.</li>
+        <li><strong>Models withhold as well as hallucinate.</strong> Overfitted defensive patches from old models can cause newer, smarter models to withhold information they actually have. Both failure directions must be tested.</li>
+        <li><strong>Instructions don't add capability — tools do.</strong> "Always calculate correctly" doesn't make a model better at maths. Give it a tool instead.</li>
+        <li><strong>Agentic decomposition outperforms prompt engineering on complex tasks.</strong> A generate-evaluate-repair loop with three simple prompts beat both a better-prompted Sonnet 4.6 and an Opus 4.7 with adaptive thinking on token efficiency and reliability.</li>
+      </ul>
+    </div>
+
+    <h2 id="claims">🔑 Key Claims</h2>
+
+    <div class="claim"><div class="claim-num">1</div><div class="claim-body"><div class="claim-title">Prompt structure alone (XML sectioning) improves eval performance before any content changes</div><div class="claim-detail"><span>Evidence:</span> Live demo: adding XML tags (role/guidelines/policy/tone) to an unstructured prompt improved scores on a 5-case eval suite immediately.</div><div class="claim-detail"><span>Caveat:</span> Magnitude of improvement depends on how poorly structured the original prompt was. Already-structured prompts gain less.</div><div class="claim-detail"><span>Consensus:</span> Widely accepted best practice. Margot's live demo provides direct validation.</div></div></div>
+
+    <div class="claim"><div class="claim-num">2</div><div class="claim-body"><div class="claim-title">Defensive instructions added for old models can cause newer models to withhold correct information</div><div class="claim-detail"><span>Evidence:</span> "Never give customer wrong plan details — point to URL" caused the model to deflect a question it had the answer to, in the customer account data.</div><div class="claim-detail"><span>Caveat:</span> Context-specific. Not all defensive patches become problematic — depends on model version and instruction following capability.</div><div class="claim-detail"><span>Consensus:</span> Under-discussed. Most focus is on hallucination; this failure mode (withholding) receives less attention.</div></div></div>
+
+    <div class="claim"><div class="claim-num">3</div><div class="claim-body"><div class="claim-title">Instructions don't add capability — tools are required for reliable computation</div><div class="claim-detail"><span>Evidence:</span> "Always calculate proration correctly" failed; introducing a <code>calculate_proration</code> tool with a defined schema fixed it.</div><div class="claim-detail"><span>Caveat:</span> Applies specifically to precision tasks (maths, lookups). LLMs handle soft reasoning tasks without tools reasonably well.</div><div class="claim-detail"><span>Consensus:</span> Standard guidance; demonstrated concretely here.</div></div></div>
+
+    <div class="claim"><div class="claim-num">4</div><div class="claim-body"><div class="claim-title">Intelligent models need both sides of trade-offs stated explicitly</div><div class="claim-detail"><span>Evidence:</span> "Avoid escalating — costs $8" caused model to never escalate billing conflicts. Adding "but wrong resolution costs refund + customer trust" fixed it.</div><div class="claim-detail"><span>Caveat:</span> More important as models become more capable at inference. Older/less capable models may not infer from one-sided goals as aggressively.</div><div class="claim-detail"><span>Consensus:</span> Emerging best practice for frontier models. Less relevant for older, more literal instruction-followers.</div></div></div>
+
+    <div class="claim"><div class="claim-num">5</div><div class="claim-body"><div class="claim-title">Agentic generate-evaluate-repair loop beats single-prompt approaches on reliability AND token efficiency</div><div class="claim-detail"><span>Evidence:</span> 5/5 pass rate, lower tokens AND lower latency than Sonnet 4.6 with improved prompt (2/5 pass, hit output limit).</div><div class="claim-detail"><span>Caveat:</span> Requires more system design upfront. Three coordinated prompts with state passing. May not be justified for simpler tasks.</div><div class="claim-detail"><span>Consensus:</span> Contrarian result — intuition says agentic = more expensive. The data shows otherwise for complex constrained tasks.</div></div></div>
+
+    <div class="claim"><div class="claim-num">6</div><div class="claim-body"><div class="claim-title">Evals must cover three case types: control, edge, and boundary</div><div class="claim-detail"><span>Evidence:</span> Explicitly stated framework from Margot; applied throughout demo.</div><div class="claim-detail"><span>Caveat:</span> Five test cases is a demo minimum. Real eval suites should be larger and cover full distribution of expected inputs.</div><div class="claim-detail"><span>Consensus:</span> Standard ML/QA practice applied to prompt engineering.</div></div></div>
+
+    <hr>
+    <h2 id="actions">⚡ Quick Actions</h2>
+    <table>
+      <thead><tr><th>Protocol</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Eval-first policy</strong></td><td>Build test suite before any prompt changes: control cases, edge cases, boundary cases</td><td>Before any prompt migration or debugging session</td><td>Minimum: 1 control, 2 edge, 1 escalation/refusal boundary</td></tr>
+        <tr><td><strong>Structural hygiene pass</strong></td><td>Add XML tags to separate role / guidelines / policy / tone / output format</td><td>First step when inheriting any prompt</td><td>Run eval after — expect improvement before targeting specific failures</td></tr>
+        <tr><td><strong>Prompt version control</strong></td><td>Annotate why each defensive patch was added; tag with model version it was added for</td><td>Ongoing — every time a defensive change is made</td><td>Review annotations when migrating to new model — patches may now cause overfitting</td></tr>
+        <tr><td><strong>Tool audit</strong></td><td>For any task requiring precision (maths, lookups, API calls), replace instructions with tools</td><td>When debugging calculation or precision failures</td><td>Define tool schema explicitly in API; describe when to use it in prompt</td></tr>
+        <tr><td><strong>Trade-off balancing</strong></td><td>For any goal-directed instruction, state both the cost of the action AND the cost of not taking it</td><td>When reviewing escalation, refusal, or deferral logic</td><td>Especially important for frontier models that actively optimise toward goals</td></tr>
+        <tr><td><strong>Agentic decomposition</strong></td><td>For complex multi-step tasks, split into generate → evaluate (LLM) → repair</td><td>When single-prompt approaches hit token limits or reliability ceilings</td><td>LLM evaluator (not just Python) allows soft constraints to be injected at runtime</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+    <h2 id="quotes">💬 Best Quotes</h2>
+    <blockquote>"If you're reading a prompt and you can't tell guidelines from policy from data, most likely the model isn't able to either." — Margot Vanlar (~11:27)</blockquote>
+    <blockquote>"Instructions don't add capability. Telling the model it's critical to do a calculation right doesn't make it better at mental math." — Margot Vanlar (~20:03)</blockquote>
+    <blockquote>"We worry a lot about hallucinations or the invention of facts and numbers, but actually the opposite can also happen. The model can withhold information that it actually has access to." — Margot Vanlar (~16:46)</blockquote>
+    <blockquote>"As models become more intelligent, we need to remember to state both sides of the trade-offs because our models are becoming better themselves at making those trade-offs." — Margot Vanlar (~22:35)</blockquote>
+
+    <hr>
+    <h2 id="refs">📎 References</h2>
+    <ul>
+      <li>Margot Vanlar — Applied AI Engineer, Anthropic London</li>
+      <li>Meridian Mobile — Fictional telco used as the customer support bot demo</li>
+      <li><strong>Eval suite types:</strong> Control cases (always pass), edge cases (known failure modes), boundary cases (escalation/refusal)</li>
+      <li><strong>XML tagging:</strong> Structuring prompts with &lt;role&gt;, &lt;guidelines&gt;, &lt;policy&gt;, &lt;tone&gt; sections</li>
+      <li><strong>Output contract:</strong> Defining response format in prompt + stop sequences in API harness</li>
+      <li><strong>Structured outputs:</strong> API feature for programmatic output format enforcement</li>
+      <li><strong>Tool use:</strong> calculate_proration tool — defined via API schema, called by model for billing calculations</li>
+      <li><strong>Generate-evaluate-repair:</strong> Three-prompt agentic loop for constraint-satisfaction tasks</li>
+      <li><strong>Models:</strong> Claude Sonnet 4.6, Claude Opus 4.7, Opus 4.7 with adaptive thinking</li>
+      <li><strong>LLM judge:</strong> Using a model to grade eval outputs (vs. Python function for deterministic checks)</li>
+    </ul>
+
+    <div class="footer">
+      <p>Source: <a href="https://www.youtube.com/watch?v=G2B0YWuJUgI" target="_blank">The Prompting Playbook ↗</a> · Code with Claude Conference 2026</p>
+    </div>
+  </main>
+</div>
+<script>window.addEventListener('scroll',()=>{const el=document.documentElement;const st=el.scrollTop||document.body.scrollTop;const sh=el.scrollHeight-el.clientHeight;document.getElementById('pb').style.width=(sh>0?(st/sh*100):0)+'%';});</script>
+</body>
+</html>
