@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spark & Cannon — The Prompting Playbook</title>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#7c3aed;--accent-dim:#3b0764;}
+  .light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;--accent:#7c3aed;--accent-dim:#ede9fe;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7;transition:background .2s,color .2s}
+  #pb{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa);z-index:1000;transition:width .1s}
+  .topbar{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+  .topbar .label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.topbar .label span{color:var(--accent)}
+  .toggle{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;max-width:1280px;margin:0 auto}
+  .toc{position:sticky;top:49px;height:calc(100vh - 49px);overflow-y:auto;padding:24px 16px;border-right:1px solid var(--border)}
+  .toc h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .toc a{display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:3px 8px;border-radius:4px;margin-bottom:2px;line-height:1.4;border-left:2px solid var(--accent)}
+  .toc a:hover{background:var(--surface2);color:var(--text)}
+  .main{padding:40px 48px;max-width:900px}
+  .hero{margin-bottom:36px}
+  .badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent)}
+  .hero h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px}
+  .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:16px;margin-top:10px}
+  h2{font-size:20px;font-weight:700;color:var(--heading);margin:32px 0 12px}
+  h3{font-size:16px;font-weight:600;color:var(--heading);margin:20px 0 8px}
+  p{margin-bottom:14px}
+  ul,ol{padding-left:20px;margin-bottom:14px}
+  li{margin-bottom:5px}
+  blockquote{border-left:3px solid var(--accent);padding:8px 16px;margin:16px 0;color:var(--muted);font-style:italic;background:var(--surface2);border-radius:0 6px 6px 0}
+  .enhance{border-radius:8px;padding:16px 18px;margin:16px 0;background:var(--surface)}
+  .enhance.insight{border-left:4px solid #7c3aed}
+  .enhance.connection{border-left:4px solid #f59e0b}
+  .enhance.tension{border-left:4px solid #ef4444}
+  .enhance.analog{border-left:4px solid #10b981}
+  .enhance-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+  .insight .enhance-label{color:#7c3aed}
+  .connection .enhance-label{color:#f59e0b}
+  .tension .enhance-label{color:#ef4444}
+  .analog .enhance-label{color:#10b981}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+  code{background:var(--surface2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;font-size:13px;font-family:monospace}
+  .footer{border-top:1px solid var(--border);padding:20px 0;margin-top:32px;font-size:13px;color:var(--muted)}
+  .footer a{color:var(--link);text-decoration:none}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}.toc{display:none}.main{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div id="pb" style="width:0%"></div>
+<div class="topbar">
+  <div class="label">📋 <span>Spark & Cannon</span> — Deep Archival</div>
+  <button class="toggle" onclick="document.body.classList.toggle('light')">☀ Toggle Light</button>
+</div>
+<div class="layout">
+  <nav class="toc">
+    <h3>Contents</h3>
+    <a href="#overview">Overview</a>
+    <a href="#narrative">Full Narrative</a>
+    <a href="#scenario1">Scenario 1: Debugging Prompts</a>
+    <a href="#scenario2">Scenario 2: New Agent from Scratch</a>
+    <a href="#insights">Key Insights</a>
+    <a href="#quotes">Verbatim Moments</a>
+    <a href="#raw">Raw Details</a>
+  </nav>
+  <main class="main">
+    <div class="hero">
+      <div class="badge">📋 Spark & Cannon · Video 3</div>
+      <h1>The Prompting Playbook: Eval-Driven Iteration</h1>
+      <div class="meta">
+        <span>👤 Margot Vanlar · Applied AI Engineer, Anthropic London</span>
+        <span>🎓 Code with Claude Conference 2026 · ~34 min</span>
+        <span>🏷 AI Engineering / Prompt Engineering</span>
+      </div>
+    </div>
+
+    <h2 id="overview">Overview</h2>
+    <p>Margot Vanlar, an applied AI engineer at Anthropic's London office, walks through the prompting practices she encounters most frequently with enterprise customers building on Claude. The talk is structured around two practical scenarios: debugging a degraded prompt after a model migration, and building a new agentic workflow from zero. Rather than presenting a list of rules, she demonstrates each practice live with a vibe-coded web app, running actual evals and iterating in real time. The result is one of the most concrete, engineering-grade prompting talks in the conference.</p>
+
+    <h2 id="narrative">Full Narrative</h2>
+
+    <h3 id="scenario1">Scenario 1: Debugging an Existing Prompt</h3>
+    <p>The first scenario is framed around a common real-world situation: a customer support bot for a fictional telco, "Meridian Mobile," that was working well and has started degrading after a model migration. The prompt has accumulated contributions from multiple engineers over time, with no clear owner — a mixture of policy, tone guidelines, patches for old model behaviours, and copied-in website text (including a reference to a "hero image" and even cookie notices).</p>
+
+    <p>Margot's first principle: <strong>before touching anything, build an eval suite</strong>. The eval needs three types of test cases: a control case (something the model should always handle correctly — unambiguous, used to catch regressions), edge cases (specific failure modes that have been seen before and patched), and boundary cases (where the model should refuse or escalate to a human). Her demo suite has five test cases covering a data plan query, a proration bill calculation, a grandfathered plan hotspot question, a billing error that should escalate, and a customer information retrieval test.</p>
+
+    <p><strong>Baseline run:</strong> The control case passes. Everything else fails.</p>
+
+    <p><strong>General hygiene pass:</strong> Before targeting specific failures, Margot applies structural improvements. She adds XML tags to separate the prompt into logical sections: <code>&lt;role&gt;</code>, <code>&lt;guidelines&gt;</code>, <code>&lt;policy&gt;</code>, <code>&lt;tone&gt;</code>. She removes the false "you are a human" statement, strips the pasted website content, and clarifies the role description. She also adds an output contract — an XML-tagged response format — plus a stop sequence in the API harness to enforce it. Result: the cleanup alone improves performance. One previously failing test now passes, and scores improve across the board. Her rule of thumb: "If you're reading a prompt and you can't tell guidelines from policy from data, most likely the model isn't able to either."</p>
+
+    <p><strong>Failure mode 1 — Hotspot withholding:</strong> A customer on a legacy "grandfathered" plan asks how much hotspot data they have. Their account data contains the answer (5 GB). But the model deflects to a URL instead of answering directly. The culprit is a defensive instruction added for an older model: "Never give a customer the wrong plan details — instead point them to the URL." This was a reasonable patch at the time (to prevent hallucinating incorrect plan data), but newer models are much better at instruction-following and are now over-optimising for the instruction, withholding information they actually have. The fix: tell the model explicitly that the customer account data is the authoritative source of truth. After the fix, all hotspot test cases pass. Lesson: <em>models can withhold information they have, not just hallucinate</em>. Use version control on prompts and annotate why defensive patches were introduced.</p>
+
+    <p><strong>Failure mode 2 — Proration calculation:</strong> A customer asks what their bill will be if they upgrade mid-month. The model does "mental maths" — reasons through it verbally, gets approximate answers, and doesn't return a precise figure the customer can rely on. The original prompt says "critical: always calculate proration correctly" — but telling the model to do a good job doesn't give it the capability to do a good job. The fix: give the model a <code>calculate_proration</code> tool. The tool is defined in the API call with a schema describing inputs and outputs. Once introduced, the model uses the tool reliably and returns correct precise answers. Lesson: <em>instructions don't add capability</em>. For tasks requiring mathematical precision, tools are the right answer.</p>
+
+    <p><strong>Failure mode 3 — Billing error escalation:</strong> A customer has a billing conflict that should be escalated to a human. The model instead tries to diagnose and explain the discrepancy itself. The original prompt reads: "Avoid escalating or transferring to a care specialist unless absolutely necessary as it costs approximately $8 and counts against our team's fast contract resolution metric." This gives only one side of the trade-off: the cost of escalating. The model optimises for the goal it's given — not escalating. The fix: provide both sides. "It costs $8 to escalate — but if you get this wrong, it costs a refund and customer trust." After the fix, the model escalates billing conflicts reliably. Lesson: <em>as models become more intelligent, state both sides of trade-offs explicitly</em>. Intelligent models will infer and optimise — make sure they have the full picture.</p>
+
+    <h3 id="scenario2">Scenario 2: Building a New Scheduling Agent from Scratch</h3>
+    <p>The second scenario is a retail staff scheduling agent. Given eight employees, a weekly schedule with headcount requirements, and hard constraints that must always be satisfied, the task is to generate a compliant schedule. Because the constraints are deterministic, the eval uses a Python function to count violations rather than an LLM judge.</p>
+
+    <p>Margot systematically compares five approaches:</p>
+
+    <table>
+      <thead><tr><th>Approach</th><th>Model</th><th>Configuration</th><th>Result</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Baseline</td><td>Sonnet 4.6</td><td>Simple prompt</td><td>All 5 trials fail</td><td>Reasons through it but doesn't check work; burns tokens</td></tr>
+        <tr><td>Larger model</td><td>Opus 4.7</td><td>Same simple prompt</td><td>All 5 trials fail</td><td>Significantly fewer violations — reasoning capability helps</td></tr>
+        <tr><td>Adaptive thinking</td><td>Opus 4.7</td><td>Adaptive thinking enabled</td><td>All 5 pass reliably</td><td>3x tokens, ~100s latency — works but expensive</td></tr>
+        <tr><td>Better prompt</td><td>Sonnet 4.6</td><td>CoT + "check your work" instruction</td><td>2/5 pass</td><td>Hits output token limit on longer schedules; higher latency</td></tr>
+        <tr><td>Agentic loop</td><td>Sonnet 4.6</td><td>Generate → Evaluate → Repair (3 prompts)</td><td>All 5 pass</td><td>Lower tokens AND lower latency than better-prompt Sonnet</td></tr>
+      </tbody>
+    </table>
+
+    <p>The agentic generate-evaluate-repair loop is the standout winner. Three simple, focused prompts each do one thing: the generator creates a draft schedule; the evaluator checks each rule and provides specific violation evidence (not a programmatic check — an LLM evaluator); the repairer receives the violations and makes targeted fixes. They run sequentially but are each simple and reliable. The result beats both the expensive Opus+thinking approach on token efficiency and beats the better-prompted Sonnet on reliability.</p>
+
+    <p>A bonus benefit of the agentic loop: soft constraints can be injected at runtime into the evaluator prompt. "Harry doesn't like working with Sally" or "we need an extra third shift on Wednesday this week" can be added without touching the Python validator. The system is flexible without being fragile.</p>
+
+    <h2 id="insights">Key Insights</h2>
+
+    <div class="enhance insight">
+      <div class="enhance-label">💡 Insight</div>
+      <p><strong>Evals are not optional — they are the starting point.</strong> Without a rigorous eval suite, you cannot distinguish whether a prompt change is an improvement or a regression. The eval suite is what makes prompt engineering disciplined rather than intuitive. Every prompt-debugging session should begin here, before any changes are made.</p>
+    </div>
+
+    <div class="enhance insight">
+      <div class="enhance-label">💡 Insight</div>
+      <p><strong>Models withhold as well as hallucinate.</strong> The failure mode of a model deflecting a question it could answer is just as harmful as hallucination but receives far less attention. Defensive patches that prevent wrong answers can, as models improve, start preventing correct answers. Both directions of error need to be tested.</p>
+    </div>
+
+    <div class="enhance connection">
+      <div class="enhance-label">🔗 Connection</div>
+      <p><strong>Connects to the Man Group skills governance lesson.</strong> Tashara Fernando (Video 2) warned about patches for old model behaviour persisting and creating dysfunction across the org. Margot makes the same point at the individual prompt level: defensive instructions added for previous models should be version-controlled and annotated so they can be removed when they become counterproductive. The same principle — track why you made a change — applies at both the skill/governance layer and the individual prompt layer.</p>
+    </div>
+
+    <div class="enhance tension">
+      <div class="enhance-label">⚡ Tension</div>
+      <p><strong>Better prompts vs. agentic decomposition: the prompting ceiling.</strong> The comparison between Sonnet 4.6 with a better prompt (2/5 pass, hits token limit) and Sonnet 4.6 in an agentic loop (5/5 pass, lower tokens) is striking. Prompt engineering has diminishing returns on complex multi-step tasks. At some point, the right answer is architectural — decompose the task — not rhetorical. The better prompt approach failed not because the instructions were wrong but because one model in one context has cognitive and output limits.</p>
+    </div>
+
+    <div class="enhance analog">
+      <div class="enhance-label">🔄 Analog</div>
+      <p><strong>Escalation trade-off design mirrors management science.</strong> The insight that models optimise for the goal you give them — and that giving only one side of a trade-off (cost to escalate) produces a biased outcome — is identical to the Goodhart's Law problem in organisations. When a measure becomes a target, it ceases to be a good measure. The prompt engineer's job is to define goals that capture the full trade-off space, not just the metric leadership tracks.</p>
+    </div>
+
+    <div class="enhance analog">
+      <div class="enhance-label">🔄 Analog</div>
+      <p><strong>Generate-evaluate-repair mirrors test-driven development.</strong> The agentic loop — draft, check violations, fix targeted issues — is structurally the same as red-green-refactor in TDD. The insight that separating these phases makes each one simpler and more reliable is a software engineering truth applied to multi-step LLM tasks. The LLM evaluator (not a Python function) adds flexibility: it can check soft requirements that can't be expressed as code.</p>
+    </div>
+
+    <hr>
+    <h2 id="quotes">Verbatim Moments</h2>
+    <blockquote>"If you're reading a prompt and you can't tell guidelines from policy from data, most likely the model isn't able to either." — Margot Vanlar (~11:27)</blockquote>
+    <blockquote>"Instructions don't add capability. Telling the model it's critical to do a calculation right doesn't make it better at mental math." — Margot Vanlar (~20:03)</blockquote>
+    <blockquote>"We worry a lot about hallucinations or the invention of facts and numbers, but actually the opposite can also happen. The model can withhold information that it actually has access to." — Margot Vanlar (~16:46)</blockquote>
+    <blockquote>"As models become more intelligent, we need to remember to state both sides of the trade-offs because our models are becoming better themselves at making those trade-offs." — Margot Vanlar (~22:35)</blockquote>
+    <blockquote>"We are rarely writing a prompt from scratch. We're often debugging an existing prompt." — Margot Vanlar (~06:41)</blockquote>
+
+    <hr>
+    <h2 id="raw">Raw Details</h2>
+    <ul>
+      <li><strong>Demo setup:</strong> Vibe-coded web app for live eval runs and result inspection during the talk</li>
+      <li><strong>Eval suite size:</strong> 5 test cases (miniaturised from real customer prompts)</li>
+      <li><strong>Telco bot:</strong> Meridian Mobile — fictional customer support scenario</li>
+      <li><strong>Scheduling demo:</strong> 8 employees, weekly retail schedule, hard constraints</li>
+      <li><strong>Models compared:</strong> Claude Sonnet 4.6, Claude Opus 4.7, Opus 4.7 with adaptive thinking</li>
+      <li><strong>Adaptive thinking latency:</strong> ~100 seconds, ~3x tokens vs. base</li>
+      <li><strong>Tool introduced:</strong> <code>calculate_proration</code> — schema defined in API, computes bill amounts</li>
+      <li><strong>Output contract technique:</strong> XML tags in prompt + stop sequence in API harness</li>
+      <li><strong>Structured outputs:</strong> Mentioned as alternative for complex output schemas</li>
+      <li><strong>Eval grading:</strong> LLM judge for Scenario 1; Python violation counter for Scenario 2</li>
+      <li><strong>Agentic loop:</strong> Three separate prompts — generator, evaluator (LLM), repairer — sequential</li>
+      <li><strong>Soft constraint injection:</strong> Added to evaluator prompt at runtime, no Python validator changes needed</li>
+      <li><strong>Version control recommendation:</strong> Annotate why defensive prompt patches were added</li>
+    </ul>
+
+    <div class="footer">
+      <p>Source: <a href="https://www.youtube.com/watch?v=G2B0YWuJUgI" target="_blank">The Prompting Playbook ↗</a> · Code with Claude Conference 2026</p>
+    </div>
+  </main>
+</div>
+<script>window.addEventListener('scroll',()=>{const el=document.documentElement;const st=el.scrollTop||document.body.scrollTop;const sh=el.scrollHeight-el.clientHeight;document.getElementById('pb').style.width=(sh>0?(st/sh*100):0)+'%';});</script>
+</body>
+</html>
