@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spark & Cannon — Agents That Remember: Hands-On with CMA Memory Stores & Dreaming</title><style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--heading:#f0f6fc;--link:#58a6ff;--accent:#f97316;--accent-dim:#7c2d12;}
+.light{--bg:#f6f8fa;--surface:#fff;--surface2:#f0f3f6;--border:#d0d7de;--text:#24292f;--muted:#57606a;--heading:#1c2128;--link:#0969da;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;}
+a{color:var(--link);text-decoration:none;}a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:16px;}
+.topbar h1{font-size:14px;font-weight:600;color:var(--heading);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#f97316,#7c2d12);width:0%;z-index:200;transition:width 0.1s;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:13px;}
+.layout{display:flex;max-width:1200px;margin:0 auto;padding:0 24px;gap:32px;}
+.toc{width:240px;flex-shrink:0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:24px 0;}
+.toc a{display:block;font-size:13px;color:var(--muted);padding:3px 0;border-left:2px solid transparent;padding-left:10px;}
+.toc a:hover,.toc a.active{color:var(--accent);border-color:var(--accent);text-decoration:none;}
+main{flex:1;min-width:0;padding:32px 0 80px;}
+h1{font-size:28px;font-weight:700;color:var(--heading);line-height:1.3;margin-bottom:8px;}
+h2{font-size:20px;font-weight:600;color:var(--heading);margin:2em 0 0.6em;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{font-size:16px;font-weight:600;color:var(--heading);margin:1.5em 0 0.5em;}
+p{margin-bottom:1em;}
+ul,ol{margin:0.5em 0 1em 1.5em;}
+li{margin-bottom:0.4em;}
+.meta{color:var(--muted);font-size:13px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;border-left:4px solid #f97316;}
+.block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:16px 0;}
+.block.insight{border-left:3px solid #f97316;}
+.block.tension{border-left:3px solid #f59e0b;}
+.block.connection{border-left:3px solid #10b981;}
+.block.analog{border-left:3px solid #6366f1;}
+.block-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.block.insight .block-label{color:#f97316;}
+.block.tension .block-label{color:#f59e0b;}
+.block.connection .block-label{color:#10b981;}
+.block.analog .block-label{color:#6366f1;}
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.tab{padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:#f97316;border-bottom-color:#f97316;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <h1>📋 Spark & Cannon · Agents That Remember: Hands-On with CMA Memory Stores & Dreaming</h1>
+  <button class="btn" id="themeBtn">☀ Light</button>
+  <a class="btn" href="https://www.youtube.com/watch?v=geUv4CjPpxI" target="_blank">▶ Watch</a>
+</div>
+<div class="layout">
+  <nav class="toc">    <a href="#overview">Overview</a>
+    <a href="#problem">The Problem</a>
+    <a href="#memory-impl">Memory Store Impl</a>
+    <a href="#inspection">Inspection & Editing</a>
+    <a href="#dreaming-impl">Dreaming Implementation</a>
+    <a href="#multi-agent">Multi-Agent Memory</a>
+    <a href="#integration">Integration Path</a>
+    <a href="#connection">Connection to Keynote</a></nav>
+  <main><div style="padding-top:0;">
+    <h1>Agents That Remember: Hands-On with CMA Memory Stores & Dreaming</h1>
+    <div class="meta">
+      <span>Kevin · Anthropic</span><span>·</span><span>Code with Claude Conference 2026</span><span>·</span><span>May 2026</span>
+      <span class="tag">Memory Stores</span><span class="tag">Dreaming</span><span class="tag">CMA Workshop</span>
+    </div>
+
+    <div class="hero" id="overview">
+      <p><strong>What this is:</strong> The hands-on implementation workshop for CMA memory stores and dreaming — the practical companion to Ravi's keynote covering the same topics at an architectural level. Kevin (Anthropic engineer on the CMA team) walks through the actual API calls, CLI commands, and console UI for creating memory stores, mounting them to sessions, inspecting memory, and running dream jobs. This is the reference for teams ready to implement, not just understand.</p>
+    </div>
+
+    <h2 id="problem">The Problem: Isolated Agents</h2>
+    <p>The baseline problem Kevin frames: today's agents are isolated. Each session starts with no memory of prior sessions. For consumer apps this is often acceptable. For enterprise workflows — customer support, legal research, software development, SRE — agents re-learn context on every session. The cost compounds: re-investigation, re-learning user preferences, re-discovering known failure modes.</p>
+    <p>The solution has two components:</p>
+    <ol>
+      <li><strong>Memory stores:</strong> Persistent filesystem-like stores that agents can read and write across sessions</li>
+      <li><strong>Dreaming:</strong> Async batch jobs that organize, enrich, and deduplicate accumulated memory</li>
+    </ol>
+
+    <h2 id="memory-impl">Memory Store Implementation</h2>
+    <h3>Creating a Store</h3>
+    <p>Memory stores are created via the CMA API or the Anthropic console. Each store gets a unique ID. The store is a persistent filesystem — directories, files, nested structure — that survives between sessions.</p>
+    <h3>Mounting to a Session</h3>
+    <p>When creating a CMA session, you specify which memory store to mount. Not every session needs memory — you choose which sessions get access. The store appears to the agent as a regular filesystem: it reads and writes using standard file operations (bash, read, write).</p>
+    <div class="block insight">
+      <div class="block-label">💡 No Special SDK</div>
+      <p>The agent doesn't need to know it's using a memory store. It just sees a filesystem path and uses standard file operations. This is by design — agents use familiar primitives rather than a new API.</p>
+    </div>
+    <h3>Agent Behavior</h3>
+    <p>In practice, agents organize memory into a directory structure. They create files for different knowledge categories, update files as they learn new information, and read prior state at the start of each session. Kevin showed an agent that had created subdirectories for customer preferences, known issues, and resolution patterns — a natural organizational structure that emerged from the agent's own use.</p>
+
+    <h2 id="inspection">Memory Inspection and Editing</h2>
+    <p>Two paths for inspecting memory state:</p>
+    <h3>CLI Inspection</h3>
+    <p>The CMA CLI provides endpoints to list all memory files in a store, read individual files, and view version history. Every write to a memory file creates a new version — the full history is preserved and accessible.</p>
+    <h3>Console UI</h3>
+    <p>The Anthropic console provides a filesystem viewer for memory stores. You can:</p>
+    <ul>
+      <li>Browse the directory tree the agent created</li>
+      <li>Open and read individual memory files</li>
+      <li>Edit files directly — correct errors, add context, update stale information</li>
+      <li>Add new memories manually without running a session</li>
+      <li>Browse file version history</li>
+    </ul>
+    <div class="block insight">
+      <div class="block-label">💡 Human-in-the-Loop</div>
+      <p>Direct memory editing via the console UI is a key capability for production deployment. If an agent writes incorrect information to memory, you can fix it without running a new session. This is the human correction mechanism for the memory layer.</p>
+    </div>
+
+    <h2 id="dreaming-impl">Dreaming Implementation</h2>
+    <h3>Why Dreaming is Needed</h3>
+    <p>Left to itself, an agent's memory store degrades over time. Agents tend to write frequently — recording every task, observation, and decision. Without a cleanup pass, the store accumulates:</p>
+    <ul>
+      <li>Duplicate entries from similar tasks across sessions</li>
+      <li>Stale information that has been superseded</li>
+      <li>Disorganized structure as new categories get added ad-hoc</li>
+      <li>Overly verbose records that slow retrieval</li>
+    </ul>
+    <p>Dreaming is the remediation: a separate batch process whose entire job is to improve the memory store for future use.</p>
+    <h3>Creating a Dream Job</h3>
+    <p>Dream jobs are created via the API or console with the following parameters:</p>
+    <ul>
+      <li><strong>Model:</strong> Opus 4.7 or Sonnet 4.6. Opus produces higher-quality synthesis; Sonnet is cheaper. Kevin's team typically uses Opus 4.7 for the highest-value stores.</li>
+      <li><strong>Input memory store:</strong> The store to dream over (not modified by the dream)</li>
+      <li><strong>Session transcripts:</strong> A list of session transcripts to use as enrichment sources</li>
+    </ul>
+    <h3>What Dreaming Does</h3>
+    <p>The dreaming harness is a multi-agent system (built by Kevin's team) that:</p>
+    <ol>
+      <li>Reads the input memory store and all specified transcripts</li>
+      <li>Processes each transcript: fact-checks against stored memories, enriches with additional details (specific identifiers, dates, context), identifies duplicates</li>
+      <li>Reorganizes memory files for optimal retrieval structure</li>
+      <li>Produces a new output memory store — the input is never modified</li>
+    </ol>
+    <div class="block connection">
+      <div class="block-label">📡 95% Cache Hit Rate</div>
+      <p>Dream sessions achieve ~95% cache hit rate on the prompt cache. This makes dreaming significantly cheaper than it would appear from the raw model cost — most of the computation is cached across dream runs on similar memory stores.</p>
+    </div>
+    <h3>Cost Optimization</h3>
+    <p>For teams concerned about dreaming cost:</p>
+    <ul>
+      <li>Use Sonnet 4.6 instead of Opus 4.7 for lower-quality but cheaper runs</li>
+      <li>Batch API-style scheduling (run at off-peak hours) → 50% cost discount</li>
+      <li>Provide more specific input transcripts (fewer irrelevant sessions) to reduce tokens processed</li>
+      <li>Tighter token budgets via prompt steering</li>
+    </ul>
+
+    <h2 id="multi-agent">Multi-Agent Memory</h2>
+    <p>Memory stores can be shared across multiple agents in a fleet. Kevin mentioned this in the context of the optimistic concurrency mechanism:</p>
+    <ul>
+      <li>Multiple agents can mount the same memory store</li>
+      <li>Writes use optimistic concurrency: version-check before commit, retry on conflict</li>
+      <li>Conflict rates are low for typical agentic workloads (infrequent writes)</li>
+    </ul>
+    <p>This is how the SRE demo (from Ravi's keynote) works: a fleet of agents sharing a single alert-coordination store, writing claims before investigating and resolutions after completing.</p>
+
+    <h2 id="integration">Integration Path</h2>
+    <p>Kevin's recommended integration path for teams new to CMA memory:</p>
+    <ol>
+      <li>Identify a single agent use case where session state loss is costly (re-work, re-investigation, user re-explaining context)</li>
+      <li>Create a memory store and mount it to that agent's sessions</li>
+      <li>Let the agent run for several sessions — observe what it writes</li>
+      <li>Inspect via CLI and console — understand the structure the agent created</li>
+      <li>Run a first dream job — observe the enrichment and reorganization</li>
+      <li>Mount the output store to new sessions — measure whether agent performance improves</li>
+      <li>Expand to additional use cases once the pattern is established</li>
+    </ol>
+    <div class="block tension">
+      <div class="block-label">⚠ Don't Boil the Ocean</div>
+      <p>Start with one use case, one memory store, measure the impact. Teams that try to add memory to all agents simultaneously end up with unmanageable stores and no clear measurement of what worked. One case, measure, then expand.</p>
+    </div>
+
+    <h2 id="connection">Connection to Ravi's Keynote</h2>
+    <p>This workshop is the implementation layer for concepts Ravi presented at the architecture level. Key mappings:</p>
+    <ul>
+      <li>Ravi: "Memory stores use filesystem semantics" → Kevin: actual CLI commands to list, read, edit files</li>
+      <li>Ravi: "Dreaming is out-of-band, non-destructive" → Kevin: input store never modified; output is a new store</li>
+      <li>Ravi: "Harvey Law 6× improvement via dreaming" → Kevin: the dream job creation API and parameters that enable this</li>
+      <li>Ravi: "Opus 4.7 for memory tasks" → Kevin: explicit model selection in dream job creation</li>
+    </ul>
+    <p>The two talks together give the complete picture: architectural understanding from Ravi, implementation reference from Kevin. For teams building on CMA, both are required reading.</p>
+</div></main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const prog=document.getElementById('prog');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement;
+    const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+    if(prog)prog.style.width=pct+'%';
+  });
+  const heads=document.querySelectorAll('h2[id],h3[id]');
+  const links=document.querySelectorAll('.toc a');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=document.querySelector('.toc a[href="#'+e.target.id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0% -70% 0%'});
+  heads.forEach(h=>obs.observe(h));
+  const btn=document.getElementById('themeBtn');
+  if(btn)btn.addEventListener('click',()=>document.body.classList.toggle('light'));
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const grp=t.closest('.tab-group');
+      grp.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      grp.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.panel).classList.add('active');
+    });
+  });
+});
+</script>
+</body></html>
