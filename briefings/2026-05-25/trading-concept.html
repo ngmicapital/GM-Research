@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Kyle's Lambda (Price Impact) | May 25, 2026</title>
+<meta property="og:description" content="Alpha — Kyle's Lambda (Price Impact) | May 25, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* Layout */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* TL;DR */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* Sections */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto;white-space:pre-wrap}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic;white-space:normal}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Kyle's Lambda</h1>
+  <div class="meta">
+    <span>Sunday · 25 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #31</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Kyle's Lambda is the slope between order flow and price — how many basis points price moves per million dollars of net aggression.</strong> Spread and depth tell you the cost of one click; lambda tells you the cost of <em>scaling</em>. A weekend tape like today's, with BTC parked at $76,638 and 1% depth thinned out, is a high-lambda regime — the same $5M market order that barely scratched a Tuesday midday book can drive 30+ bps of slippage right now, which is precisely why Sunday flushes overshoot and Monday opens often retrace half of them.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Price impact per unit of flow · the slope of liquidity</div>
+    </div>
+  </div>
+
+  <div class="skim">Kyle's Lambda (λ) is a single number — the regression slope of price change on signed order flow — that measures how much price moves per dollar of net aggression hitting the book.</div>
+
+  <p>Most traders measure liquidity qualitatively. Tight spread = "liquid". Stacked bids = "deep". Both are right but neither is portable. You can't compare BTC liquidity in Asia hours versus US hours, or BTC versus an alt, or a Tuesday afternoon versus a Sunday night, with words like "tight" and "deep". You need a <strong>number</strong>. Lambda is that number.</p>
+
+  <p>The concept comes from <strong>Albert "Pete" Kyle's</strong> 1985 paper <em>"Continuous Auctions and Insider Trading"</em> — one of the foundational works of modern market microstructure. Kyle's framework imagines a single informed trader hiding inside the noise of uninformed flow, and a market maker who has to price-discriminate against the possibility that any given order knows something. The math falls out to a stunningly clean equation: <strong>Δprice = λ × signed flow</strong>. Lambda is the price impact coefficient — the slope of the line connecting how aggressive buying moves price up and aggressive selling moves price down.</p>
+
+  <p>Practically, lambda is an <strong>inverse proxy for liquidity</strong>. High λ means thin book — every dollar of flow pushes price hard, because there's not much resting size to absorb it. Low λ means deep book — large orders barely register because there's a wall of passive liquidity ready to soak them up. When pros say "BTC liquidity has thinned out", what they're describing — whether they realise it or not — is lambda rising.</p>
+
+  <p>The reason this matters more than spread or top-of-book depth: spread is the cost of <em>one</em> market click; lambda is the cost of <em>scaling</em>. A book with a 0.1 bps spread can still have a vicious lambda if there's nothing two ticks deep. The cost of executing a $50M order isn't 50× the cost of executing $1M — it's closer to √50× under the square-root impact law (more on that in §02), and lambda is the constant of proportionality that sets the level.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>LAMBDA (λ)</b><span>Slope: bps of price change per $M of signed order flow</span></span>
+    <span class="pill-term"><b>SIGNED FLOW</b><span>Buy-aggressor volume minus sell-aggressor volume</span></span>
+    <span class="pill-term"><b>PRICE IMPACT</b><span>How much price moves <em>because of</em> your order (not random noise)</span></span>
+    <span class="pill-term"><b>MARKET IMPACT</b><span>Synonym for price impact in practitioner usage</span></span>
+    <span class="pill-term"><b>SLIPPAGE</b><span>Realised execution price minus expected — what lambda predicts</span></span>
+    <span class="pill-term"><b>TEMPORARY IMPACT</b><span>Mean-reverts after the order — pure liquidity cost</span></span>
+    <span class="pill-term"><b>PERMANENT IMPACT</b><span>Sticks — the market priced in your order as information</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Lambda is the conversion rate between order flow and price change. Spread is the toll at the gate; lambda is the gradient of the hill behind it.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">The Kyle regression · square-root law · permanent vs temporary impact</div>
+    </div>
+  </div>
+
+  <div class="skim">Lambda is estimated by regressing 5-minute returns on signed square-root dollar volume — a single slope coefficient that summarises an asset's price impact regime.</div>
+
+  <p>Kyle's original 1985 derivation is the <em>linear</em> form: price change is proportional to net flow, with λ as the slope. The empirical estimation procedure most pros use today comes from <strong>Hasbrouck (2009)</strong> and <strong>Goyenko, Holden &amp; Trzcinka (2009)</strong>, who fit lambda as the slope of a regression of percentage returns on the signed square-root of dollar volume, sampled at 5-minute intervals.</p>
+
+  <div class="formula"><b>Kyle's original (1985) linear form:</b>
+Δp = λ × Q
+
+  where Q = net signed order flow ($ buy − $ sell)
+        λ = Kyle's lambda (price impact coefficient)
+
+<b>Hasbrouck (2009) regression estimator:</b>
+r(i,n) = λ(i) · S(i,n) + ε
+
+  where r(i,n)  = return over 5-min bar n for asset i
+        S(i,n)  = Σ sign(v(k)) · √|v(k)|   over all trades k in bar n
+        v(k)    = signed $ volume of trade k
+        λ(i)    = slope coefficient (Kyle's lambda)
+
+<b>Practical readout (bps per $M of flow):</b>
+λ̂ ≈ 10⁴ × (mean |Δp/p|) / (mean √|Q|)
+
+  <div class="note">The signed square-root specification is the trick. Raw signed volume produces a slope that scales with √(notional) — consistent with the empirical square-root impact law. Multiply the estimated coefficient by 1e6 to get bps-per-million-dollar units that traders actually use.</div>
+  </div>
+
+  <p>The <strong>square-root impact law</strong> is one of the most robust empirical findings in microstructure. A meta-order of total size Q moves price by approximately <em>k · σ · √(Q/V)</em>, where σ is volatility, V is daily volume, and k is an asset-specific constant. The square root is universal — it shows up in equities, futures, options, and crypto with surprising stability. Lambda is the practical instantiation: the coefficient that ties this law to the specific book in front of you.</p>
+
+  <p>One nuance crypto traders should know: <strong>Talos (2025)</strong> calibrated this for crypto and found the pure square-root law <em>underestimates</em> actual slippage by about 4 bps in the 0–0.5% participation rate range — exactly where most institutional orders live. Their fix is a sigmoid-adjusted exponent. The takeaway isn't that the model is wrong; it's that crypto's microstructure is <em>worse</em> than equities at the size most pros actually trade, and lambda runs hotter than the textbook predicts.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Concept</th><th>What it captures</th><th>When it dominates</th></tr>
+    <tr><td>Spread</td><td>Cost of crossing one tick on minimum size</td><td>Scalping, HFT, sub-$10K orders</td></tr>
+    <tr><td>Top-of-book depth</td><td>Volume sitting at the best bid/ask</td><td>Small market orders, latency-sensitive flow</td></tr>
+    <tr><td>1% market depth</td><td>Volume within 1% of mid (Kaiko / Amberdata standard)</td><td>Institutional sizing, multi-million dollar tickets</td></tr>
+    <tr><td>Kyle's lambda (λ)</td><td>Slope of price impact vs flow — bps per $M</td><td>Cross-asset, cross-time-of-day comparison; meta-order sizing</td></tr>
+    <tr><td>Amihud illiquidity</td><td>Daily |return| ÷ daily volume — coarse λ proxy</td><td>When intraday data isn't available; cross-sectional studies</td></tr>
+  </table>
+  </div>
+
+  <p>Two flavours of impact matter and they're often confused. <strong>Temporary impact</strong> is the part that mean-reverts after your order — pure cost of demanding liquidity from a depleted book. <strong>Permanent impact</strong> is the part that sticks because the market interpreted your order as information and re-priced. Kyle's original lambda models the permanent piece; the temporary piece is captured by extensions like <strong>Almgren-Chriss</strong>. In practice both bleed into your fill, and lambda as commonly estimated mixes them.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — impact curves by liquidity regime · the orderbook walk</div>
+    </div>
+  </div>
+
+  <div class="skim">The first chart shows lambda visually as the slope of the price-impact curve; the second shows the same idea inside a single orderbook — how price walks the offers as flow scales.</div>
+
+  <!-- SVG 1 — Price Impact Curves by Liquidity Regime -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 440" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kyle's Lambda price impact curves under three liquidity regimes">
+
+      <defs>
+        <linearGradient id="thinFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ef4444" stop-opacity="0.18"/>
+          <stop offset="1" stop-color="#ef4444" stop-opacity="0.02"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Price Impact = λ × √(Flow) — Three Liquidity Regimes</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">SAME ORDER · DIFFERENT BOOKS · WILDLY DIFFERENT SLIPPAGE</text>
+
+      <!-- Axes -->
+      <line x1="80" y1="70" x2="80" y2="380" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="80" y1="380" x2="760" y2="380" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Y axis ticks (bps) -->
+      <text x="36" y="80" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">PRICE</text>
+      <text x="36" y="92" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">IMPACT</text>
+      <text x="36" y="104" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">(bps)</text>
+
+      <line x1="80" y1="120" x2="760" y2="120" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <text x="72" y="124" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">80</text>
+      <line x1="80" y1="185" x2="760" y2="185" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <text x="72" y="189" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">50</text>
+      <line x1="80" y1="250" x2="760" y2="250" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <text x="72" y="254" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">30</text>
+      <line x1="80" y1="315" x2="760" y2="315" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <text x="72" y="319" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">10</text>
+      <text x="72" y="384" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" text-anchor="end">0</text>
+
+      <!-- X axis ticks ($M of order flow) -->
+      <text x="80" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$0</text>
+      <text x="216" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$2M</text>
+      <text x="352" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$5M</text>
+      <text x="488" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$10M</text>
+      <text x="624" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$25M</text>
+      <text x="745" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">$50M</text>
+      <text x="400" y="424" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#1c1917" letter-spacing="0.5">SIGNED ORDER FLOW (USD)</text>
+
+      <!-- Deep book curve (low λ) — gentle square root -->
+      <!-- approx: impact(Q) = 4 * sqrt(Q in $M); $50M -> 28 bps -->
+      <path d="M 80,380 Q 200,365 352,348 T 624,325 T 745,313" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+
+      <!-- Normal book curve (mid λ) -->
+      <!-- approx: impact(Q) = 9 * sqrt(Q in $M); $50M -> 64 bps -->
+      <path d="M 80,380 Q 180,348 352,300 T 624,234 T 745,195" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+
+      <!-- Thin book curve (high λ) -->
+      <!-- approx: impact(Q) = 14 * sqrt(Q in $M); $50M -> 99 bps -->
+      <path d="M 80,380 Q 160,330 352,250 T 624,140 T 745,82" fill="none" stroke="#ef4444" stroke-width="3"/>
+
+      <!-- Fill under thin curve to highlight risk -->
+      <path d="M 80,380 Q 160,330 352,250 T 624,140 T 745,82 L 745,380 Z" fill="url(#thinFill)"/>
+
+      <!-- Reference point: $5M order -->
+      <line x1="352" y1="380" x2="352" y2="60" stroke="#1c1917" stroke-width="1" stroke-dasharray="2,3" opacity="0.4"/>
+
+      <!-- Markers at $5M reference -->
+      <circle cx="352" cy="348" r="4" fill="#22c55e" stroke="#1c1917" stroke-width="1.5"/>
+      <circle cx="352" cy="300" r="4" fill="#fbbf24" stroke="#1c1917" stroke-width="1.5"/>
+      <circle cx="352" cy="250" r="4" fill="#ef4444" stroke="#1c1917" stroke-width="1.5"/>
+
+      <!-- Annotations at $5M reference -->
+      <text x="360" y="343" font-family="JetBrains Mono,monospace" font-size="10" fill="#15803d" font-weight="700">~9 bps</text>
+      <text x="360" y="296" font-family="JetBrains Mono,monospace" font-size="10" fill="#a16207" font-weight="700">~20 bps</text>
+      <text x="360" y="245" font-family="JetBrains Mono,monospace" font-size="10" fill="#b91c1c" font-weight="700">~31 bps</text>
+
+      <text x="352" y="56" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#1c1917" letter-spacing="0.5">SAME $5M ORDER</text>
+
+      <!-- Curve labels -->
+      <text x="600" y="320" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">DEEP BOOK · low λ</text>
+      <text x="595" y="195" font-family="JetBrains Mono,monospace" font-size="11" fill="#a16207" font-weight="700">NORMAL · mid λ</text>
+      <text x="595" y="100" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">THIN · HIGH λ</text>
+
+      <!-- Small examples by regime -->
+      <text x="600" y="335" font-family="JetBrains Mono,monospace" font-size="9" fill="#15803d">(US hrs, BTC ATH)</text>
+      <text x="595" y="210" font-family="JetBrains Mono,monospace" font-size="9" fill="#a16207">(EU midday)</text>
+      <text x="595" y="115" font-family="JetBrains Mono,monospace" font-size="9" fill="#b91c1c">(weekend, post-flush)</text>
+
+    </svg>
+    <div class="svg-caption">The same $5M BTC market buy costs ~9 bps of slippage on a deep US-session book, ~20 bps on a normal book, and ~30+ bps on a thin weekend book. Lambda is the slope that separates these regimes — and notice how the gap <em>widens</em> with size, which is the square-root law biting harder where it hurts.</div>
+  </div>
+
+  <!-- SVG 2 — Orderbook Walk -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Orderbook walk diagram showing lambda manifesting as price climbing through ask levels">
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Lambda Inside One Orderbook</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">$5M MARKET BUY · WALKING THE ASK STACK</text>
+
+      <!-- Column headers -->
+      <text x="155" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">DEEP BOOK</text>
+      <text x="400" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#a16207" font-weight="700">NORMAL BOOK</text>
+      <text x="645" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">THIN BOOK (weekend)</text>
+
+      <!-- Column subheaders -->
+      <text x="155" y="93" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">λ ≈ low</text>
+      <text x="400" y="93" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">λ ≈ mid</text>
+      <text x="645" y="93" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#78716c">λ ≈ high</text>
+
+      <!-- ─── COLUMN 1: DEEP BOOK ─── -->
+      <!-- Ask stack (rectangles representing resting offers) -->
+      <rect x="80" y="110" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="80" y="135" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="80" y="160" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="80" y="185" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="80" y="210" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="155" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76640 · $2.0M</text>
+      <text x="155" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76641 · $1.8M</text>
+      <text x="155" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76642 · $1.5M</text>
+      <text x="155" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76643 · $1.4M</text>
+      <text x="155" y="225" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76644 · $1.2M</text>
+
+      <!-- Fill arrow showing where $5M lands -->
+      <rect x="78" y="108" width="154" height="55" fill="#22c55e" opacity="0.18"/>
+      <text x="155" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#15803d" font-weight="700">fills @ ≤76642</text>
+
+      <!-- Result -->
+      <text x="155" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">avg fill</text>
+      <text x="155" y="306" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#15803d">$76,641.1</text>
+      <text x="155" y="325" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#15803d" font-weight="700">slippage ~9 bps</text>
+
+      <!-- ─── COLUMN 2: NORMAL ─── -->
+      <rect x="325" y="110" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="325" y="135" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="325" y="160" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="325" y="185" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="325" y="210" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="400" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76640 · $0.9M</text>
+      <text x="400" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76642 · $0.8M</text>
+      <text x="400" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76645 · $0.9M</text>
+      <text x="400" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76648 · $1.1M</text>
+      <text x="400" y="225" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76652 · $1.3M</text>
+
+      <rect x="323" y="108" width="154" height="120" fill="#fbbf24" opacity="0.18"/>
+      <text x="400" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#a16207" font-weight="700">fills @ ≤76652</text>
+
+      <text x="400" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">avg fill</text>
+      <text x="400" y="306" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#a16207">$76,645.4</text>
+      <text x="400" y="325" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#a16207" font-weight="700">slippage ~22 bps</text>
+
+      <!-- ─── COLUMN 3: THIN BOOK ─── -->
+      <rect x="570" y="110" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="570" y="135" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="570" y="160" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="570" y="185" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <rect x="570" y="210" width="150" height="22" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="645" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76640 · $0.4M</text>
+      <text x="645" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76648 · $0.5M</text>
+      <text x="645" y="175" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76655 · $0.6M</text>
+      <text x="645" y="200" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76664 · $1.2M</text>
+      <text x="645" y="225" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">76678 · $2.3M</text>
+
+      <rect x="568" y="108" width="154" height="120" fill="#ef4444" opacity="0.18"/>
+      <text x="645" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#b91c1c" font-weight="700">fills @ ≤76678</text>
+
+      <text x="645" y="290" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">avg fill</text>
+      <text x="645" y="306" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#b91c1c">$76,664.0</text>
+      <text x="645" y="325" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#b91c1c" font-weight="700">slippage ~33 bps</text>
+
+      <!-- Bottom label -->
+      <text x="400" y="365" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="0.5">EACH BOOK STARTS AT 76,638 MID · $5M MARKET BUY WALKS UP THE STACK</text>
+
+    </svg>
+    <div class="svg-caption">Same order, same starting mid, three different books. On a deep book the $5M buyer barely climbs two ticks. On a thin weekend book the same order eats through five levels and pays ~33 bps. Lambda is the abstraction over this — one number summarising how steep that ascent gets per dollar of flow.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading lambda live · sizing against the slope · worked example</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: size your orders against current lambda, not against the average — weekend BTC is a different asset than midday BTC, and an order calibrated to the average will overshoot half the time and undersize the other half.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Estimate Lambda Before You Click — The 1% Depth Shortcut</h4>
+        <p>You don't need a Hasbrouck regression to get a usable lambda. A practical shortcut: take the venue's 1% market depth and divide your intended order size by it. Order = 5% of 1% depth → expect roughly 5 bps of impact (assuming square-root scaling and a normal book). When that ratio crosses ~15%, you're in dangerous territory — break the order up or use a TWAP/VWAP execution.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Lambda Spikes Are Tradeable Signals</h4>
+        <p>Lambda isn't just an execution input — it's market state. A sudden spike in measured lambda (price moving a lot for not much flow) is a leading indicator of liquidity withdrawal: market makers stepping back, often ahead of an event. The <strong>VPIN</strong> measure formalises this. Watching 1% depth on Kaiko or Amberdata is the lazy man's lambda meter; a 30%+ drop in 24h depth ahead of CPI or FOMC is a warning that your normal sizing is now oversized.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Different Λ for Spot vs Perps</h4>
+        <p>Crypto pros track two lambdas in parallel — spot λ on Binance/Coinbase and perp λ on Bybit/Binance Futures. Perp λ is usually lower (deeper books, more market makers) but more reflexive: when funding flips violently or OI unwinds, perp λ can blow out faster than spot. If you're hedging a spot position with a perp short, modelling each leg's lambda separately is the difference between a clean hedge and one that costs you 40 bps on entry.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Time-of-Day Lambda Cycle</h4>
+        <p>Crypto trades 24/7 but liquidity doesn't. <strong>US session</strong> (13:30–20:00 UTC): lowest λ — deepest books, most market makers active. <strong>Asia day</strong> (00:00–07:00 UTC): mid-to-high λ, sensitive to JP/KR news. <strong>Weekend Asia evening</strong> (Sat/Sun 09:00–14:00 UTC): highest λ — the regime where flash moves and overshoots cluster. Default a position-entry calendar around lambda, not around your time zone. The current weekend tape (BTC pinned at $76,638 with thin books) is exactly this regime.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — Sizing a $10M BTC Entry Today</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Setup</td><td>Want to add $10M long BTC at $76,638 on Sunday Sydney evening. Binance 1% depth on BTC/USDT currently around $400M (well below the ~$600M high-water mark).</td></tr>
+      <tr><td>Naive market buy</td><td>Order = 2.5% of 1% depth. Square-root estimator: impact ≈ 14 × √(10) bps ≈ <strong>44 bps</strong> in a thin-book regime. On $10M that's $44,000 of slippage — wiped out on entry.</td></tr>
+      <tr><td>Better — slice it</td><td>Break into 10 × $1M TWAP slices over 60 minutes. Per-slice impact: 14 × √(1) ≈ 14 bps. Total realised slippage ≈ 14 bps + permanent piece (~5 bps) = <strong>~19 bps total</strong> instead of 44.</td></tr>
+      <tr><td>Even better — wait</td><td>If thesis tolerates delay, hold until Monday US open (13:30 UTC Monday). Expect 1% depth to recover toward $550–600M; lambda drops by roughly 40%. The same $10M order then costs ~9 bps as a single click.</td></tr>
+      <tr><td>The cost of impatience</td><td>~$35,000 difference between the naive Sunday market order and the patient Monday-US execution. That's the price of ignoring lambda.</td></tr>
+      <tr><td>Invalidation</td><td>If BTC is breaking structure (e.g. losing $76,500 with size), the lambda cost is irrelevant — you're paying for immediacy, which is the right call.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> Lambda is an <em>execution</em> concept — relevant on every horizon from scalp to swing, but most acutely on multi-million-dollar single tickets and on entries where the cost of delay is small (no breaking-news, no Wyckoff Phase D break). For tactical re-entries on news, accept the slippage — paying lambda is cheaper than missing the move.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Today's BTC at $76,638 · the high-lambda regime · cross-ref to Morning Edge</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is parked at $76,638 on Sunday Sydney evening with a $148M long-liquidation cluster overhead — a textbook high-lambda setup where any forced unwind will overshoot, and Monday open will likely retrace half.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTCUSDT.P · 4H · 25 May 2026</div>
+    <h4>Weekend Thin-Book Regime — The Lambda View</h4>
+
+    <p>Today's tape is a live example of why lambda is worth modelling explicitly. <strong>BTC sits at $76,638</strong> after a flash-crash below $77K earlier in the session, with a <strong>$148M long liquidation cluster</strong> stacked above and weekend liquidity at its weekly low (Asian Sunday evening). The <a href="../../briefings/2026-05-25/market-briefing.html" style="color:#bef264;border-bottom-color:#bef264">Morning Edge briefing for today</a> flags <em>"weekend liquidity will exaggerate moves"</em> — which is exactly the lambda mechanic translated into trader vernacular.</p>
+
+    <p>Why does it matter? In a low-λ environment (US session, $600M+ depth at 1%), the $148M cluster would be a meaningful but absorbable shock — bots would re-grid, market makers would step in, and the move would mean-revert quickly. In tonight's high-λ regime, the same liquidation cascade has nothing to absorb it. Each forced sell walks deeper into a thin book, triggers the next cluster, and the cascade overshoots. <strong>Kaiko's October-2025 read</strong> had BTC 1% depth on Binance over $600M; that depth has since drained toward $400M, and weekend Asia evening typically halves that again.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot</td><td>$76,638 (Sun 25 May, ~20:00 AEDT / 09:00 UTC)</td></tr>
+        <tr><td>Session move</td><td>Flash below $77,000 earlier · $148M long liq cluster above</td></tr>
+        <tr><td>BTC 1% depth (Binance, late 2025 baseline)</td><td>$600M+ at last ATH (Kaiko)</td></tr>
+        <tr><td>BTC 1% depth (recent baseline)</td><td>~$400M (down ~30% from 2025 high)</td></tr>
+        <tr><td>Estimated weekend Asia evening depth</td><td>~50–60% of US-hours baseline → ~$200–250M</td></tr>
+        <tr><td>Implied λ multiplier vs US session</td><td>roughly 2–2.5× higher impact per dollar of flow</td></tr>
+        <tr><td>Tradeable read</td><td>Any further forced flush likely overshoots; Monday US open typically retraces ~50% of weekend flush</td></tr>
+        <tr><td>Cross-reference</td><td>→ <a href="../../briefings/2026-05-25/market-briefing.html" style="color:#bef264;border-bottom-color:#bef264">Morning Edge · BTC $76K context</a></td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>Practically, if you want to add a position today, the worked example in §04 is the template — slice it, accept that lambda cost is the price of trading in this regime, or wait for the US session and let lambda do the favour for you. If price breaks $76,500 with size and you need to <em>get out</em>, pay the lambda. Immediacy beats execution quality when structure is breaking.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Weekend liquidity isn't just thinner — it's a different lambda regime altogether. The same $10M ticket that costs 9 bps on a Monday afternoon costs 30–40 bps tonight. That gap is the cost of trading the moment, and it's exactly why disciplined desks build execution calendars around lambda rather than convenience.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">From Kyle himself to the crypto execution desks calibrating his model in 2026</div>
+    </div>
+  </div>
+
+  <div class="skim">The most useful voices on lambda range from Kyle's original characterisation of liquidity-as-formula to the practitioners now calibrating it specifically for crypto's quirks.</div>
+
+  <div class="quote">
+    <p>"We now have this beautiful formula that tells us how to measure liquidity, and how liquidity is determined by information asymmetry."</p>
+    <div class="attr"><b>Albert "Pete" Kyle</b> · CME OpenMarkets · 2019 · <a href="https://www.cmegroup.com/openmarkets/economics/2019/14912-knowledge-is-power-pete-kyles-enduring-influence-on-understanding-market-liquidity.html">interview</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Returns volatility, pricing accuracy, liquidity, and market resiliency are connected by a specific log-linear relationship."</p>
+    <div class="attr"><b>Pete Kyle &amp; Anna Obizhaeva</b> · Market Microstructure Invariance · Wharton/Jacobs Levy · 2023 · <a href="https://news.wharton.upenn.edu/press-releases/2023/09/wharton-jacobs-levy-prize-to-honor-kyle-for-market-microstructure-at-september-conference/">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Existing market impact models leave crypto traders essentially flying blind — equity traders have had sophisticated impact models for over twenty-five years."</p>
+    <div class="attr"><b>Talos Research</b> · "Understanding Market Impact in Crypto Trading" · 2025 · <a href="https://www.talos.com/insights/understanding-market-impact-in-crypto-trading-the-talos-model-for-estimating-execution-costs">paper</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The square-root law is surprisingly universal — independent of the type of contract traded, whether futures, stocks, or even Bitcoin."</p>
+    <div class="attr"><b>Bouchaud, Bonart, Donier &amp; Gould</b> · <em>Trades, Quotes and Prices</em> · CUP 2018 · <a href="https://arxiv.org/pdf/1702.05434">survey ref</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Whenever the tape shows wide spread, heavy volume, and little price movement, the experienced reader recognises supply or demand stronger than the move itself."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · <em>Studies in Tape Reading</em> · 1910 · The pre-mathematical formulation of low lambda — what Kyle put a number on 75 years later</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Four ways traders misread lambda — plus one honest "academic-vs-execution" callout</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: confusing spread with lambda — a 0.1 bps spread can sit on top of a brutal lambda, and traders who size off spread alone get crushed on scaling.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Sizing off Spread, Not Depth</h5>
+      <p>Tight spread doesn't mean cheap execution. BTC's top-of-book spread is often sub-bp on Binance, but the depth two ticks deep can be a fraction of what it looks like at the touch. Always check 1% depth (Kaiko, Amberdata, or the venue's own L2 snapshot) before sizing. Spread is the first tick; lambda is the next forty.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Assuming Linear Impact (Doubling Order = Doubling Slippage)</h5>
+      <p>The square-root law is universal for a reason — impact grows with √Q, not Q. Doubling a $5M order to $10M doesn't double the slippage; it multiplies it by roughly √2 ≈ 1.41. This sounds reassuring but cuts both ways: you can scale meta-orders gracefully, but you also can't escape impact by shrinking — a $1M ticket still pays meaningful lambda in a thin regime.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring the Permanent / Temporary Split</h5>
+      <p>Naive lambda estimates mix permanent impact (information signal) with temporary impact (liquidity cost that mean-reverts). If you're trading on alpha — i.e. your order <em>is</em> information — most of your impact is permanent and you should expect price not to bounce back. If you're rebalancing or hedging, expect the temporary piece to mean-revert and consider passive limit orders inside the spread to capture it back.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Trading the Lambda Spike Instead of Reading It</h5>
+      <p>A sudden lambda spike (price moving a lot per dollar of flow) is a warning, not an entry signal. Retail traders see "price is breaking out hard" and chase; what's actually happening is liquidity withdrawal — market makers stepping back ahead of an event, or a thin air-pocket between levels. Step <em>back</em> from spiking-λ tape unless you have a specific structural reason to engage.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Honest Note — Lambda Is a Lens, Not a Trade</h5>
+      <p>Be clear-eyed: Kyle's lambda is an <em>execution</em> framework, not a directional one. It tells you the cost of trading; it doesn't tell you whether to be long or short. Some quant funds run pure-lambda strategies (provide liquidity where λ is high, harvest mean-reversion), but for a directional trader the value is calibration — sizing right, picking the right session, knowing when to slice. Don't fall in love with the metric. Spread and 1% depth get you 80% of what lambda would tell you for a fraction of the work; the residual 20% is where institutional desks earn their fees.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">From Kyle's 1985 paper to today's crypto impact calibrations</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources to take this from sketch to working knowledge — the foundational paper, the crypto calibration, the practitioner glossary, and the macro context.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Profile</div>
+      <div class="fr-body">
+        <a href="https://www.cmegroup.com/openmarkets/economics/2019/14912-knowledge-is-power-pete-kyles-enduring-influence-on-understanding-market-liquidity.html">Pete Kyle's Enduring Influence on Understanding Market Liquidity — CME OpenMarkets (2019)</a>
+        <span>The accessible profile — explains the 1985 model, the link between information asymmetry and lambda, and why the framework still drives microstructure thinking 40 years on.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Industry</div>
+      <div class="fr-body">
+        <a href="https://www.talos.com/insights/understanding-market-impact-in-crypto-trading-the-talos-model-for-estimating-execution-costs">Talos — The TMI Model for Estimating Crypto Execution Costs (2025)</a>
+        <span>The first empirically calibrated market-impact model for crypto. Decomposes execution into spread + physical impact + time risk; documents where pure square-root law breaks down at low participation rates.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://en.wikipedia.org/wiki/Market_impact">Market Impact — Wikipedia</a>
+        <span>Clean overview of impact models including Kyle's lambda, square-root law, and the practitioner distinction between temporary and permanent impact. A good first stop before academic sources.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Academic</div>
+      <div class="fr-body">
+        <a href="https://arxiv.org/pdf/1702.05434">The Amazing Power of Dimensional Analysis: Quantifying Market Impact — Pohl, Ristig, Schachermayer, Tangpi (2017)</a>
+        <span>Short, readable derivation of why the square-root law is universal — argued from dimensional analysis alone, without needing the full microstructure machinery. Excellent for building intuition.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Data</div>
+      <div class="fr-body">
+        <a href="https://research.kaiko.com/insights/centralized-exchange-liquidity">Understanding Centralized Exchange Liquidity Data — Kaiko Research</a>
+        <span>How Kaiko measures 0.1% and 1% market depth across CEXs — the working substitute for lambda when you don't want to fit the regression. Includes methodology and where the data shows up in their dashboards.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Primary sources</b>
+    <a href="https://www.cmegroup.com/openmarkets/economics/2019/14912-knowledge-is-power-pete-kyles-enduring-influence-on-understanding-market-liquidity.html">CME OpenMarkets — Kyle profile</a>
+    <a href="https://news.wharton.upenn.edu/press-releases/2023/09/wharton-jacobs-levy-prize-to-honor-kyle-for-market-microstructure-at-september-conference/">Wharton-Jacobs Levy Prize 2023</a>
+    <a href="https://www.talos.com/insights/understanding-market-impact-in-crypto-trading-the-talos-model-for-estimating-execution-costs">Talos TMI Model</a>
+    <a href="https://en.wikipedia.org/wiki/Market_impact">Wikipedia — Market Impact</a>
+    <a href="https://arxiv.org/pdf/1702.05434">Pohl et al. — Dimensional Analysis of Impact</a>
+    <a href="https://research.kaiko.com/insights/centralized-exchange-liquidity">Kaiko — CEX Liquidity Methodology</a>
+    <a href="https://research.kaiko.com/insights/bitcoins-latest-record-move-in-10-charts">Kaiko — BTC depth 2025 ATH</a>
+    <a href="https://blog.amberdata.io/crypto-market-analysis-jan-2026-btc-support-at-86k-etf-outflows">Amberdata — Jan 2026 BTC depth</a>
+    <a href="https://www.coinglass.com/learn/what-is-cumulative-volume-delta-cvd">Coinglass Learn — microstructure glossary</a>
+    <a href="../../briefings/2026-05-25/market-briefing.html">NGM Morning Edge — 25 May 2026</a>
+  </div>
+  <div>Alpha · Issue #31 · 25 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /outer -->
+</body>
+</html>
