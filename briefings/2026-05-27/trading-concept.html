@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Spot vs Perp CVD Divergence | May 27, 2026</title>
+<meta property="og:description" content="Alpha — Spot vs Perp CVD Divergence | May 27, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+.tape .me-link{display:inline-block;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:0.5px;color:var(--terminal-accent);border-bottom:1px solid rgba(190,242,100,0.35)}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Spot vs Perp CVD Divergence</h1>
+  <div class="meta">
+    <span>Wednesday · 27 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #33</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Spot vs Perp CVD divergence is the crypto-native version of effort-versus-result — it splits aggressive flow by venue, so you can see whether a move is being financed by real money buying coin or by leverage chasing price.</strong> When perp CVD rips higher into a level and spot CVD stays flat or sells, you are looking at a paper bull: a rally with no underlying sponsorship, almost always faded once funding bites. The opposite — quiet spot accumulation while perps panic out — is one of the cleanest reversal tells available, with Hyblock's research clocking a 68.8% win rate and +6.16% average 7-day return on the absorption variant.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Venue-decomposed aggression · real money vs leverage</div>
+    </div>
+  </div>
+
+  <div class="skim">Spot vs Perp CVD divergence reads aggressive flow on two venues at once and flags the moments where they disagree — which is where the trade lives.</div>
+
+  <p>Every CVD line answers a single question: <em>who attacked the book, and which side were they on?</em> Crypto is unusual because the same asset trades in two structurally different arenas — <strong>spot</strong>, where you buy or sell the coin itself, and <strong>perpetual futures</strong>, where you take leveraged synthetic exposure with no expiry. Each has its own orderbook, its own taker pool, its own CVD curve. The two streams normally move together. The trade is in the gap when they don't.</p>
+
+  <p>A single CVD line tells you net aggression. The <strong>spot vs perp split</strong> tells you <em>which species of aggressor</em> is driving the move. Real spot demand and leveraged speculation look identical on a price chart. They look very different on two CVD curves laid side by side. That distinction matters because each leaves a different footprint after the fact: spot-led moves trend; perp-led moves squeeze and revert.</p>
+
+  <p>This is the orderflow expression of an idea that goes back to Wyckoff — the <strong>composite operator</strong> accumulates and distributes through the venue where his fills are cheapest and his footprint smallest. In modern crypto, that is overwhelmingly spot (and increasingly OTC and spot ETF creations). Retail and momentum chasers express through perps because of leverage and convenience. When the two diverge, you are seeing the structural difference between sponsorship and excitement.</p>
+
+  <p>Cumulative Volume Delta itself was covered in <a href="../2026-04-24/trading-concept.html">Issue #2 (CVD)</a>. This issue is the <em>application</em>: how to actually use the spot-vs-perp split as a tradable read, what each combination of conditions means, and how to avoid the most common ways the signal lies to you.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>SPOT CVD</b><span>Net aggressive volume in the underlying coin market</span></span>
+    <span class="pill-term"><b>PERP CVD</b><span>Net aggressive volume in perpetual futures</span></span>
+    <span class="pill-term"><b>DIVERGENCE</b><span>The two curves disagree on direction or magnitude</span></span>
+    <span class="pill-term"><b>PAPER BULL</b><span>Perp CVD rises, spot CVD flat or negative — leverage-only rally</span></span>
+    <span class="pill-term"><b>SPOT ABSORPTION</b><span>Spot CVD rises while perps panic-sell — quiet accumulation</span></span>
+    <span class="pill-term"><b>SPONSORSHIP</b><span>Real spot buying confirming a move is durable</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Perps tell you who is excited. Spot tells you who is committed. When excitement runs ahead of commitment, that excess gets paid back — usually quickly.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Four configurations · the 2×2 that matters</div>
+    </div>
+  </div>
+
+  <div class="skim">There are only four states the two curves can be in. Each one means something different, and only two of them are tradable.</div>
+
+  <p>The construction is identical to standard CVD — every tick classified by aggressor side, signed volume cumulated through time — but computed separately on spot and perp feeds. Most professional implementations use Binance spot (BTCUSDT) and Binance perp (BTCUSDT.P) as the cleanest paired feed, since both carry enough flow that idiosyncratic exchange flow doesn't dominate. Coinbase spot is the cleanest US-anchored spot read; Bybit and OKX perps are useful cross-checks on Asia-hours flow.</p>
+
+  <div class="formula">
+<b>Per-venue delta:</b>
+Δ_spot(t) = Σ(spot buys @ ask) − Σ(spot sells @ bid)
+Δ_perp(t) = Σ(perp buys @ ask) − Σ(perp sells @ bid)
+
+<b>Per-venue CVD:</b>
+CVD_spot(t) = CVD_spot(t−1) + Δ_spot(t)
+CVD_perp(t) = CVD_perp(t−1) + Δ_perp(t)
+
+<b>Divergence read (the only useful form):</b>
+sign(slope_n(CVD_spot)) ≠ sign(slope_n(CVD_perp))
+  over window n = 1h, 4h, or 1D
+
+→ flag the venue mismatch, then size the divergence vs price action
+
+    <div class="note">The lines themselves are not on the same y-axis — perp turnover is multiples of spot turnover, so absolute CVD magnitudes are not directly comparable. What matters is <b>direction and slope</b>, not level. Most charting platforms normalise or plot on dual axes.</div>
+  </div>
+
+  <p>The 2×2 of possible states is the whole game:</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>Spot CVD</th><th>Perp CVD</th><th>Read</th><th>Tradable?</th></tr>
+    <tr><td>↑</td><td>↑</td><td>Confirmed move — both venues attacking the same side</td><td>Trend continuation, not a divergence trade</td></tr>
+    <tr><td>↓</td><td>↓</td><td>Confirmed move — both venues distributing</td><td>Trend continuation, not a divergence trade</td></tr>
+    <tr><td>flat / ↓</td><td>↑</td><td><b>Paper bull</b> — leverage chasing, no real sponsorship</td><td><b>Yes — fade the rally</b></td></tr>
+    <tr><td>↑</td><td>flat / ↓</td><td><b>Spot absorption</b> — quiet accumulation under panic</td><td><b>Yes — fade the selloff</b></td></tr>
+  </table>
+  </div>
+
+  <p>The two divergence rows are the trade. Both share the same logical structure: the marginal aggressor on one venue is committing capital that the marginal aggressor on the other venue is unwilling to match. That mismatch resolves one of two ways — either the absent venue capitulates and joins (rare; requires a fresh catalyst), or the present venue exhausts and reverts (the base case). The asymmetric setup is to bet on reversion, since you only need the present venue's marginal buyer to stop showing up — not for the absent venue to actively change its mind.</p>
+
+  <p>Funding rate is the corroborating variable. <strong>Positive funding + paper-bull divergence</strong> is the cleanest fade setup in crypto: longs are paying to be wrong, perp CVD shows them keeping at it, and spot is offering them coin into the strength. The convergence — funding spike, perp CVD peak, spot CVD rolling over — is what professional fades wait for.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">The paper-bull setup · spot offers, perps chase</div>
+    </div>
+  </div>
+
+  <div class="skim">The signature diagram of this trade: spot CVD rolling over while perp CVD rips higher into the same price peak — and the reversal that follows.</div>
+
+  <!-- SVG — Spot vs Perp CVD Divergence (paper bull setup) -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spot vs perp CVD divergence diagram — perp CVD higher high while spot CVD lower high into a price peak, followed by reversal">
+
+      <defs>
+        <linearGradient id="perpGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fbbf24" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="#fbbf24" stop-opacity="0.03"/>
+        </linearGradient>
+        <linearGradient id="spotGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.35"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.03"/>
+        </linearGradient>
+        <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#ef4444"/>
+        </marker>
+        <marker id="arrowWarn" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,4 L0,8 z" fill="#fbbf24"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Paper Bull · Perp CVD Higher High, Spot CVD Lower High</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE MAKES MARGINAL HH · PERPS CHASE · SPOT OFFERS · REVERSION</text>
+
+      <!-- ── PRICE PANEL (top, y 60-200) ── -->
+      <text x="36" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE</text>
+      <line x1="60" y1="75" x2="60" y2="200" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="200" x2="760" y2="200" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="105" x2="760" y2="105" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="135" x2="760" y2="135" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="165" x2="760" y2="165" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Candles — rally to P1, pullback, marginal HH at P2, then sharp reversion -->
+      <rect x="85"  y="178" width="13" height="14" fill="#22c55e"/>
+      <rect x="115" y="165" width="13" height="16" fill="#22c55e"/>
+      <rect x="145" y="148" width="13" height="18" fill="#22c55e"/>
+      <rect x="175" y="132" width="13" height="17" fill="#22c55e"/>
+      <rect x="205" y="118" width="13" height="16" fill="#22c55e"/>
+      <!-- Peak 1 -->
+      <rect x="235" y="100" width="13" height="20" fill="#22c55e"/>
+      <line x1="241" y1="92" x2="241" y2="100" stroke="#22c55e" stroke-width="2"/>
+      <line x1="241" y1="120" x2="241" y2="128" stroke="#22c55e" stroke-width="2"/>
+      <text x="241" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">P1</text>
+      <!-- Pullback -->
+      <rect x="265" y="118" width="13" height="18" fill="#ef4444"/>
+      <rect x="295" y="132" width="13" height="16" fill="#ef4444"/>
+      <rect x="325" y="142" width="13" height="14" fill="#ef4444"/>
+      <!-- Second rally — perps chasing -->
+      <rect x="355" y="130" width="13" height="14" fill="#22c55e"/>
+      <rect x="385" y="118" width="13" height="14" fill="#22c55e"/>
+      <rect x="415" y="105" width="13" height="14" fill="#22c55e"/>
+      <!-- Marginal HH peak (P2) -->
+      <rect x="445" y="92" width="13" height="14" fill="#22c55e"/>
+      <line x1="451" y1="86" x2="451" y2="92" stroke="#22c55e" stroke-width="2"/>
+      <line x1="451" y1="106" x2="451" y2="115" stroke="#22c55e" stroke-width="2"/>
+      <text x="451" y="78" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e" font-weight="700">P2 (HH)</text>
+      <!-- Sharp reversion -->
+      <rect x="475" y="108" width="13" height="22" fill="#ef4444"/>
+      <rect x="505" y="128" width="13" height="24" fill="#ef4444"/>
+      <rect x="535" y="148" width="13" height="22" fill="#ef4444"/>
+      <rect x="565" y="166" width="13" height="20" fill="#ef4444"/>
+      <rect x="595" y="180" width="13" height="14" fill="#ef4444"/>
+      <rect x="625" y="186" width="13" height="8"  fill="#ef4444"/>
+      <rect x="655" y="184" width="13" height="10" fill="#ef4444"/>
+
+      <!-- Funding spike annotation -->
+      <text x="730" y="100" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f">FUNDING ↑↑↑</text>
+      <line x1="451" y1="60" x2="451" y2="86" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="451" y="56" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f">⬇ DIVERGENCE PEAK</text>
+
+      <!-- ── PERP CVD PANEL (middle, y 220-340) ── -->
+      <text x="36" y="232" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" letter-spacing="1">PERP CVD</text>
+      <line x1="60" y1="235" x2="60" y2="340" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="340" x2="760" y2="340" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="260" x2="760" y2="260" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="290" x2="760" y2="290" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="320" x2="760" y2="320" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Perp CVD filled area — rising to P1 high, pulling back slightly, then HIGHER HIGH at P2 -->
+      <path d="M 60 330 L 85 322 L 115 312 L 145 302 L 175 290 L 205 280 L 235 268 L 265 278 L 295 285 L 325 290 L 355 280 L 385 270 L 415 258 L 445 248 L 475 270 L 505 290 L 535 308 L 565 322 L 595 330 L 625 334 L 655 336 L 760 338 L 760 340 L 60 340 Z" fill="url(#perpGrad)"/>
+      <!-- Perp CVD line -->
+      <path d="M 60 330 L 85 322 L 115 312 L 145 302 L 175 290 L 205 280 L 235 268 L 265 278 L 295 285 L 325 290 L 355 280 L 385 270 L 415 258 L 445 248 L 475 270 L 505 290 L 535 308 L 565 322 L 595 330 L 625 334 L 655 336" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+
+      <!-- Perp peaks -->
+      <circle cx="235" cy="268" r="4" fill="#fbbf24"/>
+      <text x="235" y="258" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">A</text>
+      <circle cx="445" cy="248" r="4" fill="#fbbf24"/>
+      <text x="445" y="238" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">B (HH)</text>
+      <line x1="235" y1="268" x2="445" y2="248" stroke="#78350f" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="340" y="246" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f">PERPS PILING IN ↑</text>
+
+      <!-- ── SPOT CVD PANEL (bottom, y 360-490) ── -->
+      <text x="36" y="372" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" letter-spacing="1">SPOT CVD</text>
+      <line x1="60" y1="375" x2="60" y2="490" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="490" x2="760" y2="490" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="400" x2="760" y2="400" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="430" x2="760" y2="430" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="460" x2="760" y2="460" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Spot CVD — rising to P1, then ROLLING OVER into P2 (lower high) -->
+      <path d="M 60 478 L 85 470 L 115 460 L 145 448 L 175 436 L 205 425 L 235 412 L 265 420 L 295 428 L 325 434 L 355 432 L 385 428 L 415 425 L 445 420 L 475 432 L 505 448 L 535 462 L 565 472 L 595 480 L 625 484 L 655 486 L 760 488 L 760 490 L 60 490 Z" fill="url(#spotGrad)"/>
+      <path d="M 60 478 L 85 470 L 115 460 L 145 448 L 175 436 L 205 425 L 235 412 L 265 420 L 295 428 L 325 434 L 355 432 L 385 428 L 415 425 L 445 420 L 475 432 L 505 448 L 535 462 L 565 472 L 595 480 L 625 484 L 655 486" fill="none" stroke="#a3e635" stroke-width="2.5"/>
+
+      <!-- Spot peaks -->
+      <circle cx="235" cy="412" r="4" fill="#3f6212"/>
+      <text x="235" y="406" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">A</text>
+      <circle cx="445" cy="420" r="4" fill="#3f6212"/>
+      <text x="445" y="414" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#3f6212" font-weight="700">B (LH)</text>
+      <line x1="235" y1="412" x2="445" y2="420" stroke="#3f6212" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="340" y="402" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212">SPOT OFFERING ↓</text>
+
+      <!-- The divergence zone highlight -->
+      <rect x="425" y="55" width="50" height="435" fill="#fbbf24" opacity="0.08"/>
+      <text x="450" y="510" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">DIVERGENCE ZONE — FADE</text>
+
+    </svg>
+    <div class="svg-caption">Three-panel schematic. Price prints a marginally higher high at P2; perp CVD confirms with its own higher high (B) — but spot CVD makes a lower high (B). The divergence band marks the trade window. Sharp reversion follows once perp aggressors exhaust and funding bites.</div>
+  </div>
+
+  <p>Two cues to notice on the diagram: the price HH at P2 is <em>marginal</em> — barely above P1 — and the time spent at the highs is brief. That asymmetry between perp CVD's enthusiasm (clearly higher peak B) and price's reluctance (barely a new high) is itself a tell. Aggressive perp buyers should be moving price more than this if spot were under them. They aren't. The book is absorbing.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Setup hierarchy · sizing · the one rule that matters</div>
+    </div>
+  </div>
+
+  <div class="skim">Wait for the level. Confirm the venue split. Add funding as confluence. Size against the divergence's invalidation, not your stop emotionally.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Anchor at a level — never trade the divergence in open air</h4>
+        <p>Spot/perp divergence in the middle of a range is noise; the same divergence into a clear technical level (HTF resistance, prior swing high, VAH, prior naked POC) is a setup. The level provides the invalidation. The CVD split provides the conviction. Without one, the other is half a trade.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Read funding as the corroborating tape</h4>
+        <p>Paper-bull divergence with positive and rising funding is the cleanest fade in crypto — longs are paying to hold a position that spot isn't sponsoring. The same divergence with neutral or negative funding is much weaker, because there's no leverage cost forcing capitulation. Funding above the 90th percentile turns a setup into a high-conviction trade.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Wait for spot CVD to actually roll — not just flatten</h4>
+        <p>The trigger is not "spot CVD slows down while perp CVD rises" — that is normal. The trigger is spot CVD <em>turning negative</em> (active spot selling) while perp CVD is making a higher high. The slope inversion is what flags real distribution into perp-driven strength.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Size to the divergence invalidation, not to a fixed R</h4>
+        <p>The trade dies the moment spot CVD breaks out and joins perps in the same direction — that is the absent venue capitulating and confirming. Place your stop just beyond the price level and the spot CVD slope inflection, then size so the loss is acceptable. The setup gives you a hard line; respect it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — BTC paper-bull fade, hypothetical sizing</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC tests $78,500 resistance for the third time over 36h</td></tr>
+      <tr><td>Spot CVD (4h)</td><td>Lower high vs prior test — net spot selling into the level</td></tr>
+      <tr><td>Perp CVD (4h)</td><td>Higher high — perps aggressively bidding the test</td></tr>
+      <tr><td>Funding</td><td>+0.018% per 8h (~19.7% annualised), 95th percentile of 30d</td></tr>
+      <tr><td>Entry</td><td>$78,420 — wait for first hourly rejection candle</td></tr>
+      <tr><td>Stop</td><td>$79,050 — beyond the level + small buffer (~80 bps)</td></tr>
+      <tr><td>Target 1</td><td>$76,800 — back to mid-range, 60% off</td></tr>
+      <tr><td>Target 2</td><td>$75,200 — prior swing low, 30% off, trail rest</td></tr>
+      <tr><td>R-multiple</td><td>≈ 2.1R to T1, 4.1R to T2 (assuming no slippage on entry)</td></tr>
+      <tr><td>Invalidation</td><td>Spot CVD breaks above prior test high before stop — close immediately, divergence is dead</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 1h / 4h CVD windows for the divergence read, 5m / 15m for entry execution. The divergence is most reliable when it persists across at least two consecutive 4h candles — single-candle noise produces too many fakeouts.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC · 27 May 2026 · the textbook divergence right now</div>
+    </div>
+  </div>
+
+  <div class="skim">Today's BTC tape is the actual diagram. Spot is offering — six straight days of ETF outflows, $1.26B drained — while perps are still paying 96th-percentile funding to stay long.</div>
+
+  <div class="tape">
+    <div class="tape-label">⬢ Live Tape · Wednesday 27 May 2026</div>
+    <h4>BTC is showing the canonical paper-bull setup — in real time</h4>
+
+    <p>BTC trades at <strong>$76,120</strong>, down from $80,444 last week, but the venue split has barely budged. Spot is doing the work of distribution: <strong>six consecutive days of US spot-ETF outflows totalling −$1.26B</strong>, with day-six print at −$105M. That is real coin leaving real allocators' books — the cleanest spot CVD signal you can ask for. Meanwhile, perp funding sits at the <strong>96th percentile of the 30-day range (≈10.95% annualised)</strong>, with open interest at only the <strong>5th percentile</strong>. The interpretation writes itself: a small number of leveraged longs are paying through the nose to hold positions that spot allocators are actively selling into.</p>
+
+    <p>This is the spot-offer / perp-bid configuration. Spot CVD has been rolling over for nearly a week. Perp CVD remains net positive — funding is positive precisely because perp aggressors keep hitting the ask. The divergence has already started resolving — BTC's $4,300 drop from last week's high is the first leg of that resolution — but it's incomplete. With OI at the 5th percentile, the cascade-liquidation fuel is largely gone, which is why this morning's <a href="market-briefing.html" class="me-link">→ Morning Edge</a> framed today's tactical bias as <em>short-squeeze risk above $76,850, not directional long</em>. The divergence isn't yet calling for a reversal; it's calling for compression and selective squeezes inside a broken trend.</p>
+
+    <div class="nums">
+      <table>
+        <tr><td>BTC last</td><td><b>$76,120</b> · 27 May 06:30 Sydney / 20:30 UTC (26 May)</td></tr>
+        <tr><td>1-week change</td><td>−$4,324 from $80,444 (−5.4%)</td></tr>
+        <tr><td>Spot ETF flow (6d)</td><td><b>−$1.26B</b> · day-6 print −$105M</td></tr>
+        <tr><td>Funding (annualised)</td><td><b>+10.95%</b> · 96th percentile of 30d</td></tr>
+        <tr><td>Open interest</td><td>5th percentile · cascade fuel exhausted</td></tr>
+        <tr><td>Today's tactical level</td><td>$76,850 short-squeeze trigger · wick toward $78–79K</td></tr>
+      </table>
+    </div>
+
+    <!-- TradingView widget — BTC perp 4h, dark theme -->
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Both sides have already taken half a position. Real money has been offering coin steadily through ETF redemptions; leverage has been catching the falling knife and paying 96th-percentile funding for the privilege. The clean trade isn't the directional short — that's six days late — it's fading any perp-led squeeze back into the $77K handle while spot ETF flows stay red.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">One classic · two current voices</div>
+    </div>
+  </div>
+
+  <div class="skim">The same idea, three eras: Wyckoff on effort vs result, CryptoCred on perp CVD as dumb-money proxy, 10x Research on why current funding is structural.</div>
+
+  <div class="quote">
+    <p>"It is not the volume itself, but the relation of effort to result which is significant. When the effort is great and the result is small, the conclusion is that the market is meeting opposition."</p>
+    <div class="attr"><b>Richard Wyckoff</b> · The Richard D. Wyckoff Method of Trading and Investing in Stocks · 1934 · <a href="https://www.wyckoffanalytics.com/the-wyckoff-method-overview/">Wyckoff Analytics overview</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Perpetual futures attract more aggressive positioning due to leverage accessibility, making perp CVD a better proxy for 'dumb money' activity. Reversal setups include an aggressive ramp up in perp CVD into a key level with no spot follow through or even spot selling."</p>
+    <div class="attr"><b>CryptoCred</b> · Comprehensive Guide to Crypto Futures Indicators · Medium · 2023 · <a href="https://medium.com/@cryptocreddy/comprehensive-guide-to-crypto-futures-indicators-f88d7da0c1b5">read the guide</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The negative funding rates reflect structural hedging by institutions, not a broad bearish shift — hedge funds shorting futures to manage other bets. The divergence is in who is positioning, not what they believe."</p>
+    <div class="attr"><b>10x Research</b> · via CoinDesk · April 2026 · <a href="https://www.coindesk.com/markets/2026/04/27/as-the-bitcoin-price-rises-futures-may-look-bearish-but-they-re-not-analyst-says">CoinDesk write-up</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the read fails · where the hype overruns the signal</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating an approximated TradingView CVD line as if it were real tick data, and seeing divergences that aren't there.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Confusing approximated CVD with real CVD</h5>
+      <p>Most public TradingView CVD scripts use the candle-direction heuristic — green candle adds volume, red candle subtracts — not actual tick classification. That works directionally but is unreliable for divergence reads, where you specifically care about intra-candle aggression. Use platforms with true tick CVD (Hyblock, ATAS, Bookmap, Velo, or a custom feed off the exchange websocket) before sizing a trade on the signal.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Treating ETF flows and spot CVD as the same thing</h5>
+      <p>They are not. Spot ETF creations/redemptions affect spot CVD <em>eventually</em>, when the authorised participant hedges or unwinds — sometimes minutes later, sometimes never (basis trades hold the spot leg indefinitely). ETF flow is a slower, lower-resolution version of the same signal. Use both, but don't conflate them.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring the OTC and ETF dark pool</h5>
+      <p>A meaningful share of institutional spot flow never touches a public orderbook. When spot CVD looks flat at a key inflection, the absence of aggression on the visible tape doesn't necessarily mean the absence of accumulation — large players use OTC desks and ETF creations precisely to avoid showing up. The divergence read still works most of the time, but it's not omniscient. Adjust position size accordingly.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Cherry-picking the spot exchange</h5>
+      <p>Spot CVD on Binance, Coinbase, and Bybit will not move identically — regional flows, listing pairs, fee structures, and time-of-day biases differ. A divergence visible only on one venue is weaker than one visible across two or three. Build a composite or at minimum cross-check Binance with Coinbase before sizing.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The Twitter cult of "spot is leading" — overhyped half the time</h5>
+      <p>Crypto X has turned the spot-vs-perp narrative into a constant background hum: every chop is "spot offered, perps bid" and every rip is "spot leading the move." Most of the time both venues are aligned and there is no divergence — there's just price doing price things. The setup works <em>because</em> it's rare; treating every candle as a divergence trade is how you give back the edge to people who actually wait for it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Hand-picked · all links verified in research</div>
+    </div>
+  </div>
+
+  <div class="skim">CryptoCred for the canonical guide, Hyblock for the empirical paper, Trading Riot for the AMT foundation, TradingView for a real implementation.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body"><a href="https://medium.com/@cryptocreddy/comprehensive-guide-to-crypto-futures-indicators-f88d7da0c1b5">CryptoCred — Comprehensive Guide to Crypto Futures Indicators</a><span>The reference text for funding / OI / CVD interaction, including the spot-vs-perp divergence framework — long but worth reading end-to-end.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Research</div>
+      <div class="fr-body"><a href="https://x.com/hyblockcapital/status/2029901570544894193">Hyblock — Spot vs Perp CVD Divergence as Bitcoin Absorption Signal</a><span>Backtested study of the spot-absorption variant: 68.8% win rate, +6.16% average 7-day return, bounded drawdowns. The empirical anchor for the trade.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body"><a href="https://cryptoadventure.com/spot-cvd-vs-perp-cvd-explained-which-one-tells-the-truth-first/">Crypto Adventure — Spot CVD vs Perp CVD: Which One Tells the Truth First?</a><span>Plain-English walkthrough of the four configurations and why perp CVD lies more easily. Good starting point if the concept is new.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Foundation</div>
+      <div class="fr-body"><a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — Auction Market Theory</a><span>The microstructure foundation: prices move because aggressors pay the spread. Spot/perp CVD is just AMT measured on two venues.</span></div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Indicator</div>
+      <div class="fr-body"><a href="https://www.tradingview.com/script/XHISDN3c/">TradingView — BTC Spot vs Perp CVD Divergence (PerpGuardiola)</a><span>A working public implementation, with delta confirmation and band fills. Use as a starting point, not a finished system — verify against your own tick data.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://medium.com/@cryptocreddy/comprehensive-guide-to-crypto-futures-indicators-f88d7da0c1b5">CryptoCred (Medium)</a>
+    <a href="https://x.com/hyblockcapital/status/2029901570544894193">Hyblock Capital (X)</a>
+    <a href="https://cryptoadventure.com/spot-cvd-vs-perp-cvd-explained-which-one-tells-the-truth-first/">Crypto Adventure</a>
+    <a href="https://blog.tradingriot.com/p/auction-market-theory">Trading Riot — AMT</a>
+    <a href="https://www.coindesk.com/markets/2026/04/27/as-the-bitcoin-price-rises-futures-may-look-bearish-but-they-re-not-analyst-says">CoinDesk · 10x Research</a>
+    <a href="https://www.tradingview.com/script/XHISDN3c/">TradingView (PerpGuardiola)</a>
+    <a href="market-briefing.html">Morning Edge · 27 May 2026 (today)</a>
+    <a href="../2026-04-24/trading-concept.html">Alpha · Issue #2 (CVD foundation)</a>
+  </div>
+  <div>Alpha · Issue #33 · 27 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- /content -->
+
+</div><!-- /outer -->
+
+</body>
+</html>
