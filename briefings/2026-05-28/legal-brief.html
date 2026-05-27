@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Brief — Legal Intelligence — 28 May 2026</title>
+<style>
+@font-face { font-family: 'Charter'; src: local('Charter'), local('Bitstream Charter'), local('Georgia'); font-display: swap; }
+
+:root {
+  --bg-primary:    #1a1f2e;
+  --bg-secondary:  #2e3548;
+  --bg-sidebar:    #151928;
+  --bg-card:       #252b3b;
+  --bg-card-hover: #2e3548;
+  --text-primary:  #edf1f7;
+  --text-secondary:#bcc8d8;
+  --text-muted:    #8b96b0;
+  --border:        #3a4257;
+  --accent-gold:   #e8c84a;
+  --accent-gold-light: #f5dfa0;
+  --accent-gold-dim:   #a8902e;
+  --accent-blue:   #5c7cfa;
+  --accent-purple: #8b7fc7;
+  --accent-amber:  #f0a030;
+  --accent-green:  #3fb950;
+  --accent-red:    #f85149;
+  --accent-teal:   #3dc9b0;
+}
+body.light-mode {
+  --bg-primary:    #f5f5f0;
+  --bg-secondary:  #f0eff5;
+  --bg-sidebar:    #e8e8e0;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f0eff5;
+  --text-primary:  #1a1a2e;
+  --text-secondary:#5a6070;
+  --text-muted:    #8890a0;
+  --border:        #d4d4d4;
+  --accent-gold:   #b8960a;
+  --accent-gold-light: #7a6400;
+  --accent-gold-dim:   #9a8020;
+  --accent-blue:   #3a5ecf;
+  --accent-purple: #6b5aab;
+  --accent-amber:  #c07020;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: inherit; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: Charter, 'Bitstream Charter', Georgia, serif;
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hamburger {
+  position: fixed; top: 16px; left: 20px; z-index: 1000;
+  width: 40px; height: 40px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--text-primary); gap: 3px;
+}
+.hamburger span { display: block; width: 18px; height: 2px; background: var(--text-primary); }
+
+.theme-toggle {
+  position: fixed; top: 16px; right: 20px; z-index: 1000;
+  padding: 8px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 999px; cursor: pointer;
+  color: var(--text-primary); font-size: 14px;
+}
+
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+  background: var(--bg-sidebar); border-right: 1px solid var(--border);
+  padding: 24px 16px; overflow-y: auto; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.2s;
+}
+.sidebar.open { transform: translateX(0); }
+.sidebar .brand {
+  color: var(--accent-gold); font-weight: 700;
+  font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.sidebar .brand-date { color: var(--text-muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+.sidebar h4 { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold-dim); margin: 16px 0 8px; }
+.sidebar a {
+  display: block; color: var(--text-secondary);
+  font-size: 12px; text-decoration: none; padding: 6px 8px;
+  border-left: 2px solid transparent; margin: 2px 0;
+}
+.sidebar a:hover { color: var(--text-primary); }
+.sidebar a.active { color: var(--text-primary); border-left-color: var(--accent-gold); }
+.sidebar a .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dot-headline { background: var(--accent-gold); }
+.dot-high { background: var(--accent-blue); }
+.dot-medium { background: var(--accent-green); }
+
+.content { margin: 0 auto; max-width: 960px; padding: 70px 40px 80px; }
+
+.masthead { text-align: center; padding: 30px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 30px; position: relative; }
+.masthead h1 { font-size: 3.2rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; }
+.masthead .bar { width: 80px; height: 3px; background: var(--accent-gold); margin: 12px auto 16px; }
+.masthead .subtitle { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.masthead .date-line { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 20px; }
+.masthead .meta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+.pill-gold { background: rgba(232,200,74,0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); }
+.pill-muted { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
+.gold-separator { background: linear-gradient(90deg, transparent, var(--accent-gold), transparent); height: 2px; margin-top: 24px; }
+
+.story-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 26px;
+  margin-bottom: 28px;
+}
+.story-card.tier-headline { border-left: 3px solid var(--accent-gold); }
+.story-card.tier-high { border-left: 3px solid var(--accent-blue); }
+.story-card.tier-medium { border-left: 3px solid var(--accent-green); }
+
+.meta-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 10px;
+}
+.badge { padding: 3px 10px; border-radius: 4px; font-weight: 700; }
+.badge-headline { background: rgba(232,200,74,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); }
+.badge-high { background: rgba(92,124,250,0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+.badge-medium { background: rgba(63,185,80,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+.cred-primary { color: var(--accent-green); }
+.cred-secondary { color: var(--accent-amber); }
+.cred-media { color: var(--text-muted); }
+
+.signal { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+.story-title { font-size: 1.4rem; font-weight: 700; line-height: 1.35; margin: 8px 0 14px; color: var(--text-primary); }
+.update-flag { display: inline-block; background: rgba(240,160,48,0.2); color: var(--accent-amber); padding: 2px 7px; border-radius: 3px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+
+.golden-quote {
+  border-left: 3px solid var(--accent-gold);
+  background: rgba(232,200,74,0.05);
+  padding: 14px 18px;
+  margin: 16px 0;
+  color: var(--accent-gold-light);
+  font-style: italic;
+  font-size: 14px;
+}
+.golden-quote cite { display: block; margin-top: 6px; font-size: 11px; color: var(--text-muted); font-style: normal; letter-spacing: 1px; text-transform: uppercase; }
+
+.summary p { color: var(--text-secondary); margin-bottom: 12px; }
+
+.precedent {
+  border-left: 2px dashed var(--text-muted);
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 14px 0;
+}
+
+.analysis-block {
+  padding: 14px 18px;
+  border-radius: 4px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+.analysis-block h5 {
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 8px; font-weight: 700;
+}
+.analysis-block p { color: var(--text-secondary); }
+.practitioner { background: var(--bg-secondary); border-left: 3px solid var(--accent-blue); }
+.practitioner h5 { color: var(--accent-blue); }
+.contrarian { background: var(--bg-secondary); border-left: 3px solid var(--accent-purple); }
+.contrarian h5 { color: var(--accent-purple); }
+.industry { background: var(--bg-secondary); border-left: 3px solid var(--accent-amber); }
+.industry h5 { color: var(--accent-amber); }
+
+.brief-read { color: var(--accent-gold); font-style: italic; font-weight: 600; }
+
+.impact-card {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent-green);
+  padding: 14px 18px;
+  border-radius: 4px;
+  margin: 12px 0;
+}
+.impact-card h5 { color: var(--accent-green); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.impact-line { margin: 8px 0; line-height: 1.6; color: var(--text-secondary); font-size: 14px; }
+.impact-tag { display: inline-block; font-weight: 700; margin-right: 6px; min-width: 90px; }
+.impact-tag.bull { color: var(--accent-green); }
+.impact-tag.bear { color: var(--accent-red); }
+.impact-tag.neut { color: var(--text-muted); }
+
+.todo-card {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent-gold);
+  padding: 14px 18px;
+  border-radius: 4px;
+  margin: 12px 0;
+}
+.todo-card h5 { color: var(--accent-gold); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+.todo-row { display: flex; gap: 10px; margin: 8px 0; align-items: flex-start; }
+.todo-tag { display: inline-block; padding: 3px 9px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; min-width: 95px; text-align: center; }
+.todo-tag.trader { background: rgba(248,81,73,0.2); color: #ff7b72; }
+.todo-tag.counsel { background: rgba(31,111,235,0.2); color: #79c0ff; }
+.todo-tag.compliance { background: rgba(137,87,229,0.2); color: #d2a8ff; }
+.todo-tag.founder { background: rgba(63,185,80,0.2); color: #7ee787; }
+.todo-text { color: var(--text-secondary); font-size: 13px; flex: 1; }
+
+.connected-card {
+  background: var(--bg-secondary);
+  padding: 14px 18px;
+  border-radius: 4px;
+  margin: 12px 0;
+}
+.connected-card h5 { color: var(--accent-blue); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.connected-card p { color: var(--text-secondary); font-size: 13px; margin: 4px 0; }
+
+.tags-row { margin-top: 14px; }
+.tag { display: inline-block; padding: 3px 9px; border-radius: 3px; background: var(--bg-secondary); border: 1px solid var(--border); font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin: 3px 5px 3px 0; }
+
+.section { margin: 50px 0 28px; }
+.section-title {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent-gold); margin-bottom: 6px; font-weight: 700;
+}
+.section-divider { background: linear-gradient(90deg, var(--accent-gold), transparent); height: 1.5px; margin-bottom: 20px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.cross-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+.cross-card h4 { color: var(--accent-teal); font-size: 13px; margin-bottom: 6px; }
+.cross-card .direction { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin: 4px 0 8px; font-weight: 700; }
+.cross-card p { color: var(--text-secondary); font-size: 13px; }
+.dir-accel { color: var(--accent-green); }
+.dir-mixed { color: var(--accent-amber); }
+.dir-widening { color: var(--accent-gold-light); }
+.dir-decel { color: var(--accent-red); }
+.dir-pivot { color: var(--accent-amber); }
+
+.tone-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.flag {
+  display: inline-block; padding: 3px 12px; border-radius: 3px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px; min-width: 42px; text-align: center;
+}
+.flag-us { background: #1f3a6e; color: #93b4f0; border: 1px solid #2d5299; }
+.flag-eu { background: #1a1a5e; color: #a0a8f8; border: 1px solid #2828a0; }
+.flag-uk { background: #3a1a1a; color: #f09090; border: 1px solid #8b2020; }
+.flag-sg { background: #1a3a2a; color: #7fcca0; border: 1px solid #1e6640; }
+.flag-au { background: #2a1a3a; color: #c0a0f0; border: 1px solid #5e2a8b; }
+.signal-tight { color: var(--accent-red); font-weight: 700; }
+.signal-hold { color: var(--accent-amber); font-weight: 700; }
+.signal-loose { color: var(--accent-green); font-weight: 700; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th, table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+table th { color: var(--accent-gold-dim); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+.bold-name { color: var(--text-primary); font-weight: 700; }
+.date-cell { color: var(--text-primary); font-size: 12px; letter-spacing: 1px; }
+.days-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.days-near { background: rgba(232,200,74,0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold-dim); }
+.days-far { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
+
+.progress-stage { display: flex; gap: 2px; margin: 4px 0; }
+.progress-stage span { display: inline-block; height: 6px; flex: 1; border-radius: 1px; background: var(--bg-card); border: 1px solid var(--border); }
+.progress-stage span.done { background: var(--accent-green); border-color: var(--accent-green); }
+.progress-stage span.active { background: var(--accent-amber); border-color: var(--accent-amber); }
+.move-up { color: var(--accent-green); }
+.move-flat { color: var(--text-muted); }
+.move-down { color: var(--accent-red); }
+
+.status-open { color: var(--accent-green); font-weight: 700; }
+.status-soon { color: var(--accent-gold); font-weight: 700; }
+.status-ongoing { color: var(--accent-blue); font-weight: 700; }
+.status-closed { color: var(--text-muted); text-decoration: line-through; }
+
+.footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
+.footer h4 { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-gold-dim); margin: 12px 0 4px; }
+.footer p { margin-bottom: 8px; }
+
+.brief-notes-card { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--text-muted); border-radius: 8px; padding: 18px 22px; margin-bottom: 28px; }
+.brief-notes-card h3 { color: var(--accent-gold); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.brief-note { padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
+.brief-note:last-child { border-bottom: none; }
+.brief-note .note-head { color: var(--text-primary); font-weight: 700; display: block; margin-bottom: 4px; font-size: 13px; }
+</style>
+</head>
+<body class="light-mode">
+
+<button class="hamburger" id="hamburger" aria-label="Toggle contents"><span></span><span></span><span></span></button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙 Dark</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">The Brief</div>
+  <div class="brand-date">28 May 2026</div>
+  <h4>Stories</h4>
+  <a href="#story-1"><span class="dot dot-headline"></span>Mastercard wins NYDFS BitLicense</a>
+  <a href="#story-2"><span class="dot dot-high"></span>SoFi launches SoFiUSD to 15M users</a>
+  <a href="#story-3"><span class="dot dot-high"></span>HK closes VA advisory perimeter</a>
+  <a href="#story-4"><span class="dot dot-high"></span>BIS Project Agorá goes real-value</a>
+  <a href="#story-5"><span class="dot dot-medium"></span>UK sanctions HTX, 17 others</a>
+  <a href="#story-6"><span class="dot dot-medium"></span>Trump Truth Social on CFTC</a>
+  <a href="#story-7"><span class="dot dot-medium"></span>AMLA BWRA hearing</a>
+  <a href="#story-8"><span class="dot dot-medium"></span>FCA Section 21 approver review</a>
+  <a href="#brief-notes">Brief Notes</a>
+  <h4>Sections</h4>
+  <a href="#cross-cutting">Cross-Cutting</a>
+  <a href="#tone">Tone Barometer</a>
+  <a href="#countdown">Countdown</a>
+  <a href="#pipeline">Pipeline Tracker</a>
+  <a href="#submissions">Open Submissions</a>
+  <a href="#footer-section">Footer</a>
+</aside>
+
+<main class="content">
+
+<header class="masthead">
+  <h1>The Brief</h1>
+  <div class="bar"></div>
+  <div class="subtitle">Legal Intelligence Report</div>
+  <div class="date-line">Thursday — 28 May 2026</div>
+  <div class="meta-row">
+    <span class="pill pill-gold">8 Stories</span>
+    <span class="pill pill-muted">45+ Sources</span>
+    <span class="pill pill-muted">Past 24 Hours</span>
+  </div>
+  <div class="gold-separator"></div>
+</header>
+
+<!-- STORY 1: HEADLINE -->
+<article class="story-card tier-headline" id="story-1">
+  <div class="meta-row">
+    <span class="badge badge-headline">Headline</span>
+    <span>NYDFS / Mastercard Press Release</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>Payments · Stablecoins · NY Virtual Currency</span>
+  </div>
+  <div class="signal">🟢 High — Licence granted, operational immediately</div>
+  <h2 class="story-title">Mastercard Becomes First Major Card Network To Win NYDFS BitLicense — Authorisation Of Mastercard Transaction Services (U.S.) LLC On 27 May Unlocks Stablecoin Settlement And Tokenised-Deposit Rails Across The NY Perimeter; Galaxy Digital And Strike Already Cleared Earlier In 2026 But This Is The First Big-Network Card Issuer To Cross The Threshold</h2>
+
+  <div class="golden-quote">
+    "Today marks an important milestone in our journey to bring stablecoins and tokenized deposits into mainstream commerce, with the rigorous oversight of NYDFS."
+    <cite>— Jorn Lambert, Chief Product Officer, Mastercard, 27 May 2026</cite>
+  </div>
+
+  <div class="summary">
+    <p>The New York State Department of Financial Services granted Mastercard Transaction Services (U.S.) LLC a BitLicense on 27 May, authorising the entity to engage in virtual currency business activity under 23 NYCRR Part 200. The licence covers Mastercard's planned stablecoin settlement, tokenised-deposit issuance and on-chain payment-message infrastructure inside the NY perimeter. The network had been in pre-application engagement with NYDFS since Q3 2025 under the framework Superintendent Adrienne Harris updated in November 2024 to streamline review timelines.</p>
+    <p>Mastercard is the third 2026 BitLicense grant after Galaxy Digital (May) and Strike (March), but the first major card network — Visa, American Express and Discover have no equivalent authorisation. The licence sits alongside Mastercard's earlier announcement that it would settle USDC and other regulated stablecoins on its Multi-Token Network (MTN) by year-end, with Citi, Standard Chartered and Deutsche Bank as named launch participants.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical Precedent:</strong> The closest analog is PayPal Digital's October 2022 BitLicense — but PayPal entered as a fintech, not a four-party card network. Mastercard's grant is the first time a systemically important payments rail has received NY virtual-currency authority, structurally comparable to JPMorgan's 2020 OCC permission to use stablecoins on JPM Coin.</div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Davis Polk's <em>Fintech Update</em> (28 May) notes the licence is "drafted broadly enough to cover both customer-facing wallet activity and back-end settlement," meaning Mastercard can clear card transactions in stablecoins without re-papering its issuer agreements. <em class="brief-read">The Brief's read:</em> NYDFS used Mastercard's grant to seed a de facto national-network template — once Visa files (almost certainly within 90 days), the BitLicense becomes the gating credential for any payment network that wants to touch GENIUS Act-compliant stablecoins. Expect AmEx and Discover applications by Q3. The structural unlock is on the merchant side: Mastercard-acquiring merchants can offer USDC checkout without state-by-state MTL stacking.</p>
+  </div>
+
+  <div class="analysis-block contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>Bank Policy Institute's 27 May statement frames the grant as a regulatory-arbitrage win — Mastercard now holds bank-grade settlement powers without the consolidated capital, liquidity and resolution requirements imposed on bank holding companies. <em class="brief-read">The Brief's read:</em> Plausible, but the critique cuts equally hard against JPM Coin and against the bank-issued stablecoins (SoFiUSD, Story #2) that prudential regulators just blessed. The deeper question is whether NYDFS's Part 200 framework imports enough capital and operational-risk discipline to absorb a Mastercard-scale operator — Harris's recent reserve-attestation enhancements suggest yes, but a stress test has not been run.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct beneficiaries: USDC issuer Circle (CRCL) — Mastercard MTN settlement materially expands USDC's payments velocity inside the US regulated perimeter. Indirect winners: Stripe / Bridge (now competing for the same merchant integrations) and Fireblocks (custody / tokenisation infrastructure for card-issuer programmes). <em class="brief-read">The Brief's read:</em> Losers are the legacy stablecoin float (Tether USDT — gets no NY rail access) and the cross-border remittance corridor specialists (Wise, Remitly) that built around card-network friction. Watch Visa: a 90-day filing race is now on, and a Q4 grant would seal the duopoly as the primary stablecoin distribution channel.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> MA, CRCL, V (filing-race optionality), COIN (USDC custody flow) — payment-rail tokenisation thesis crystallises.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> WISE.L, RELY, Tether-proxy plays — card-network stablecoin rails compress the cross-border-remittance moat; USDT loses share in regulated US flow.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> AXP, DFS — neither has filed; valuation effect waits for a public application.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do — Monday Morning</h5>
+    <div class="todo-row"><span class="todo-tag trader">Trader</span><span class="todo-text">Long MA / CRCL pair against WISE.L; size for the 60–90 day window before Visa BitLicense headline risk.</span></div>
+    <div class="todo-row"><span class="todo-tag counsel">Counsel</span><span class="todo-text">Pull the NYDFS Part 200 application checklist — any client running a stablecoin-touching payment programme should map gap-to-grant before Visa's filing clogs the queue.</span></div>
+    <div class="todo-row"><span class="todo-tag compliance">Compliance</span><span class="todo-text">Refresh BSA / OFAC controls assuming card-network stablecoin settlement is live by Q4 — Travel Rule data lineage from issuer to acquirer is the next exam focus.</span></div>
+    <div class="todo-row"><span class="todo-tag founder">Founder</span><span class="todo-text">If your roadmap depended on the absence of a major card network in regulated stablecoin rails, rewrite — that moat closed today.</span></div>
+  </div>
+
+  <div class="connected-card">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #2 (SoFi SoFiUSD) — bank-issuer side of the same GENIUS-era infrastructure build-out; Mastercard provides distribution, SoFi provides issuance.</p>
+    <p>↔️ Story #4 (BIS Project Agorá) — wholesale-side analog: central-bank rails moving from prototype to real value at the same time card networks move from authorisation to deployment.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#NYDFS</span><span class="tag">#BitLicense</span><span class="tag">#Mastercard</span><span class="tag">#Stablecoins</span><span class="tag">#GENIUSAct</span><span class="tag">#Payments</span>
+  </div>
+</article>
+
+<!-- STORY 2: HIGH -->
+<article class="story-card tier-high" id="story-2">
+  <div class="meta-row">
+    <span class="badge badge-high">High</span>
+    <span>SoFi Investor Release / Coindesk</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>Bank-Issued Stablecoin · GENIUS Implementation</span>
+  </div>
+  <div class="signal">🟢 High — Product live, retail availability confirmed</div>
+  <h2 class="story-title">SoFi Bank Launches SoFiUSD On Ethereum And Solana — First US National Bank To Push A Retail Stablecoin Directly To Its 15M Members; Fully Reserved, 1:1 USD-Redeemable, In-App Buy / Sell / Hold / Convert From Day One With Tokenised Deposits And B2B Transfers Slated For Q3</h2>
+
+  <div class="golden-quote">
+    "SoFiUSD brings together the speed of blockchain with the trust of a regulated US bank, and we're going to use it to power 24/7 cross-border payments and tokenized deposits for our 15 million members."
+    <cite>— Anthony Noto, CEO, SoFi Technologies, 27 May 2026 investor release</cite>
+  </div>
+
+  <div class="summary">
+    <p>SoFi Bank N.A., operating under its January 2026 OCC national bank charter, launched SoFiUSD as a fully reserved 1:1 USD-redeemable stablecoin on Ethereum and Solana. Retail members get buy / sell / hold / convert directly inside the SoFi app from 27 May. The product is positioned as both consumer-facing (24/7 cross-border transfer) and infrastructure (planned FDIC-insured tokenised deposit and B2B transfer rails by Q3 2026).</p>
+    <p>SoFi is the first US-chartered national bank to put a stablecoin directly in front of retail consumers. The launch validates the bank-issuer pathway authorised by the GENIUS Act and forces a competitive response from JPMorgan (JPM Coin remains wholesale-only), Bank of New York Mellon, Citi and Wells Fargo — all of which have stablecoin programmes in pre-launch.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical Precedent:</strong> The closest precedent is the Bahamas Sand Dollar (2020) — first national bank-issued retail digital currency — but on a non-systemic balance sheet. JPM Coin (2019) was bank-issued but wholesale only. SoFiUSD is the first bank-issued retail stablecoin at material US scale.</div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Sullivan &amp; Cromwell's 28 May client alert flags that SoFiUSD is operating under §4 of the GENIUS Act (national-bank issuer authority) with the OCC as primary federal regulator — bypassing the longer state-charter pathway used by Paxos and earlier Circle. The reserves sit on SoFi Bank's consolidated balance sheet, FDIC-insured up to the $250k retail cap. <em class="brief-read">The Brief's read:</em> SoFi's first-mover position locks in a meaningful network-effect lead. JPM and BNY were waiting for the FDIC / OCC final rules (statutory deadline 18 July) before launching retail; SoFi simply went under existing charter authority and absorbed the regulatory ambiguity. Expect a JPM / BNY consortium retail product Q4 with a "bank-grade vs fintech" marketing posture aimed squarely at this launch.</p>
+  </div>
+
+  <div class="analysis-block contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>The 27 May Treasury Borrowing Advisory Committee minutes flagged $6.6tn of US transactional deposits as "potentially at risk" from stablecoin disintermediation as the float crosses $281bn. <em class="brief-read">The Brief's read:</em> The deposit-disintermediation thesis is overstated for FDIC-insured bank-issued stablecoins like SoFiUSD — the funds remain on the bank's balance sheet, just on-chain. The genuine deposit-flight risk is from non-bank issuers (Circle, Paxos) pulling Treasury-bill-backed dollars out of the regional-bank deposit base. SoFi is actually the safer architecture from a financial-stability lens; Tether and offshore-issued stablecoins are the structural concern.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct competitive pressure on JPM, BNY, Citi, WFC to accelerate retail stablecoin rollouts before SoFi establishes incumbency. Indirect winners: Solana (SOL) — second-chain placement validates non-Ethereum bank-issuance rails; Ethereum (ETH) — primary settlement chain still anchored. <em class="brief-read">The Brief's read:</em> The biggest medium-term loser is the Circle USDC retail story — once every major US bank issues a branded stablecoin, USDC's distribution channel narrows to crypto-native applications and B2B / merchant flows. CRCL's $40-share IPO thesis assumes Circle remains the dominant non-bank retail issuer; a bank-issued onslaught compresses that multiple.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> SOFI, SOL, ETH — first-mover earnings tailwind + chain-of-record validation.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> CRCL, USDT-proxy plays — bank-issued retail stablecoins erode the non-bank distribution moat.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> JPM, BAC, C, WFC — competitive pressure rises but balance-sheet advantage on issuance scale remains.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do — Monday Morning</h5>
+    <div class="todo-row"><span class="todo-tag trader">Trader</span><span class="todo-text">Long SOFI / short CRCL for the Q3 quarter; SOFI gets the operational-leverage story, CRCL gets the share-loss narrative.</span></div>
+    <div class="todo-row"><span class="todo-tag counsel">Counsel</span><span class="todo-text">Re-paper customer-facing stablecoin TOS — SoFi's terms (filed with OCC under 12 CFR 9) become the template for §4 GENIUS Act-issuer disclosures.</span></div>
+    <div class="todo-row"><span class="todo-tag compliance">Compliance</span><span class="todo-text">Treat in-app stablecoin transfer flows as covered transfers for BSA — Travel Rule attestation lineage starts at the SoFi wallet boundary.</span></div>
+    <div class="todo-row"><span class="todo-tag founder">Founder</span><span class="todo-text">If your stack assumed bank-issued retail stablecoins were 12–18 months out, accelerate integrations — competitive timeline just compressed.</span></div>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#SoFi</span><span class="tag">#Stablecoins</span><span class="tag">#GENIUSAct</span><span class="tag">#OCC</span><span class="tag">#Ethereum</span><span class="tag">#Solana</span>
+  </div>
+</article>
+
+<!-- STORY 3: HIGH -->
+<article class="story-card tier-high" id="story-3">
+  <div class="meta-row">
+    <span class="badge badge-high">High</span>
+    <span>HKSFC / FSTB Consultation Conclusions</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>Hong Kong Perimeter · VA Advisory + Asset Management</span>
+  </div>
+  <div class="signal">🟢 High — Conclusions published, bill drafting underway</div>
+  <h2 class="story-title">Hong Kong FSTB And SFC Publish Consultation Conclusions On VA Advisory And Asset Management Licensing — Mapping Activities To Type 4 And Type 9 Regulated Activities, Setting HK$100k Liquid Capital For Non-Custodial Firms And HK$5m Paid-Up Capital For Asset-Holding Firms; Single Bill Covering Dealing, Custody, Advisory And Management Targeted For LegCo This Year</h2>
+
+  <div class="golden-quote">
+    "The conclusion of further consultation marks the final leg of our journey to complete the regulatory framework for digital assets, paving the way for the long-term scaling of our ecosystem."
+    <cite>— Julia Leung Fung-yee, CEO, Securities and Futures Commission of Hong Kong, 26 May 2026</cite>
+  </div>
+
+  <div class="summary">
+    <p>The Financial Services and the Treasury Bureau and the SFC published joint consultation conclusions on 26 May for licensing regimes covering virtual asset advisory and asset management services. The framework maps advisory activities to Type 4 (advising on securities) and asset management to Type 9 (asset management) under the Securities and Futures Ordinance — letting existing Type 4 / Type 9 licensees extend into crypto through their familiar regulatory plumbing rather than apply for a new licence category.</p>
+    <p>Capital floors: HK$100,000 liquid capital for advisory firms not holding client assets; HK$5 million paid-up share capital plus HK$3 million liquid capital for managers that hold or control client virtual assets. The regulators received 51 submissions and reported "broad market support." A single bill covering VA dealing, custody, advisory and management is targeted for the Legislative Council "within this year."</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical Precedent:</strong> Hong Kong's June 2023 VATP regime established the regulated-exchange perimeter; the November 2024 stablecoin licensing bill (passed May 2025) closed the issuance perimeter. The 26 May conclusions complete the advisory / management quadrant — the same SFO mapping approach used in the 2011 over-the-counter derivatives regime under §392 SFO.</div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Norton Rose Fulbright's Hong Kong Regulation Tomorrow (28 May) frames the Type 4 / Type 9 mapping as the SFC's deliberate "incumbent-channel" play — designed to push institutional crypto flow through licensed asset managers rather than offshore advisors. <em class="brief-read">The Brief's read:</em> The capital floors are striking for how low they are — HK$100k for non-custodial advisory makes Hong Kong cheaper than Singapore's equivalent CMS-licensed advisory channel and dramatically cheaper than Dubai VARA. Combined with the LegCo bill packaging all four activity-types, the SFC is now selling Hong Kong as a one-licence-fits-all institutional perimeter ahead of MiCA's 1 July transitional cutoff and Singapore's tighter MAS posture.</p>
+  </div>
+
+  <div class="analysis-block contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>Linklaters' 28 May Asia FS note observes that the Type 4 mapping creates an awkward overlap with the "investment advice" definitions in the Securities and Futures (Investment Recommendations) Code — meaning every published research note on a crypto asset could trigger licence requirements without clearer carve-outs. <em class="brief-read">The Brief's read:</em> Real concern for crypto research desks and Substack-style commentators based in HK. The bill drafting needs an explicit research carve-out modelled on the SEC's 1933 Act §17(b) safe harbour or a swathe of HK-domiciled analyst content will need licensing.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct winners: Hong Kong's 80+ Type 4 / Type 9 licensees who can extend into crypto without re-application — including Value Partners, ChinaAMC, CSOP. Asset-management infrastructure providers (Matrixport, Hashkey) gain a clearer customer base. <em class="brief-read">The Brief's read:</em> Capital-flow signal: institutional crypto advisory revenue that was routing through Singapore CMS or Dubai VARA will partially repatriate to HK Type 4 / Type 9 once the bill passes. The medium-term loser is Singapore's CMS-licensed advisory channel — MAS's stricter capital and conduct posture (visible in the Bsquared revocation, MPI consultation closures) is no longer offset by clearer rule-making timelines than Hong Kong.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> 0388.HK (HKEX), 1818.HK (China Gold Intl proxy for HK FS), 0806.HK (Value Partners) — capital flows to HK institutional crypto channels.</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Singapore CMS-only advisory desks; some friction for Dubai VARA-only firms losing HK / China-facing flow.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> US institutional players (Fidelity, BlackRock) — already have HK affiliates positioned to absorb the new regime.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do — Monday Morning</h5>
+    <div class="todo-row"><span class="todo-tag trader">Trader</span><span class="todo-text">Add HKEX (0388.HK) to the Asia-FS basket — captures both expanded VA listing flow and licensee-base growth.</span></div>
+    <div class="todo-row"><span class="todo-tag counsel">Counsel</span><span class="todo-text">Audit your Type 4 / Type 9 licensee clients' marketing materials — extension into VA advisory must align with the conclusions' "broad market support" interpretation of permitted activities.</span></div>
+    <div class="todo-row"><span class="todo-tag compliance">Compliance</span><span class="todo-text">Begin draft applications now — once the LegCo bill passes (likely Q4), the SFC application queue will fill quickly.</span></div>
+    <div class="todo-row"><span class="todo-tag founder">Founder</span><span class="todo-text">If you're choosing between an APAC HQ in Singapore vs Hong Kong for crypto advisory, the 26 May conclusions move HK ahead — at least until Singapore publishes its MPI reform package.</span></div>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#HongKong</span><span class="tag">#SFC</span><span class="tag">#FSTB</span><span class="tag">#VirtualAssets</span><span class="tag">#Type4</span><span class="tag">#Type9</span><span class="tag">#APAC</span>
+  </div>
+</article>
+
+<!-- STORY 4: HIGH -->
+<article class="story-card tier-high" id="story-4">
+  <div class="meta-row">
+    <span class="badge badge-high">High</span>
+    <span>BIS Press Release / Bank of Canada</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>Wholesale CBDC · Tokenisation · Cross-Border</span>
+  </div>
+  <div class="signal">🟢 High — Real-value trials commencing</div>
+  <h2 class="story-title">BIS Project Agorá Moves From Prototype To Real-Value Cross-Border Tokenisation Trials — Bank Of Canada Joins NY Fed, BoE, Banque De France, BoJ, Banco De México, SNB, BoK With 40+ Private Institutions; Unified-Ledger Atomic Settlement Of Tokenised Commercial-Bank Deposits And Central-Bank Reserves Confirmed Workable, Next Phase Tests Specific Currency Pairs With Real Money</h2>
+
+  <div class="golden-quote">
+    "Tokenization has the potential to make these payments faster, cheaper and more efficient and secure. Project Agorá is a unique opportunity to test the technology across several jurisdictions and currencies."
+    <cite>— Carolyn Rogers, Senior Deputy Governor, Bank of Canada, 27 May 2026</cite>
+  </div>
+
+  <div class="summary">
+    <p>The Bank for International Settlements announced on 27 May that Project Agorá — the multi-jurisdiction wholesale tokenisation initiative launched April 2024 — has completed prototype work demonstrating atomic settlement of cross-border transactions combining tokenised commercial-bank deposits and central-bank reserves on a unified ledger. The next phase moves to real-value testing on selected currency pairs with "enhanced private sector involvement." Bank of Canada formally joined on the same day, taking the central-bank participant count to nine.</p>
+    <p>The Agorá participant list — NY Fed, BoE, Banque de France, BoJ, Banco de México, SNB, BoK, plus the Swiss-led BIS Innovation Hub stream — now includes one APAC central bank (BoK). 40+ private institutions including major commercial banks, payment networks and tokenisation infrastructure providers participate alongside. PBOC remains absent from Agorá, instead driving the parallel mBridge initiative with Saudi Arabia, UAE, Thailand and Hong Kong.</p>
+  </div>
+
+  <div class="precedent">📎 <strong>Historical Precedent:</strong> Project Mariana (BIS, 2023) demonstrated cross-border CBDC settlement at experimental scale. Agorá is the first BIS-led tokenisation programme leaving sandbox for live money movement — comparable in significance to CLS Bank's 2002 launch in setting the operational standard for wholesale FX settlement.</div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Sullivan &amp; Cromwell's 28 May Fintech Note observes that Agorá's "unified ledger" architecture forces a regulatory question that has been deferred for 18 months: which jurisdiction's law governs atomic settlement when the asset leg is on one central bank's books and the cash leg on another's? The BIS proposal anchors on traditional choice-of-law (situs of the obligor) but the live-money pilots will surface edge cases. <em class="brief-read">The Brief's read:</em> The signal to watch is the choice of currency pairs for the live phase — USD/EUR, USD/CAD and USD/JPY are obvious starting points. Whichever pair starts first becomes the template for governing-law allocation across the Agorá ledger. Expect the NY Fed to push for NY-law fallback as the default, given the Federal Reserve Bank of New York's role in CLS settlement architecture.</p>
+  </div>
+
+  <div class="analysis-block contrarian">
+    <h5>🔄 Contrarian Take</h5>
+    <p>Coin Center's Jerry Brito (28 May Substack) argues Agorá is a step backwards from open public-chain settlement — re-creating closed wholesale-bank rails on permissioned ledgers, with the same inter-bank gatekeeping that crypto was supposed to disintermediate. <em class="brief-read">The Brief's read:</em> Conceptually fair, but the institutional capital flows tell a different story — Agorá is the most credible bridge between public-chain stablecoin issuance (Story #2) and central-bank wholesale settlement. The two architectures are converging at the messaging layer (ISO 20022) even as they remain bifurcated at the rail layer.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct winners: SWIFT (Agorá relies on existing GPI messaging integration), commercial-bank participants on the Agorá whitelist (JPM, HSBC, MUFG, Deutsche Bank, Santander, BNP Paribas, BMO), and tokenisation-infrastructure providers (Fnality, Partior). <em class="brief-read">The Brief's read:</em> Architectural fork is now visible at the rail layer: Western-aligned tokenised cross-border via Agorá vs PRC-anchored mBridge for BRI corridors. Hong Kong and Singapore sit on both — a deliberate hedging strategy. The medium-term loser is the SWIFT-only correspondent-bank model, which loses share to atomic-settlement alternatives by 2028 once Agorá scales to G10 currency pairs.</p>
+  </div>
+
+  <div class="impact-card">
+    <h5>📊 Portfolio Impact</h5>
+    <p class="impact-line"><span class="impact-tag bull">🟢 Bullish</span> Fnality / Partior infrastructure plays, listed commercial-bank participants (JPM, HSBA.L, 8306.T), HKEX (cross-rail position).</p>
+    <p class="impact-line"><span class="impact-tag bear">🔴 Bearish</span> Legacy correspondent-bank revenue lines at Tier 2/3 banks not on Agorá whitelist; SWIFT's gross-message volume thesis weakens.</p>
+    <p class="impact-line"><span class="impact-tag neut">⚪ Neutral</span> Public-chain stablecoin issuers (USDC, SoFiUSD) — Agorá doesn't displace them but does narrow their cross-border wholesale TAM.</p>
+  </div>
+
+  <div class="todo-card">
+    <h5>📋 What To Do — Monday Morning</h5>
+    <div class="todo-row"><span class="todo-tag trader">Trader</span><span class="todo-text">Track which currency pair launches first — first pair = winning template for governing-law clauses across the Agorá ledger.</span></div>
+    <div class="todo-row"><span class="todo-tag counsel">Counsel</span><span class="todo-text">Begin choice-of-law mapping for tokenised cross-border transactions; existing master agreements (ISDA, GMSLA) need Agorá-specific addenda by H1 2027.</span></div>
+    <div class="todo-row"><span class="todo-tag compliance">Compliance</span><span class="todo-text">Operational-risk teams should request Agorá whitelist criteria from custodian — counterparty access becomes the new wholesale-payments differentiator.</span></div>
+    <div class="todo-row"><span class="todo-tag founder">Founder</span><span class="todo-text">If your treasury / payments product touches wholesale cross-border, you have 18 months before Agorá goes production — either join the private-sector consortium or build an interoperability layer.</span></div>
+  </div>
+
+  <div class="connected-card">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #1 (Mastercard NYDFS) — retail / card-network side of the same tokenisation thesis; both converging on the same merchant and corporate treasury endpoints.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#BIS</span><span class="tag">#ProjectAgora</span><span class="tag">#Tokenisation</span><span class="tag">#CBDC</span><span class="tag">#CrossBorder</span><span class="tag">#WholesalePayments</span>
+  </div>
+</article>
+
+<!-- STORY 5: MEDIUM -->
+<article class="story-card tier-medium" id="story-5">
+  <div class="meta-row">
+    <span class="badge badge-medium">Medium</span>
+    <span>UK FCDO / Bloomberg / Coindesk</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>Sanctions · HTX · US Exchange Compliance Spillover</span>
+  </div>
+  <div class="signal">🟢 High — Designations gazetted, compliance immediate</div>
+  <h2 class="story-title">UK Sanctions HTX And 17 Other Crypto Entities Over Russia Ties Under New Reg 17A — Major US Exchanges Coinbase, Binance, Bybit, OKX And Bitget Tighten Transfer Screening On HTX Counterparties Without OFAC Mirror Designation; First Use Of Reg 17A Against Crypto Exchanges Marks Material Escalation Of UK Sanctions Toolkit</h2>
+
+  <div class="golden-quote">
+    "By targeting crypto exchanges and shadow networks moving billions for the Kremlin, we are closing the loopholes that Russia has exploited to bypass our sanctions and fund its war."
+    <cite>— UK Foreign, Commonwealth &amp; Development Office statement, 26 May 2026</cite>
+  </div>
+
+  <div class="summary">
+    <p>The UK Foreign, Commonwealth &amp; Development Office designated 18 crypto entities including Justin Sun-linked HTX (formerly Huobi), alleging A7 network ties and approximately $1.5bn in sanctions-evasion flows from Grinex and Garantex. This is the first use of Regulation 17A of the Russia (Sanctions) (EU Exit) Regulations 2019 against crypto exchanges — a deliberate signalling of the UK's expanded sanctions toolkit. US-domiciled exchanges (Coinbase, Binance, Bybit, OKX, Bitget) immediately raised KYT screening on HTX-counterparty flows on 27 May, even though OFAC has not yet mirrored the designation. HTX denied the allegations and claimed it had refused to list the digital ruble.</p>
+  </div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>A&amp;O Shearman's 28 May Sanctions Note treats the UK action as a "high-probability OFAC predicate" — historical pattern is that FCDO designations under Reg 17A precede US OFAC SDN listings by 30–90 days. <em class="brief-read">The Brief's read:</em> US compliance teams are already operating as though HTX is OFAC-designated because the secondary-sanctions exposure on USD correspondent banking effectively forces conservative screening. The interesting question is whether OFAC moves before the Russia-sanctions tightening package expected mid-June; if it does, HTX's USD-denominated counterparty flow collapses entirely. If it doesn't, the UK action becomes a test of how far solo allied sanctions can constrain a major exchange.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>HTX (Tron-aligned, Justin Sun ownership) loses USD-correspondent screening privileges at the major US exchanges — direct revenue and listing competitiveness impact. <em class="brief-read">The Brief's read:</em> Tier-1 US exchanges that proactively screened (Coinbase, Kraken) gain regulator credibility; mid-tier exchanges that delayed (some still under 30-day review) face elevated examination risk. The medium-term winner is Binance — having paid down its DOJ resolution, its post-2024 compliance build-out now functions as a competitive moat against HTX-style designations. Tron's USDT-on-Tron rail also gets a haircut as flows route to Ethereum and Solana alternatives.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#UK</span><span class="tag">#FCDO</span><span class="tag">#Sanctions</span><span class="tag">#HTX</span><span class="tag">#Russia</span><span class="tag">#OFAC</span><span class="tag">#TravelRule</span>
+  </div>
+</article>
+
+<!-- STORY 6: MEDIUM -->
+<article class="story-card tier-medium" id="story-6">
+  <div class="meta-row">
+    <span class="badge badge-medium">Medium</span>
+    <span>Truth Social / The Hill</span>
+    <span class="cred-secondary">[Secondary]</span>
+    <span>Political Economy · CFTC Exclusive Jurisdiction</span>
+  </div>
+  <div class="signal">🟡 Medium — Political signal, not legal action</div>
+  <h2 class="story-title">Trump Truth Social Post Backs CFTC Exclusive Authority Over Prediction Markets — Names Chris Christie, Letitia James, Tim Walz And JB Pritzker As "SCUM" Trying To Set Prediction-Market Rules; First Explicit White House-Level Escalation Of The Federal-State Preemption Fight Already In Active Litigation Across Six States</h2>
+
+  <div class="golden-quote">
+    "It is critically important that the CFTC's exclusive authority over Prediction Markets is maintained, and that they will thrive… We cannot have SCUM like Chris Christie, Letitia James, Tim Walz, and JB Pritzker setting the rules!"
+    <cite>— Donald J. Trump, Truth Social post, 26 May 2026 (Memorial Day evening)</cite>
+  </div>
+
+  <div class="summary">
+    <p>Trump posted on Memorial Day evening that prediction markets are "the future of finance" and the CFTC must retain sole authority, while attacking state-level opponents including NY AG Letitia James, Minnesota Governor Tim Walz, Illinois Governor JB Pritzker and former NJ Governor Chris Christie. The post lands amid active CFTC v Minnesota litigation, the Ninth Circuit's 22 May stays denial in Nevada and Washington (already covered), and pending state cases in Wisconsin, Connecticut, Illinois, New York, Arizona and Rhode Island.</p>
+  </div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Sidley's 28 May Political Markets memo notes the post raises the political cost for any CFTC commissioner pulling back from Chairman Michael Selig's enforcement posture — and signals that the Department of Justice will likely file amicus briefs supporting CFTC preemption arguments. <em class="brief-read">The Brief's read:</em> The signal matters less for the courts (judges discount social-media commentary) than for the CFTC's internal politics. Selig now has explicit cover to escalate state-suit filings; the Commission's quieter members (Mersinger, Pham) lose room to dissent. Watch for an expanded preemption suit against Wisconsin or Illinois within 30 days.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Marginal support for Kalshi and Polymarket — White House backing improves SCOTUS optics if a cert petition lands in the fall term. <em class="brief-read">The Brief's read:</em> Negative for blue-state legacy gambling incumbents (DraftKings DKNG, FanDuel FLUT.L) reliant on state-sportsbook protectionism — the political environment for state-AG enforcement just got harder. Watch FLUT.L for relative weakness on Tuesday's tape.</p>
+  </div>
+
+  <div class="connected-card">
+    <h5>↔️ Connected Stories</h5>
+    <p>↔️ Story #1 in 27 May brief (9th Cir. denies Kalshi/Polymarket stays) — Trump's intervention raises political cost on the state-AG litigants advancing under that doctrinal opening.</p>
+    <p>↔️ Story #2 in 27 May brief (CFTC v Minnesota) — White House cover for Selig's preemption strategy directly affects PI ruling optics.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#Trump</span><span class="tag">#CFTC</span><span class="tag">#PredictionMarkets</span><span class="tag">#Preemption</span><span class="tag">#TruthSocial</span>
+  </div>
+</article>
+
+<!-- STORY 7: MEDIUM -->
+<article class="story-card tier-medium" id="story-7">
+  <div class="meta-row">
+    <span class="badge badge-medium">Medium</span>
+    <span>AMLA Public Hearing</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>EU AML · BWRA Guidelines · MiCA / CASP</span>
+  </div>
+  <div class="signal">🟡 Medium — Hearing today; final guidelines feed into 10 Jul 2027 AMLR application</div>
+  <h2 class="story-title">AMLA Holds Public Hearing 28 May On Business-Wide Risk Assessment Guidelines Under Article 10(4) AMLR — Foundational Compliance Template Every MiCA-Authorised CASP, EMT/ART Issuer And Non-Financial Obliged Entity Must Satisfy When EU AMLR Applies From 10 July 2027</h2>
+
+  <div class="golden-quote">
+    "The Business-Wide Risk Assessment is the foundational document that supervisors will pull first in any inspection — getting feedback in now matters more than later RTS battles."
+    <cite>— AMLA, Public Hearing announcement, 28 May 2026 [paraphrased from event description]</cite>
+  </div>
+
+  <div class="summary">
+    <p>The European AML Authority holds its public hearing today (10:00-12:00 CET, 28 May) on draft Guidelines under Article 10(4) of the AML Regulation (Regulation 2024/1624) setting four minimum requirements for business-wide risk assessment across all obliged entities — financial and non-financial. Registration closed yesterday at 18:30 CET. The Guidelines feed into AMLA's broader 2026 RTS / Guidelines build-out ahead of 10 July 2027 AMLR application.</p>
+  </div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>Cleary Gottlieb's 27 May EU AML Update flags the BWRA template as the practical baseline every MiCA-authorised CASP and stablecoin issuer (EMTs / ARTs) will have to satisfy, with the same four-pillar structure (inherent risk → controls → residual risk → mitigation) imported across non-financial obliged entities. <em class="brief-read">The Brief's read:</em> CASPs that already operate under MiCA's risk-management requirements have a meaningful head start — the BWRA template is broadly compatible with MiCA Annex II. Non-financial obliged entities (DeFi front-end operators, NFT marketplaces in scope under AMLR Annex II.4) face a much larger build-out. Expect AMLA to issue technical guidance specifically addressing decentralised application operators in Q3.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Direct compliance cost for every authorised CASP, EMT issuer, ART issuer, plus non-financial entities newly in scope (high-value art dealers, certain football clubs, crypto-adjacent service providers). <em class="brief-read">The Brief's read:</em> Compliance-tech vendors (Chainalysis, Elliptic, TRM Labs, ComplyAdvantage) are the indirect beneficiaries — the BWRA template effectively codifies their data outputs as the operational standard for EU AML inspections. EBA / NCA examination cycles after July 2027 will pull BWRA documentation first.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#AMLA</span><span class="tag">#EU</span><span class="tag">#AMLR</span><span class="tag">#BWRA</span><span class="tag">#MiCA</span><span class="tag">#Compliance</span>
+  </div>
+</article>
+
+<!-- STORY 8: MEDIUM -->
+<article class="story-card tier-medium" id="story-8">
+  <div class="meta-row">
+    <span class="badge badge-medium">Medium</span>
+    <span>FCA Press Release</span>
+    <span class="cred-primary">[Primary]</span>
+    <span>UK · Financial Promotions · Section 21 Approvers</span>
+  </div>
+  <div class="signal">🟡 Medium — Supervisory review, one firm in remediation</div>
+  <h2 class="story-title">FCA Section 21 Financial Promotion Approver Review Finds "Two-Tier Picture" — One Firm Placed In Remediation, Webpages Blocked From Retail Access As Crypto Approver Gateway Faces Live Supervisory Cycle Ahead Of September 2026 Cryptoasset Authorisation Window Opening</h2>
+
+  <div class="golden-quote">
+    "Consumers see these promotions daily — in social media feeds, online adverts, websites and apps."
+    <cite>— Lucy Castledine, Director of Consumer Investments, FCA, 27 May 2026</cite>
+  </div>
+
+  <div class="summary">
+    <p>The FCA reviewed 10 authorised Section 21 financial promotion approvers covering BNPL, crowdfunding, and corporate finance promotions for unauthorised firms. The regulator found a two-tier picture: leading firms embedded Consumer Duty from intake, while others approved promotions with unsubstantiated claims, exposed retail investors to professional-only content, or relied on third-party templates instead of doing their own checks. One firm was placed into remediation and certain webpages were blocked from retail access. The findings land directly on crypto firms relying on Section 21 approvers to market in the UK ahead of the September 2026 cryptoasset authorisation window opening.</p>
+  </div>
+
+  <div class="analysis-block practitioner">
+    <h5>⚖️ Practitioner Analysis</h5>
+    <p>K&amp;L Gates' 28 May UK FS Note flags that the review will "inform the FCA's supervisory posture on the crypto-specific Section 21 approvers list" issued in March 2026 — that list currently has fewer than 20 firms with crypto approval scope. <em class="brief-read">The Brief's read:</em> Cryptoasset firms relying on Section 21 approvers to market in the UK are now exposed to a live supervisory cycle. Expect FCA to issue a dedicated crypto-promotion thematic review by H2, parallelling its Consumer Duty cycle. Firms should pull intake records on every approver they use and stress-test against the "unsubstantiated claims" and "retail-vs-professional" failure modes the FCA flagged today.</p>
+  </div>
+
+  <div class="analysis-block industry">
+    <h5>🏗️ Industry Implications</h5>
+    <p>Approver supply for crypto marketing in the UK is thin; the review will likely shrink the field further as marginal approvers exit. <em class="brief-read">The Brief's read:</em> Larger crypto exchanges with in-house compliance (Coinbase UK, Kraken UK, Bitstamp) can absorb the bottleneck; smaller projects targeting UK retail face an immediate marketing-channel constraint. Crypto-native PR / marketing agencies serving the UK market need to map every approver relationship before the FCA's expected H2 thematic review.</p>
+  </div>
+
+  <div class="tags-row">
+    <span class="tag">#FCA</span><span class="tag">#UK</span><span class="tag">#Section21</span><span class="tag">#FinancialPromotions</span><span class="tag">#Cryptoasset</span><span class="tag">#ConsumerDuty</span>
+  </div>
+</article>
+
+<!-- BRIEF NOTES -->
+<article class="brief-notes-card" id="brief-notes">
+  <h3>Brief Notes</h3>
+  <div class="brief-note">
+    <span class="note-head">EU Commission floats new AI Envoy role — von der Leyen meeting with European Round Table for Industry (27 May)</span>
+    Days after the Digital Omnibus AI political agreement, the Commission is considering a high-level "AI envoy" reporting directly to President von der Leyen to represent the EU externally on AI policy and drive the "AI gigafactories" industrial agenda. The role would sit above the existing AI Office; brief, governance line and relationship to the Office's enforcement powers under Article 101 (live from 2 August 2026) remain undefined. Source: Euronews, 27 May 2026.
+  </div>
+  <div class="brief-note">
+    <span class="note-head">ESMA opens T+1 messaging-protocol consultation under CSDR Article 6(2) (26 May)</span>
+    ESMA published revised draft guidelines mandating electronic, machine-readable allocation and confirmation messaging and stripping oral allocations / confirmations except as a technical-disruption fallback. Deadline 7 July 2026; final guidelines targeted October 2026, applying from 7 December 2026, ahead of EU-wide T+1 migration on 11 October 2027. Relevant for any CASP touching tokenised securities or DLT pilot regime participants. Source: esma.europa.eu, 26 May 2026.
+  </div>
+  <div class="brief-note">
+    <span class="note-head">OECD publishes "Governing with Artificial Intelligence" — 266-page flagship report (27 May)</span>
+    The OECD's de facto AI-in-government benchmark mapping 200 real-world examples across 11 core government functions (public service delivery, justice administration, anti-corruption, public finance, civil service reform). Warns "skewed data… can cause harmful decisions; lack of transparency erodes accountability; and overreliance can widen digital divides." Will be cited by APAC regulators (which lean heavily on OECD AI Principles) and EU member states in public-sector AI procurement and accountability rules. Source: oecd.org, 27 May 2026.
+  </div>
+  <div class="brief-note">
+    <span class="note-head">Blockworks launches Transparency Alliance — 40+ exchanges adopt S-1-style token disclosure framework (27 May)</span>
+    Coinbase, Kraken, Binance.US among 40+ firms backing the Token Transparency Framework — an S-1-style one-time disclosure plus continuously updated filings covering insider allocations, market-maker deals, listing terms. 44 protocols (Morpho, Jupiter, Spark, dYdX) have filed since June 2025; target 200 by year-end. Blockworks has briefed SEC and CFTC staff; signatory exchanges will pressure new listings to file. Industry self-regulation moving ahead of CLARITY Act passage. Source: blockworks.co, 27 May 2026.
+  </div>
+  <div class="brief-note">
+    <span class="note-head">Coinbase Chief Policy Officer Shirzad rebuts WSJ "private money" critique of stablecoins (26 May)</span>
+    Responding to a WSJ op-ed comparing stablecoins to Free Banking-era private money, Faryar Shirzad noted ~90% of US M2 is already privately issued and argued GENIUS prohibits leverage, fractional reserves and yield-bearing structures by issuers while mandating 1:1 cash / T-bill backing. The exchange used the response to lobby for the CLARITY Act's market-structure half ahead of the Senate floor push. Source: ccn.com / bitcoinworld.co.in, 26 May 2026.
+  </div>
+  <div class="brief-note">
+    <span class="note-head">FCA Annual Public Meeting moves to Edinburgh — first time outside London (26 May)</span>
+    FCA Chair Ashley Alder opened new office space in Edinburgh and confirmed the 2026 Annual Public Meeting will be held at Edinburgh's Assembly Rooms on 6 October 2026 — the first time the APM has been outside London. Edinburgh workforce now exceeds 350 and will expand further. Symbolically modest, but signals the FCA's growing Scottish footprint at the same time as it builds out the cryptoasset authorisation team for the 30 September 2026 application window. Source: fca.org.uk press notice, 26 May 2026.
+  </div>
+</article>
+
+<!-- CROSS-CUTTING -->
+<section class="section" id="cross-cutting">
+  <div class="section-title">Cross-Cutting Implications</div>
+  <div class="section-divider"></div>
+  <div class="grid-2">
+    <div class="cross-card">
+      <h4>Stablecoin Regulation</h4>
+      <div class="direction dir-accel">⬆ Accelerating</div>
+      <p>Mastercard NYDFS BitLicense + SoFi SoFiUSD launch in the same 24 hours validate the GENIUS-era infrastructure stack. Bank-issued + card-network rails now operational; Circle USDC's non-bank distribution moat narrows. Watch Visa BitLicense filing within 90 days.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Tokenisation &amp; RWA</h4>
+      <div class="direction dir-accel">⬆ Accelerating</div>
+      <p>BIS Project Agorá moving from prototype to real-value wholesale tokenisation crosses the institutional credibility threshold. ESMA T+1 messaging consultation underpins the EU side. Public-chain stablecoins (USDC, SoFiUSD) and permissioned wholesale rails (Agorá, Fnality, Partior) now converging at messaging layer.</p>
+    </div>
+    <div class="cross-card">
+      <h4>UK / EU / US Regulatory Divergence</h4>
+      <div class="direction dir-widening">⚡ Widening</div>
+      <p>UK sanctions HTX under Reg 17A without OFAC mirror, FCA Section 21 review surfaces UK-specific marketing perimeter, EU AMLA BWRA hearing builds standalone EU AML stack. US-UK-EU regulatory toolkits diverging even on shared objectives (sanctions, AML, market integrity).</p>
+    </div>
+    <div class="cross-card">
+      <h4>Singapore / APAC</h4>
+      <div class="direction dir-mixed">↗ Mixed Signals</div>
+      <p>Hong Kong completes VA advisory + asset management perimeter on the same day Mastercard wins NYDFS. APAC institutional crypto channel is now Hong Kong; Singapore's tighter MAS posture (Bsquared revocation, MPI consultations) loses positioning advantage. Watch Q3 capital flow data.</p>
+    </div>
+    <div class="cross-card">
+      <h4>AI Governance</h4>
+      <div class="direction dir-mixed">↗ Mixed Signals</div>
+      <p>EU Commission floating AI Envoy raises governance questions over who runs AI Office enforcement once Article 101 fines power on 2 August 2026. OECD's 266-page "Governing with AI" report sets the international procurement / accountability benchmark. Singapore IMDA v1.5 agentic AI framework remains APAC template.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Institutional Crypto Infrastructure</h4>
+      <div class="direction dir-accel">⬆ Accelerating</div>
+      <p>Card networks (Mastercard), national banks (SoFi), wholesale CB rails (Agorá), institutional advisory channels (HK Type 4/9) all crossed structural thresholds this week. The institutional / retail / wholesale layers of regulated crypto infrastructure now have first-mover incumbents.</p>
+    </div>
+    <div class="cross-card">
+      <h4>DeFi</h4>
+      <div class="direction dir-mixed">↗ Mixed Signals</div>
+      <p>No direct DeFi enforcement action in window. AMLA BWRA template will apply to DeFi front-end operators in scope under AMLR Annex II. Blockworks Transparency Alliance gives DeFi protocols a voluntary disclosure pathway ahead of CLARITY Act. Regulatory perimeter still being drawn at the front-end / smart-contract boundary.</p>
+    </div>
+    <div class="cross-card">
+      <h4>Sanctions &amp; Financial Crime</h4>
+      <div class="direction dir-accel">⬆ Accelerating</div>
+      <p>UK FCDO designates HTX and 17 others under Reg 17A; first crypto-exchange use of this UK sanctions vehicle. EU 20th sanctions package CASP-sectoral prohibitions live since 24 May. AMLA hearing on BWRA today rounds out a week of cross-jurisdictional AML / sanctions tooling expansion.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TONE BAROMETER -->
+<section class="section" id="tone">
+  <div class="section-title">Tone Barometer</div>
+  <div class="section-divider"></div>
+  <div class="tone-row"><span class="flag flag-us">US</span><span class="signal-loose">🟢 Loosening</span><span>Mastercard NYDFS grant, SoFi launch, Trump backing CFTC preemption — administration / state aligned on enabling regulated stablecoin and prediction-market infrastructure.</span></div>
+  <div class="tone-row"><span class="flag flag-eu">EU</span><span class="signal-hold">🟡 Holding</span><span>AMLA hearing on BWRA Guidelines, ESMA T+1 consultation, AI Envoy proposal — process-heavy week consolidating earlier rule-making rather than new tightening or loosening.</span></div>
+  <div class="tone-row"><span class="flag flag-uk">UK</span><span class="signal-tight">🔴 Tightening</span><span>FCDO sanctions HTX +17 under Reg 17A, FCA Section 21 approver review surfaces remediation actions — UK posture more hawkish than US on enforcement vehicles this week.</span></div>
+  <div class="tone-row"><span class="flag flag-sg">SG</span><span class="signal-hold">🟡 Holding</span><span>No new MAS action in window after Bsquared revocation (14 May) and prudential consultation close (18 May). Singapore's posture set; next decision points wait on permissionless-blockchain rule outputs.</span></div>
+  <div class="tone-row"><span class="flag flag-au">AU</span><span class="signal-hold">🟡 Holding</span><span>No new ASIC / AUSTRAC / Treasury actions 26–28 May. Watch AUSTRAC Travel Rule 1 July effective date and 29 July VASP enrolment deadline.</span></div>
+  <div class="tone-row" style="border-bottom:none;"><span class="flag flag-sg" style="background:#1a3a3a;color:#7fcccc;border-color:#1e6660;">HK</span><span class="signal-loose">🟢 Loosening</span><span>SFC / FSTB VA advisory and management licensing conclusions complete the four-quadrant perimeter; Type 4 / Type 9 channel mapping is deliberately accommodative for licensed asset managers.</span></div>
+</section>
+
+<!-- REGULATORY COUNTDOWN -->
+<section class="section" id="countdown">
+  <div class="section-title">Regulatory Countdown</div>
+  <div class="section-divider"></div>
+  <table>
+    <thead><tr><th>Event</th><th>Date</th><th>Days</th><th>Context</th></tr></thead>
+    <tbody>
+      <tr><td class="bold-name">Japan PSA / EPI Stablecoin Ordinance Effective</td><td class="date-cell">1 Jun 2026</td><td><span class="days-pill days-near">4 days</span></td><td>New stablecoin / crypto-intermediary / funds-transfer ordinance takes effect.</td></tr>
+      <tr><td class="bold-name">Warren OCC Trust Charter Production Deadline</td><td class="date-cell">1 Jun 2026</td><td><span class="days-pill days-near">4 days</span></td><td>OCC must produce records on 9 crypto trust charters granted since Dec 2025.</td></tr>
+      <tr><td class="bold-name">FCA CP25/40 &amp; CP25/41 Crypto Perimeter Consultation</td><td class="date-cell">3 Jun 2026</td><td><span class="days-pill days-near">6 days</span></td><td>Final UK crypto rulebook consultation ahead of October 2027 regime go-live.</td></tr>
+      <tr><td class="bold-name">FinCEN / OFAC Stablecoin AML/CFT NPRM Comments Close</td><td class="date-cell">9 Jun 2026</td><td><span class="days-pill days-near">12 days</span></td><td>GENIUS Act implementation rules on AML / Travel Rule / OFAC for permitted stablecoin issuers.</td></tr>
+      <tr><td class="bold-name">FDIC GENIUS Act Reserve / Disclosure NPRM Comments Close</td><td class="date-cell">9 Jun 2026</td><td><span class="days-pill days-near">12 days</span></td><td>FDIC prudential rules for FDIC-supervised stablecoin issuers and IDIs holding reserves.</td></tr>
+      <tr><td class="bold-name">Japan FIEA Crypto Reclassification Comments Close</td><td class="date-cell">9 Jun 2026</td><td><span class="days-pill days-near">12 days</span></td><td>FIEA reclassification public comment period closes; implementing regs due 18 Jul.</td></tr>
+      <tr><td class="bold-name">ASIC No-Action Position Window Closes</td><td class="date-cell">30 Jun 2026</td><td><span class="days-pill days-near">33 days</span></td><td>Firms relying on digital-asset relief must have filed AFS-licence application or intent.</td></tr>
+      <tr><td class="bold-name">MiCA Article 143(3) Transitional Cutoff</td><td class="date-cell">1 Jul 2026</td><td><span class="days-pill days-far">34 days</span></td><td>Hard legal cliff: legacy national-law CASPs lose grandfathered status across the EU.</td></tr>
+      <tr><td class="bold-name">AUSTRAC Travel Rule Effective for VASPs</td><td class="date-cell">1 Jul 2026</td><td><span class="days-pill days-far">34 days</span></td><td>Existing + newly regulated providers must comply.</td></tr>
+      <tr><td class="bold-name">GENIUS Act Federal Final Rules Deadline</td><td class="date-cell">18 Jul 2026</td><td><span class="days-pill days-far">51 days</span></td><td>Fed, OCC, FDIC, FinCEN, OFAC must finalise GENIUS Act implementing rules.</td></tr>
+      <tr><td class="bold-name">AUSTRAC VASP Enrolment / Registration Deadline</td><td class="date-cell">29 Jul 2026</td><td><span class="days-pill days-far">62 days</span></td><td>Newly regulated virtual-asset service providers must enrol.</td></tr>
+      <tr><td class="bold-name">EU AI Act Article 50 / Annex III Enforcement Goes Live</td><td class="date-cell">2 Aug 2026</td><td><span class="days-pill days-far">66 days</span></td><td>High-risk Annex III systems, watermarking and AI Office enforcement powers begin.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- REGULATORY PIPELINE TRACKER -->
+<section class="section" id="pipeline">
+  <div class="section-title">Regulatory Pipeline Tracker</div>
+  <div class="section-divider"></div>
+  <table>
+    <thead><tr><th>Bill / Rule</th><th>Jurisdiction</th><th>Stage</th><th>Movement</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="bold-name">CLARITY Act (Market Structure)</td>
+        <td>US Senate</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="active"></span><span></span><span></span></div>Banking Committee cleared 15-9 → Floor</td>
+        <td class="move-flat">▬ No change (recess week)</td>
+      </tr>
+      <tr>
+        <td class="bold-name">HK VA Dealing / Custody / Advisory / Management Bill</td>
+        <td>Hong Kong LegCo</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="active"></span><span></span><span></span></div>Consultation conclusions → Drafting</td>
+        <td class="move-up">▲ Advanced (26 May conclusions)</td>
+      </tr>
+      <tr>
+        <td class="bold-name">Mastercard NYDFS BitLicense</td>
+        <td>US (NY)</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span></div>Granted 27 May</td>
+        <td class="move-up">▲ Effective</td>
+      </tr>
+      <tr>
+        <td class="bold-name">GENIUS Act Federal Rule-Making (Fed, OCC, FDIC, FinCEN, OFAC)</td>
+        <td>US Federal</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="active"></span><span></span><span></span></div>NPRM comment period (closes 9 Jun)</td>
+        <td class="move-flat">▬ No change</td>
+      </tr>
+      <tr>
+        <td class="bold-name">Digital Omnibus on AI Act Amendments</td>
+        <td>EU</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="done"></span><span class="active"></span><span></span></div>Political agreement → Formal adoption</td>
+        <td class="move-flat">▬ No change</td>
+      </tr>
+      <tr>
+        <td class="bold-name">AMLA BWRA Guidelines (Article 10(4) AMLR)</td>
+        <td>EU AMLA</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="active"></span><span></span><span></span></div>Public hearing 28 May → finalisation</td>
+        <td class="move-up">▲ Advanced</td>
+      </tr>
+      <tr>
+        <td class="bold-name">ESMA T+1 Messaging Guidelines (CSDR Article 6(2))</td>
+        <td>EU</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="active"></span><span></span><span></span></div>Consultation open (deadline 7 Jul)</td>
+        <td class="move-up">▲ Advanced (26 May)</td>
+      </tr>
+      <tr>
+        <td class="bold-name">BIS Project Agorá (Wholesale CB Tokenisation)</td>
+        <td>Multi-jurisdiction</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="active"></span><span></span></div>Prototype complete → Real-value testing</td>
+        <td class="move-up">▲ Advanced (27 May)</td>
+      </tr>
+      <tr>
+        <td class="bold-name">FIEA Crypto Reclassification</td>
+        <td>Japan</td>
+        <td><div class="progress-stage"><span class="done"></span><span class="done"></span><span class="active"></span><span></span></div>Cabinet approval → Comment period</td>
+        <td class="move-flat">▬ No change</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- OPEN SUBMISSIONS -->
+<section class="section" id="submissions">
+  <div class="section-title">Open Submissions &amp; Consultations</div>
+  <div class="section-divider"></div>
+  <table>
+    <thead>
+      <tr><th>Consultation</th><th>Body</th><th>Jurisdiction</th><th>Deadline</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="bold-name">FCA CP25/40 &amp; CP25/41 Crypto Perimeter</td><td>FCA</td><td>UK</td><td class="date-cell">3 Jun 2026</td><td><span class="status-soon">🟡 Closing Soon</span></td></tr>
+      <tr><td class="bold-name">FinCEN / OFAC Stablecoin AML/CFT NPRM</td><td>FinCEN / OFAC</td><td>US</td><td class="date-cell">9 Jun 2026</td><td><span class="status-soon">🟡 Closing Soon</span></td></tr>
+      <tr><td class="bold-name">FDIC GENIUS Act NPRM</td><td>FDIC</td><td>US</td><td class="date-cell">9 Jun 2026</td><td><span class="status-soon">🟡 Closing Soon</span></td></tr>
+      <tr><td class="bold-name">Japan FIEA Crypto Reclassification</td><td>FSA / Cabinet Office</td><td>JP</td><td class="date-cell">9 Jun 2026</td><td><span class="status-soon">🟡 Closing Soon</span></td></tr>
+      <tr><td class="bold-name">South Africa Capital Flow Management Regs</td><td>National Treasury</td><td>ZA</td><td class="date-cell">10 Jun 2026</td><td><span class="status-soon">🟡 Closing Soon</span></td></tr>
+      <tr><td class="bold-name">ESMA T+1 Messaging Guidelines (CSDR Art 6(2))</td><td>ESMA</td><td>EU</td><td class="date-cell">7 Jul 2026</td><td><span class="status-open">🟢 Open</span></td></tr>
+      <tr><td class="bold-name">EU MiCA Review (Articles 140/142)</td><td>EU Commission</td><td>EU</td><td class="date-cell">31 Aug 2026</td><td><span class="status-open">🟢 Open</span></td></tr>
+      <tr><td class="bold-name">Australian Treasury Digital Asset Platforms ED</td><td>Treasury</td><td>AU</td><td class="date-cell">Ongoing H2 2026</td><td><span class="status-ongoing">🔵 Ongoing</span></td></tr>
+      <tr><td class="bold-name">SEC Crypto Task Force Written Input</td><td>SEC</td><td>US</td><td class="date-cell">Continuous</td><td><span class="status-ongoing">🔵 Ongoing</span></td></tr>
+      <tr><td class="bold-name">UK HM Treasury Cryptoasset SI (Stablecoin Pay Svcs)</td><td>HM Treasury</td><td>UK</td><td class="date-cell">22 May 2026</td><td><span class="status-closed">🔴 Closed</span></td></tr>
+      <tr><td class="bold-name">MAS Prudential Treatment (Permissionless Chains)</td><td>MAS</td><td>SG</td><td class="date-cell">18 May 2026</td><td><span class="status-closed">🔴 Closed</span></td></tr>
+      <tr><td class="bold-name">OCC GENIUS Act NPRM</td><td>OCC</td><td>US</td><td class="date-cell">1 May 2026</td><td><span class="status-closed">🔴 Closed</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="footer-section">
+  <div class="gold-separator" style="margin-bottom:24px;"></div>
+  <h4>Tier 1 — Regulators</h4>
+  <p>NYDFS (Mastercard BitLicense grant, 27 May 2026), OCC (SoFi national bank charter / SoFiUSD launch context), Hong Kong SFC + FSTB (joint consultation conclusions, 26 May 2026), BIS (Project Agorá press release p260527, 27 May 2026), Bank of Canada (Agorá joining announcement, 27 May 2026), UK FCDO (Russia sanctions designations under Reg 17A, 26 May 2026), AMLA (BWRA public hearing announcement, 28 May 2026), FCA (Section 21 approver review press release 27 May; Edinburgh APM 26 May; CP25/40-41), ESMA (CSDR Article 6(2) consultation 26 May), Senate Banking Committee Minority (Warren letter 18 May).</p>
+  <h4>Tier 2 — Law Firms</h4>
+  <p>Davis Polk (Fintech Update 28 May; Crypto Regulation Hub), Sullivan &amp; Cromwell (SoFi GENIUS Act §4 analysis, 28 May), Norton Rose Fulbright (Hong Kong Regulation Tomorrow, 28 May), A&amp;O Shearman (Sanctions Note, 28 May), Cleary Gottlieb (EU AML Update, 27 May), K&amp;L Gates (UK FS Note on Section 21 thematic, 28 May), Linklaters (Asia FS Note on HK Type 4/9, 28 May), Sidley (Political Markets memo, 28 May), Covington (FinCEN / OFAC stablecoin alert).</p>
+  <h4>Tier 3 — Industry &amp; Advocacy</h4>
+  <p>Bank Policy Institute (Mastercard BitLicense critique, 27 May), American Bankers Association (charter pause letter, May 2026), Coinbase Institute (Shirzad WSJ response, 26 May), Coin Center (Jerry Brito on Agorá architecture, 28 May), Blockworks (Transparency Alliance launch, 27 May), Circle Research, Ripple Insights, BIS, IOSCO, FSB, Treasury Borrowing Advisory Committee (27 May minutes).</p>
+  <h4>Tier 4 — Intelligence</h4>
+  <p>Chainalysis, Elliptic (UK 20th sanctions package commentary), TRM Labs, ComplyAdvantage, rwa.xyz, Ledger Insights.</p>
+  <h4>Tier 5 — Media</h4>
+  <p>CoinDesk (multi-story), The Block, Bloomberg (UK FCDO sanctions / HTX), Businesswire (Mastercard NYDFS press release), The Hill (Trump Truth Social coverage), CCN, BitcoinWorld, Euronews (AI Envoy report), TechNode (Bsquared coverage), Financial Planning Today (FCA Edinburgh).</p>
+  <p style="margin-top:24px;color:var(--text-muted);font-size:11px;">
+    <strong>Disclaimer.</strong> This brief is editorial intelligence prepared for sophisticated practitioners. It is not legal advice, investment advice or compliance guidance. Verify all citations and primary-source documents before acting. <em>The Brief</em>'s read sections reflect editorial judgement, not external counsel opinion.
+  </p>
+  <p style="margin-top:8px;color:var(--text-muted);font-size:11px;">
+    The Brief — Legal Intelligence Report · Thursday 28 May 2026 · 8 stories · 45+ sources.
+  </p>
+</footer>
+
+</main>
+
+<script>
+(function() {
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const themeToggle = document.getElementById('themeToggle');
+
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    sidebar.classList.toggle('open');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== hamburger) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  sidebar.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+    });
+  });
+
+  function setThemeLabel() {
+    if (document.body.classList.contains('light-mode')) {
+      themeToggle.textContent = '🌙 Dark';
+    } else {
+      themeToggle.textContent = '☀️ Light';
+    }
+  }
+  setThemeLabel();
+  themeToggle.addEventListener('click', function() {
+    document.body.classList.toggle('light-mode');
+    setThemeLabel();
+  });
+
+  // Active-section highlight
+  const stories = sidebar.querySelectorAll('a[href^="#story-"], a[href^="#brief-notes"]');
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      const id = entry.target.id;
+      const link = sidebar.querySelector('a[href="#' + id + '"]');
+      if (link && entry.isIntersecting) {
+        stories.forEach(function(l) { l.classList.remove('active'); });
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-100px 0px -60% 0px' });
+  document.querySelectorAll('article[id]').forEach(function(el) { observer.observe(el); });
+})();
+</script>
+
+</body>
+</html>
