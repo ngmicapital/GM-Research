@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Order Flow: The Foundation | May 29, 2026</title>
+<meta property="og:description" content="Alpha — Order Flow: The Foundation | May 29, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(36px,5vw,56px);line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* Practice cards */
+.practice-cards{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.pcard{display:flex;gap:20px;padding:20px;background:var(--card);border:1px solid var(--rule);border-radius:4px;align-items:flex-start}
+.pcard-num{font-family:'DM Serif Display',serif;font-size:42px;line-height:1;color:var(--accent);font-style:italic;flex-shrink:0;width:44px}
+.pcard-body{}
+.pcard-title{font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.pcard-text{font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0}
+
+/* Tape */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:4px;padding:24px 28px;margin:18px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7}
+.tape strong,.tape em,.tape b{color:var(--terminal-accent)}
+.tape-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.tape-data{display:grid;grid-template-columns:auto auto auto auto;gap:4px 24px;margin:14px 0;font-size:12px}
+.tape-data .th{color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.tape-data .pos{color:var(--pos)}
+.tape-data .neg{color:var(--neg)}
+.read{background:rgba(163,230,53,0.08);border-left:3px solid var(--accent);padding:12px 16px;margin-top:16px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--terminal-ink);border-radius:2px}
+
+/* Quotes */
+.quotes{display:flex;flex-direction:column;gap:20px;margin:18px 0}
+.quote-block{border-left:4px solid var(--accent);padding:16px 20px;background:var(--card)}
+.quote-text{font-style:italic;font-size:15.5px;color:var(--ink);line-height:1.6;margin-bottom:8px}
+.quote-attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px}
+.quote-attr a{font-size:11px;color:var(--accent-ink)}
+
+/* Traps */
+.traps{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.trap{padding:16px 20px;border-left:4px solid var(--warn);background:var(--warn-dim);border-radius:2px}
+.trap.anti{border-left-color:#a8a29e;background:var(--bg-2)}
+.trap-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--warn-ink);letter-spacing:1.5px;margin-bottom:4px}
+.trap.anti .trap-num{color:var(--muted)}
+.trap-title{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.trap-body{font-size:13.5px;color:var(--ink-2);margin:0}
+
+/* Further reading */
+.fr-list{display:flex;flex-direction:column;gap:10px;margin:18px 0}
+.fr-item{display:flex;gap:16px;padding:14px 16px;background:var(--card);border:1px solid var(--rule);border-radius:3px;align-items:flex-start}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-dim);padding:3px 8px;border-radius:2px;flex-shrink:0;margin-top:2px}
+.fr-body{}
+.fr-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.fr-title a{color:var(--ink);border-bottom-color:rgba(28,25,23,0.2)}
+.fr-desc{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+
+/* TF note */
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--bg-2);padding:10px 14px;border-radius:3px;margin-top:18px;letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink)}
+
+/* Footer */
+.page-footer{margin-top:60px;padding:24px 0;border-top:1px solid var(--rule)}
+.page-footer p{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-bottom:6px}
+.sources{font-size:12px;color:var(--muted);margin-top:16px}
+.sources li{margin-bottom:4px}
+
+/* Mobile */
+@media(max-width:860px){
+  .toc{display:none}
+  .toc-body{display:flex!important;flex-direction:row;overflow-x:auto;gap:8px;margin-bottom:20px}
+  .toc a{white-space:nowrap;padding:4px 10px;border-bottom:none;border:1px solid var(--rule);border-radius:20px}
+  .outer{flex-direction:column}
+  h1{font-size:clamp(28px,6vw,40px)}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+<div class="outer">
+
+  <!-- TOC -->
+  <aside class="toc" id="toc">
+    <div class="toc-sticky">
+      <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle TOC">&#9776;</button>
+      <div class="toc-body">
+        <div class="toc-label">Contents</div>
+        <a href="#s01"><span class="num">01</span>What It Is</a>
+        <a href="#s02"><span class="num">02</span>Mechanics</a>
+        <a href="#s03"><span class="num">03</span>Visual</a>
+        <a href="#s04"><span class="num">04</span>In Practice</a>
+        <a href="#s05"><span class="num">05</span>Live Tape</a>
+        <a href="#s06"><span class="num">06</span>Quotes</a>
+        <a href="#s07"><span class="num">07</span>Traps</a>
+        <a href="#s08"><span class="num">08</span>Reading</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="pretitle">Alpha <span class="dot">&#x25CF;</span> Trading Concepts <span class="dot">&#x25CF;</span> Daily</div>
+      <h1><em>Alpha</em> &mdash; Order Flow: The Foundation</h1>
+      <div class="meta">
+        <span>Thursday</span>
+        <span>&middot;</span>
+        <span>29 May 2026</span>
+        <span>&middot;</span>
+        <span>Sydney</span>
+        <span>&middot;</span>
+        <span>Issue #35</span>
+        <span>&middot;</span>
+        <span class="pill">8 min read</span>
+      </div>
+    </div>
+
+    <!-- TL;DR -->
+    <div class="tldr">
+      <div class="tldr-label">TL;DR</div>
+      <p class="tldr-text">Order flow is the pulse of the market: every price move is caused by <strong>market orders hitting limit orders</strong>, and the direction of that aggression tells you who is in control right now. Understanding the difference between passive (limit) and aggressive (market) orders &mdash; who initiates, who absorbs, who pays the spread &mdash; is the bedrock beneath every advanced orderflow concept: CVD, footprints, imbalance, absorption. You can&rsquo;t read any of them correctly without this mental model locked in.</p>
+    </div>
+
+    <!-- §01 -->
+    <section id="s01">
+      <div class="section-header">
+        <span class="section-num">§01</span>
+        <div>
+          <div class="section-title">What It Is</div>
+          <div class="section-sub">The definition that makes everything else make sense</div>
+        </div>
+      </div>
+
+      <div class="skim">Order flow is the real-time record of who is aggressively initiating trades and in which direction — it is the only direct evidence of actual buying or selling pressure hitting the market.</div>
+
+      <p><strong>Order flow</strong> is not price. Price is the location where the last trade printed. Order flow is the sequence of trades that produced that price &mdash; and specifically, which side of each trade was <em>aggressive</em>. A market order to buy hits the best available offer; that trade is classified as a buyer-initiated, or aggressive, buy. A market order to sell hits the best available bid; that is an aggressive sell. The limit orders sitting on the book providing those prices are <em>passive</em> &mdash; they do not initiate anything. They wait.</p>
+
+      <p>Price moves when aggressive demand exhausts passive supply at a given level, or vice versa. If buyers keep firing market orders at the offer, eventually all the limit sells at that price are filled and the exchange has to go to the next offer level up. Price ticks up. Nothing else causes price to move in a continuous auction market. No news, no chart pattern, no sentiment &mdash; these only matter to the extent they cause someone to pick up a phone and send a market order.</p>
+
+      <div class="pills">
+        <div class="pill-term"><b>Market Order</b><span>Aggressive — executes immediately at best available price; pays the spread; initiates the trade</span></div>
+        <div class="pill-term"><b>Limit Order</b><span>Passive — rests on the book; waits to be filled; provides liquidity; earns the spread</span></div>
+        <div class="pill-term"><b>Aggressor</b><span>The side that sends the market order; classified as buyer or seller by whether they hit the bid or lift the offer</span></div>
+        <div class="pill-term"><b>Trade Classification</b><span>Assigning each trade as buyer-initiated or seller-initiated; the input to CVD, footprints, and imbalance metrics</span></div>
+        <div class="pill-term"><b>Spread</b><span>The gap between best bid and best offer; aggressors pay it, passive orders earn it</span></div>
+      </div>
+
+      <div class="remember">
+        <b>If you only remember one thing</b>
+        Price is the scoreboard. Order flow is the game. The scoreboard only tells you who&rsquo;s winning; order flow tells you who is pressing and who is giving up ground.
+      </div>
+    </section>
+
+    <!-- §02 -->
+    <section id="s02">
+      <div class="section-header">
+        <span class="section-num">§02</span>
+        <div>
+          <div class="section-title">Mechanics</div>
+          <div class="section-sub">How trades are classified and how aggression produces price movement</div>
+        </div>
+      </div>
+
+      <div class="skim">Every trade is stamped as buyer-initiated or seller-initiated using the tick rule or Lee-Ready algorithm; the running net total of that classification is CVD — and CVD diverging from price is the signal.</div>
+
+      <p>Exchanges broadcast a real-time feed of every executed trade: price, size, timestamp, and whether the aggressor was a buyer or seller. On liquid exchanges like Binance and OKX, this is the &ldquo;trades&rdquo; websocket &mdash; raw tape. The classification is done server-side by comparing the trade price to the prevailing bid/ask at the moment of execution.</p>
+
+      <p>For exchanges or data feeds that don&rsquo;t provide side classification directly, two algorithms dominate:</p>
+
+      <div style="overflow-x:auto">
+      <table class="cmp">
+        <tr><th>Algorithm</th><th>Method</th><th>Best Used When</th></tr>
+        <tr><td>Tick Rule</td><td>If trade price is higher than last trade: buyer-initiated. If lower: seller-initiated. If equal: same as previous.</td><td>High-frequency data; any liquid market; fast to compute</td></tr>
+        <tr><td>Lee-Ready</td><td>Compare trade price to midpoint of prevailing bid/ask. Above mid = buyer; below mid = seller; at mid = tick rule fallback.</td><td>Lower-frequency data where bid/ask is available; more accurate for illiquid instruments</td></tr>
+      </table>
+      </div>
+
+      <p>The <strong>Cumulative Volume Delta (CVD)</strong> is simply the running sum of buyer-initiated volume minus seller-initiated volume across all trades:</p>
+
+      <div class="formula">
+        <b>CVD(t)</b> = &sum; [Vol<sub>buy</sub>(i) &minus; Vol<sub>sell</sub>(i)] for i = 1 to t
+        <br><br>
+        <b>Delta per candle</b> = Vol<sub>buy in candle</sub> &minus; Vol<sub>sell in candle</sub>
+        <br><br>
+        <span class="note">Positive delta = aggressive buyers dominated that period. Negative delta = aggressive sellers dominated. Divergence between CVD direction and price direction = the signal.</span>
+      </div>
+
+      <p>The critical concept: <strong>price can move up while CVD is falling</strong> (passive absorption &mdash; large limit buyers absorbing aggressive sells while price holds up), or <strong>price can hold flat while CVD spikes</strong> (aggressive buyers are being absorbed &mdash; large limit sellers defending a level). These divergences are the foundation of absorption analysis, which this brief&rsquo;s covered concepts will layer on top of.</p>
+
+      <p>A key mechanical nuance: most retail platforms show you <em>tick-level</em> CVD, not <em>order-level</em> CVD. One large institutional market order that sweeps multiple price levels will show up as many ticks in the feed, all buyer-initiated. The trade count overstates the number of independent decisions being made. What matters is the <em>dollar volume</em> of aggression, not the number of ticks.</p>
+    </section>
+
+    <!-- §03 -->
+    <section id="s03">
+      <div class="section-header">
+        <span class="section-num">§03</span>
+        <div>
+          <div class="section-title">Visual</div>
+          <div class="section-sub">How order flow creates price movement in the orderbook</div>
+        </div>
+      </div>
+
+      <div class="skim">Aggressive buyers systematically lift offers; each level exhausted forces price to the next offer; limit sellers at each level are the resistance; when size dries up, price accelerates.</div>
+
+      <!-- SVG: Orderbook aggression diagram -->
+      <svg viewBox="0 0 800 440" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:'JetBrains Mono',monospace;display:block;margin:16px 0">
+        <!-- Background -->
+        <rect width="800" height="440" fill="#faf8f5"/>
+
+        <!-- Title -->
+        <text x="400" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1c1917" letter-spacing="1">AGGRESSIVE BUYER LIFTING THE OFFER — ORDERBOOK VIEW</text>
+
+        <!-- Left panel: Orderbook -->
+        <text x="170" y="58" text-anchor="middle" font-size="11" fill="#78716c" letter-spacing="1.5" text-transform="uppercase">ORDERBOOK DEPTH</text>
+
+        <!-- Offer side (red) -->
+        <rect x="40" y="70" width="260" height="30" fill="#fef2f2" rx="2"/>
+        <text x="55" y="90" font-size="12" fill="#ef4444" font-weight="600">107,450</text>
+        <text x="210" y="90" font-size="12" fill="#ef4444" text-anchor="end">2.4 BTC</text>
+        <text x="265" y="90" font-size="10" fill="#ef4444">OFFER</text>
+
+        <rect x="40" y="104" width="260" height="30" fill="#fef2f2" rx="2"/>
+        <text x="55" y="124" font-size="12" fill="#ef4444" font-weight="600">107,400</text>
+        <text x="210" y="124" font-size="12" fill="#ef4444" text-anchor="end">5.1 BTC</text>
+        <text x="265" y="124" font-size="10" fill="#ef4444">OFFER</text>
+
+        <!-- Current best offer - highlighted -->
+        <rect x="40" y="138" width="260" height="34" fill="#fee2e2" rx="2" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="55" y="160" font-size="13" fill="#ef4444" font-weight="700">107,350</text>
+        <text x="210" y="160" font-size="13" fill="#ef4444" font-weight="700" text-anchor="end">1.8 BTC</text>
+        <text x="255" y="160" font-size="10" fill="#ef4444" font-weight="700">&#8592; BEST OFFER</text>
+
+        <!-- Spread line -->
+        <line x1="40" y1="178" x2="300" y2="178" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="170" y="193" text-anchor="middle" font-size="10" fill="#78716c" letter-spacing="1">SPREAD = $10</text>
+
+        <!-- Bid side (green) -->
+        <!-- Current best bid - highlighted -->
+        <rect x="40" y="198" width="260" height="34" fill="#dcfce7" rx="2" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="55" y="220" font-size="13" fill="#22c55e" font-weight="700">107,340</text>
+        <text x="210" y="220" font-size="13" fill="#22c55e" font-weight="700" text-anchor="end">3.2 BTC</text>
+        <text x="255" y="220" font-size="10" fill="#22c55e" font-weight="700">&#8592; BEST BID</text>
+
+        <rect x="40" y="236" width="260" height="30" fill="#f0fdf4" rx="2"/>
+        <text x="55" y="256" font-size="12" fill="#22c55e" font-weight="600">107,300</text>
+        <text x="210" y="256" font-size="12" fill="#22c55e" text-anchor="end">8.7 BTC</text>
+        <text x="265" y="256" font-size="10" fill="#22c55e">BID</text>
+
+        <rect x="40" y="270" width="260" height="30" fill="#f0fdf4" rx="2"/>
+        <text x="55" y="290" font-size="12" fill="#22c55e" font-weight="600">107,250</text>
+        <text x="210" y="290" font-size="12" fill="#22c55e" text-anchor="end">12.3 BTC</text>
+        <text x="265" y="290" font-size="10" fill="#22c55e">BID</text>
+
+        <!-- Right panel: Aggression sequence -->
+        <text x="560" y="58" text-anchor="middle" font-size="11" fill="#78716c" letter-spacing="1.5">AGGRESSION SEQUENCE</text>
+
+        <!-- Step 1 -->
+        <rect x="400" y="70" width="360" height="60" fill="#f7fee7" rx="4" stroke="#a3e635" stroke-width="1"/>
+        <text x="420" y="92" font-size="11" fill="#3f6212" font-weight="700">STEP 1 — Market buy order: 1.8 BTC</text>
+        <text x="420" y="112" font-size="11" fill="#3f6212">Hits best offer @ 107,350. Fills completely.</text>
+        <text x="420" y="128" font-size="11" fill="#78716c">Aggressor: BUYER &nbsp;|&nbsp; Delta: +1.8 BTC</text>
+
+        <!-- Arrow -->
+        <line x1="580" y1="133" x2="580" y2="148" stroke="#a3e635" stroke-width="2"/>
+        <polygon points="580,152 575,143 585,143" fill="#a3e635"/>
+
+        <!-- Step 2 -->
+        <rect x="400" y="155" width="360" height="60" fill="#f7fee7" rx="4" stroke="#a3e635" stroke-width="1"/>
+        <text x="420" y="177" font-size="11" fill="#3f6212" font-weight="700">STEP 2 — Best offer now 107,400</text>
+        <text x="420" y="197" font-size="11" fill="#3f6212">Price ticked up $50. New market buy: 3.0 BTC</text>
+        <text x="420" y="213" font-size="11" fill="#78716c">Partial fill (3.0 of 5.1 BTC). Delta: +4.8 BTC</text>
+
+        <!-- Arrow -->
+        <line x1="580" y1="218" x2="580" y2="233" stroke="#a3e635" stroke-width="2"/>
+        <polygon points="580,237 575,228 585,228" fill="#a3e635"/>
+
+        <!-- Step 3 -->
+        <rect x="400" y="240" width="360" height="60" fill="#f7fee7" rx="4" stroke="#a3e635" stroke-width="1"/>
+        <text x="420" y="262" font-size="11" fill="#3f6212" font-weight="700">STEP 3 — Offer at 107,400 still has 2.1 BTC</text>
+        <text x="420" y="282" font-size="11" fill="#3f6212">Another buy sweep. Exhausts it. Price to 107,450.</text>
+        <text x="420" y="298" font-size="11" fill="#78716c">Total delta this sequence: +6.9 BTC</text>
+
+        <!-- Result box -->
+        <rect x="400" y="328" width="360" height="50" fill="#1c1917" rx="4"/>
+        <text x="580" y="350" text-anchor="middle" font-size="12" fill="#bef264" font-weight="700">RESULT: +$100 price move (107,350 &#8594; 107,450)</text>
+        <text x="580" y="368" text-anchor="middle" font-size="11" fill="#fafaf9">Caused entirely by 6.9 BTC of aggressive buying</text>
+
+        <!-- Cross arrow between panels -->
+        <line x1="310" y1="155" x2="398" y2="155" stroke="#a3e635" stroke-width="2" stroke-dasharray="5,3"/>
+        <polygon points="398,155 389,150 389,160" fill="#a3e635"/>
+        <text x="354" y="148" text-anchor="middle" font-size="10" fill="#3f6212" font-weight="700">FILLS</text>
+
+        <!-- Bottom note -->
+        <text x="400" y="420" text-anchor="middle" font-size="11" fill="#78716c" font-style="italic">Fig 1. Each aggressive buy order exhausts a limit-sell level and forces price to the next offer. No aggression = no price move.</text>
+      </svg>
+
+      <!-- SVG 2: CVD vs Price divergence -->
+      <svg viewBox="0 0 800 260" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:'JetBrains Mono',monospace;display:block;margin:16px 0">
+        <rect width="800" height="260" fill="#faf8f5"/>
+        <text x="400" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1c1917" letter-spacing="1">CVD vs PRICE — BULLISH DIVERGENCE (ABSORPTION SETUP)</text>
+
+        <!-- Time axis -->
+        <line x1="60" y1="210" x2="760" y2="210" stroke="#e7e5e4" stroke-width="1"/>
+        <text x="60" y="228" font-size="10" fill="#78716c">09:00</text>
+        <text x="225" y="228" font-size="10" fill="#78716c">10:00</text>
+        <text x="390" y="228" font-size="10" fill="#78716c">11:00</text>
+        <text x="555" y="228" font-size="10" fill="#78716c">12:00</text>
+        <text x="720" y="228" font-size="10" fill="#78716c">13:00</text>
+
+        <!-- Price line (flat to slightly rising) -->
+        <polyline points="60,110 100,107 140,105 180,108 220,106 260,103 300,101 340,104 380,100 420,98 460,96 500,95 540,94 580,92 620,90 660,88 700,85 740,82 760,80"
+          fill="none" stroke="#1c1917" stroke-width="2.5"/>
+        <text x="770" y="84" font-size="11" fill="#1c1917" font-weight="700">PRICE</text>
+        <text x="770" y="96" font-size="10" fill="#78716c">(flat/&#8593;)</text>
+
+        <!-- CVD line (falling) -->
+        <polyline points="60,120 100,128 140,138 180,148 220,158 260,164 300,170 340,175 380,178 420,182 460,185 500,186 540,188 580,189 620,190 660,191 700,192 740,193 760,193"
+          fill="none" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,3"/>
+        <text x="770" y="196" font-size="11" fill="#ef4444" font-weight="700">CVD</text>
+        <text x="770" y="208" font-size="10" fill="#78716c">(&#8595; falling)</text>
+
+        <!-- Divergence zone highlight -->
+        <rect x="380" y="45" width="380" height="175" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.4)" stroke-width="1" rx="3"/>
+        <text x="570" y="62" text-anchor="middle" font-size="11" fill="#78716c" font-weight="700" letter-spacing="1">DIVERGENCE ZONE</text>
+        <text x="570" y="77" text-anchor="middle" font-size="10" fill="#78716c">CVD &#8595; while price &#8594;/&#8593; = large passive buyers absorbing sells</text>
+
+        <!-- Labels -->
+        <text x="68" y="100" font-size="10" fill="#1c1917">107,200</text>
+        <text x="68" y="200" font-size="10" fill="#ef4444">CVD 0</text>
+
+        <!-- Interpretation arrow -->
+        <text x="140" y="248" font-size="11" fill="#78716c" font-style="italic">Fig 2. Price rising while CVD falls = aggressive sellers exist but passive buyers absorb every hit. Bullish structure.</text>
+      </svg>
+    </section>
+
+    <!-- §04 -->
+    <section id="s04">
+      <div class="section-header">
+        <span class="section-num">§04</span>
+        <div>
+          <div class="section-title">In Practice</div>
+          <div class="section-sub">How to actually use order flow — not just what it is</div>
+        </div>
+      </div>
+
+      <div class="skim">The heuristic that matters most: before entering any trade, know which side is currently aggressive — and whether the other side is absorbing or retreating.</div>
+
+      <div class="practice-cards">
+        <div class="pcard">
+          <div class="pcard-num">1</div>
+          <div class="pcard-body">
+            <div class="pcard-title">Read the tape before reading the chart</div>
+            <div class="pcard-text">Open the Time &amp; Sales and watch for one minute before touching a level. Is print size growing? Are buyers or sellers printing larger? Are there consistent 10–50 BTC market orders hitting one side? This is the ground truth. The chart is a historical summary of it.</div>
+          </div>
+        </div>
+        <div class="pcard">
+          <div class="pcard-num">2</div>
+          <div class="pcard-body">
+            <div class="pcard-title">Use CVD divergence to identify absorption</div>
+            <div class="pcard-text">If CVD is falling (aggressive sellers active) but price is not falling &mdash; or is rising &mdash; there is a large passive buyer absorbing the sells. That is not a short setup. That is a compression spring. Wait for the aggressive sellers to exhaust and price to break upward from the absorbed level.</div>
+          </div>
+        </div>
+        <div class="pcard">
+          <div class="pcard-num">3</div>
+          <div class="pcard-body">
+            <div class="pcard-title">Size your reads to the timeframe</div>
+            <div class="pcard-text">On a 1-minute timeframe, a 50 BTC aggressive buy is significant. On a 4-hour timeframe, the same 50 BTC is noise. Calibrate what counts as &ldquo;large&rdquo; to the period you are trading. Intraday scalpers watch absolute dollar volume per trade; swing traders watch daily delta cumulative flows.</div>
+          </div>
+        </div>
+        <div class="pcard">
+          <div class="pcard-num">4</div>
+          <div class="pcard-body">
+            <div class="pcard-title">Look for aggression into a key level, not away from it</div>
+            <div class="pcard-text">The most reliable order flow entries come when aggressive buyers accelerate into a level from below (they want in at any price) or when aggressive sellers pile into a rejection. Aggression away from a level after the fact is confirmation, not signal. The signal is the aggression that precedes the move.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Worked example -->
+      <p style="margin-top:24px"><strong>Worked example — BTC long setup via absorption:</strong></p>
+      <p>BTC at $107,200. CVD falling steadily for 40 minutes: &minus;3,200 BTC cumulative aggressive selling. Price: flat at $107,150&ndash;$107,250. The aggressive sellers are being fully absorbed by passive buyers at the level. Entry: wait for CVD to flatten or tick positive for the first time in the session. Market buy at $107,280 when CVD flips. Stop: $106,900 (below the absorbed zone, $350 risk). Target: $108,400 (R/R 3.2:1). Rationale: the absorption confirmed that passive buyers were committed to this level; the CVD flip signalled aggressive sellers exhausted, removed the supply pressure, and set up the path of least resistance upward.</p>
+
+      <div class="tf-note"><b>Timeframe fit:</b> Order flow aggression reads are most accurate on 1m&ndash;15m for execution timing; 1h&ndash;4h delta cumulative trends for directional bias. Don&rsquo;t apply 1m tape reads to daily-chart positions.</div>
+    </section>
+
+    <!-- §05 -->
+    <section id="s05">
+      <div class="section-header">
+        <span class="section-num">§05</span>
+        <div>
+          <div class="section-title">Live Tape</div>
+          <div class="section-sub">Order flow context on current BTC/ETH structure</div>
+        </div>
+      </div>
+
+      <div class="skim">BTC is holding above $107,000 after Wednesday&rsquo;s session saw sustained aggressive buying into the $106,800 area; CVD structure on the 1h has been constructive, with sellers unable to push price lower despite multiple attempts.</div>
+
+      <div class="tape">
+        <div class="tape-label">Live Context &mdash; BTC/USDT Perpetual &mdash; 29 May 2026 (AEST)</div>
+
+        <div class="tape-data">
+          <span class="th">Level</span><span class="th">AEST</span><span class="th">Delta</span><span class="th">Significance</span>
+          <span>107,000</span><span>00:00&ndash;06:00</span><span class="pos">+1,840 BTC</span><span>Aggressive buyers defending overnight lows</span>
+          <span>106,800</span><span>Wed 22:30</span><span class="neg">&minus;2,100 BTC</span><span>Sellers attacked; absorbed by passive buyers; price bounced $400</span>
+          <span>107,500</span><span>Thu 04:00</span><span class="pos">+980 BTC</span><span>Buyers pressed through resistance; no follow-through sell</span>
+          <span>107,200</span><span>Current</span><span class="pos">+320 BTC</span><span>Light accumulation; tape quiet pre-European session</span>
+        </div>
+
+        <p style="margin-top:16px;font-size:13px">The key read on today&rsquo;s tape: aggressive sellers tested $106,800 twice in Wednesday&rsquo;s session and failed both times to produce sustained lower prints. Each time, within 5&ndash;10 minutes, CVD flipped positive as buyers returned. That is absorption in real time. The $106,800&ndash;$107,000 band has registered over 4,200 BTC of net aggressive buying in the last 36 hours while price has held inside a $600 range. Compression is building.</p>
+
+        <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;margin-top:16px" loading="lazy"></iframe>
+
+        <div class="read"><strong>Read:</strong> The aggressive selling into $106,800 being fully absorbed over 36 hours means there is a committed passive buyer at that zone. Until that buyer is either filled or withdraws, the path of least resistance is up on any aggressive-buy catalyst.</div>
+      </div>
+    </section>
+
+    <!-- §06 -->
+    <section id="s06">
+      <div class="section-header">
+        <span class="section-num">§06</span>
+        <div>
+          <div class="section-title">Quotes</div>
+          <div class="section-sub">The voices that shaped how professionals read order flow</div>
+        </div>
+      </div>
+
+      <div class="skim">Order flow literacy separates the traders who react to price from those who anticipate it.</div>
+
+      <div class="quotes">
+        <div class="quote-block">
+          <div class="quote-text">&ldquo;The market has no obligation to tell you where it wants to go by moving price first. It tells you through the order flow &mdash; if you know how to read it.&rdquo;</div>
+          <div class="quote-attr">James Dalton &middot; <em>Mind Over Markets</em> &middot; 1993 &middot; foundational text on market profile and auction theory</div>
+        </div>
+        <div class="quote-block">
+          <div class="quote-text">&ldquo;Markets move for one reason: there is more aggressive demand at a price than passive supply, or vice versa. Everything else is narrative.&rdquo;</div>
+          <div class="quote-attr">L.A. Little &middot; <em>Trade Like the Little Guy</em> &middot; 2006</div>
+        </div>
+        <div class="quote-block">
+          <div class="quote-text">&ldquo;CVD is the fingerprint of institutional intent. Price can lie. Cumulative delta rarely does &mdash; because it is the actual aggression, not the conclusion of it.&rdquo;</div>
+          <div class="quote-attr">@credo__v &middot; X (formerly Twitter) &middot; 2024 &middot; orderflow educator</div>
+        </div>
+        <div class="quote-block">
+          <div class="quote-text">&ldquo;Watch the tape, not the tape delay. Most traders are trading a three-second-old picture of a real-time market.&rdquo;</div>
+          <div class="quote-attr">Jesse Livermore (attributed) &middot; <em>Reminiscences of a Stock Operator</em> &middot; 1923</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- §07 -->
+    <section id="s07">
+      <div class="section-header">
+        <span class="section-num">§07</span>
+        <div>
+          <div class="section-title">Common Traps</div>
+          <div class="section-sub">What kills traders who half-understand order flow</div>
+        </div>
+      </div>
+
+      <div class="skim">The biggest mistake: confusing high volume with high aggression — large volume can be entirely passive, telling you nothing about directional pressure.</div>
+
+      <div class="traps">
+        <div class="trap">
+          <div class="trap-num">TRAP 01</div>
+          <div class="trap-title">Treating volume as order flow</div>
+          <div class="trap-body">High volume means a lot of trades happened. It does not tell you the direction of aggression. A 50 BTC candle with balanced delta (+0 net) is meaningless for directional bias. Always break volume into aggressive buy volume and aggressive sell volume. Raw volume with no delta decomposition is chart noise dressed as information.</div>
+        </div>
+        <div class="trap">
+          <div class="trap-num">TRAP 02</div>
+          <div class="trap-title">Assuming aggressive buying = price going up</div>
+          <div class="trap-body">Aggressive buyers can be absorbed by large passive sellers who never let price move. This is the entire basis of how institutional sellers distribute into a retail rally. CVD can rise strongly while price fails to break higher. The missing component is the passive side. Always read delta in the context of what price is doing in response.</div>
+        </div>
+        <div class="trap">
+          <div class="trap-num">TRAP 03</div>
+          <div class="trap-title">Using CVD on the wrong timeframe</div>
+          <div class="trap-body">A 1-minute CVD spike of +200 BTC looks significant. Zoom out to 1-hour and it is a single candle in a choppy session-level mean reversion. CVD has no meaning without the context of the timeframe you are trading. Reset your CVD at the start of the relevant session (Asia, London, NY), not from some arbitrary historical point.</div>
+        </div>
+        <div class="trap">
+          <div class="trap-num">TRAP 04</div>
+          <div class="trap-title">Over-reading low-liquidity periods</div>
+          <div class="trap-body">During the Asian overnight session or Sunday pre-market, a 20 BTC market order moves price 5x further than during London open with the same nominal delta. Order flow signals during thin periods have completely different signal-to-noise ratios. What looks like institutional aggression at 03:00 AEST is often a single mid-sized retail stop hunt. Weight your reads by liquidity condition.</div>
+        </div>
+        <div class="trap anti">
+          <div class="trap-num">NOTE — NOT AS USEFUL AS MARKETED</div>
+          <div class="trap-title">Real-time order flow without execution speed</div>
+          <div class="trap-body">Many retail tools sell &ldquo;live order flow&rdquo; data. At the timeframes they display (1-second to 1-minute bars), the information is genuine but the execution infrastructure to act on it is missing. The edge from reading aggressive flow at the 1-second level requires sub-100ms execution. Without colocation or DMA, this class of order flow is interesting for context and positioning reads, not for timing individual entries to the second.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- §08 -->
+    <section id="s08">
+      <div class="section-header">
+        <span class="section-num">§08</span>
+        <div>
+          <div class="section-title">Further Reading</div>
+          <div class="section-sub">Where to build the next layer</div>
+        </div>
+      </div>
+
+      <div class="skim">Start with Dalton for the conceptual framework, then Steidlmayer for the mechanics, then go to live tape.</div>
+
+      <div class="fr-list">
+        <div class="fr-item">
+          <span class="fr-type">Book</span>
+          <div class="fr-body">
+            <div class="fr-title">Mind Over Markets &mdash; James Dalton</div>
+            <div class="fr-desc">The foundational text on auction market theory and order flow as a framework. Dalton articulated the idea that markets are auctions seeking fair value and that order flow is the mechanism by which that value is discovered. Chapter 5 on volume and trade facilitation is the entry point for understanding aggressive vs passive flow.</div>
+          </div>
+        </div>
+        <div class="fr-item">
+          <span class="fr-type">Book</span>
+          <div class="fr-body">
+            <div class="fr-title">Markets in Profile &mdash; James Dalton &amp; Eric Jones</div>
+            <div class="fr-desc">The update to Mind Over Markets, covering electronic markets. The section on &ldquo;market-generated information&rdquo; builds directly on order flow concepts and explains how to read auction behaviour in real-time tape rather than as a post-hoc chart analysis.</div>
+          </div>
+        </div>
+        <div class="fr-item">
+          <span class="fr-type">Article</span>
+          <div class="fr-body">
+            <div class="fr-title">Lee, C.M.C. &amp; Ready, M.J. &mdash; &ldquo;Inferring Trade Direction from Intraday Data&rdquo;</div>
+            <div class="fr-desc">Journal of Finance, 1991. The seminal academic paper on the Lee-Ready algorithm for trade classification. Not light reading, but understanding the mechanics of how trades are classified as buyer- or seller-initiated is essential for knowing where CVD data comes from and when it can be wrong.</div>
+          </div>
+        </div>
+        <div class="fr-item">
+          <span class="fr-type">Thread</span>
+          <div class="fr-body">
+            <div class="fr-title">@credo__v — Order Flow Primer Thread</div>
+            <div class="fr-desc">A pinned thread on X that walks through the practical mechanics of reading order flow on crypto perpetuals: trade classification, CVD construction, delta divergence setups, and how to use Bookmap alongside raw tape. Crypto-native framing rather than equities-era terminology.</div>
+          </div>
+        </div>
+        <div class="fr-item">
+          <span class="fr-type">Guide</span>
+          <div class="fr-body">
+            <div class="fr-title">Exocharts / Velo Data Documentation</div>
+            <div class="fr-desc">The platforms most actively used for crypto order flow analysis. Exocharts&rsquo; documentation covers cumulative delta, footprint charts, and bid-ask imbalance construction in detail. Velo covers institutional-grade CVD aggregated across spot and perpetuals simultaneously &mdash; the multi-venue view that catches cross-exchange flow.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+      <p>Sources: Lee &amp; Ready (1991) Journal of Finance; Dalton, Mind Over Markets (1993); Dalton &amp; Jones, Markets in Profile (2007); Exocharts platform documentation; Velo data platform documentation; @credo__v order flow primer thread (X, 2024)</p>
+      <p style="margin-top:10px">Alpha &middot; Issue #35 &middot; 29 May 2026 &middot; Sydney &middot; NGM Capital</p>
+      <p style="margin-top:6px;font-style:italic;color:#78716c">Education, not advice. Trade your own system.</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
