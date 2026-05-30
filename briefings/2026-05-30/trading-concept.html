@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Volume Spread Analysis (VSA) | May 30, 2026</title>
+<meta property="og:description" content="Alpha — Volume Spread Analysis (VSA) | May 30, 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Volume Spread Analysis</h1>
+  <div class="meta">
+    <span>Saturday · 30 May 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #36</span>
+    <span class="pill">11-min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Volume Spread Analysis (VSA) reads every bar as a contest between effort — the volume — and result — the bar's spread and where it closes; when the two disagree, professional money is usually doing the opposite of what the candle implies.</strong> The edge is not the catalogue of pattern names — it's a single question asked at a level that matters: <em>did this volume produce the move it should have?</em> When heavy effort buys almost no result, supply or demand is being absorbed, and the obvious read is the wrong one.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Effort vs result · the original order-flow read</div>
+    </div>
+  </div>
+
+  <div class="skim">VSA reads each bar as effort (volume) against result (spread + close position), exposing whether professional money is supporting the move or quietly opposing it.</div>
+
+  <p>VSA is the bar-chart ancestor of everything in modern order flow. Long before footprints, CVD, or liquidation heatmaps, <strong>Richard Wyckoff</strong> codified the idea that price is the <em>result</em> of effort, and effort is measured by <strong>volume</strong>. Tape reader <strong>Tom Williams</strong> — a former syndicate trader — systematised Wyckoff's third law into the named framework now called VSA, and <strong>Anna Coulling</strong> carried it into the modern retail era as Volume Price Analysis. Same engine throughout: read each bar's volume against the size of the move it produced and where it closed.</p>
+
+  <p>The position to hold: <strong>volume without a proportional result is the signal, not the move itself.</strong> A wide-range down bar on huge volume that closes back near its high did not just fall — it fell, met a wall of buying, and got pushed back up. The candle is red; the message is bullish. VSA exists to stop you reading the colour and start reading the <em>relationship</em> between effort and result. That relationship is invisible on a price-only chart and approximated — often expensively — by the order-flow tools that came after it.</p>
+
+  <p>Three numbers carry the whole method, and you already have all three on any chart: the bar's <strong>volume</strong> (how much effort), its <strong>spread</strong> — high minus low (how much room the move was given), and its <strong>close position</strong> within that range (who finished in control). VSA is just the disciplined, repeatable reading of those three together, bar after bar, in the context of the trend they sit inside.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>EFFORT</b><span>The volume traded on a bar — the energy spent</span></span>
+    <span class="pill-term"><b>RESULT</b><span>The price spread and the move it produced</span></span>
+    <span class="pill-term"><b>SPREAD</b><span>Bar high minus bar low — the range given to the move</span></span>
+    <span class="pill-term"><b>CLOSE</b><span>Where price finished in the range — who won the bar</span></span>
+    <span class="pill-term"><b>SMART MONEY</b><span>Large operators whose activity leaves a volume footprint</span></span>
+    <span class="pill-term"><b>HARMONY</b><span>Effort and result agree — the trend is healthy</span></span>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Volume is the effort; the bar's spread and close are the result. When effort is large and result is small, someone is absorbing — fade the obvious read, not the move.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Three numbers per bar · harmony vs divergence · the signal taxonomy</div>
+    </div>
+  </div>
+
+  <div class="skim">For every bar, read three things — volume, spread, and where the close sits in the range — then ask whether the effort produced the result it should have.</div>
+
+  <p>Start with the close-position calculation, because it's the part most traders skip. The colour of a candle tells you open-versus-close; VSA cares about <strong>close-versus-range</strong>. A close at the top of the bar means buyers finished in control regardless of whether the bar is red or green; a close at the bottom means sellers did. Quantify it and the readings stop being subjective.</p>
+
+  <div class="formula">
+<b>The three inputs:</b>
+Spread        = High − Low
+Volume        = effort spent on the bar
+Close pos.    = (Close − Low) / (High − Low)
+              → 1.0 = closed at the high (buyers won)
+              → 0.0 = closed at the low  (sellers won)
+
+<b>Harmony (trend continues):</b>
+wide spread + high volume + close at the extreme
+→ effort produced result — the move is real, expect continuation
+
+<b>Divergence (the signal):</b>
+high volume + narrow spread, OR close against the move
+→ effort spent, no result — supply/demand is being absorbed
+    <div class="note">Note: "high" and "low" volume are always relative — compare a bar to the recent average (say a 20-bar volume mean), never to an absolute number. A 150k-BTC daily bar is heavy in one regime and average in another. Context sets the threshold; there is no fixed line.</div>
+  </div>
+
+  <p>Everything else in VSA is a named instance of harmony or divergence at a particular place in the trend. The taxonomy below is worth knowing — but treat the names as shorthand for the underlying effort-vs-result physics, not as a checklist of magic patterns. The same bar means opposite things depending on whether it prints into a markup, a markdown, or a range.</p>
+
+  <div style="overflow-x:auto">
+  <table class="cmp">
+    <tr><th>VSA signal</th><th>Volume · spread · close</th><th>What it means</th></tr>
+    <tr><td>Selling climax</td><td>Ultra-high vol · very wide down spread · close mid/high</td><td>Panic selling absorbed by strong hands — supply exhausting near a low</td></tr>
+    <tr><td>Stopping volume</td><td>High vol · down bar · close back near the high</td><td>Large buying halts a fall — a brake applied under the market</td></tr>
+    <tr><td>No demand</td><td>Low vol · narrow up spread · close mid/low</td><td>An up-bar professionals aren't supporting — rally with no fuel</td></tr>
+    <tr><td>No supply</td><td>Low vol · narrow down spread · close mid/high</td><td>A down-bar with no selling pressure left — sellers absent</td></tr>
+    <tr><td>Upthrust</td><td>High vol · wide spread · pokes a high, close at/near low</td><td>A failed breakout that traps buyers — distribution into strength</td></tr>
+    <tr><td>Test</td><td>Low vol · dips into prior supply · close back up</td><td>Smart money checking for remaining sellers — clear test = go-ahead</td></tr>
+  </table>
+  </div>
+
+  <p>The <strong>test</strong> row is where VSA becomes tradeable rather than descriptive. A stopping-volume or selling-climax bar is a <em>candidate</em> bottom, never a confirmation — supply can reload. The confirmation is the test that follows: a later down-bar on conspicuously <strong>low</strong> volume that dips toward the climax low and closes back up. Low effort on the retest means the sellers are gone. That sequence — climactic effort, then a low-volume test that holds — is the spine of how the method is actually used, and it's exactly the structure BTC is flirting with on the current daily (§05).</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Two diagrams — harmony vs divergence, then the bar anatomy</div>
+    </div>
+  </div>
+
+  <div class="skim">The first diagram shows effort meeting result (harmony) flipping to effort without result (divergence) at a low; the second decodes the three signature bars.</div>
+
+  <!-- SVG 1 — Effort vs Result -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Effort vs result diagram — price panel above a volume panel, harmony on the markdown flipping to divergence at the low">
+
+      <defs>
+        <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a3e635" stop-opacity="0.5"/>
+          <stop offset="1" stop-color="#a3e635" stop-opacity="0.08"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Title -->
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Effort vs Result</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">HARMONY ON THE WAY DOWN · DIVERGENCE AT THE LOW</text>
+
+      <!-- ── PRICE PANEL (y 60-250) ── -->
+      <text x="36" y="72" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">PRICE</text>
+      <line x1="60" y1="70" x2="60" y2="250" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="250" x2="760" y2="250" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="110" x2="760" y2="110" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="150" x2="760" y2="150" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+      <line x1="60" y1="190" x2="760" y2="190" stroke="#e7e5e4" stroke-dasharray="3,4"/>
+
+      <!-- Markdown: wide down candles (red) — effort and result in harmony -->
+      <!-- bar1 -->
+      <line x1="100" y1="92" x2="100" y2="150" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="93" y="100" width="14" height="42" fill="#ef4444"/>
+      <!-- bar2 -->
+      <line x1="150" y1="118" x2="150" y2="178" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="143" y="128" width="14" height="44" fill="#ef4444"/>
+      <!-- bar3 -->
+      <line x1="200" y1="150" x2="200" y2="206" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="193" y="158" width="14" height="42" fill="#ef4444"/>
+      <!-- bar4 (widest, climactic) -->
+      <line x1="250" y1="172" x2="250" y2="236" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="243" y="182" width="14" height="48" fill="#ef4444"/>
+
+      <!-- Divergence bars at the low: wide range, but close back UP (off the low) -->
+      <!-- bar5 — probes new low, closes mid (lower wick) -->
+      <line x1="300" y1="190" x2="300" y2="240" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="293" y="198" width="14" height="22" fill="#ef4444"/>
+      <!-- bar6 — new marginal low, big lower wick, closes back up = no result -->
+      <line x1="350" y1="196" x2="350" y2="244" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="343" y="200" width="14" height="18" fill="#22c55e"/>
+      <!-- test bar — low volume, holds the low, closes up -->
+      <line x1="400" y1="192" x2="400" y2="232" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="393" y="198" width="14" height="20" fill="#22c55e"/>
+      <!-- recovery -->
+      <line x1="450" y1="160" x2="450" y2="206" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="443" y="168" width="14" height="34" fill="#22c55e"/>
+      <line x1="500" y1="132" x2="500" y2="180" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="493" y="140" width="14" height="36" fill="#22c55e"/>
+      <line x1="550" y1="108" x2="550" y2="156" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="543" y="116" width="14" height="36" fill="#22c55e"/>
+      <line x1="600" y1="96" x2="600" y2="138" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="593" y="104" width="14" height="30" fill="#22c55e"/>
+
+      <!-- low reference line -->
+      <line x1="280" y1="240" x2="660" y2="240" stroke="#78716c" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <text x="664" y="243" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">low held</text>
+
+      <!-- Divergence zone highlight (price) -->
+      <rect x="278" y="70" width="148" height="180" fill="#fbbf24" opacity="0.06" rx="3"/>
+      <rect x="278" y="70" width="148" height="180" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4" rx="3"/>
+
+      <!-- ── VOLUME PANEL (y 285-430) ── -->
+      <text x="36" y="297" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">VOL</text>
+      <line x1="60" y1="285" x2="60" y2="430" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="60" y1="430" x2="760" y2="430" stroke="#1c1917" stroke-width="1.5"/>
+      <!-- volume average line -->
+      <line x1="60" y1="365" x2="760" y2="365" stroke="#78716c" stroke-width="1" stroke-dasharray="6,4"/>
+      <text x="664" y="362" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">avg vol</text>
+
+      <!-- volume bars: tall on markdown (harmony), still tall on divergence (effort), then low on test/recovery -->
+      <rect x="93" y="330" width="14" height="100" fill="#ef4444" opacity="0.55"/>
+      <rect x="143" y="320" width="14" height="110" fill="#ef4444" opacity="0.55"/>
+      <rect x="193" y="335" width="14" height="95" fill="#ef4444" opacity="0.55"/>
+      <rect x="243" y="300" width="14" height="130" fill="#ef4444" opacity="0.7"/>
+      <!-- divergence: high vol, but price made no downside result -->
+      <rect x="293" y="312" width="14" height="118" fill="#fbbf24" opacity="0.8"/>
+      <rect x="343" y="318" width="14" height="112" fill="#fbbf24" opacity="0.8"/>
+      <!-- test: LOW volume holding the low -->
+      <rect x="393" y="398" width="14" height="32" fill="#22c55e" opacity="0.6"/>
+      <rect x="443" y="378" width="14" height="52" fill="#22c55e" opacity="0.5"/>
+      <rect x="493" y="386" width="14" height="44" fill="#22c55e" opacity="0.5"/>
+      <rect x="543" y="392" width="14" height="38" fill="#22c55e" opacity="0.5"/>
+      <rect x="593" y="400" width="14" height="30" fill="#22c55e" opacity="0.5"/>
+
+      <!-- Divergence zone highlight (volume) -->
+      <rect x="278" y="285" width="148" height="145" fill="#fbbf24" opacity="0.06" rx="3"/>
+
+      <!-- Annotations -->
+      <text x="175" y="88" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#ef4444" font-weight="700">HARMONY</text>
+      <text x="175" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">big vol → big down result</text>
+
+      <text x="352" y="300" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78350f" font-weight="700">DIVERGENCE</text>
+      <text x="352" y="452" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#78350f">big vol → NO down result = absorption</text>
+
+      <text x="500" y="452" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212">low-vol test holds → demand confirmed</text>
+
+    </svg>
+    <div class="svg-caption">Left: a markdown where heavy volume produces wide down bars — effort and result in <b>harmony</b>, trend healthy. Centre (amber): bars on equally heavy volume that fail to extend the decline and close back off the low — effort with <b>no result</b>, the footprint of absorption. Right: a low-volume <b>test</b> that holds the low confirms demand has taken over.</div>
+  </div>
+
+  <!-- SVG 2 — VSA bar anatomy -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Anatomy of three signature VSA bars — stopping volume, no demand, no supply">
+
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display,serif" font-size="19" fill="#1c1917">Three Bars Worth Memorising</text>
+      <text x="400" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c" letter-spacing="1">SAME THREE INPUTS · OPPOSITE MEANINGS</text>
+
+      <!-- ===== Bar A: Stopping / climactic volume ===== -->
+      <text x="160" y="74" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">STOPPING VOLUME</text>
+      <!-- price bar: wide range, down, close near high -->
+      <line x1="160" y1="92" x2="160" y2="230" stroke="#1c1917" stroke-width="1.5"/>
+      <rect x="148" y="98" width="24" height="40" fill="#22c55e"/>
+      <!-- close marker near high -->
+      <line x1="172" y1="106" x2="188" y2="106" stroke="#3f6212" stroke-width="2.5"/>
+      <text x="196" y="109" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212">close</text>
+      <!-- range bracket -->
+      <text x="120" y="96" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">high</text>
+      <text x="120" y="233" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">low</text>
+      <!-- volume bar (huge) -->
+      <rect x="140" y="262" width="40" height="96" fill="#22c55e" opacity="0.55"/>
+      <line x1="120" y1="300" x2="200" y2="300" stroke="#78716c" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="160" y="372" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#44403c">wide · huge vol · close↑</text>
+
+      <!-- ===== Bar B: No demand ===== -->
+      <text x="400" y="74" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#b45309" font-weight="700">NO DEMAND</text>
+      <!-- price bar: narrow up, low close -->
+      <line x1="400" y1="150" x2="400" y2="205" stroke="#1c1917" stroke-width="1.5"/>
+      <rect x="388" y="170" width="24" height="22" fill="#22c55e"/>
+      <line x1="412" y1="189" x2="428" y2="189" stroke="#b45309" stroke-width="2.5"/>
+      <text x="436" y="192" font-family="JetBrains Mono,monospace" font-size="9" fill="#b45309">close</text>
+      <text x="360" y="154" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">narrow</text>
+      <!-- volume bar (small) -->
+      <rect x="380" y="328" width="40" height="30" fill="#fbbf24" opacity="0.7"/>
+      <line x1="360" y1="300" x2="440" y2="300" stroke="#78716c" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="400" y="372" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#44403c">narrow up · low vol · close↓</text>
+
+      <!-- ===== Bar C: No supply ===== -->
+      <text x="640" y="74" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3f6212" font-weight="700">NO SUPPLY</text>
+      <line x1="640" y1="150" x2="640" y2="205" stroke="#1c1917" stroke-width="1.5"/>
+      <rect x="628" y="163" width="24" height="22" fill="#ef4444"/>
+      <line x1="652" y1="166" x2="668" y2="166" stroke="#3f6212" stroke-width="2.5"/>
+      <text x="676" y="169" font-family="JetBrains Mono,monospace" font-size="9" fill="#3f6212">close</text>
+      <text x="600" y="154" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">narrow</text>
+      <!-- volume bar (small) -->
+      <rect x="620" y="330" width="40" height="28" fill="#a3e635" opacity="0.6"/>
+      <line x1="600" y1="300" x2="680" y2="300" stroke="#78716c" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="640" y="372" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#44403c">narrow down · low vol · close↑</text>
+
+      <!-- divider + avg vol label -->
+      <text x="64" y="303" font-family="JetBrains Mono,monospace" font-size="9" fill="#78716c">avg</text>
+      <line x1="248" y1="60" x2="248" y2="358" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="520" y1="60" x2="520" y2="358" stroke="#e7e5e4" stroke-width="1"/>
+    </svg>
+    <div class="svg-caption">The same three inputs — spread, volume, close position — read three ways. <b>Stopping volume</b>: a wide down-move on huge volume that closes near its high (buyers absorbing). <b>No demand</b>: a feeble up-bar on low volume closing low (no professional support). <b>No supply</b>: a quiet down-bar on low volume closing up (sellers gone). Volume bars are relative to the dashed average.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Context · the level · the test · a worked BTC sequence</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: a VSA bar is meaningless in isolation — it only counts at a level, in the right trend context, and confirmed by what the next bar does.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Context Decides the Meaning</h4>
+        <p>The identical bar is bullish in one place and bearish in another. A no-demand bar only matters in an up-move running into resistance; stopping volume only matters after a sustained decline. Always read the bar relative to the trend it sits inside — never as a free-floating pattern.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Anchor to a Level</h4>
+        <p>An effort/result divergence at a random price is noise. The same divergence at a prior swing low, a value-area edge, a VWAP, or a liquidation cluster carries weight. The level supplies the structural reason to care; the volume read supplies the timing. Demand both.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Wait for the Test</h4>
+        <p>Climactic or stopping volume is a candidate, not a confirmation. The trade is the <strong>test</strong> that follows: a low-volume bar that revisits the extreme and refuses to extend. Low effort on the retest is the market telling you the opposing side is gone. No clean test, no entry.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Bias High, Trigger Low</h4>
+        <p>Set the effort/result bias on the daily or 4h — that's where institutional bars are honest. Drop to 1h/15m for the test and the entry trigger. A lower-timeframe VSA signal that fights the higher-timeframe effort balance is a scalp at best, never a position.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Daily, The Setup Forming Now (illustrative, not advice)</h5>
+    <div style="overflow-x:auto">
+    <table>
+      <tr><td>Context</td><td>BTC in a clean daily markdown from the <strong>$82,829</strong> high (6 May) — supply in control, price below the 10/20/50-day SMAs.</td></tr>
+      <tr><td>Climactic effort</td><td>28 May prints the leg's heaviest volume — <strong>~179k BTC</strong> (≈ +46% vs the 20-day average ~123k) on a wide down bar (spread ≈ $2,009). Big effort, big down result — still harmony.</td></tr>
+      <tr><td>Divergence bar</td><td>29 May: comparable effort (<strong>~146k BTC</strong>) but the result collapses — net −0.22% ($73,591 → $73,428), a marginal new low at <strong>$72,436</strong> rejected and closed ~$992 off the low. Effort without downside result.</td></tr>
+      <tr><td>What to wait for</td><td>The <strong>test</strong>: a down-bar on visibly lower volume that holds above $72,436. Then a reclaim of the 28 May high ($74,565) / 10-day SMA ($75,516) confirms demand.</td></tr>
+      <tr><td>Hypothetical entry</td><td>Long on a confirmed low-volume test holding the low ≈ <strong>$73,800</strong>.</td></tr>
+      <tr><td>Stop</td><td>Below the absorption low: <strong>$72,000</strong> (≈ −2.4%). A high-volume close under $72,436 = the stopping action failed.</td></tr>
+      <tr><td>Targets</td><td>T1 the 20-day SMA / VWAP zone ≈ $77,200 (R ≈ 1.9); T2 the $78,300 supply shelf (R ≈ 2.5).</td></tr>
+      <tr><td>Why it's counter-trend</td><td>This fights the daily downtrend — size small, the test is mandatory, and one good entry doesn't make it a reversal. Bias stays down until $78k+ reclaims.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <p class="tf-note"><b>Timeframe fit:</b> daily / 4h for the effort-vs-result read and bias; 1h–15m for the test and entry trigger. Always benchmark volume against a 20-bar average on the same timeframe — "high" and "low" only exist relative to the recent regime.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC daily · the 26–29 May markdown and its effort/result divergence</div>
+    </div>
+  </div>
+
+  <div class="skim">On BTC's current daily, effort and result were in harmony all the way down — until 29 May, when heavy volume bought almost no further downside. Candidate stopping action, not yet confirmed.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 1D · as of 30 May 2026</div>
+    <h4>Effort Stops Producing Result at $72.4K</h4>
+
+    <p>The markdown off the <strong>$82,829</strong> high (6 May) was textbook harmony. Through 26–28 May, every down day carried heavy volume <em>and</em> wide downside spread — effort and result agreeing, supply firmly in control: 26 May fell to a $75,905 close on ~165k BTC, 27 May to $74,418 on ~145k, and 28 May printed the leg's climactic effort — <strong>~179k BTC</strong>, the single heaviest day of the decline (≈ +46% above the ~123k 20-day average), on a wide $74,565→$72,556 range.</p>
+
+    <p>Then the relationship broke. <strong>29 May</strong> brought comparable effort — <strong>~146k BTC</strong>, still above average — but the downside result vanished. Price poked a marginal new low at <strong>$72,436</strong>, was rejected, and closed at <strong>$73,428</strong>: a net move of <strong>−0.22%</strong> on the day and roughly <strong>$992 off the low</strong>. Heavy effort, no result — supply being absorbed at the lows. That is the VSA signature, printed on real tape you can verify candle by candle.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Daily bars close</td><td>00:00 UTC = 10:00 Sydney (AEST)</td></tr>
+        <tr><td>26 May (harmony)</td><td>C $75,905 · vol ~165k BTC · wide down</td></tr>
+        <tr><td>28 May (climactic)</td><td>range $74,565→$72,556 · vol ~179k BTC (leg high)</td></tr>
+        <tr><td>29 May (divergence)</td><td>low $72,436 · close $73,428 · net −0.22% · vol ~146k</td></tr>
+        <tr><td>20-day avg volume</td><td>~123k BTC (29 May ≈ +19%, 28 May ≈ +46%)</td></tr>
+        <tr><td>Price now (30 May)</td><td>~$73,692 · holding above $72,436</td></tr>
+        <tr><td>Funding (OI-wtd)</td><td>+0.00072% · 7-day percentile 0.6 — not crowded long</td></tr>
+        <tr><td>Overhead short liqs</td><td>cluster ~$74,320 (+0.85%, ~$127M) — squeeze fuel on reclaim</td></tr>
+        <tr><td>Confirmation needed</td><td>low-vol test holding $72,436, then reclaim $74,565 / $75,516</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>The confluence is honest, not hype. Funding sits at the <strong>bottom of its 7-day range</strong> — this low was not made by over-leveraged longs, so it is less likely to be a leverage trap. A short-liquidation cluster rests just overhead near <strong>$74,320</strong>: if the absorption is real and price reclaims, those stops become fuel. But none of it is confirmed — the daily is still below every major moving average, and a heavy-volume break of $72,436 would say supply simply paused to reload. <strong>Watch the next two daily closes for the test.</strong></p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      When effort stays heavy but the downside result disappears at a level, the path of least resistance is quietly changing hands — but VSA earns its keep on the <em>test</em>, not the climax. No low-volume hold of $72,436, no trade.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">From Wyckoff's law to the modern crypto tape</div>
+    </div>
+  </div>
+
+  <div class="skim">The lineage runs unbroken — a century-old law, its modern textbook formulation, and the crypto-native traders reading the same effort/result physics on a faster tape.</div>
+
+  <div class="quote">
+    <p>"It takes Effort, in the form of Volume, to drive Price upward."</p>
+    <div class="attr"><b>Bruce Fraser</b> · stating Wyckoff's Third Law (Effort vs Result) · StockCharts · 2015 · <a href="https://stockcharts.com/articles/wyckoff/2015/12/the-laws-of-wyckoff.html">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Volume and price are the ONLY leading indicators of future market activity."</p>
+    <div class="attr"><b>Anna Coulling</b> · <em>A Complete Guide to Volume Price Analysis</em> · <a href="https://www.annacoulling.com/a-complete-guide-to-volume-price-analysis-by-anna-coulling/">annacoulling.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"[Stopping volume is] a dramatic increase in volume that stops the market from falling further."</p>
+    <div class="attr"><b>Galen Woods</b> · Trading Setups Review · <a href="https://www.tradingsetupsreview.com/stopping-volume-volume-spread-analysis-vsa/">on stopping volume</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"CVD is most interesting and relevant when some sort of divergence is visible."</p>
+    <div class="attr"><b>@CryptoCred</b> · X · Nov 2023 · the crypto-tape restatement of effort vs result · <a href="https://x.com/CryptoCred/status/1727996775930139028">thread</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Five ways traders misread the bar</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: trading a VSA bar in isolation — without a level, the right context, and a confirming test, the named patterns are just decoration.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Trading the Signal, Not the Context</h5>
+      <p>"No demand" inside a strong markup is meaningless; stopping volume mid-trend with no level under it is noise. A VSA bar is only information relative to where it prints. Strip the trend and the level away and you are pattern-matching candles — exactly the habit VSA is supposed to cure.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Reading the Colour Instead of the Close</h5>
+      <p>A wide red bar that closes back near its high is <strong>strength</strong> — buyers absorbed the sell-off. A green bar that closes near its low is <strong>weakness</strong>. Traders who react to candle colour rather than close-within-range get the message exactly backwards at the most important bars.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Assuming High Volume = Reversal</h5>
+      <p>High volume with a wide spread and a close at the extreme is harmony — it confirms the move, it doesn't oppose it. Heavy effort is only a warning when the <em>result</em> fails to match it. Selling everything because "volume spiked" fades plenty of perfectly healthy trends.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Trusting Dirty Volume Data</h5>
+      <p>Crypto volume is fragmented across venues and laced with wash trades and derivatives churn. A single-exchange volume bar can mislead badly. Benchmark against aggregated spot volume, and remember the effort number is only as honest as the feed producing it — VSA on bad volume is astrology.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: The "Smart Money Footprint" Mythology</h5>
+      <p>Half the VSA marketing — "see exactly what the institutions are doing" — is selling certainty that isn't there. The named patterns are subjective and easy to spot only in hindsight; rigorous back-tests rarely show a clean edge from the labels alone. What survives is the underlying physics — effort vs result at a level, confirmed by a test — not the pattern zoo or the mind-reading claims. Treat VSA as a lens that sharpens a thesis, not a system that generates one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Five verified sources — from Wyckoff's law to the signal taxonomy</div>
+    </div>
+  </div>
+
+  <div class="skim">Five sources fetched for this issue — the founding law, the full VSA signal set, the stopping-volume deep dive, the order-flow lineage, and the modern book.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://stockcharts.com/articles/wyckoff/2015/12/the-laws-of-wyckoff.html">StockCharts — The Laws of Wyckoff (Bruce Fraser)</a>
+        <span>The cleanest statement of Wyckoff's three laws, with Effort vs Result explained as the engine under VSA. Start here for the lineage and the original logic.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.thinkcapital.com/volume-spread-analysis-vsa-trading-strategy/">ThinkCapital — Volume Spread Analysis: A Complete Guide</a>
+        <span>The full signal taxonomy in one place — stopping volume, no demand, no supply, buying/selling climax, upthrust, test — each defined by its volume, spread, and close. The reference for §02's table.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.tradingsetupsreview.com/stopping-volume-volume-spread-analysis-vsa/">Trading Setups Review — What Is Stopping Volume? (Galen Woods)</a>
+        <span>A focused deep dive on the exact bar BTC is flirting with on the daily — what defines stopping volume, how to confirm it, and the honest caveat that "this formation is not perfect."</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Platform</div>
+      <div class="fr-body">
+        <a href="https://atas.net/volume-analysis/basics-of-volume-analysis/vertical-volume-analysis/">ATAS — Vertical Volume Analysis: Wyckoff & VSA</a>
+        <span>Frames VSA as "a simplified version of the Wyckoff method" built on bar volume, spread, and close — and bridges it to modern order-flow tooling (absorption, spring, upthrust). Good for connecting VSA to footprint-era analytics.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.annacoulling.com/a-complete-guide-to-volume-price-analysis-by-anna-coulling/">Anna Coulling — A Complete Guide to Volume Price Analysis</a>
+        <span>The modern retail bible for reading volume against price. "Read the book then read the market" — the most accessible full treatment of effort vs result if you want one canonical text.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://stockcharts.com/articles/wyckoff/2015/12/the-laws-of-wyckoff.html">StockCharts · The Laws of Wyckoff · 2015</a>
+    <a href="https://www.thinkcapital.com/volume-spread-analysis-vsa-trading-strategy/">ThinkCapital · VSA Complete Guide</a>
+    <a href="https://www.tradingsetupsreview.com/stopping-volume-volume-spread-analysis-vsa/">Trading Setups Review · Stopping Volume</a>
+    <a href="https://atas.net/volume-analysis/basics-of-volume-analysis/vertical-volume-analysis/">ATAS · Vertical Volume Analysis</a>
+    <a href="https://www.annacoulling.com/a-complete-guide-to-volume-price-analysis-by-anna-coulling/">Anna Coulling · Volume Price Analysis</a>
+    <a href="https://x.com/CryptoCred/status/1727996775930139028">@CryptoCred · X · Nov 2023</a>
+    <a href="https://www.coinglass.com/tv/Binance_BTCUSDT">Coinglass · BTC derivatives (funding · OI · liq map)</a>
+    <span>BTC daily OHLCV &amp; volume: Binance futures via CoinGecko, retrieved 30 May 2026.</span>
+  </div>
+  <div>Alpha · Issue #36 · 30 May 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system. The BTC worked example is an illustrative reading of real tape, not a recommendation or a prediction.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
