@@ -107,7 +107,7 @@ After all data is collected, write the full HTML following the May 15 template.
 
 ### HTML Structure (in order)
 1. `<head>` with Inter + JetBrains Mono Google Fonts preconnect/link
-2. Full `<style>` block (copy from 2026-05-15 template)
+2. Full `<style>` block (already in template.html — do not re-derive)
 3. `<body>` → directly `<div class="page-wrap">` (NO back-nav bar)
 4. `.header` with title "The Morning Edge ☀️", date, reading time, conviction badge
 5. `.catalyst-banner` (if major event day) — dark red, single line

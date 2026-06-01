@@ -361,7 +361,11 @@ Minimum 4 stories. If fewer than 4 genuinely novel stories in past 24 hours, bac
 
 ## Step 3: Publish to GitHub Briefings Archive
 
-Run this Python script (standard library only — no pip required):
+**On Windows (local scheduled-task run):** Do NOT run the script below — publishing is handled by
+the wrapper, which runs `generate-index.js` then `git push origin main` after this skill completes.
+Running both would double-publish (two commits, two deploys).
+
+**On cloud/Linux only** (no wrapper git push available), run this Python script (stdlib only):
 
 ```python
 python3 << 'PYEOF'
@@ -371,10 +375,7 @@ from datetime import date
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 TODAY = date.today().strftime('%Y-%m-%d')
 BRIEFING  = 'legal-brief'
-if os.name == 'nt':
-    HTML_PATH = rf'C:\Users\Tony\Documents\briefings-site\briefings\{TODAY}\legal-brief.html'
-else:
-    HTML_PATH = f'/tmp/{BRIEFING}-{TODAY}.html'
+HTML_PATH = f'/tmp/{BRIEFING}-{TODAY}.html'
 
 if not GITHUB_TOKEN:
     print("⚠️  GITHUB_TOKEN not set — skipping GitHub publish.")
