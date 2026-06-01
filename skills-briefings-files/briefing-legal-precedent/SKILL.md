@@ -34,13 +34,23 @@ today, drop it.
 
 ## Step 0: Deduplication Check (MANDATORY — DO NOT SKIP)
 
-**On Windows (local):** Read the 3 most recent `legal-brief.html` files from
-`C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\legal-brief.html` (the **site repo**, not the Productivity folder).
-Use Glob to list `briefings/2026-*/legal-brief.html`, take the 3 newest before today, and read each one.
-Extract every story headline (`<h2 class="story-title">`) into a list before drafting.
+Build an exclusion list of story headlines from the last 3 issues. **Do NOT read prior HTML files in
+full — that is expensive and unnecessary.** Instead, grep just the headline lines:
 
-**On cloud/Linux:** Fetch the live site index — `https://ngmicapital.github.io/GM-Research/` — and read
-the most recent 2-3 legal-brief entries to build the same exclusion list.
+**On Windows (local):**
+```powershell
+Select-String -Path "C:\Users\Tony\Documents\briefings-site\briefings\*\legal-brief.html" `
+  -Pattern 'class="story-title"' -SimpleMatch |
+  Sort-Object Filename | Select-Object -Last 30 |
+  ForEach-Object { $_.Line -replace '.*?>(.*?)<.*','$1' -replace '<[^>]+>','' -replace '^\s+','' }
+```
+
+**On cloud/Linux:**
+```bash
+grep -h 'class="story-title"' briefings/*/legal-brief.html | tail -30 | sed 's/<[^>]*>//g' | sed 's/^ *//'
+```
+
+Both give you the `<h2 class="story-title">` text from the last ~30 story cards (≈ 3 issues) in seconds.
 
 **Rules:**
 1. **No repeats.** If a story headline appears in any of the past 3 briefs, it is excluded from today's brief.
@@ -128,13 +138,18 @@ Before writing, explicitly confirm: are there any claims that came only from a s
 
 ## Step 2: Build the HTML Brief
 
+**Start with the template.** Read `skills-briefings-files/briefing-legal-precedent/template.html`.
+It contains the verbatim CSS (dark-navy vars, Charter font, sidebar drawer, all component classes).
+Replace `{{DATE}}`, `{{STORY_COUNT}}` tokens, then fill the story-card stubs and persistent sections.
+**Do NOT reconstruct the design from scratch** — the template is canonical.
+
 Save to:
 - **Windows (local):** `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\legal-brief.html`
 - **Cloud/Linux:** `/tmp/legal-brief-YYYY-MM-DD.html`
 
-### Complete Design System
+### Design System reference (all in template.html — key values only)
 
-All CSS must be inline (single self-contained file). Use exactly these CSS variables:
+CSS variables are in the template. Key values to know when writing analysis/callouts:
 
 ```
 Dark mode (default):

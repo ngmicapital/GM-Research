@@ -154,7 +154,10 @@ Include so `generate-index.js` extracts headline + preview:
 ```
 
 ### Match the canonical template
-Reference `C:\Users\Tony\Documents\briefings-site\briefings\2026-04-24\trading-concept.html` (Issue #2 — CVD) as the canonical template — same CSS variables, section headers, skim-bar styling, formula block, practice cards, quote styling, trap styling, fr-item further-reading layout, and **toggleable TOC**. Copy its `<style>` block and HTML structure verbatim for consistency across issues.
+Read `template.html` in this folder (`skills-briefings-files/briefing-alpha/trading-concept/template.html`).
+Replace the `{{tokens}}` (CONCEPT_NAME, DATE, ISSUE_NUMBER, READING_TIME, TLDR) and fill each
+`<!-- §0N -->` section stub. The template has the verbatim CSS + TOC structure from the canonical design.
+**Do NOT read any prior briefing HTML for styling** — the template is the source of truth.
 
 ---
 
@@ -229,6 +232,11 @@ Create the date folder if missing.
 
 ### 3B. Publish to GitHub
 
+**On Windows (local scheduled-task run):** Publishing is handled by the wrapper after this skill
+completes — do NOT run the script below. The wrapper runs `generate-index.js` then `git push origin main`.
+
+**On cloud/Linux only** (no wrapper git push available), set `GITHUB_TOKEN` and run:
+
 ```python
 python3 << 'PYEOF'
 import base64, json, urllib.request, os, sys
@@ -239,11 +247,8 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 TODAY = date.today().strftime('%Y-%m-%d')
-BRIEFING  = 'trading-concept'
-if os.name == 'nt':
-    HTML_PATH = rf'C:\Users\Tony\Documents\briefings-site\briefings\{TODAY}\{BRIEFING}.html'
-else:
-    HTML_PATH = f'/tmp/{BRIEFING}-{TODAY}.html'
+BRIEFING = 'trading-concept'
+HTML_PATH = f'/tmp/{BRIEFING}-{TODAY}.html'
 
 if not GITHUB_TOKEN:
     print("GITHUB_TOKEN not set -- skipping GitHub publish.")
@@ -264,42 +269,11 @@ body = {'message': f'Add {BRIEFING} for {TODAY}', 'content': data, 'branch': 'ma
 if sha: body['sha'] = sha
 req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), method='PUT', headers=hdrs)
 json.loads(urllib.request.urlopen(req).read())
-print(f"Published: {BRIEFING} for {TODAY}")
-
-dispatch_url = 'https://api.github.com/repos/ngmicapital/GM-Research/actions/workflows/deploy.yml/dispatches'
-dispatch_req = urllib.request.Request(dispatch_url, data=json.dumps({'ref': 'main'}).encode('utf-8'), method='POST', headers=hdrs)
-try:
-    urllib.request.urlopen(dispatch_req)
-    print("Site rebuild triggered.")
-except Exception as e:
-    print(f"Site rebuild trigger failed (non-fatal): {e}")
-
-import time
-print("Verifying deploy status...")
-verified = False
-for attempt in range(18):
-    time.sleep(10)
-    try:
-        runs_url = 'https://api.github.com/repos/ngmicapital/GM-Research/actions/workflows/deploy.yml/runs?per_page=1'
-        runs_res = json.loads(urllib.request.urlopen(urllib.request.Request(runs_url, headers=hdrs)).read())
-        run = runs_res['workflow_runs'][0]
-        status = run['status']
-        conclusion = run.get('conclusion')
-        print(f"  Deploy: {status}" + (f" / {conclusion}" if conclusion else ""))
-        if status == 'completed':
-            if conclusion == 'success':
-                print("Deploy verified -- alpha is live.")
-            else:
-                print(f"Deploy FAILED (conclusion: {conclusion}) -- site index may not be updated.")
-                sys.exit(1)
-            verified = True
-            break
-    except Exception as e:
-        print(f"  Status check error: {e}")
-if not verified:
-    print("Deploy status check timed out -- check GitHub Actions manually.")
+print(f"✅ Published → https://ngmicapital.github.io/GM-Research/briefings/{TODAY}/{BRIEFING}.html")
 PYEOF
 ```
+
+The deploy workflow runs automatically on push — no need to dispatch it or poll its status.
 
 ---
 

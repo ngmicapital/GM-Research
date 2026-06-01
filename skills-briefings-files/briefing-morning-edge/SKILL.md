@@ -6,24 +6,17 @@ just a summary of news. Think am/FX by Brent Donnelly: opinionated, specific, tr
 
 ## CANONICAL DESIGN REFERENCE
 
-**The template to follow is `briefings/2026-05-15/market-briefing.html`.** Read that file first to understand the design system. Future briefings MUST match its visual style — do NOT use older templates from before 2026-05-15.
+Read `template.html` in this folder (`skills-briefings-files/briefing-morning-edge/template.html`).
+Replace the `{{tokens}}` (DATE, CONVICTION, READING_TIME, TLDR_THESIS) and fill each `<!-- SECTION N -->` stub.
+The template has the verbatim CSS + 8-section structure from the 2026-05-15 canonical design.
+**Do NOT read any prior full briefing HTML for styling** — the template is the source of truth.
 
-Key visual elements (all required):
-- **Inter + JetBrains Mono fonts** from Google Fonts (preconnect + stylesheet links in `<head>`)
-- **Reading time badge** in the header ("~10 min read")
-- **Conviction badge** at top right with color-coded background
-- **Catalyst banner** (dark red) under the header for major event days
-- **TOC strip** (dark blue) with 8 numbered section anchors (s1–s8)
-- **TradingView iframe widgets** (`.tv-widget`) — 3-column grid in macro and crypto sections
-- **8 sections** in this order: Macro / Equities / Crypto / Regulatory / AI & Semis / Prediction / Geopolitical / Watchlist
-- **Section number circles** (`.section-num`) prefixing each section title
-- **Analysis blocks** (`.analysis`) blue / **Geo alerts** (`.geo-alert`) amber / **Pred blocks** (`.pred-block`) green / **Learn blocks** (`.learn-block`) purple / **Callouts** (`.callout`) orange
-- **Implications** (`.implication--macro/equities/crypto/ai/pred/reg/geo`) themed by section
-- **Key boxes** (`.key-boxes`) 4-column metric display
-- **Fear & Greed gauge** with linear-gradient bar and marker
-- **Live / Est / Vol Spike / Event** badges in tables
-- **`td.pos` and `td.neg`** with gradient backgrounds (not flat color)
-- **Footer** with data sources + disclaimer
+Key visual elements (all in the template — no need to re-derive):
+- Inter + JetBrains Mono fonts, reading-time badge, conviction badge, catalyst banner, TOC strip (s1–s8)
+- 8 sections: Macro / Equities / Crypto / Regulatory / AI & Semis / Prediction / Geopolitical / Watchlist
+- `.analysis` blue / `.geo-alert` amber / `.pred-block` green / `.learn-block` purple / `.callout` orange
+- `.implication--macro/equities/crypto/ai/pred/reg/geo` themed blocks, `.key-boxes` 4-col metric display
+- Fear & Greed gauge, Live/Est/Vol Spike/Event badges, `td.pos`/`td.neg` gradient backgrounds
 
 ## CRITICAL: DO NOT INCLUDE
 - **No "← All Briefings" back navigation bar** at the top of the body. Begin `<body>` directly with `<div class="page-wrap">`. The site already handles navigation via the index page. This bar was removed on 2026-05-20.
