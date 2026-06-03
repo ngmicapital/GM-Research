@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Value Area (VAH, VAL & the 70% Rule) | June 4, 2026</title>
+<meta property="og:description" content="The Value Area is the price band that held ~70% of a session's volume — bounded by VAH and VAL around the POC. It marks where buyers and sellers agreed on fair value, and tells you whether to fade or follow.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Value Area</h1>
+  <div class="meta">
+    <span>Thursday · June 4, 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #41</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">The Value Area is the price band that held roughly 70% of a session's volume — bounded by the VAH on top and the VAL on the bottom, with the POC inside — and it marks where buyers and sellers agreed on fair value. Trade it simply: price rotating inside value mean-reverts toward the POC, price accepted outside value trends, and the value edge that gets rejected becomes your highest-conviction fade.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The market's agreed-upon fair price band</div>
+    </div>
+  </div>
+
+  <div class="skim">The Value Area is the price range that absorbed ~70% of the period's volume — the zone where the auction found agreement, with everything outside it priced as too expensive or too cheap.</div>
+
+  <p>Forget the textbook framing for a second. Markets are an auction, and an auction only continues where both sides are willing to transact. The <strong>Value Area</strong> is the slice of the price range where that agreement actually happened — the central <strong>~70%</strong> of all volume traded. Inside it, buyers and sellers were comfortable doing business. Outside it, price moved too far for the crowd and got rejected.</p>
+
+  <p>It's defined by three lines. The <strong>POC</strong> (Point of Control) is the single price that did the most volume — the fairest of the fair, the magnet. The <strong>VAH</strong> (Value Area High) caps the band; the <strong>VAL</strong> (Value Area Low) floors it. Everything above VAH and below VAL — roughly 15% of volume on each side — is the <strong>tail</strong>: prices the market sampled briefly and walked away from.</p>
+
+  <p>This is the layer above raw Volume Profile and POC. The POC is one line; the Value Area is the <em>distribution</em> around it. That distinction is the whole game — a single high-volume level tells you where the magnet is, but VAH and VAL tell you the edges of balance, and the edges are where decisions get made.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>POC</b><span>highest-volume price — the mean / magnet</span></div>
+    <div class="pill-term"><b>VAH</b><span>top of the 70% band — premium begins</span></div>
+    <div class="pill-term"><b>VAL</b><span>bottom of the 70% band — discount begins</span></div>
+    <div class="pill-term"><b>Tail</b><span>~15% volume outside each edge — rejected price</span></div>
+    <div class="pill-term"><b>Naked VA</b><span>a prior VAH/VAL never retested since — a magnet</span></div>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    The Value Area answers one question — <em>where is the market comfortable?</em> Price inside value is balance; price accepted outside value is a trend; price rejected at the edge is your trade.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How the 70% band is actually built</div>
+    </div>
+  </div>
+
+  <div class="skim">Start at the POC, then grow outward by repeatedly adding whichever adjacent row — above or below — traded more volume, until you've captured 70% of the total.</div>
+
+  <p>The Value Area isn't drawn equidistant from the POC. It's grown by an <strong>iterative row-pairing expansion</strong>, the method TradingView and most platforms use. You build it volume-greedily, not symmetrically, which is why a real value area is almost always lopsided.</p>
+
+  <div class="formula">
+    <b>VA target</b> = 0.70 × Σ(volume of every price row)<br>
+    1. Seed the VA with the <b>POC</b> row; subtract its volume from the target.<br>
+    2. Look at the next row <b>above</b> and the next row <b>below</b> the current VA.<br>
+    3. Add whichever of the two traded <b>more volume</b>; subtract it from the target.<br>
+    4. Repeat the comparison from the new frontier until cumulative volume ≥ target.<br>
+    5. <b>VAH</b> = highest row included &nbsp;·&nbsp; <b>VAL</b> = lowest row included.
+    <div class="note">Tie-break: take the row closer to the POC; if equidistant, take the upper row.</div>
+  </div>
+
+  <p>Why 70%? Because it approximates <strong>one standard deviation</strong> of a normal distribution. A true ±1σ captures 68.2% of activity; the round 70% is the convention Steidlmayer and Dalton settled on. The logic: if price is normally distributed around fair value, the central 1σ is the zone the auction actually "accepts," and the tails beyond are statistical excess — the prices that got tested and rejected.</p>
+
+  <p>One nuance worth flagging: there are two ways to count "activity," and they don't always agree.</p>
+
+  <table class="cmp">
+    <thead>
+      <tr><th>Aspect</th><th>Volume Value Area</th><th>TPO / Time Value Area</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Built from</td><td>Coins / contracts traded at each price</td><td>Time (30-min letters) spent at each price</td></tr>
+      <tr><td>POC means</td><td>Price with the most volume</td><td>Price touched across the most time periods</td></tr>
+      <tr><td>Crypto fit</td><td>Default on TradingView; clean in 24/7 markets</td><td>Born in the futures pits; rarer in crypto</td></tr>
+      <tr><td>Reads</td><td>Where the size transacted</td><td>Where the market lingered</td></tr>
+    </tbody>
+  </table>
+
+  <p>For crypto, default to the <strong>volume</strong> value area — it tracks where real liquidity changed hands, and 24/7 markets have no "regular trading hours" to anchor a clean TPO session anyway.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">Anatomy of value, and how it migrates</div>
+    </div>
+  </div>
+
+  <div class="skim">A volume profile is a sideways bell curve — fat in the middle (value, POC) and thin at the ends (tails); when those bells stack lower session over session, that's a downtrend.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Volume profile showing the value area bounded by VAH and VAL around the POC, with tails above and below">
+      <!-- backdrop -->
+      <rect x="0" y="0" width="800" height="460" fill="#ffffff"/>
+      <!-- value-area band -->
+      <rect x="40" y="150" width="720" height="170" fill="#f7fee7" stroke="#a3e635" stroke-width="1.5"/>
+      <text x="52" y="142" font-family="JetBrains Mono,monospace" font-size="12" fill="#3f6212" font-weight="700">VALUE AREA · ~70% of volume · ±1σ</text>
+
+      <!-- tail labels -->
+      <text x="52" y="40" font-family="JetBrains Mono,monospace" font-size="11" fill="#78350f" font-weight="700">UPPER TAIL · ~15% · rejected (too expensive)</text>
+      <text x="52" y="452" font-family="JetBrains Mono,monospace" font-size="11" fill="#78350f" font-weight="700">LOWER TAIL · ~15% · rejected (too cheap)</text>
+
+      <!-- volume bars (profile), baseline at x=760, growing left -->
+      <!-- upper tail rows -->
+      <rect x="688" y="52"  width="72"  height="18" fill="#e7e5e4"/>
+      <rect x="650" y="74"  width="110" height="18" fill="#e7e5e4"/>
+      <!-- value rows -->
+      <rect x="586" y="96"  width="174" height="18" fill="#fde68a"/>
+      <rect x="612" y="118" width="148" height="18" fill="#fde68a"/>
+      <rect x="540" y="156" width="220" height="18" fill="#d9f99d"/>
+      <rect x="470" y="178" width="290" height="18" fill="#bef264"/>
+      <rect x="408" y="200" width="352" height="18" fill="#bef264"/>
+      <!-- POC row (longest) -->
+      <rect x="352" y="222" width="408" height="18" fill="#a3e635" stroke="#3f6212" stroke-width="1.5"/>
+      <rect x="430" y="244" width="330" height="18" fill="#bef264"/>
+      <rect x="498" y="266" width="262" height="18" fill="#bef264"/>
+      <rect x="560" y="288" width="200" height="18" fill="#d9f99d"/>
+      <rect x="600" y="310" width="160" height="18" fill="#fde68a"/>
+      <!-- lower tail rows -->
+      <rect x="648" y="348" width="112" height="18" fill="#e7e5e4"/>
+      <rect x="686" y="370" width="74"  height="18" fill="#e7e5e4"/>
+      <rect x="708" y="392" width="52"  height="18" fill="#e7e5e4"/>
+
+      <!-- VAH line -->
+      <line x1="40" y1="150" x2="760" y2="150" stroke="#3f6212" stroke-width="2" stroke-dasharray="7 4"/>
+      <text x="44" y="166" font-family="JetBrains Mono,monospace" font-size="13" fill="#3f6212" font-weight="700">VAH</text>
+      <!-- POC line -->
+      <line x1="40" y1="231" x2="760" y2="231" stroke="#3f6212" stroke-width="2.5"/>
+      <text x="44" y="226" font-family="JetBrains Mono,monospace" font-size="13" fill="#3f6212" font-weight="700">POC — fair value / heaviest volume</text>
+      <!-- VAL line -->
+      <line x1="40" y1="320" x2="760" y2="320" stroke="#3f6212" stroke-width="2" stroke-dasharray="7 4"/>
+      <text x="44" y="336" font-family="JetBrains Mono,monospace" font-size="13" fill="#3f6212" font-weight="700">VAL</text>
+
+      <!-- price path oscillating in value, poking a tail and returning -->
+      <polyline points="60,300 110,250 150,200 200,235 250,170 300,205 350,300 400,355 440,300 490,200 540,165 590,205 640,250 700,215"
+                fill="none" stroke="#1c1917" stroke-width="2" opacity="0.55"/>
+      <circle cx="400" cy="355" r="5" fill="#ef4444"/>
+      <text x="300" y="382" font-family="Inter,sans-serif" font-size="11.5" fill="#44403c" font-style="italic">probe into the lower tail → rejected → snaps back to value</text>
+    </svg>
+    <div class="svg-caption">Anatomy of a value area: a sideways volume distribution. The fat middle is value (VAH→VAL, ~70%), the POC is the heaviest-volume row, and the thin ends are the tails the market rejected. Price spends most of its life inside the band, rotating around the POC.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 300" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Value migration across three sessions stepping lower, signalling a downtrend">
+      <rect x="0" y="0" width="800" height="300" fill="#ffffff"/>
+      <text x="20" y="28" font-family="JetBrains Mono,monospace" font-size="12" fill="#3f6212" font-weight="700">VALUE MIGRATION — where the bell sits, session over session</text>
+
+      <!-- Session D-2 (highest) -->
+      <rect x="70" y="60" width="150" height="90" rx="4" fill="#f7fee7" stroke="#a3e635" stroke-width="1.5"/>
+      <line x1="70" y1="100" x2="220" y2="100" stroke="#3f6212" stroke-width="2.5"/>
+      <circle cx="145" cy="100" r="5" fill="#a3e635" stroke="#3f6212" stroke-width="1.5"/>
+      <text x="95" y="172" font-family="JetBrains Mono,monospace" font-size="11" fill="#44403c" font-weight="700">D−2</text>
+      <text x="95" y="188" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">VAH/POC/VAL</text>
+
+      <!-- Session D-1 (lower) -->
+      <rect x="320" y="120" width="150" height="90" rx="4" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5"/>
+      <line x1="320" y1="160" x2="470" y2="160" stroke="#78350f" stroke-width="2.5"/>
+      <circle cx="395" cy="160" r="5" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+      <text x="345" y="232" font-family="JetBrains Mono,monospace" font-size="11" fill="#44403c" font-weight="700">D−1</text>
+
+      <!-- Session Today (lowest) -->
+      <rect x="570" y="180" width="150" height="90" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+      <line x1="570" y1="220" x2="720" y2="220" stroke="#991b1b" stroke-width="2.5"/>
+      <circle cx="645" cy="220" r="5" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
+      <text x="595" y="292" font-family="JetBrains Mono,monospace" font-size="11" fill="#44403c" font-weight="700">TODAY</text>
+
+      <!-- descending arrow -->
+      <line x1="220" y1="105" x2="320" y2="155" stroke="#78716c" stroke-width="2" stroke-dasharray="5 4"/>
+      <line x1="470" y1="165" x2="570" y2="215" stroke="#78716c" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="430" y="278" font-family="Inter,sans-serif" font-size="12" fill="#991b1b" font-style="italic" text-anchor="middle">Each value area prints below the last → lower value = downtrend (today's BTC: $75.8K → $65K)</text>
+    </svg>
+    <div class="svg-caption">Value migration is the higher-timeframe signal. Overlapping value areas = balance/range. Higher value session-over-session = uptrend. Lower value, like BTC right now, = downtrend — the auction is repricing fair value lower.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Fade inside value, follow outside it</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: inside value, fade the edges toward the POC; outside value, only trade in the direction the market has accepted — never fight a value breakout that holds.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Inside value → fade the edges to the POC</h4>
+        <p>When price is rotating inside the prior value area, the market is in balance. Long at the VAL, short at the VAH, both targeting the POC. Stops sit just beyond the opposite extreme — if balance breaks, you're out cheap.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Open outside value → read the first hour</h4>
+        <p>Open above VAH and hold = buyers in control; buy pullbacks to VAH, don't fade. Open above VAH then fall back inside = <strong>rejection</strong> — the day's strongest mean-reversion short, targeting the POC then VAL. The mirror image applies below VAL.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>The 80% rule rotation</h4>
+        <p>Price opens outside value, trades back inside, and <strong>holds for two consecutive 30-min bars</strong> = acceptance. Historically ~80% odds the session then fills the entire value area, VAH to VAL. A clean rotation with a built-in target — but only in balanced regimes.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Hunt naked value as targets</h4>
+        <p>A prior VAH or VAL that price hasn't retested since it printed is a <strong>naked / virgin level</strong> — an unfinished piece of business that acts as a magnet. An untouched VAL below current price is the logical objective once today's value breaks down.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — fading a broken value edge (illustrative, today's BTC structure)</h5>
+    <table>
+      <tr><td>Context</td><td>BTC built weeks of value in the low-$70Ks. It loses the prior-balance <strong>VAL ≈ $70,000</strong> and retests it from below — a failed reclaim.</td></tr>
+      <tr><td>Trade</td><td>Short the retest of broken VAL</td></tr>
+      <tr><td>Entry</td><td>$70,000 (rejection at the lost edge)</td></tr>
+      <tr><td>Stop</td><td>$71,200 — back inside value + buffer → risk $1,200</td></tr>
+      <tr><td>Target 1</td><td>$65,000 — next value shelf / liq cluster → +$5,000 ≈ <strong>4.1R</strong></td></tr>
+      <tr><td>Invalidation</td><td>A 30-min close back inside value (&gt; ~$70,500) = acceptance; thesis dead, no trade.</td></tr>
+    </table>
+    <p style="margin:10px 0 0;font-size:12.5px;color:#78716c;">Illustrative read of the current structure, not a live call — see §05 for where price actually sits.</p>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> daily / weekly-composite value area for swing bias · 30-min acceptance for the 80%-rule rotation · 5m–15m for execution at the VAH/VAL edges.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC is migrating value lower in real time</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC just abandoned its $70K+ value shelf and is auctioning down to find acceptance at $65K — textbook value migration lower, and exactly what today's Morning Edge is tracking.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · June 4, 2026</div>
+    <h4>BTC abandons its $70K+ value shelf — the auction hunts lower</h4>
+
+    <p>BTC built weeks of <strong>value in the low-$70Ks</strong>, then over 72 hours auctioned down <strong>−13.7%</strong> from an intraweek high of <strong>$75,850</strong> to $65,453 — now <strong>$65,023</strong> on live tape. That is value migration in its purest form: each session's value area is printing beneath the last, the picture in our second diagram above. The Morning Edge has it as <strong>Wyckoff distribution, Phase C/D</strong>.</p>
+
+    <p>The move was fast, with little time spent on the way down — so the entire $70K–$75K region is becoming thin, single-print territory above price: rejected value, not a base. <strong>$65,000</strong> is where the next auction is trying to build acceptance, and it doubles as a <strong>$197M long-liquidation cluster</strong>. Fail to hold and build value here, and the naked shelf toward <strong>$62,500</strong> is the logical objective.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC (live)</td><td>$65,023 · −3.65% / 24h</td></tr>
+        <tr><td>72h range</td><td>$75,850 → $65,453 · −13.7%</td></tr>
+        <tr><td>ETH (live)</td><td>$1,783 · −6.41% / 24h</td></tr>
+        <tr><td>Value fulcrum</td><td>$65,000 — Morning Edge "danger zone"</td></tr>
+        <tr><td>Long-liq cluster</td><td>$197M resting at $65,000</td></tr>
+        <tr><td>Next value shelf</td><td>$62,500 — Polymarket 68.5% June prob.</td></tr>
+        <tr><td>Total mkt cap</td><td>$2.35T · −2.81% / 24h</td></tr>
+        <tr><td>Sentiment</td><td>Fear &amp; Greed 11 — extreme fear</td></tr>
+        <tr><td>As of</td><td>~16:00 AEST / 06:00 UTC · 4 Jun 2026</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Value has migrated down in steps and price spends almost no time back at the old $70K+ shelf — that's rejection, not balance. Until BTC builds an <em>accepted</em> value area here (two-sided rotation that holds for a few sessions), every bounce is a retest of broken value, not a bottom. <a href="market-briefing.html" style="color:#bef264;border-bottom-color:rgba(190,242,100,0.4);">→ see today's Morning Edge</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The originators, and the read on today's tape</div>
+    </div>
+  </div>
+
+  <div class="skim">Value-area thinking comes straight from the men who built Market Profile — and it maps cleanly onto what BTC is doing right now.</div>
+
+  <div class="quote">
+    <p>"The purpose of any market is to facilitate trade."</p>
+    <div class="attr"><b>J. Peter Steidlmayer</b> · Markets and Market Logic (with Kevin Koy), 1986 · <a href="https://en.wikipedia.org/wiki/Market_profile">Market Profile</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Priced below value … the consumer bought in a frenzy, leaving in its wake a single-print buying tail."</p>
+    <div class="attr"><b>James F. Dalton</b> · Mind Over Markets · via <a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Topstep</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"BTC fell from $75,850 to $65,453 in 72h — Wyckoff distribution, Phase C/D, with $65,000 holding by just 0.79%."</p>
+    <div class="attr"><b>The Morning Edge</b> · NGM Capital · 4 Jun 2026 · <a href="market-briefing.html">today's market briefing</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where value-area trading goes wrong</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: treating VAH/VAL as automatic fade buttons. They're decision points — and in a trend, the edge breaks and keeps running.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Fading every edge mechanically</h5>
+      <p>VAH and VAL are decision points, not auto-reverse levels. In a trend day the edge breaks and accelerates — fading it bleeds you. Wait for the market to <em>show</em> acceptance or rejection before committing size.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Using the wrong profile window</h5>
+      <p>A 24/7 crypto "daily" value area is not a futures-pit RTH session. Match the window to your thesis — session, weekly composite, or a fixed-range from the last swing — and stay consistent. Switching anchors mid-trade is how you talk yourself into anything.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing "inside value" with "safe"</h5>
+      <p>Price inside the prior value area means balance, not support. The POC is a magnet, not a floor — in a downtrend it offers no defence, and value simply keeps migrating down through it. Ask "is value moving?" before you assume mean-reversion.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">4</div>
+    <div>
+      <h5>The "80% rule = 80% win rate" myth</h5>
+      <p>Overhyped on trading X. The 80% figure is a <em>conditional probability of filling the value area</em> after two-bar acceptance — not your trade's win rate, and not edge by itself. It degrades hard in trending regimes, and standalone backtests outside balanced markets are unimpressive. Use it as a context filter, with a real stop, never as a system.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">From the algorithm to the source text</div>
+    </div>
+  </div>
+
+  <div class="skim">Start with the exact platform algorithm, then go to the auction-theory source material the whole concept is built on.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView — Volume Profile: Basic Concepts</a>
+        <span>The platform's own docs: exact VAH/VAL/POC definitions and the row-pairing expansion that builds the 70% value area.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://marketprofile.info/articles/value-area-explained">MarketProfile.info — Value Area Explained</a>
+        <span>VAH, VAL, POC and — most usefully — value migration and the acceptance-vs-rejection read across sessions.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Topstep — Intro to Auction Market Theory & Market Profile</a>
+        <span>The "why" behind value: markets exist to facilitate trade, and value is where they do it. Sources the Dalton quote above.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://howtotrade.com/trading-strategies/value-area/">HowToTrade — The Value Area Trading Strategy</a>
+        <span>Practical setups end-to-end: mean reversion to the POC, acceptance breakouts, and a measured walk-through of the 80% rule.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://archive.org/details/steidlmayeronmar0000stei">Steidlmayer on Markets — J. Peter Steidlmayer (Internet Archive)</a>
+        <span>The foundational Market Profile text from the man who built it. Where value, the POC and the tails all originate.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView Volume Profile docs</a>
+    <a href="https://marketprofile.info/articles/value-area-explained">MarketProfile.info</a>
+    <a href="https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile/">Topstep / Auction Market Theory</a>
+    <a href="https://howtotrade.com/trading-strategies/value-area/">HowToTrade Value Area guide</a>
+    <a href="https://archive.org/details/steidlmayeronmar0000stei">Steidlmayer on Markets</a>
+    <a href="https://en.wikipedia.org/wiki/Market_profile">Market Profile (Wikipedia)</a>
+    <a href="market-briefing.html">The Morning Edge — 4 Jun 2026 (BTC levels, live)</a>
+    <a href="https://www.coingecko.com/">CoinGecko (live BTC/ETH price)</a>
+  </div>
+  <div>Alpha · Issue #41 · June 4, 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
