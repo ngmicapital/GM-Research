@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Order Book Resiliency | June 5, 2026</title>
+<meta property="og:description" content="Order book resiliency is the third and most neglected dimension of liquidity — how fast a level reloads after a sweep. It's what decides whether BTC's $62K shelf holds or cascades to $60,000.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Order Book Resiliency</h1>
+  <div class="meta">
+    <span>Friday · June 5, 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #42</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Order book resiliency is the speed at which a price level's resting liquidity <strong>reloads</strong> after aggressive orders eat it — the third and most neglected dimension of liquidity, behind spread (tightness) and size (depth). A bid that absorbs a sweep and reloads within a handful of quote updates is defending the level; a bid that vanishes and never comes back is a trapdoor. The practical takeaway: stop trading the size you <em>see</em> and start trading whether it <strong>comes back</strong> — refill speed, not wall thickness, decides hold versus break.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The third dimension of liquidity</div>
+    </div>
+  </div>
+
+  <div class="skim">Resiliency is how fast a price level's liquidity reloads after a market order eats it — the recovery dimension that a spread reading and a depth snapshot can't show you.</div>
+
+  <p>Spread is the toll. Depth is the width of the road. <strong>Resiliency is how fast the road rebuilds after a truck plows through it.</strong> Albert Kyle named all three back in 1985; traders obsess over the first two and ignore the third — which is precisely the one that tells you whether a level is real.</p>
+
+  <p>Kyle's own definition: resiliency is <em>"the speed with which the temporary changes induced in depth and spreads by an uninformative order-flow shock are corrected or neutralized by the flow of new orders."</em> In plain tape terms: a market order crosses and consumes resting limit orders, opening a temporary hole in the book. A <strong>resilient</strong> book refills that hole within a handful of best-quote updates and price holds. A <strong>brittle</strong> book leaves the hole open, and price walks to the next level.</p>
+
+  <p>It's called the <em>neglected</em> dimension for a reason. Spread and depth are static — you read them off one snapshot of the book. Resiliency is dynamic: you only see it by watching the book <em>evolve</em> after it gets hit. That makes it invisible to anyone screenshotting a depth chart, and obvious to anyone actually reading the tape. The walls everyone screenshots are claims; the reload is the proof.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>Resting liquidity</b><span>limit orders sitting in the book, waiting to be hit</span></span>
+    <span class="pill-term"><b>Refill / replenishment</b><span>new limit orders arriving to rebuild a consumed level</span></span>
+    <span class="pill-term"><b>Sweep</b><span>an aggressive market order eating through one or more levels</span></span>
+    <span class="pill-term"><b>Quote update</b><span>any change to best bid/ask — resiliency is counted in these, not seconds</span></span>
+    <span class="pill-term"><b>Brittle book</b><span>a level that empties under aggression and fails to reload</span></span>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    A level is only as strong as its ability to reload. Watch the refill, not the wall.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How replenishment is measured</div>
+    </div>
+  </div>
+
+  <div class="skim">Resiliency is measured three ways — how fast the spread re-tightens, how fast depth rebuilds, and how quickly fresh limit orders flow back into the gap.</div>
+
+  <p>Walk it step by step:</p>
+
+  <p><strong>1. The hit.</strong> An effective market order crosses the spread and consumes resting size at the best quote (and possibly several levels behind it). <strong>2. The hole.</strong> Spread widens, depth at that level drops — a temporary liquidity vacuum. <strong>3. The clock starts.</strong> Resiliency is the race between price moving and new limit orders arriving. <strong>4. The verdict.</strong> A resilient book sees spread and depth revert toward baseline within roughly <strong>20 best-quote updates</strong> (the empirical finding from studies on real limit-order-book data); a brittle book leaves the gap open and price walks.</p>
+
+  <p>Two clean proxies you can compute or eyeball off the DOM:</p>
+
+  <div class="formula">
+    <b>Recovery time (τ)</b><br>
+    τ = number of quote updates until spread &amp; depth ≈ pre-sweep baseline<br>
+    &nbsp;&nbsp;Resilient: τ ≲ 20 &nbsp;·&nbsp; Brittle: τ → ∞ (never reverts)<br><br>
+    <b>Replenishment ratio (R)</b><br>
+    R = size_added_back(level, Δt) ÷ size_consumed(sweep)<br>
+    &nbsp;&nbsp;R ≥ 1 → fully resilient &nbsp;·&nbsp; R ≈ 0 → trapdoor
+    <div class="note">Empirical LOB studies find spread and depth typically return to the sample average within ~20 best-quote updates after an effective market order — fast, but only when the book is healthy.</div>
+  </div>
+
+  <p>One asymmetry worth knowing: research shows <strong>price resiliency dominates after aggressive sweeps</strong> (price snaps back as the gap refills), while <strong>price continuation dominates after smaller, less-aggressive orders</strong> (the move extends). Counter-intuitive, but it means a violent sweep into a thick level is often <em>less</em> informative than a slow grind — the grind is the one quietly clearing the book.</p>
+
+  <table class="cmp">
+    <thead><tr><th>Property</th><th>Resilient book</th><th>Brittle book</th></tr></thead>
+    <tbody>
+      <tr><td>Refill speed (τ)</td><td>≤ ~20 quote updates</td><td>Never / minutes</td></tr>
+      <tr><td>Replenishment R</td><td>≥ 1 (reloads in full)</td><td>≈ 0 (gap stays open)</td></tr>
+      <tr><td>Spread after sweep</td><td>Snaps back to ~1 tick</td><td>Stays wide</td></tr>
+      <tr><td>What it signals</td><td>Passive size defending the level</td><td>Liquidity fleeing the level</td></tr>
+      <tr><td>Trade implication</td><td>Fade back into the level</td><td>Follow the break</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">Resilient vs. brittle — same sweep, two outcomes</div>
+    </div>
+  </div>
+
+  <div class="skim">The diagram shows the same sweep into two different books — one reloads within ~20 updates and holds; one empties and gaps to the next level.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Resting bid depth at $62,000 over time after a sweep: resilient book recovers within ~20 quote updates and price holds; brittle book stays empty and price cascades.">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <text x="400" y="26" text-anchor="middle" font-family="DM Serif Display, serif" font-size="20" fill="#1c1917">Resting bid depth at $62,000 — after the sweep</text>
+
+      <!-- axes -->
+      <line x1="70" y1="60" x2="70" y2="320" stroke="#1c1917" stroke-width="1.5"/>
+      <line x1="70" y1="320" x2="765" y2="320" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="-190" y="20" transform="rotate(-90)" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">Resting bid depth @ $62,000</text>
+      <text x="418" y="360" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">Quote updates / time after the sweep  →</text>
+
+      <!-- baseline depth -->
+      <line x1="70" y1="100" x2="765" y2="100" stroke="#78716c" stroke-width="1" stroke-dasharray="4 4"/>
+      <text x="78" y="93" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#78716c">pre-sweep baseline depth</text>
+
+      <!-- sweep marker -->
+      <line x1="222" y1="60" x2="222" y2="320" stroke="#ef4444" stroke-width="1.3" stroke-dasharray="3 3"/>
+      <text x="226" y="74" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#ef4444">SWEEP (t₀)</text>
+      <text x="226" y="89" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#b91c1c">aggressive sells hit the bid</text>
+
+      <!-- shared pre-sweep + drop (dark) -->
+      <path d="M70 100 L210 100 L222 100 L244 292" fill="none" stroke="#44403c" stroke-width="3"/>
+
+      <!-- resilient curve (lime) -->
+      <path d="M244 292 C 320 286 380 150 452 114 L765 108" fill="none" stroke="#3f6212" stroke-width="3.5"/>
+      <circle cx="452" cy="114" r="5" fill="#a3e635" stroke="#3f6212" stroke-width="1.5"/>
+      <text x="462" y="118" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#3f6212">refilled ≤ 20 updates</text>
+      <text x="600" y="100" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#16a34a">Price HOLDS $62,000</text>
+
+      <!-- brittle curve (red) -->
+      <path d="M244 292 C 360 296 560 290 765 293" fill="none" stroke="#ef4444" stroke-width="3.5"/>
+      <circle cx="244" cy="292" r="5" fill="#ef4444"/>
+      <text x="470" y="285" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#b91c1c">no refill → void</text>
+      <text x="565" y="312" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#dc2626">Price CASCADES → $60,000</text>
+
+      <!-- recovery bracket -->
+      <line x1="244" y1="338" x2="452" y2="338" stroke="#3f6212" stroke-width="1"/>
+      <line x1="244" y1="333" x2="244" y2="343" stroke="#3f6212" stroke-width="1"/>
+      <line x1="452" y1="333" x2="452" y2="343" stroke="#3f6212" stroke-width="1"/>
+      <text x="348" y="332" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#3f6212">≈ 20 quote updates to refill</text>
+
+      <!-- legend -->
+      <rect x="92" y="382" width="22" height="4" fill="#3f6212"/>
+      <text x="120" y="389" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">Resilient (R ≥ 1)</text>
+      <rect x="250" y="382" width="22" height="4" fill="#ef4444"/>
+      <text x="278" y="389" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">Brittle (R ≈ 0)</text>
+      <rect x="400" y="382" width="22" height="4" fill="#44403c"/>
+      <text x="428" y="389" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">Shared sweep / pre-sweep book</text>
+    </svg>
+    <div class="svg-caption">The only difference between a level holding and a level breaking is whether the bid reloads — same sweep, same starting depth, opposite outcomes. Resiliency is the fork.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 320" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="L2 ladder one instant after the sweep: resilient book reloads the $62,000 bid; brittle book leaves a void and price drops.">
+      <rect x="0" y="0" width="800" height="320" fill="#ffffff"/>
+      <text x="200" y="28" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="700" fill="#3f6212">RESILIENT — bid reloads</text>
+      <text x="600" y="28" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="700" fill="#b45309">BRITTLE — bid vanishes</text>
+      <line x1="400" y1="44" x2="400" y2="300" stroke="#e7e5e4" stroke-width="1.5"/>
+
+      <!-- price labels (shared centre column) -->
+      <!-- rows: y = 70,108,150(support),192,230 -->
+      <text x="200" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#78716c">L2 bid size · instant after sweep</text>
+      <text x="600" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#78716c">L2 bid size · instant after sweep</text>
+
+      <!-- RESILIENT ladder bars (bids grow leftward from x=360) -->
+      <g font-family="JetBrains Mono, monospace" font-size="10">
+        <rect x="280" y="74"  width="80"  height="20" fill="#dcfce7" stroke="#22c55e"/><text x="40" y="89" fill="#44403c">$62,040</text>
+        <rect x="250" y="102" width="110" height="20" fill="#dcfce7" stroke="#22c55e"/><text x="40" y="117" fill="#44403c">$62,020</text>
+        <rect x="190" y="132" width="170" height="24" fill="#a3e635" stroke="#3f6212" stroke-width="1.5"/><text x="40" y="148" font-weight="700" fill="#1c1917">$62,000</text>
+        <text x="276" y="148" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#3f6212">↻ RELOADED</text>
+        <rect x="262" y="164" width="98"  height="20" fill="#dcfce7" stroke="#22c55e"/><text x="40" y="179" fill="#44403c">$61,980</text>
+        <rect x="290" y="192" width="70"  height="20" fill="#dcfce7" stroke="#22c55e"/><text x="40" y="207" fill="#44403c">$61,960</text>
+      </g>
+      <text x="200" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#16a34a">→ $62,000 HOLDS · fade longs into the reload</text>
+
+      <!-- BRITTLE ladder bars -->
+      <g font-family="JetBrains Mono, monospace" font-size="10">
+        <rect x="680" y="74"  width="80"  height="20" fill="#dcfce7" stroke="#22c55e"/><text x="440" y="89" fill="#44403c">$62,040</text>
+        <rect x="700" y="102" width="60"  height="20" fill="#dcfce7" stroke="#22c55e"/><text x="440" y="117" fill="#44403c">$62,020</text>
+        <rect x="590" y="132" width="170" height="24" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 4"/><text x="440" y="148" font-weight="700" fill="#1c1917">$62,000</text>
+        <text x="600" y="148" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#b45309">VOID — no bid</text>
+        <rect x="600" y="164" width="160" height="20" fill="#fef3c7" stroke="#fbbf24" stroke-dasharray="5 4"/><text x="440" y="179" fill="#44403c">$61,980</text>
+        <rect x="610" y="192" width="150" height="20" fill="#fef3c7" stroke="#fbbf24" stroke-dasharray="5 4"/><text x="440" y="207" fill="#44403c">$61,960</text>
+      </g>
+      <path d="M600 224 L600 248" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arr)"/>
+      <text x="600" y="266" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#dc2626">→ price falls through · follow the break</text>
+
+      <defs>
+        <marker id="arr" markerWidth="9" markerHeight="9" refX="4.5" refY="7" orient="auto">
+          <path d="M1 1 L4.5 8 L8 1" fill="none" stroke="#ef4444" stroke-width="2"/>
+        </marker>
+      </defs>
+    </svg>
+    <div class="svg-caption">The same $62,000 shelf one tick after a sweep: green = bids that reloaded (resilient); dashed amber = a void the book refused to refill (brittle). The DOM tells you which one you're standing on.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trading the refill, not the wall</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never trust a wall you haven't watched reload — displayed size is a claim; size that refills against absorbed prints is proof.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Watch the reload, not the wall</h4>
+        <p>A 600-BTC bid means nothing until you've seen it eat aggressive sells and reappear. Static displayed size is a billboard a market maker can delete in one keystroke; replenishment is the receipt.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Resilient → fade the sweep</h4>
+        <p>When a level absorbs aggression and refills (R ≥ 1, τ ≲ 20 updates), the sweep was liquidity-seeking, not informed. Fade back into the level with a stop just beyond the cluster — you're siding with the passive defender.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Brittle → follow the break</h4>
+        <p>When the bid vanishes and won't reload, the level is hollow. Don't catch it. Trade the air pocket toward the next resting cluster — the void <em>is</em> the signal, and it usually moves fast.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Cross-check tape against book</h4>
+        <p>A level refilling <em>while</em> aggressive prints hit it = real defense. A level refilling with no trades against it = likely spoof or iceberg bait. The book shows what might happen; the trade history confirms what is happening.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — resilient hold at BTC $62,000</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC grinding into the $62,000 shelf in Wyckoff markdown; $398.7M long-liq cluster sits just below at $61,920.</td></tr>
+      <tr><td>Trigger</td><td>Two confirmed reloads of the $62,000 bid against absorbed aggressive sells (R ≥ 1, refill in &lt;20 updates).</td></tr>
+      <tr><td>Entry (long)</td><td>$62,100 on the second confirmed reload</td></tr>
+      <tr><td>Stop</td><td>$61,820 — below the $61,920 liq cluster + buffer (a flush of that cluster = brittle confirmation, thesis dead)</td></tr>
+      <tr><td>Risk</td><td>$280 / BTC</td></tr>
+      <tr><td>Target 1</td><td>$64,000 (reclaim of prior balance) → +$1,900 · <b>6.8R</b></td></tr>
+      <tr><td>Runner</td><td>$64,890 (max short-liq pocket / squeeze magnet); scale at $63,400</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> resiliency is read on the 1m–15m tape and the L2/DOM ladder; take directional bias from the 4h Wyckoff structure. It is an execution-layer tool, not a swing thesis on its own.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC $62K — does the bid come back?</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is pressing the $62,000 shelf with a $398.7M long-liq cluster directly beneath — resiliency at this level decides hold versus the $60,000 cascade.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 5 Jun 2026</div>
+    <h4>$62K — defended shelf, or a trapdoor?</h4>
+
+    <p>Per this morning's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>, <strong>BTC is at $63,378</strong>, down −3.04% on the day and −13.59% on the week, in a confirmed Wyckoff markdown (13 straight ETF outflow days, $4.4B drained; Fear &amp; Greed at 11). The <strong>$62,000 shelf</strong> is the line in the sand — and directly beneath it sits the max long-liquidation cluster at <strong>$61,920 ($398.7M)</strong>.</p>
+
+    <p>This is a textbook resiliency test. Funding is still positive (+5.62% annualized) and open interest is thin (0.1st percentile, 7d) — leveraged longs are the fuel. <strong>If the $62,000 bid absorbs the sells and reloads</strong> (R ≥ 1), the shelf is being defended and the $64,890 short-liq pocket becomes the upside magnet. <strong>If the bid empties and refuses to refill</strong>, the $61,920 longs liquidate into a vacuum and the $60,000 test (Polymarket 64.5% for June) prints in a single session — a brittle book turns a $1,400 slide into a cascade.</p>
+
+    <p><em>No tick-by-tick L2 refill log to timestamp here — this is the structural setup as of the morning read, not a recorded sweep. The point is what to watch, not a claim about what already happened.</em></p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Spot BTC</td><td>$63,378 (−3.04% 24h · −13.59% 7d)</td></tr>
+        <tr><td>$62,000 shelf</td><td>key intraday support — the resiliency test</td></tr>
+        <tr><td>Long-liq cluster</td><td>$61,920 · $398.7M · −2.45% (bear target)</td></tr>
+        <tr><td>Short-liq cluster</td><td>$64,890 · $297.9M · +2.23% (squeeze magnet)</td></tr>
+        <tr><td>Funding (annualized)</td><td>+5.62% · longs paying</td></tr>
+        <tr><td>Open interest</td><td>$6.32B · 0.1st pctile 7d (thin)</td></tr>
+        <tr><td>$60K test (Polymarket, Jun)</td><td>64.5% probability</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      With funding positive, OI thin, and a $398.7M long cluster parked at $61,920, the $62,000 bid's refill behavior is the single highest-information signal on the tape — a defended reload flips the magnet to $64,890; a hollow shelf opens the trapdoor to $60,000. → see today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">The academic, the tape reader, the desk</div>
+    </div>
+  </div>
+
+  <div class="skim">Three reads on the same idea — the economist who named the dimension, the tape reader who lived it a century ago, and today's desk.</div>
+
+  <div class="quote">
+    <p>"Liquidity… encompasses a number of transactional properties of markets. These include tightness, depth, and resiliency."</p>
+    <div class="attr"><b>Albert S. Kyle</b> · Continuous Auctions and Insider Trading, <em>Econometrica</em> · 1985 · <a href="https://www.econometricsociety.org/publications/econometrica/1985/11/01/continuous-auctions-and-insider-trading">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Prices, like everything else, move along the line of least resistance. They will do whatever comes easiest."</p>
+    <div class="attr"><b>Jesse Livermore</b> · Reminiscences of a Stock Operator · 1923 · <a href="https://www.trendfollowing.com/2017/11/05/jesse-livermore-reminiscences-of-a-stock-operator/">source</a> — <span style="font-style:normal">a bid that reloads <em>is</em> resistance to a decline; a bid that doesn't is the open path down.</span></div>
+  </div>
+
+  <div class="quote">
+    <p>"BTC is in Wyckoff markdown… the next structural support is $60,000, with 64.5% probability of testing it this month."</p>
+    <div class="attr"><b>The Morning Edge</b> · NGM Capital · 5 Jun 2026 · <a href="market-briefing.html">today's brief</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where traders blow up on this</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: sizing off the wall you see instead of the refill you can verify.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Trading the wall, not the reload</h5>
+      <p>A 600-BTC bid is a billboard, not a promise. Size off displayed depth without watching it refill and you're trading a number a market maker can cancel in one keystroke. Depth shown ≠ depth that defends.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Mistaking a spoof for resiliency</h5>
+      <p>A wall that "refills" with no trades hitting it isn't strong — it may be spoof bait that gets pulled before any real fill. Genuine resiliency is size reloading <em>while</em> aggressive prints eat it. No prints, no proof: confirm against the trade history.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Counting seconds instead of updates</h5>
+      <p>Resiliency is measured in quote updates, not wall-clock time. In fast tape, 20 updates pass in under a second; in dead tape, a "slow" refill is normal. Judge the reload against the current pace of the book, not a stopwatch.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Ignoring the cluster beneath</h5>
+      <p>A defended level sitting directly above a large liquidation cluster (today: $61,920) is fragile by construction — one failed reload feeds forced selling straight into the void. Resiliency and the leverage map have to be read together, never apart.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>"Order book resiliency" as a guru buzzword</h5>
+      <p>Some "smart money" content rebrands plain replenishment as a proprietary signal. It isn't proprietary — it's Kyle (1985), forty years old and in every microstructure textbook. The concept is real; the $499 "liquidity-resilience indicator" repackaging it is the overhyped part. Watch the refill yourself — you don't need to rent it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">From the textbook definition to the empirical recovery curve to the crypto-specific tape.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://arxiv.org/abs/1602.00731">Limit-order book resiliency after effective market orders: spread, depth and intensity</a>
+        <span>The empirical anchor: spread and depth typically revert to baseline within ~20 best-quote updates after a sweep.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://strangematters.coop/how-financial-markets-work-market-microstructure-order-flow-theorists/">How Financial Markets Work: The Resilience of Order Flow</a>
+        <span>Plain-English walkthrough of how the book depletes when market orders hit it and refills as new limits arrive.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://www.bis.org/publ/cgfs11mura_a.pdf">Market Microstructure and Market Liquidity — Muranaga &amp; Shimizu (BIS)</a>
+        <span>Canonical central-bank treatment of the tightness / depth / resiliency framework and how shocks dissipate.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://altfins.com/knowledge-base/crypto-order-book/">Orderbook in Crypto: How to Read It, Spot Liquidity, and Trade Smarter</a>
+        <span>Crypto-specific: reading walls, distinguishing spoofs from real resting size, confirming with trade history.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.econometricsociety.org/publications/econometrica/1985/11/01/continuous-auctions-and-insider-trading">Kyle 1985 (Econometrica)</a>
+    <a href="https://arxiv.org/abs/1602.00731">arXiv 1602.00731</a>
+    <a href="https://strangematters.coop/how-financial-markets-work-market-microstructure-order-flow-theorists/">Strange Matters</a>
+    <a href="https://www.bis.org/publ/cgfs11mura_a.pdf">BIS (Muranaga &amp; Shimizu)</a>
+    <a href="https://altfins.com/knowledge-base/crypto-order-book/">altFINS</a>
+    <a href="https://www.trendfollowing.com/2017/11/05/jesse-livermore-reminiscences-of-a-stock-operator/">Livermore — Reminiscences</a>
+    <a href="market-briefing.html">Morning Edge — 5 Jun 2026</a>
+  </div>
+  <div>Alpha · Issue #42 · June 5, 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
