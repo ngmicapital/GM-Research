@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — VPIN &amp; Flow Toxicity | June 6, 2026</title>
+<meta property="og:description" content="VPIN scores how one-sided order flow is over equal-volume buckets — a real-time gauge of flow toxicity and the probability informed traders are running over the people providing liquidity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — VPIN &amp; Flow Toxicity</h1>
+  <div class="meta">
+    <span>Sat · June 6, 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #43</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>VPIN</strong> is a volume-bucketed gauge of order-flow toxicity — it scores how lopsided buying is versus selling, which proxies the probability that informed traders are running over the people providing liquidity. When VPIN climbs toward 0.7 and holds, market makers widen spreads and pull depth, and that liquidity withdrawal is what turns an ordinary sell-off into an air-pocket. Trade it as a regime filter, never a timing trigger: high toxicity says fade setups are dangerous and stops need room — it tells you the water is choppy, not the exact second the wave breaks.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition &amp; first principles</div>
+    </div>
+  </div>
+
+  <div class="skim">VPIN scores how one-sided the flow is over equal-volume chunks of tape — a high reading means one side is steamrolling the other, the statistical fingerprint of informed money.</div>
+
+  <p><strong>Toxicity is not a moral judgment — it's a market-maker's word for getting run over.</strong> Every time a passive limit order fills, the counterparty either knew something or didn't. <strong>VPIN</strong> — Volume-Synchronized Probability of Informed Trading — is Easley, López de Prado and O'Hara's attempt to put a real-time number on that adverse selection, without modelling a single hidden variable or fitting a likelihood.</p>
+
+  <p>The insight is mechanical, not magical. When buys and sells arrive in roughly equal size, liquidity providers run a balanced book and earn the spread. When flow goes lopsided — far more aggressive selling than buying, or the reverse — those providers are systematically on the wrong side, soaking up inventory into a move that keeps going. VPIN measures that imbalance and reads it as the <strong>probability the flow is informed (toxic)</strong> rather than two-sided noise.</p>
+
+  <p>Crucially, VPIN runs on a <strong>volume clock</strong>, not a wall clock. It chops the tape into buckets that each hold the same traded quantity, so a frantic minute and a dead minute get equal weight. That is the whole trick: information arrives in volume-time, so you sample in volume-time.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>TOXICITY</b><span>flow that adversely selects liquidity providers</span></div>
+    <div class="pill-term"><b>VPIN</b><span>volume-synced probability of informed trading, 0→1</span></div>
+    <div class="pill-term"><b>VOLUME BUCKET</b><span>a fixed-quantity slice of tape, not a time slice</span></div>
+    <div class="pill-term"><b>BVC</b><span>Bulk Volume Classification — estimates a bucket's buy/sell share</span></div>
+    <div class="pill-term"><b>ADVERSE SELECTION</b><span>providing liquidity at a loss to someone better-informed</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember this</b>
+    VPIN does not measure direction — it measures how one-sided the flow is. A high reading says someone is being run over; price tells you which way.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Buckets · imbalance · the rolling average</div>
+    </div>
+  </div>
+
+  <div class="skim">Bucket the tape by equal volume, split each bucket into buy versus sell, then average the absolute imbalance over the last ~50 buckets — that rolling number is VPIN.</div>
+
+  <p><strong>Step 1 — bucket by volume.</strong> Pick a bucket size. The original work used roughly 1/50th of average daily volume; the Mt. Gox bitcoin study used <strong>500 BTC</strong>, about a fifteenth of daily turnover. Stream trades in and close a bucket every time cumulative volume crosses the threshold. Each bucket is a unit of <em>activity</em>, not time.</p>
+
+  <p><strong>Step 2 — classify buy versus sell.</strong> Two ways. Use the actual aggressor side per trade (in crypto this is ground truth — on Binance the taker side is tagged), or use <strong>Bulk Volume Classification (BVC)</strong>, which estimates the buy fraction of a bucket from its price change run through a normal or Student-t CDF. ELO chose BVC because it survives at high frequency where you cannot cleanly tag every print — and that choice is exactly where the controversy lives (see §07).</p>
+
+  <div class="formula">
+    Per bucket τ:&nbsp; <b>imbalance<sub>τ</sub> = | V<sub>buy</sub> − V<sub>sell</sub> | / V<sub>bucket</sub></b><br>
+    Rolling:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>VPIN<sub>t</sub> = (1 / N) · Σ imbalance<sub>τ</sub></b> &nbsp; over the last N buckets
+    <div class="note">N = 50 buckets is standard. V<sub>bucket</sub> is constant by construction, so VPIN is simply the average absolute buy/sell imbalance. Range: 0 (perfectly balanced) → 1 (totally one-sided).</div>
+  </div>
+
+  <p><strong>Step 3 — the BVC split (if you go that route).</strong> Rather than counting aggressor flags, BVC infers them from how far price moved inside the bucket:</p>
+
+  <div class="formula">
+    <b>V<sub>buy</sub> = V<sub>bucket</sub> · Z( ΔP / σ<sub>ΔP</sub> )</b> ,&nbsp; V<sub>sell</sub> = V<sub>bucket</sub> − V<sub>buy</sub><br>
+    Z = CDF of a Student-t (or normal) · ΔP = bucket price change · σ<sub>ΔP</sub> = stdev of price changes
+    <div class="note">A bigger price move per bucket implies a larger estimated buy (or sell) share. Note what this does: it bakes volatility into VPIN by construction — the critics' central objection.</div>
+  </div>
+
+  <table class="cmp">
+    <tr><th>Classifier</th><th>Aggressor / Tick rule</th><th>Bulk Volume Classification (BVC)</th></tr>
+    <tr><td>Uses</td><td>Actual taker side, trade by trade</td><td>Bucket price change run through a CDF</td></tr>
+    <tr><td>Accuracy</td><td>Higher — ground truth in crypto</td><td>Approximate, model-dependent</td></tr>
+    <tr><td>Needs</td><td>Per-trade aggressor tags</td><td>Only aggregated bars</td></tr>
+    <tr><td>ELO's choice</td><td>No</td><td>Yes</td></tr>
+    <tr><td>Critics prefer</td><td>Yes (Andersen–Bondarenko)</td><td>No</td></tr>
+  </table>
+
+  <p><strong>Reading the number:</strong> ~0 is balanced two-sided flow; ~0.5 is normal for a trend; <strong>above 0.7</strong> is the danger zone — heavily one-sided, the regime where liquidity providers start retreating.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Toxicity stacking before the break</div>
+    </div>
+  </div>
+
+  <div class="skim">The diagram shows toxicity climbing bucket by bucket while price grinds — then the liquidity vacuum that opens once VPIN pushes past the danger line.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Price grinding lower then crashing as VPIN bars rise past the 0.7 danger line">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <text x="60" y="28" font-family="DM Serif Display, serif" font-size="20" fill="#1c1917">Toxicity builds before liquidity breaks</text>
+
+      <!-- ── Price panel ── -->
+      <rect x="60" y="46" width="700" height="150" fill="#faf8f5" stroke="#e7e5e4"/>
+      <text x="68" y="64" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">PRICE</text>
+      <!-- air-pocket shade -->
+      <rect x="520" y="46" width="240" height="150" fill="rgba(239,68,68,0.07)"/>
+      <text x="540" y="84" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#ef4444">air-pocket /</text>
+      <text x="540" y="98" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#ef4444">liquidity gap</text>
+      <!-- price line: drift then crash -->
+      <polyline points="70,86 140,90 210,96 280,103 350,108 420,114 490,120 520,124 560,142 600,166 650,182 720,188" fill="none" stroke="#1c1917" stroke-width="2.5"/>
+      <!-- MM withdrawal arrow -->
+      <text x="556" y="64" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">MMs widen &amp; pull</text>
+      <line x1="560" y1="68" x2="560" y2="132" stroke="#78716c" stroke-width="1" stroke-dasharray="3 3"/>
+
+      <!-- ── VPIN panel ── -->
+      <rect x="60" y="240" width="700" height="140" fill="#faf8f5" stroke="#e7e5e4"/>
+      <text x="68" y="258" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">VPIN</text>
+      <!-- y ticks: 0 at y=380, 1 at y=250 -> v -> 380 - v*130 -->
+      <text x="34" y="384" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">0</text>
+      <text x="28" y="319" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">0.5</text>
+      <text x="34" y="254" font-family="JetBrains Mono, monospace" font-size="9" fill="#a8a29e">1</text>
+      <!-- 0.7 danger line: 380 - 0.7*130 = 289 -->
+      <line x1="60" y1="289" x2="760" y2="289" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="690" y="285" font-family="JetBrains Mono, monospace" font-size="10" fill="#b45309">0.7 danger</text>
+
+      <!-- bars: x = 70 + i*56, width 44; values rising -->
+      <rect x="70"  y="341" width="44" height="39" fill="#a3e635" opacity="0.85"/>
+      <rect x="126" y="337" width="44" height="43" fill="#a3e635" opacity="0.85"/>
+      <rect x="182" y="340" width="44" height="40" fill="#a3e635" opacity="0.85"/>
+      <rect x="238" y="331" width="44" height="49" fill="#a3e635" opacity="0.85"/>
+      <rect x="294" y="325" width="44" height="55" fill="#a3e635" opacity="0.85"/>
+      <rect x="350" y="319" width="44" height="61" fill="#a3e635" opacity="0.85"/>
+      <rect x="406" y="309" width="44" height="71" fill="#a3e635" opacity="0.9"/>
+      <rect x="462" y="298" width="44" height="82" fill="#a3e635" opacity="0.95"/>
+      <rect x="518" y="286" width="44" height="94" fill="#fbbf24"/>
+      <rect x="574" y="276" width="44" height="104" fill="#f59e0b"/>
+      <rect x="630" y="270" width="44" height="110" fill="#ef4444"/>
+      <rect x="686" y="266" width="44" height="114" fill="#ef4444"/>
+
+      <!-- cross marker -->
+      <line x1="518" y1="240" x2="518" y2="380" stroke="#1c1917" stroke-width="1.2" stroke-dasharray="4 3"/>
+      <text x="430" y="232" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#1c1917">toxicity crosses 0.7 → break follows</text>
+      <!-- connector from VPIN cross up to price crash -->
+      <line x1="518" y1="240" x2="518" y2="196" stroke="#1c1917" stroke-width="1.2" stroke-dasharray="4 3"/>
+
+      <text x="60" y="404" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">equal-volume buckets  ▸  time runs left → right, but each bar is the same traded quantity</text>
+    </svg>
+    <div class="svg-caption">VPIN (lower) builds past the 0.7 danger line as flow turns one-sided; liquidity providers widen and withdraw, and price gaps lower (upper). The buckets are equal width <em>by volume</em>, not by time.</div>
+  </div>
+
+  <p>The second diagram is the atom of the whole metric — a single bucket's buy/sell split mapped to its imbalance score. Same volume in each; only the lopsidedness changes the number.</p>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 300" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Three equal-volume buckets with different buy/sell splits and their imbalance scores">
+      <rect x="0" y="0" width="800" height="300" fill="#ffffff"/>
+      <text x="40" y="30" font-family="DM Serif Display, serif" font-size="18" fill="#1c1917">One bucket, three regimes — same volume, different toxicity</text>
+
+      <!-- Bucket A: 50/50 balanced. bar x=115..205, total y 70..230 (h160) -->
+      <rect x="115" y="70"  width="90" height="80" fill="#22c55e" opacity="0.85"/>
+      <rect x="115" y="150" width="90" height="80" fill="#ef4444" opacity="0.85"/>
+      <text x="160" y="110" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff" text-anchor="middle">BUY 50%</text>
+      <text x="160" y="194" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff" text-anchor="middle">SELL 50%</text>
+      <text x="160" y="256" font-family="JetBrains Mono, monospace" font-size="13" fill="#1c1917" text-anchor="middle">imbalance ≈ 0.00</text>
+      <text x="160" y="276" font-family="Inter, sans-serif" font-size="11" fill="#3f6212" text-anchor="middle">balanced · non-toxic</text>
+
+      <!-- Bucket B: 70/30 buy-skewed -->
+      <rect x="355" y="70"  width="90" height="112" fill="#22c55e" opacity="0.9"/>
+      <rect x="355" y="182" width="90" height="48"  fill="#ef4444" opacity="0.85"/>
+      <text x="400" y="130" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff" text-anchor="middle">BUY 70%</text>
+      <text x="400" y="211" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffffff" text-anchor="middle">SELL 30%</text>
+      <text x="400" y="256" font-family="JetBrains Mono, monospace" font-size="13" fill="#1c1917" text-anchor="middle">imbalance ≈ 0.40</text>
+      <text x="400" y="276" font-family="Inter, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">buy-dominant · warming</text>
+
+      <!-- Bucket C: 12/88 sell-skewed -->
+      <rect x="595" y="70"  width="90" height="19"  fill="#22c55e" opacity="0.85"/>
+      <rect x="595" y="89"  width="90" height="141" fill="#ef4444" opacity="0.92"/>
+      <text x="640" y="84" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ffffff" text-anchor="middle">BUY 12%</text>
+      <text x="640" y="165" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff" text-anchor="middle">SELL 88%</text>
+      <text x="640" y="256" font-family="JetBrains Mono, monospace" font-size="13" fill="#1c1917" text-anchor="middle">imbalance ≈ 0.76</text>
+      <text x="640" y="276" font-family="Inter, sans-serif" font-size="11" fill="#b91c1c" text-anchor="middle">sell-dominant · toxic</text>
+    </svg>
+    <div class="svg-caption">Each bucket holds the same volume; VPIN cares only about how lopsided the buy/sell split is. A balanced bucket scores ~0; an 88/12 split in <em>either</em> direction scores ~0.76 — proof the metric is sign-blind. Direction is read elsewhere.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Regime filter, not a trigger</div>
+    </div>
+  </div>
+
+  <div class="skim">Trade VPIN as a regime filter — high toxicity says "don't fade, give stops room," never "short here, now."</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num"><em>1</em></div>
+      <div>
+        <h4>Filter, don't trigger</h4>
+        <p>Elevated VPIN is context, not a signal. It says informed flow dominates, so mean-reversion and fade setups have a poor edge right now. Stand the contrarian playbook down until imbalance normalizes.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>2</em></div>
+      <div>
+        <h4>Pair it with price — it's sign-blind</h4>
+        <p>VPIN spikes identically on toxic buying and toxic selling. Overlay it on CVD or plain price direction to know which side is being run over before you act on the reading.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>3</em></div>
+      <div>
+        <h4>Watch the cross, then the retreat</h4>
+        <p>The setup that matters is VPIN pushing above 0.7 and <em>staying</em> there while book depth thins. Toxicity up plus depth down precedes air-pockets far more reliably than either alone.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>4</em></div>
+      <div>
+        <h4>It edits size and stops, not entries</h4>
+        <p>In a high-toxicity regime, widen stops and cut size — liquidity is fragile and slippage compounds. The edge VPIN gives you is risk management, not a fresh reason to click.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked read — computing VPIN from five buckets (illustrative)</h5>
+    <table>
+      <tr><td>Bucket 1</td><td>52% buy / 48% sell → |0.52 − 0.48| = <strong>0.04</strong></td></tr>
+      <tr><td>Bucket 2</td><td>61 / 39 → <strong>0.22</strong></td></tr>
+      <tr><td>Bucket 3</td><td>74 / 26 → <strong>0.48</strong></td></tr>
+      <tr><td>Bucket 4</td><td>83 / 17 → <strong>0.66</strong></td></tr>
+      <tr><td>Bucket 5</td><td>88 / 12 → <strong>0.76</strong></td></tr>
+      <tr><td>VPIN (N=5)</td><td>(0.04 + 0.22 + 0.48 + 0.66 + 0.76) / 5 = <strong>≈ 0.43</strong>, rising fast</td></tr>
+    </table>
+    <p style="margin:10px 0 0">Note the lag the rolling average builds in: bucket 5 is already screaming <strong>0.76</strong>, yet the 5-bucket VPIN reads only 0.43 because the early buckets were calm. Shorten N for responsiveness and noise; lengthen it for a smoother but slower signal. The number you watch is always a trailing average, never the live tape.</p>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> bucket size sets the clock — sub-hour buckets for intraday execution, multi-hour buckets for a swing-grade regime read. Bias from 4h+, manage risk on the read.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC/ETH risk-off · June 2026</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is down 16% on the week into a sharp 24h leg lower — textbook conditions for elevated flow toxicity as aggressive sellers run over passive bids.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 06 Jun 2026</div>
+    <h4>One-sided tape: the regime VPIN is built to flag</h4>
+
+    <p>As of <strong>06 June 2026 (00:35 UTC)</strong>, BTC is changing hands near <strong>$61,340</strong>, down <strong>3.7%</strong> on the day and <strong>16.4%</strong> on the week. ETH is worse — near <strong>$1,597</strong>, off <strong>9.7%</strong> on the day and <strong>20.6%</strong> on the week. This is the shape of toxic flow: aggressive sell market orders hammering the bid stack, and the passive bidders who fill getting marked underwater within minutes as the next leg prints lower. That is adverse selection in motion — exactly what a high VPIN encodes.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot</td><td>$61,342</td></tr>
+        <tr><td>BTC 24h</td><td>−3.70%  (H $63,702 / L $59,228)</td></tr>
+        <tr><td>BTC 7-day</td><td>−16.4%</td></tr>
+        <tr><td>ETH spot</td><td>$1,596.81</td></tr>
+        <tr><td>ETH 24h</td><td>−9.69%  (H $1,768.90 / L $1,545.27)</td></tr>
+        <tr><td>ETH 7-day</td><td>−20.6%</td></tr>
+        <tr><td>24h volume</td><td>BTC $74.8B · ETH $40.2B</td></tr>
+        <tr><td>Source</td><td>CoinGecko · 06 Jun 2026 00:35 UTC</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p><strong>Honesty note:</strong> I don't have a live VPIN readout on this tape — what's observable is the <em>regime</em>: price falling on heavy, one-directional volume, the conditions under which VPIN runs hot. The documented precedent is clean: on <strong>Mt. Gox in April 2013</strong>, VPIN held <strong>above 0.85</strong> as BTC fell from its ~$250 high toward ~$70, then eased to ~0.63 only as flow rebalanced on the bounce back to ~$160. Same fingerprint — toxic, one-sided selling, liquidity in retreat.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      When the tape is this one-sided, the dangerous trade is the reflexive dip-buy into thinning bids. Toxicity says liquidity is being consumed, not replenished — respect the air-pocket risk until 24h volume cools and the down-legs stop expanding.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The originators &amp; the skeptics</div>
+    </div>
+  </div>
+
+  <div class="skim">Hold three voices at once: the people who built VPIN, the authority who reframed informed trading for the HFT era, and the academics who pushed back.</div>
+
+  <div class="quote">
+    <p>"Order flow is toxic when it adversely selects market makers, who may be unaware they are providing liquidity at a loss."</p>
+    <div class="attr"><b>Easley, López de Prado &amp; O'Hara</b> · Flow Toxicity and Liquidity in a High-Frequency World · Review of Financial Studies · 2012 · <a href="https://academic.oup.com/rfs/article-abstract/25/5/1457/1569929">link</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Being informed means seeing and acting on market prices sooner than competitors. Today, it pays to be faster than the average bear, not smarter."</p>
+    <div class="attr"><b>Maureen O'Hara</b> · High-Frequency Market Microstructure · Journal of Financial Economics · 2015 · <a href="https://statmath.wu.ac.at/~hauser/LVs/FinEtricsQF/References/oHara2015JFinEco_HighFrequ_Market_MiicroStruct.pdf">link</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"We find no evidence of incremental predictive power of VPIN for future volatility."</p>
+    <div class="attr"><b>Torben Andersen &amp; Oleg Bondarenko</b> · Reflecting on the VPIN Dispute · Journal of Financial Markets · 2014 · <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2305905">link</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where VPIN misleads</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake is trading VPIN as a timing signal — it's a regime gauge that lags by construction, not a turn-caller.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Treating it as a short trigger</h5>
+      <p>High VPIN tells you flow is toxic, not that the top is in. Shorting the instant VPIN crosses 0.7 gets you steamrolled, because the toxicity often <em>is</em> the trend continuing. Use it to manage risk, not to pick the turn.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Ignoring sign-blindness</h5>
+      <p>VPIN reads identically on a melt-up and a melt-down. Without a direction overlay you'll mistake aggressive buying for danger and aggressive selling for the same thing, with no idea which way to lean.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Forgetting the classification dependency</h5>
+      <p>Swap the buy/sell classifier — true aggressor tags versus Bulk Volume Classification — and VPIN can flip behaviour entirely. The number you trust is only as good as how you split buys from sells.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Over-tuning bucket size and N</h5>
+      <p>Small buckets and short windows make VPIN twitchy and prone to false alarms; large ones make it lag the move it's meant to warn about. There's no universal setting — it's a fitted parameter, so treat it like one.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: the "two-hour flash-crash warning"</h5>
+      <p>This is contested, and Tony-frank: Andersen &amp; Bondarenko showed VPIN is largely <em>mechanically</em> driven by volume and volatility, and that under standard trade classification it spiked <em>after</em> the 2010 crash, not before — with no incremental predictive power once you control for those. VPIN is a real, useful description of adverse-selection conditions. Sold as a crystal-ball crash predictor it's overhyped; used as a regime filter it earns its keep.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Papers · forensics · code</div>
+    </div>
+  </div>
+
+  <div class="skim">Where to go deeper — the original construction, the crypto forensic, the critique, and a working implementation.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://jheusser.github.io/2013/10/13/informed-trading.html">Order Flow Toxicity of the Bitcoin April Crash — J. Heusser</a>
+        <span>VPIN applied to Mt. Gox tape: toxicity above 0.85 as BTC fell from ~$250 toward ~$70, easing to ~0.63 on the rebound. The cleanest crypto worked example.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://jpm.pm-research.com/content/37/2/118">The Microstructure of the "Flash Crash" — Easley, López de Prado &amp; O'Hara (JPM, 2011)</a>
+        <span>The original VPIN-and-the-flash-crash argument: order flow turning toxic in the hours before 6 May 2010.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://academic.oup.com/rfs/article-abstract/25/5/1457/1569929">Flow Toxicity and Liquidity in a High-Frequency World — RFS, 2012</a>
+        <span>The formal VPIN construction, the toxicity definition, and the volume-clock framing. Read this for the math.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Critique</div>
+      <div class="fr-body">
+        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2305905">Reflecting on the VPIN Dispute — Andersen &amp; Bondarenko (2014)</a>
+        <span>The rigorous case that VPIN is reactive, not predictive, and highly sensitive to trade classification. Essential counterweight.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://questdb.com/docs/cookbook/sql/finance/vpin/">VPIN Cookbook — QuestDB</a>
+        <span>A clean SQL implementation: volume bucketing, the buy/sell split, the 50-bucket rolling average, and interpretation thresholds.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://academic.oup.com/rfs/article-abstract/25/5/1457/1569929">Easley, López de Prado &amp; O'Hara — RFS 2012</a>
+    <a href="https://jpm.pm-research.com/content/37/2/118">ELO — Microstructure of the Flash Crash (JPM 2011)</a>
+    <a href="https://jheusser.github.io/2013/10/13/informed-trading.html">Heusser — Bitcoin April Crash Toxicity</a>
+    <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2305905">Andersen &amp; Bondarenko — VPIN Dispute (2014)</a>
+    <a href="https://questdb.com/docs/cookbook/sql/finance/vpin/">QuestDB — VPIN Cookbook</a>
+    <a href="https://statmath.wu.ac.at/~hauser/LVs/FinEtricsQF/References/oHara2015JFinEco_HighFrequ_Market_MiicroStruct.pdf">O'Hara — High-Frequency Market Microstructure (JFE 2015)</a>
+    <a href="https://www.coingecko.com/">CoinGecko — live BTC/ETH quotes</a>
+  </div>
+  <div>Alpha · Issue #43 · June 6, 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
