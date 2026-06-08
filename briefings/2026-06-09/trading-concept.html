@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Sweep Orders &amp; Sweeping the Book | 9 June 2026</title>
+<meta property="og:description" content="Sweep orders are aggressive market orders that consume every available level on the bid or ask — ripping through the book and telegraphing institutional intent. Learn how to read them in real time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">&#9776;</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">&#9679;</span> Trading Concepts <span class="dot">&#9679;</span> Daily</div>
+  <h1><em>Alpha</em> &#8212; Sweep Orders &amp; Sweeping the Book</h1>
+  <div class="meta">
+    <span>9 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 44</span>
+    <span class="pill">8 min</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A <strong>sweep order</strong> is an aggressive market order (or burst of orders) that consumes every resting limit at successive price levels, clearing the book in a single violent motion. Sweeps reveal <strong>urgent institutional intent</strong> — the aggressor needed size <em>now</em>, price be damned. Reading sweeps correctly tells you who just showed their hand, where the next magnet is, and whether the move has legs or is already exhausted.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition &amp; taxonomy</div>
+    </div>
+  </div>
+
+  <div class="skim">A sweep order eats through multiple price levels in one motion — it is the orderbook's equivalent of a wrecking ball. Where a normal market order hopes to fill at or near the touch, a sweep <em>plans</em> to consume depth.</div>
+
+  <p>In microstructure terms, <strong>sweeping the book</strong> means submitting an order (or an algorithm that fires a rapid succession of child orders) sized large enough to exhaust all resting liquidity at the best price and continue filling at progressively worse levels until the order is complete. The price "sweeps" upward through the ask stack, or downward through the bid stack, leaving a trail of filled orders and a noticeably thinner book in its wake.</p>
+
+  <p>On US equities exchanges, the canonical form is the <strong>Intermarket Sweep Order (ISO)</strong> — a Reg NMS order type explicitly exempt from the "trade-through" rule, allowing it to execute simultaneously across multiple venues at multiple prices without waiting for best-price routing. In crypto, which has no Reg NMS equivalent, the same economics play out via algorithmic "taker" orders fired at speed across a single venue's depth ladder, or across multiple CEX/DEX venues simultaneously.</p>
+
+  <p>The important distinction: a sweep is a <em>deliberate choice</em>. The trader or institution chose market impact over price improvement. That urgency is signal.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>ISO</b><span>Intermarket Sweep Order — the TradFi form</span></div>
+    <div class="pill-term"><b>Taker</b><span>Aggressor who removes resting liquidity</span></div>
+    <div class="pill-term"><b>Resting Limit</b><span>Passive order waiting on the book</span></div>
+    <div class="pill-term"><b>Book Depth</b><span>Cumulative size at each price level</span></div>
+    <div class="pill-term"><b>Price Impact</b><span>How far price moves per unit filled</span></div>
+    <div class="pill-term"><b>Slippage</b><span>Difference between first and last fill price</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Key insight</b>
+    Normal institutional execution <em>minimises</em> market impact — TWAP, VWAP, iceberg, dark pools. A sweep is the opposite: maximum speed, maximum impact. When someone sweeps, the cost of impact was judged acceptable. Ask yourself: why were they in that much of a hurry?
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How the book gets cleared, level by level</div>
+    </div>
+  </div>
+
+  <div class="skim">A sweep consumes the ask (or bid) stack sequentially. The speed — microseconds in equities, milliseconds in crypto — means the aggressor is paying a known slippage premium. Track the cumulative filled volume at each level and the residual depth after the sweep ends.</div>
+
+  <p><strong>Step-by-step anatomy of an ask-side sweep (buy sweep):</strong></p>
+  <ol style="margin:0 0 14px 22px;color:var(--ink-2);line-height:1.9">
+    <li>Best ask is, say, $105,000 with 2.0 BTC resting. A 10 BTC market buy fires.</li>
+    <li>The first 2.0 BTC fill at $105,000 exhausts that level — it disappears from the book.</li>
+    <li>The next 3.5 BTC resting at $105,050 gets consumed. Level cleared.</li>
+    <li>1.8 BTC at $105,100 — gone.</li>
+    <li>…continuing until all 10 BTC are filled, ending perhaps at $105,340.</li>
+    <li>The book now has a gap (thin depth) between $105,340 and the next cluster of asks.</li>
+  </ol>
+
+  <p>The resulting footprint on the tape: a sequence of <strong>large aggressive prints at ascending prices</strong>, all executed within milliseconds. On a footprint chart each row lights up in sequence — a clear visual "ladder" ascending the ask side.</p>
+
+  <p>In crypto perpetual futures the mechanics are identical but with added nuance: the sweep can simultaneously trigger <strong>liquidations</strong> — forced market orders from levered longs or shorts whose margin ran out — which in turn feed the sweep with more aggressive flow and compound the move.</p>
+
+  <div class="formula">
+    <b>Sweep Slippage</b> = Fill<sub>last</sub> − Fill<sub>first</sub><br>
+    <b>Sweep Intensity</b> = Total Swept Volume ÷ Average Daily Volume (%)<br>
+    <b>Post-Sweep Depth Ratio</b> = Remaining Book Depth ÷ Pre-Sweep Depth<br>
+    <div class="note">Post-sweep depth &lt; 30% of pre-sweep = "thin book" — prone to continuation or sharp reversal</div>
+  </div>
+
+  <table class="cmp">
+    <thead>
+      <tr><th>Order Type</th><th>Intent</th><th>Speed</th><th>Book Impact</th><th>Signal Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Standard Market</td><td>Fill now, small size</td><td>Fast</td><td>Low</td><td>Neutral</td></tr>
+      <tr><td>TWAP/VWAP Algo</td><td>Minimise impact</td><td>Slow/spread</td><td>Very low</td><td>Directional but muted</td></tr>
+      <tr><td>Iceberg</td><td>Hide size, patient</td><td>Medium</td><td>Low per slice</td><td>Detectable via absorption</td></tr>
+      <tr><td><strong>Sweep</strong></td><td><strong>Fill fast regardless of cost</strong></td><td><strong>Very fast</strong></td><td><strong>High</strong></td><td><strong>Strong directional</strong></td></tr>
+      <tr><td>Block (dark)</td><td>Hide from lit market</td><td>Negotiated</td><td>None (off-book)</td><td>Appears post-print only</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Book state before, during &amp; after a buy sweep</div>
+    </div>
+  </div>
+
+  <div class="skim">Picture the ask ladder as a stack of blocks. A sweep is a forklift driving straight through them — blocks disappear bottom-to-top as the price rises. What remains is an empty shelf and a higher price.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-label="Sweep order diagram showing book before and after a buy sweep">
+      <defs>
+        <linearGradient id="sweepGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#a3e635" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#a3e635" stop-opacity="0.02"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Background -->
+      <rect width="800" height="420" fill="#1c1917" rx="6"/>
+
+      <!-- Title labels -->
+      <text x="195" y="30" text-anchor="middle" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" text-transform="uppercase">BEFORE SWEEP</text>
+      <text x="595" y="30" text-anchor="middle" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" text-transform="uppercase">AFTER SWEEP</text>
+
+      <!-- Divider -->
+      <line x1="400" y1="20" x2="400" y2="400" stroke="#44403c" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="400" y="215" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono, monospace" font-size="22" font-weight="700">&#8594;</text>
+
+      <!-- ── LEFT PANEL: BEFORE ── -->
+      <!-- Ask levels (above mid) — resting sellers -->
+      <!-- Level labels on left -->
+      <text x="58" y="68" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,400</text>
+      <text x="58" y="98" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,300</text>
+      <text x="58" y="128" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,200</text>
+      <text x="58" y="158" text-anchor="end" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">105,100</text>
+      <text x="58" y="188" text-anchor="end" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">105,050</text>
+      <text x="58" y="218" text-anchor="end" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">105,000</text>
+
+      <!-- Mid price line -->
+      <text x="58" y="248" text-anchor="end" fill="#bef264" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">MID</text>
+      <line x1="64" y1="244" x2="388" y2="244" stroke="#bef264" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <text x="58" y="278" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">104,950</text>
+      <text x="58" y="308" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">104,900</text>
+      <text x="58" y="338" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">104,800</text>
+      <text x="58" y="368" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">104,700</text>
+
+      <!-- ASK bars (red, resting sellers) -->
+      <rect x="64" y="56" width="60" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="130" y="68" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.2 BTC</text>
+
+      <rect x="64" y="86" width="90" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="160" y="98" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.8 BTC</text>
+
+      <rect x="64" y="116" width="75" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="145" y="128" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.5 BTC</text>
+
+      <!-- Swept levels — brighter red (will be consumed) -->
+      <rect x="64" y="146" width="90" height="18" fill="#ef444460" stroke="#ef4444" stroke-width="1.5" rx="2"/>
+      <text x="160" y="158" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">1.8 BTC &#9654;</text>
+
+      <rect x="64" y="176" width="175" height="18" fill="#ef444460" stroke="#ef4444" stroke-width="1.5" rx="2"/>
+      <text x="245" y="188" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">3.5 BTC &#9654;</text>
+
+      <rect x="64" y="206" width="100" height="18" fill="#ef444460" stroke="#ef4444" stroke-width="1.5" rx="2"/>
+      <text x="170" y="218" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">2.0 BTC &#9654;</text>
+
+      <!-- BID bars (green, resting buyers) -->
+      <rect x="64" y="266" width="140" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="210" y="278" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">2.8 BTC</text>
+
+      <rect x="64" y="296" width="200" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="270" y="308" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">4.0 BTC</text>
+
+      <rect x="64" y="326" width="110" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="180" y="338" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">2.2 BTC</text>
+
+      <rect x="64" y="356" width="60" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="130" y="368" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">1.2 BTC</text>
+
+      <!-- Sweep arrow on left panel -->
+      <path d="M 300 218 L 300 148" stroke="#a3e635" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+      <text x="310" y="185" fill="#a3e635" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1">10 BTC</text>
+      <text x="310" y="196" fill="#a3e635" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1">SWEEP</text>
+
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#a3e635"/>
+        </marker>
+      </defs>
+
+      <!-- ── RIGHT PANEL: AFTER ── -->
+      <!-- Price level labels — same grid but shifted +400 -->
+      <text x="458" y="68" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,400</text>
+      <text x="458" y="98" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,300</text>
+      <text x="458" y="128" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,200</text>
+      <text x="458" y="158" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,100</text>
+      <text x="458" y="188" text-anchor="end" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">105,050</text>
+
+      <!-- New mid is now ~105,000 → price moved up -->
+      <text x="458" y="218" text-anchor="end" fill="#bef264" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">NEW MID</text>
+      <line x1="464" y1="214" x2="788" y2="214" stroke="#bef264" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <text x="458" y="248" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">104,950</text>
+      <text x="458" y="278" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">104,900</text>
+      <text x="458" y="308" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">104,800</text>
+      <text x="458" y="338" text-anchor="end" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">104,700</text>
+
+      <!-- Remaining ask bars (3 untouched levels) -->
+      <rect x="464" y="56" width="60" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="530" y="68" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.2 BTC</text>
+
+      <rect x="464" y="86" width="90" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="560" y="98" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.8 BTC</text>
+
+      <rect x="464" y="116" width="75" height="18" fill="#ef444430" stroke="#ef4444" stroke-width="1" rx="2"/>
+      <text x="545" y="128" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">1.5 BTC</text>
+
+      <!-- GAP indicator where swept levels were -->
+      <rect x="464" y="146" width="320" height="60" fill="#a3e63510" stroke="#a3e635" stroke-width="1" stroke-dasharray="4,3" rx="2"/>
+      <text x="624" y="172" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">SWEPT ZONE</text>
+      <text x="624" y="188" text-anchor="middle" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">7.3 BTC consumed</text>
+
+      <!-- Bid bars unchanged -->
+      <rect x="464" y="236" width="140" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="610" y="248" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">2.8 BTC</text>
+
+      <rect x="464" y="266" width="200" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="670" y="278" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">4.0 BTC</text>
+
+      <rect x="464" y="296" width="110" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="580" y="308" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">2.2 BTC</text>
+
+      <rect x="464" y="326" width="60" height="18" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="2"/>
+      <text x="530" y="338" fill="#22c55e" font-family="JetBrains Mono, monospace" font-size="10">1.2 BTC</text>
+
+      <!-- Legend row -->
+      <rect x="64" y="392" width="12" height="12" fill="#ef444460" stroke="#ef4444" stroke-width="1" rx="1"/>
+      <text x="82" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="10">Ask (resting sellers)</text>
+      <rect x="220" y="392" width="12" height="12" fill="#22c55e30" stroke="#22c55e" stroke-width="1" rx="1"/>
+      <text x="238" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="10">Bid (resting buyers)</text>
+      <rect x="464" y="392" width="12" height="12" fill="#a3e63510" stroke="#a3e635" stroke-width="1" rx="1"/>
+      <text x="482" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="10">Swept / cleared zone</text>
+      <line x1="640" y1="398" x2="660" y2="398" stroke="#bef264" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <text x="666" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="10">Mid price</text>
+    </svg>
+    <div class="svg-caption">A 10 BTC buy sweep consumes three ask levels (105,000 / 105,050 / 105,100) in sequence, raising the mid price and leaving a gap in the book — the "swept zone" — with no resting asks until 105,200.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading &amp; trading the sweep signal</div>
+    </div>
+  </div>
+
+  <div class="skim">Don't chase the sweep candle — you're already late. Instead read what the sweep reveals: is the book thin enough to continue? Did any absorption appear? Is delta confirming? Then position into the <em>aftermath</em>, not the flash.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Identify the Sweep in Real Time</h4>
+        <p>On a footprint chart, a sweep is a column of ascending ask-side prints within a single candle — each cell shows bid × ask volume and the ask side "stacks" green from bottom to top with large numbers. On a time-and-sales feed it appears as a burst of aggressive fills at consecutive prices within under a second. Size threshold: generally the sweep needs to be at least 3–5× normal candle volume to classify as institutional.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Assess Book Depth After the Sweep</h4>
+        <p>Immediately check the updated order book. If the next ask cluster above the swept zone is thin (&lt;30% of pre-sweep depth), price has a "vacuum" to fill — continuation likely. If a wall of fresh sell limit orders materialises within 2–3 seconds, market makers are refilling aggressively; the sweep may have exhausted itself. This "depth replenishment rate" is the single most important post-sweep variable.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Confirm with Cumulative Volume Delta</h4>
+        <p>After a buy sweep, CVD should spike sharply upward — more aggressive buying volume than selling for that window. If CVD diverges (price ticked up but CVD went flat or fell), the sweep was absorbed by passive sellers who were not visible on the lit book. That's a bearish divergence and a potential fade setup. Convergence (CVD up, price up) = confirmation.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Watch for the "Sweep &amp; Reverse" Pattern</h4>
+        <p>A sweep that fails to hold — price sweeps through a level, then pulls back and closes <em>below</em> the swept zone within 1–3 candles — is called a sweep-and-reverse or a "fakeout sweep." This often indicates the sweep was engineered to collect stop-loss orders below a support level (sell-side liquidity sweep) before the real direction resumes upward. The reversal candle closing back inside the range is the entry signal.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — BTC Perpetual, 5-Minute Chart</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC ranging $104,800–$105,200 for 3 hours. Clean equal highs at $105,200 visible on the chart — textbook stop cluster above.</td></tr>
+      <tr><td>Sweep Candle</td><td>09:42 UTC: single 5-min candle prints $105,180 → $105,640 in 8 seconds. Footprint shows 312 BTC on ask side, 18× average candle volume. CVD surges +290 BTC.</td></tr>
+      <tr><td>Post-Sweep Book</td><td>Asks at $105,640–$105,900: only 45 BTC resting. Pre-sweep comparable depth was ~200 BTC. Depth ratio = 22% → vacuum conditions.</td></tr>
+      <tr><td>Entry</td><td>Long entry on first 5-min close above $105,200 (the prior high), ~$105,260. Stop below the sweep candle open at $105,150.</td></tr>
+      <tr><td>Target</td><td>Next visible ask cluster on heatmap at $106,400 (the prior month's VPOC). Risk/reward ~10:1.</td></tr>
+      <tr><td>Outcome</td><td>Price reached $106,380 over the next 40 minutes. No re-test of entry before the move.</td></tr>
+    </table>
+  </div>
+
+  <p class="tf-note"><b>Timeframe note:</b> Sweeps are most visible and actionable on 1m–15m charts with a footprint overlay. On higher timeframes (4H+) they compress into a single wick and lose granularity. Keep a footprint or time-and-sales window dedicated to sweep detection even when your primary chart is higher timeframe.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC · June 2026 sweep context</div>
+    </div>
+  </div>
+
+  <div class="skim">Early June 2026 delivered a textbook sweep event: BTC was swept briefly below $60,000 — triggering $1.57 billion in liquidations — before recovering sharply. The $59,743 print was a sweep-and-reverse, not a breakdown.</div>
+
+  <div class="tape">
+    <div class="tape-label">&#9679; Live Tape · BINANCE:BTCUSDT.P · 4H · 9 June 2026</div>
+    <h4>The $60K Liquidity Sweep: $1.57B Flushed in One Candle</h4>
+
+    <p>In the first week of June 2026, BTC printed one of the cleaner sweep-and-reverse setups of the year. Equal lows at ~$60,200 had been accumulating retail stop-loss orders for nearly two weeks. On June 4, a wave of algorithmic selling swept price to an intraday low of <strong>$59,743 on Bitstamp</strong> — just enough to collect the stops and the forced liquidations of leveraged longs — before price recovered above $60,800 within the same 4-hour candle.</p>
+
+    <p>The tell: the $59,743 candle closed <em>back above</em> $60,200, reclaiming the level it had swept. The sweep zone became support. CVD data showed aggressive buying immediately after the liquidation cascade completed — institutional size entering on the fill of retail stops.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Sweep Low</td><td>$59,743 (Bitstamp, ~06:14 UTC June 4)</td></tr>
+        <tr><td>Sweep High Before</td><td>$60,200 equal-lows cluster (2-week range)</td></tr>
+        <tr><td>Liquidations Triggered</td><td>$1.57 billion (BTC perpetuals, all exchanges)</td></tr>
+        <tr><td>Recovery Close</td><td>$60,820 same 4H candle — full reclaim</td></tr>
+        <tr><td>Next Resistance / Target</td><td>$72,280 (Binance liquidation heatmap cluster)</td></tr>
+        <tr><td>Post-sweep OI</td><td>Declined sharply = over-leverage flushed, cleaner base</td></tr>
+        <tr><td>Funding Rate</td><td>Reset to near-zero post-liquidation — de-risked market</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT.P&interval=240&theme=dark&style=1&locale=en&hide_top_toolbar=0&hide_legend=0&saveimage=0&studies=CVD" style="width:100%;height:420px;border:0;" loading="lazy" title="BTC/USDT Perpetual 4H Chart"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The sweep low's wicking candle was the signal: price pierced $60K — a psychologically and technically important level — collected stops and liquidations as "fuel," then closed back inside. The aggressor was not a seller; they were a <em>buyer</em> engineering their own fill. Post-sweep, the book was thin below $61K and deep on the bid — classic vacuum continuation setup.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Practitioners on sweep mechanics</div>
+    </div>
+  </div>
+
+  <div class="skim">The sweep has been a feature of lit markets since open-outcry pits. From pit traders watching the broker run the stops to today's algo watchers monitoring liquidation cascades — the same intent persists.</div>
+
+  <div class="quote">
+    <p>"When you see a sweep order hit, that is someone who needed to own those contracts right then. They could not wait for price to come to them, they could not slice it quietly over the session. Whatever they knew — or thought they knew — was time-sensitive. Respect that urgency."</p>
+    <div class="attr">&#8212; <b>Trader Dale</b>, Order Flow: Trading Setups</div>
+  </div>
+
+  <div class="quote">
+    <p>"A sweep is a liquidity destruction device. It doesn't just move price — it removes the book depth that would have slowed the next move. The aftermath is often more important than the event itself. An empty shelf means the next buyer or seller has no resistance."</p>
+    <div class="attr">&#8212; <b>Bookmap Research</b>, Order Flow Strategies (2025)</div>
+  </div>
+
+  <div class="quote">
+    <p>"Sweeps in crypto are particularly violent because liquidations act as synthetic sweeps — forced market orders that compound the original aggression. One whale sweep can trigger a cascade of automatic liquidations, each one a new aggressive taker adding to the momentum."</p>
+    <div class="attr">&#8212; <b>Ed Silantyev</b>, Order Flow Analysis of Cryptocurrency Markets (Medium)</div>
+  </div>
+
+  <div class="quote">
+    <p>"Unlike US equities subject to anti-spoofing policies, there are no equal regulatory counterparts in cryptocurrency markets. Order flow may carry relatively lower information in crypto than in equities — which is why trade flow imbalance, not order flow imbalance, better explains contemporaneous price changes in BTC."</p>
+    <div class="attr">&#8212; <b>ScienceDirect</b>, Order flow and cryptocurrency returns (2026)</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where sweep traders go wrong</div>
+    </div>
+  </div>
+
+  <div class="skim">The sweep candle is the most exciting thing on your screen — and the most dangerous time to trade. Most sweep traps come from acting on the candle itself rather than on what the book looks like <em>after</em>.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Chasing the Sweep Candle</h5>
+      <p>Entering a market order the moment you see the sweep spike means you're buying the highest prices of the candle. The sweep is over — you're paying the premium. Wait for the first pullback or re-test of the swept zone before entry. The setup is in the aftermath, not the flash.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Ignoring Book Replenishment</h5>
+      <p>Not all sweeps leave a vacuum. High-frequency market makers can replenish depth within 100–200ms in liquid markets. If you see the book refilling rapidly at higher prices with large size, the sweep may have been absorbed. Check the depth chart 2–5 seconds after the sweep — if walls are already rebuilding, skip the trade.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing a Sweep with a Fake Sweep</h5>
+      <p>Spoofing algos occasionally post and cancel large orders to create the visual impression of a sweep. On genuine sweeps, time-and-sales will show actual <em>fills</em> at multiple price levels — not just order book changes. Always confirm with real prints in the tape, not just DOM flickering.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Over-sizing After a Sweep-and-Reverse</h5>
+      <p>The sweep-and-reverse (fakeout) is seductive because the stop location is tight — the sweep low is clear. But these setups often have wide initial price swings before the recovery trend begins. Use half normal size on sweep-and-reverse entries and scale in only once the sweep zone confirms as support (two candle closes above it).</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">5</div>
+    <div>
+      <h5>Assuming Every Sweep is Directional</h5>
+      <p>Liquidation cascade sweeps in crypto (the June 4 BTC example) are often engineered exits, not new entries. A sweep caused by cascading liquidations may simply clear over-leverage without attracting fresh institutional buyers. Confirm institutional re-accumulation with CVD turning positive <em>after</em> the liquidation flush — not just during it.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">&#9675;</div>
+    <div>
+      <h5>Honest Framing: Sweeps Are Rare, High-Quality Signals</h5>
+      <p>On any given day you might see 2–4 genuine sweeps across all BTC/ETH markets. Most are not tradeable (wrong context, bad location relative to structure). Resist the urge to classify every fast move as a sweep. A real sweep is distinguished by multi-level sequential fills on T&amp;S at 3–5× normal volume — anything less is just volatility.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper on sweeps &amp; orderflow</div>
+    </div>
+  </div>
+
+  <div class="skim">One book, one academic paper, and two platform guides will take you from concept to execution. The ResearchGate paper on floor trading after sweeping the book is the closest thing to a canonical academic treatment.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Academic</div>
+      <div class="fr-body">
+        <a href="https://www.researchgate.net/publication/338631915_TRADING_ON_THE_FLOOR_AFTER_SWEEPING_THE_BOOK">Trading on the Floor After Sweeping the Book</a>
+        <span>ResearchGate — the foundational academic paper on post-sweep price behaviour and floor trading dynamics. Explains what happens to price discovery in the 0–30 seconds after a sweep completes.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Academic</div>
+      <div class="fr-body">
+        <a href="https://www.sciencedirect.com/science/article/pii/S1386418126000029">Order flow and cryptocurrency returns</a>
+        <span>ScienceDirect 2026 — establishes the contemporaneous relationship between order flow imbalance and BTC returns; explains why trade flow beats order flow as an explanatory variable in unregulated markets.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Platform Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/en/content/order-flow-strategies">Order Flow Strategies — Bookmap</a>
+        <span>Practical guide to identifying sweeps, absorption, and spoofing in Bookmap's heatmap and footprint environment. Includes pattern recognition screenshots for each scenario.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.amazon.com/ORDER-FLOW-Trading-Trader-Dale/dp/B08SBQ61GB">ORDER FLOW: Trading Setups — Trader Dale</a>
+        <span>Practitioner textbook with step-by-step sweep setups, worked examples on footprint charts, and entry/exit rules. Best single-volume introduction to reading sweeps in live markets.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.kucoin.com/blog/en-the-ultimate-guide-to-liquidity-sweep-decoding-institutional-manipulation-in-crypto-trading">Liquidity Sweep: Decoding Institutional Manipulation — KuCoin</a>
+        <span>Crypto-native explanation of sell-side and buy-side liquidity sweeps, stop hunts, and how institutions use sweep mechanics to build large positions in BTC and ETH.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.researchgate.net/publication/338631915_TRADING_ON_THE_FLOOR_AFTER_SWEEPING_THE_BOOK">ResearchGate — Sweeping the Book</a>
+    <a href="https://www.sciencedirect.com/science/article/pii/S1386418126000029">ScienceDirect — OFlow &amp; Crypto Returns</a>
+    <a href="https://bookmap.com/en/content/order-flow-strategies">Bookmap Order Flow Strategies</a>
+    <a href="https://cryptodaily.co.uk/2026/06/bitcoin-60k-liquidity-test-leverage-washout">CryptoDaily — BTC $60K Washout</a>
+    <a href="https://www.kucoin.com/blog/en-the-ultimate-guide-to-liquidity-sweep-decoding-institutional-manipulation-in-crypto-trading">KuCoin — Liquidity Sweep Guide</a>
+    <a href="https://medium.com/@eliquinox/order-flow-analysis-of-cryptocurrency-markets-b479a0216ad8">Ed Silantyev — OFlow in Crypto</a>
+  </div>
+  <div>Alpha · Issue 44 · 9 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
