@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Praxis &mdash; 9 June 2026</title>
+  <meta property="og:description" content="Losing trades are data, not verdicts. This issue builds a systematic post-trade review protocol for crypto traders: how to separate process quality from outcome quality, the three questions that extract signal from a loss without triggering emotional shutdown, why most traders review their winners and ignore their losers, and how a structured loss journal compounds into a personal edge over 60&ndash;90 days." />
+  <style>
+    :root {
+      --bg:       #FFFFFF;
+      --surface:  #F8F9FA;
+      --border:   #E5E7EB;
+      --accent:   #DC3545;
+      --text:     #111827;
+      --muted:    #6B7280;
+      --tag-bg:   #FEE2E2;
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0d0f14;
+      --surface:  #141720;
+      --border:   #1e2330;
+      --accent:   #DC3545;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --tag-bg:   #2a1515;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 0 0 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .theme-toggle:hover { opacity: 0.8; }
+
+    .header {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FEE2E2 50%, #FDF2F2 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .header {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2a0d0d 50%, #1a0808 100%);
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(220,53,69,0.15) 0%, transparent 65%),
+                  radial-gradient(ellipse at 20% 100%, rgba(220,53,69,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-family: 'Courier New', monospace;
+      position: relative;
+    }
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .tldr-text { display: none; }
+    .header-accent-bar {
+      width: 48px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 16px auto 0;
+      position: relative;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 0;
+    }
+
+    .section { margin-bottom: 48px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+    }
+    .section-number {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card-label {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .card p:last-child { margin-bottom: 0; }
+    .card strong { color: var(--text); font-weight: 600; }
+
+    .insight-block {
+      border-left: 3px solid var(--accent);
+      background: var(--tag-bg);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 12px 0;
+    }
+    [data-theme="dark"] .insight-block {
+      background: rgba(220,53,69,0.08);
+    }
+    .insight-block p {
+      font-size: 14px;
+      color: var(--text);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .takeaway-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+    .takeaway-list li {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .takeaway-list li:last-child { border-bottom: none; }
+    .takeaway-list li::before {
+      content: '\2192';
+      color: var(--accent);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .takeaway-list strong { color: var(--text); font-weight: 600; }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .tool-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .tool-body h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .tool-body p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .tool-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .horizon-item {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .horizon-item:last-child { border-bottom: none; }
+    .horizon-tag {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .horizon-tag.finance { background: #EFF6FF; color: #1D4ED8; }
+    .horizon-tag.work { background: #F0FDF4; color: #15803D; }
+    .horizon-tag.regulation { background: #FFF7ED; color: #C2410C; }
+    .horizon-tag.ai { background: #F5F3FF; color: #7C3AED; }
+    .horizon-tag.mind { background: #FDF4FF; color: #9333EA; }
+    .horizon-tag.culture { background: #ECFDF5; color: #059669; }
+    .horizon-tag.health { background: #FFF1F2; color: #BE123C; }
+    .horizon-tag.crypto { background: #FFFBEB; color: #B45309; }
+    [data-theme="dark"] .horizon-tag.finance { background: #1e2a4a; color: #93C5FD; }
+    [data-theme="dark"] .horizon-tag.work { background: #1a2e1a; color: #86EFAC; }
+    [data-theme="dark"] .horizon-tag.regulation { background: #2a1e0a; color: #FCD34D; }
+    [data-theme="dark"] .horizon-tag.ai { background: #1e1a2e; color: #C4B5FD; }
+    [data-theme="dark"] .horizon-tag.mind { background: #1e1225; color: #D8B4FE; }
+    [data-theme="dark"] .horizon-tag.culture { background: #0a1e18; color: #6EE7B7; }
+    [data-theme="dark"] .horizon-tag.health { background: #2a0a10; color: #FDA4AF; }
+    [data-theme="dark"] .horizon-tag.crypto { background: #2a1e05; color: #FDE68A; }
+    .horizon-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .horizon-item p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .standalone-quote {
+      border-left: 3px solid var(--border);
+      padding: 12px 20px;
+      margin: 16px 0;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .standalone-quote cite {
+      display: block;
+      font-style: normal;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .footer {
+      max-width: 800px;
+      margin: 48px auto 0;
+      padding: 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-meta {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .footer-sources {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">&#127769;</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-label">Praxis &middot; Intelligence Briefing &middot; 9 June 2026</div>
+  <h1>Praxis</h1>
+  <div class="header-sub">Key Ideas &middot; Strategy &middot; Tools &middot; Horizon</div>
+  <!-- REQUIRED for site index -->
+  <p class="tldr-text" style="display:none">Losing trades are data, not verdicts. This issue builds a systematic post-trade review protocol for crypto traders: how to separate process quality from outcome quality, the three questions that extract signal from a loss without triggering emotional shutdown, why most traders habitually review their winners and quietly bury their losers, and how a structured loss journal compounds into a measurable personal edge over 60&ndash;90 days. The core insight &mdash; borrowed from decision science and elite sports coaching &mdash; is that outcome and process are only loosely correlated in the short run, and the trader who learns to score the process independently of the P&amp;L is the one who actually improves.</p>
+  <div class="header-accent-bar"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- SECTION 01: Key Ideas & Insights -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <span class="section-title">Key Ideas &amp; Insights</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Decision Science &middot; Annie Duke &middot; Thinking in Bets &middot; Core Framework</div>
+      <h3>Resulting: Why Your P&amp;L Is a Terrible Teacher if You Let It Grade Your Process</h3>
+      <p>Annie Duke coined the term <em>resulting</em> for the cognitive error most traders make automatically: <strong>judging the quality of a decision by its outcome rather than by the quality of the information and reasoning available at the time it was made.</strong> A stop-loss that gets tagged on a wick before price resumes in your direction looks like a bad trade in the P&amp;L. Held to a rigorous process standard, it may have been an excellent one &mdash; correct size, correct stop placement, correct read of the setup, just bad luck on execution microstructure. The reverse is equally true: a trade that makes money because a project pumped on a rumour you had no reason to anticipate was not a good trade; it was a lucky one. <strong>In both cases, the P&amp;L is lying to you about what it was actually rewarding.</strong></p>
+      <p>The damage from resulting compounds over time. The trader who repeatedly rewards themselves for lucky winners and punishes themselves for unlucky losers learns nothing from either. Worse, they gradually tune their process toward reproducing the conditions of past lucky trades &mdash; chasing the setup that happened to work once &mdash; rather than toward the conditions that actually give positive expected value. <strong>The result is a process that has been trained on noise and priced out of signal.</strong></p>
+      <div class="insight-block">
+        <p>The loss is not the problem. What you learn from it &mdash; or fail to &mdash; is the problem. A bad outcome on a good process is a tuition payment that should be logged and filed, not an indictment of the trader who made the call.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Sports Science &middot; Performance Psychology &middot; Post-Game Film Review Methodology</div>
+      <h3>The Film Room Principle: What Elite Coaches Know About Reviewing Mistakes That Most Traders Never Apply</h3>
+      <p>Elite sports teams watch film of their losses in a specific way: <strong>they separate what happened from why it happened, and they separate why it happened from what to do differently.</strong> These are treated as three distinct conversations, run in sequence, never collapsed into one. The &ldquo;what happened&rdquo; phase is purely descriptive &mdash; no evaluation, no blame, just the facts on the tape. The &ldquo;why it happened&rdquo; phase is analytical &mdash; which reads were wrong, which decisions were made under incomplete information, which were structural errors. The &ldquo;what to do differently&rdquo; phase is prescriptive &mdash; specific, behavioural, and applied to the next game, not to the last one.</p>
+      <p>Most traders do the opposite: they collapse all three into a single emotional moment immediately after the loss closes, when they are least equipped to distinguish descriptive from analytical from prescriptive. The trade is red, the adrenaline is still in the bloodstream, and the &ldquo;review&rdquo; is really just a punishment session with no diagnostic value. <strong>The film room principle says: do not open the tape until the emotion has cleared, and when you do, run the three conversations in order.</strong> Coaches know that a player reviewing a fumble while angry will remember the shame, not the technical correction. The same is true of a trader reviewing a blown stop while the account is still bleeding.</p>
+      <div class="insight-block">
+        <p>The 24-hour rule: no trade review within 24 hours of the loss. Not because the feelings don&rsquo;t matter, but because the feelings will contaminate the analysis if you let them sit in the same room at the same time.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Trading Psychology &middot; Mark Douglas &middot; Trading in the Zone &middot; Core Concept</div>
+      <h3>The Probabilistic Frame: A Single Loss Is Not a Trend, and Your Job Is to Think in Samples</h3>
+      <p>Mark Douglas&rsquo;s central argument in <em>Trading in the Zone</em> is that the psychological damage most traders carry comes from treating each trade as a referendum on whether their edge works, rather than as one data point in a distribution. <strong>A valid edge with a 55% win rate will produce five losses in a row approximately 2% of the time &mdash; which, across a 500-trade career, will happen about ten times.</strong> The trader who has not internalised the probabilistic frame will interpret every one of those streaks as evidence that the edge is broken and will make the worst possible adjustment: changing the system at the moment it is merely expressing its normal variance.</p>
+      <p>The corrective is not optimism but sample thinking. Each loss is not a referendum on your strategy; it is one flip of a coin that has a known long-run bias. <strong>The question to ask after a loss is never &ldquo;is my edge broken?&rdquo; &mdash; it is &ldquo;did I execute the process that gives me that edge?&rdquo;</strong> If yes, the loss is data confirming the distribution is working normally. If no, the loss is data about execution, and that is a different, smaller, more solvable problem. Conflating the two is where most traders spiral.</p>
+      <div class="insight-block">
+        <p>You cannot evaluate a strategy from inside a losing streak any more than you can evaluate a coin from the middle of five heads. The job is to track execution quality over a large sample, not to re-litigate the edge after every red trade.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Operational Excellence &middot; Post-Mortem Methodology &middot; Engineering &amp; Medicine</div>
+      <h3>The Blameless Post-Mortem: A Framework Borrowed From Surgical Teams That Traders Can Run on Themselves</h3>
+      <p>The blameless post-mortem was developed in aviation safety and surgical medicine to solve a specific problem: when reviews assign personal blame, practitioners stop reporting errors honestly, and the system stops learning. The solution was to separate the <em>systemic</em> causes of a failure from the <em>individual</em> choices &mdash; not to excuse the individual, but to ensure the review produces actionable system changes rather than just punishment. Google&rsquo;s SRE (Site Reliability Engineering) handbook codified this for software engineering and it has since spread widely. <strong>The core principle is that most errors are not caused by individual incompetence but by systems, incentives, and context that made the wrong choice the easy choice.</strong></p>
+      <p>Applied to trading, a blameless post-mortem asks: <em>what in my setup, routine, environment, or rules made this particular error easy to make?</em> A position sized too large because the setup &ldquo;looked very clean&rdquo; is not a character flaw &mdash; it is a missing rule about maximum size on conviction. Entering before a clear level was broken because of FOMO is not weakness &mdash; it is a missing pre-trade checklist item. <strong>The blameless frame turns every losing trade from a verdict about who you are into a specification for what your rulebook is still missing.</strong> This is not a soft reframe; it is the most technically rigorous form of review available.</p>
+      <div class="insight-block">
+        <p>If every bad trade ends with &ldquo;I should have been more disciplined,&rdquo; nothing in your system ever changes. If every bad trade ends with &ldquo;what rule, if it had existed, would have prevented this?&rdquo; &mdash; your system gets tighter every week.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 02: Strategy & Practice -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <span class="section-title">Strategy &amp; Practice</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Practice &middot; Post-Trade Review Protocol</div>
+      <h3>The Three-Question Loss Review: A 10-Minute Protocol That Extracts Signal Without Emotional Shutdown</h3>
+      <p>The goal is a review short enough to actually do consistently and rigorous enough to produce improvement over a 60&ndash;90 day sample. Run it 24 hours after closing a losing trade, not immediately. Three questions only &mdash; in sequence, never collapsed.</p>
+      <ul class="takeaway-list">
+        <li><strong>Question 1: Was the process correct?</strong> Score the setup against your own criteria as they existed before the trade opened &mdash; not in hindsight. Rate each criterion: did the entry level hold to your rules? Was the position size within your stated limits? Did you wait for your entry trigger or anticipate it? Did you have a defined stop before entry? <strong>A process score of 4/5 or better on a trade that lost money is not a failure &mdash; it is a correctly-executed losing trade, which is a normal part of any edge.</strong> Log it as &ldquo;Process: Good / Outcome: Loss&rdquo; and move on.</li>
+        <li><strong>Question 2: If the process was wrong, what specific rule was violated?</strong> Do not allow &ldquo;I was undisciplined&rdquo; as an answer. Name the specific rule: sized above my 2% risk limit; entered before the candle closed; moved the stop after entry. One specific rule per review, maximum. If you violated three rules, pick the one that cost the most and fix that one first. A trading rulebook is tightened one clause at a time, not rewritten after each bad day.</li>
+        <li><strong>Question 3: What is the one thing to add, remove, or change in my pre-trade checklist?</strong> Make it concrete and testable. Not &ldquo;be more patient&rdquo; &mdash; that is not a rule. &ldquo;Do not enter a long position on a red 4H candle close&rdquo; is a rule. Write it into your checklist the same day. If after 20 trades the rule is no longer relevant, remove it. A living checklist that gets one update per week will be materially more protective in 90 days than the one you started with.</li>
+      </ul>
+      <div class="insight-block">
+        <p>The review is not therapy and it is not self-flagellation. It is an engineering update. The tone you are aiming for is the tone of a surgeon reviewing a case file: interested, precise, detached, and looking for the one change that would improve the next outcome.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Practice &middot; Loss Journal Structure &middot; 60-Day Compounding Protocol</div>
+      <h3>Building the Loss Journal: How to Turn 60 Days of Bad Trades Into a Measurable Personal Edge</h3>
+      <p>A single trade review is useful. A structured loss journal run over 60&ndash;90 days is compounding. The journal does not need to be elaborate; it needs to be consistent and structured enough to make patterns visible. The minimum viable structure has four columns and one summary row per trade.</p>
+      <ul class="takeaway-list">
+        <li><strong>Log the process score, not just the P&amp;L.</strong> Every loss entry gets: date, ticker, P&amp;L in dollars and R-multiple (loss expressed as a multiple of your initial risk), and a process score out of 5. After 30 trades, calculate the average process score on your losing trades. If it is above 3.5, your losses are coming from variance, not errors &mdash; do not change the system. If it is below 3, you have an execution problem, not an edge problem.</li>
+        <li><strong>Tag every loss with its primary failure mode.</strong> Create four or five categories that cover your most common errors: Premature Entry / Oversize / Moved Stop / Setup Not Met / News-Driven. Tag each loss with the single most relevant category. After 30 losses, you will see which category owns the majority of your R-multiple loss. That category is where your energy goes next &mdash; not distributed across all of them equally.</li>
+        <li><strong>Track the checklist update log separately.</strong> Every time you add, remove, or modify a rule after a loss review, log the date and the change in a separate section. After 60 days, read it back. This is your evidence that the review process is working &mdash; and it is the most concrete rebuttal to the self-critical story that you are not improving. You have the receipts: 12 specific changes to your rulebook that did not exist 60 days ago.</li>
+        <li><strong>Run a monthly summary: three categories only.</strong> At the end of each month, calculate: (1) losses from variance vs. losses from process errors (by process score); (2) which failure-mode tag dominated; (3) which single rule change had the most measurable impact. One page, three numbers. This is your feedback loop on the feedback loop &mdash; checking that the review process itself is working, not just that you are completing it.</li>
+      </ul>
+      <div class="insight-block">
+        <p>Most traders have a vague sense that they are &ldquo;working on their psychology.&rdquo; A loss journal turns that into a balance sheet. In 90 days you will be able to point to specific changes in your process score, your failure-mode distribution, and your R-multiple per category. That is an edge. Vague self-improvement is not.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 03: Tools & Resources -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <span class="section-title">Tools &amp; Resources</span>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128214;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Book</span>
+        <h4>Thinking in Bets &mdash; Annie Duke</h4>
+        <p>The most accessible treatment of resulting and outcome-process separation. Duke, a former professional poker player and decision-science researcher, builds a complete vocabulary for evaluating decisions independently of their outcomes. Chapter 3 &mdash; &ldquo;Bet to Learn: Fielding the Unfolding Future&rdquo; &mdash; is the most directly applicable to trade review. The book&rsquo;s central tool, the &ldquo;resulting audit,&rdquo; maps directly onto the three-question protocol above. Short, practical, and dense with examples from poker, sports, and business that translate cleanly to trading.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#129504;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Book</span>
+        <h4>Trading in the Zone &mdash; Mark Douglas</h4>
+        <p>The standard text on probabilistic thinking for traders. Douglas&rsquo;s core argument &mdash; that most trading psychology problems are downstream of a failure to think in samples rather than individual trades &mdash; is directly relevant to the loss review question. Chapter 7 (&ldquo;The Consistency Paradox&rdquo;) and Chapter 8 (&ldquo;Working With Your Edge&rdquo;) are the most useful for building the mindset behind the loss journal. Best read after you have already built a basic review process; it will make far more sense as a description of what you are doing than as abstract theory.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128202;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Framework</span>
+        <h4>The Blameless Post-Mortem Template (Google SRE Handbook)</h4>
+        <p>Google&rsquo;s Site Reliability Engineering handbook includes a public post-mortem template originally designed for software incidents that translates directly to trade review. The key fields: timeline of events, root cause (systemic, not personal), contributing factors, what went well, what went poorly, action items with owners and deadlines. The &ldquo;action items with owners&rdquo; field becomes &ldquo;rule changes with checklist placement&rdquo; for a trader running a solo review. Available free at sre.google/sre-book/postmortem-culture/. The discipline of treating a trade failure as a system incident rather than a personal indictment is the operative shift the template enforces.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128221;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Tool</span>
+        <h4>Tradervue / Edgewonk &mdash; Trade Journal Platforms</h4>
+        <p>Both platforms support the process-score and failure-mode tagging approach described in this issue&rsquo;s practice section. Tradervue allows custom tags per trade and has a report view that aggregates by tag over any time period &mdash; useful for the monthly failure-mode analysis. Edgewonk has a dedicated &ldquo;mistake journal&rdquo; field and a &ldquo;trade management&rdquo; score separate from setup score, which maps cleanly to a two-axis process evaluation (entry quality vs. management quality). Either works; the journal structure matters more than the platform. A plain spreadsheet with the four-column structure described above is sufficient for the first 60 days.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 04: On the Horizon -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <span class="section-title">On the Horizon</span>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag crypto">Crypto</span>
+      <h4>Volatility Clusters and the Loss-Review Backlog Problem</h4>
+      <p>Bitcoin has been trading in a compressed 5&ndash;8% weekly range through early June 2026, but the options market is pricing a sharp expansion in realised volatility over the next 30 days, with the 30-day implied vol on CME BTC options sitting near its 70th percentile for the year. Compressed-then-expanded regimes are exactly when loss-review discipline breaks down: the flat period produces a small backlog of minor losses that feel easy to defer, and then the expansion produces a cluster of large losses in a short window when the trader is least emotionally prepared. The fix is to maintain the review cadence in slow markets so the habit is fully loaded before the volatility arrives. A review skipped in a quiet week is a rep missed on the easy weights; the test comes on the heavy set.</p>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag ai">AI</span>
+      <h4>AI-Assisted Trade Review: Acceleration or Abdication?</h4>
+      <p>Several proprietary trading platforms are beginning to offer AI-generated post-trade commentary &mdash; automated analysis that describes why a trade likely lost based on pattern matching against historical setups. The technology is early and the commentary is often generic, but the trajectory is clear: within 18&ndash;24 months, most journal platforms will include LLM-generated loss analysis as a standard feature. The risk is that AI-generated commentary replaces the deliberate process of the trader doing the three-question review themselves &mdash; removing precisely the friction that makes the review valuable. The signal to watch for: are you reading the AI summary <em>instead of</em> completing the review, or <em>after</em> completing it as a check? The former is abdication; the latter is leverage.</p>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag mind">Mind</span>
+      <h4>Shame Vs. Guilt in Performance Contexts: The Research Is Decisive</h4>
+      <p>A growing body of research from clinical psychologist June Price Tangney and her colleagues distinguishes shame (a global negative judgment about the self: &ldquo;I am a bad trader&rdquo;) from guilt (a specific negative judgment about a behaviour: &ldquo;that trade violated my rules&rdquo;). Shame predicts performance deterioration, avoidance, and risk-seeking to recover losses. Guilt predicts corrective behaviour, rule-tightening, and improved future performance. The blameless post-mortem and the three-question protocol in this issue are, functionally, tools for converting shame responses into guilt responses &mdash; pulling the narrative from &ldquo;I am the problem&rdquo; to &ldquo;this specific behaviour is the problem.&rdquo; The distinction is not soft psychology; it is the difference between a feedback loop that improves performance and one that compounds damage.</p>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag work">Work</span>
+      <h4>The Review Habit as a Compounding Asset: Quantifying What Most Traders Leave on the Table</h4>
+      <p>A consistent loss review practice is one of the few genuinely non-replicable moats available to a retail crypto trader. Quantitative edge erodes as strategies get crowded; information edge is largely unavailable to non-institutional participants; execution edge is commoditised by improved tooling. Process edge &mdash; the accumulated learning from 200 systematic trade reviews &mdash; is personal, non-transferable, and compounding. A trader who has run 200 structured reviews knows their specific failure modes, their typical variance band, and the rule set that has already been tightened 40 times. That knowledge cannot be purchased or copied. The horizon question is whether the traders who build this habit early will find themselves structurally separated from those who do not as the market matures and easy alpha compresses further.</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-meta">
+    Praxis Intelligence Briefing &middot; 9 June 2026 &middot; Sydney<br>
+    This issue: reviewing losing trades as an engineering discipline &mdash; separating process from outcome, running the blameless post-mortem, and building the loss journal that compounds into a personal edge.
+    <div class="footer-sources">
+      Sources: Annie Duke, <em>Thinking in Bets</em> (Portfolio/Penguin, 2018), especially Ch. 3 &ldquo;Bet to Learn&rdquo;; Mark Douglas, <em>Trading in the Zone</em> (Prentice Hall, 2000), Ch. 7&ndash;8; Google SRE Handbook, &ldquo;Postmortem Culture: Learning from Failure,&rdquo; sre.google/sre-book/postmortem-culture/; June Price Tangney &amp; Ronda L. Dearing, <em>Shame and Guilt</em> (Guilford Press, 2002); Tradervue trade journal platform, tradervue.com; Edgewonk trade journal platform, edgewonk.com; CME Group BTC options implied volatility data, June 2026.
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('praxis-theme', next);
+    const btn = document.querySelector('.theme-toggle');
+    btn.innerHTML = next === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  }
+  (function() {
+    const saved = localStorage.getItem('praxis-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) btn.innerHTML = saved === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  })();
+</script>
+
+</body>
+</html>
