@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Trapped Traders | 10 June 2026</title>
+<meta property="og:description" content="Trapped traders are participants stuck offside whose forced exits become the next move's fuel. Read crowded funding, a failed level, and the liquidation map to trade the unwind — not the headfake.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Trapped Traders</h1>
+  <div class="meta">
+    <span>Wednesday · 10 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 45</span>
+    <span class="pill">11 MIN READ</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Trapped traders are participants who entered aggressively and are now offside — longs above a level that's failing, shorts below one that's holding — and because their positions carry forced exits (stops, margin, liquidation), they become the fuel for the move <strong>against</strong> them. Read the trap before the crowd does — crowded funding, a stacked liquidation cluster, or a footprint that screams "breakout" then fails — and you trade the unwind, not the headfake.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition · who's offside &amp; why it pays</div>
+    </div>
+  </div>
+
+  <div class="skim">A trapped trader is stuck on the wrong side of a level with one move left — a forced exit — and that exit drives price against them, by definition.</div>
+
+  <p>A trapped trader is not just a losing trader. A losing trader can sit and wait. A <strong>trapped</strong> trader is committed — leverage, a resting stop, a margin call, or a pain threshold means their next action is already decided: cover. That forced cover is the cleanest, most predictable order flow in any market because it is <strong>price-insensitive</strong>. They are not buying because they like the price; they are buying because they have no choice.</p>
+
+  <p>Two flavours. <strong>Trapped in</strong> — entered aggressively (chased a breakout, sold a flush) and price immediately reversed; they are now underwater and praying. <strong>Trapped out</strong> — got stopped or never got filled, and now chase the move, buying highs and selling lows out of FOMO. Both crowds end the same way: a cluster of offside positions whose eventual exit is the next leg's fuel.</p>
+
+  <p>This idea matters more in crypto than anywhere, because perpetual futures make "forced" literal. Above a given leverage the exchange covers for you — and the <strong>liquidation map is a published list of where the trapped fuel sits</strong>. Funding tells you which side is crowded enough to become the trapped side. You don't have to guess at positioning; the derivatives stack prints it.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>Trapped In</b><span>aggressive entry, immediate reversal, now offside</span></div>
+    <div class="pill-term"><b>Trapped Out</b><span>missed/stopped, chasing — buys highs, sells lows</span></div>
+    <div class="pill-term"><b>Forced Exit</b><span>price-insensitive cover: stop, margin, liquidation</span></div>
+    <div class="pill-term"><b>Liq Cluster</b><span>stacked liquidation prices = pre-mapped fuel</span></div>
+    <div class="pill-term"><b>Crowded Funding</b><span>funding extreme flags the over-positioned side</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember this</b>
+    A trapped trader's exit is not a decision — it's the most predictable order flow in the book. Find who's forced, and you've found the next move's fuel.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How the trap forms · the fuel equation</div>
+    </div>
+  </div>
+
+  <div class="skim">A trap forms in four beats: aggressive flow enters at a level, gets no follow-through, price reclaims the level, and the stranded entries can only exit by fuelling the reverse.</div>
+
+  <p><strong>1 — The bait.</strong> A level breaks, or looks like it will. Breakout chasers (or flush-sellers) pile in aggressively. Delta spikes hard in their direction; on a footprint you see heavy volume hitting the offer (or the bid). It looks like initiative.</p>
+
+  <p><strong>2 — The failure.</strong> No follow-through. Either passive size on the other side absorbs the aggression, or there is simply no fresh money behind the break. Price stalls at the extreme despite the loud tape — the first tell that the move is hollow.</p>
+
+  <p><strong>3 — The reclaim.</strong> Price moves back through the broken level. Now every step-1 entry is underwater: the breakout buyers are longs above what is now resistance; the flush-sellers are shorts below what is now support. The trap is sprung — but most of them are still hoping.</p>
+
+  <p><strong>4 — The unwind.</strong> Stops and liquidations fire in a cluster. Those forced exits are aggressive orders in the <em>opposite</em> direction — which is precisely the move you positioned for. The trap pays whoever is on the other side of it.</p>
+
+  <div class="formula">
+    <b>TRAPPED FUEL</b> ≈ Σ ( offside position size × forced-exit probability )<br><br>
+    <b>Crypto proxy (perps):</b><br>
+    &nbsp;&nbsp;trapped-long fuel&nbsp;&nbsp;= liquidation notional stacked <b>below</b> price<br>
+    &nbsp;&nbsp;trapped-short fuel = liquidation notional stacked <b>above</b> price<br><br>
+    <b>Crowding tell (funding, annualised percentile):</b><br>
+    &nbsp;&nbsp;&gt; 95th pctile positive&nbsp;= longs crowded&nbsp;&nbsp;→ vulnerable below<br>
+    &nbsp;&nbsp;negative funding&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= shorts crowded → vulnerable above
+    <div class="note">Funding tells you who's crowded; the liquidation map tells you where they break. You need both — crowding without a stacked level is just sentiment.</div>
+  </div>
+
+  <table class="cmp">
+    <tr><th>&nbsp;</th><th>Trapped IN</th><th>Trapped OUT</th></tr>
+    <tr><td>Entry</td><td>Aggressive, at or through the level</td><td>Missed the move, now chasing it</td></tr>
+    <tr><td>Psychology</td><td>Denial → hope → capitulation</td><td>FOMO → buys highs, sells lows</td></tr>
+    <tr><td>Tape signal</td><td>Delta spike, then absorption + reclaim</td><td>Late volume surging into an extreme</td></tr>
+    <tr><td>The fuel</td><td>Stops/liqs below (longs) or above (shorts)</td><td>Becomes trapped-in on the next reversal</td></tr>
+    <tr><td>You trade</td><td>The reclaim / the unwind</td><td>Fade the chase</td></tr>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">Anatomy of a bull trap · the positioning map</div>
+    </div>
+  </div>
+
+  <div class="skim">First diagram: a breakout that fails, reclaims, and cascades — the four beats in one chart. Second: where today's BTC trapped fuel is actually stacked.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Anatomy of a bull trap: a failed breakout above resistance reclaims and cascades, trapping the breakout buyers">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <text x="24" y="34" font-family="'DM Serif Display',serif" font-size="20" fill="#1c1917">Anatomy of a bull trap</text>
+      <text x="24" y="54" font-family="'JetBrains Mono',monospace" font-size="11" fill="#78716c">aggressive break → no follow-through → reclaim → forced unwind</text>
+
+      <!-- plot frame -->
+      <line x1="70" y1="80" x2="70" y2="370" stroke="#e7e5e4" stroke-width="1.5"/>
+      <line x1="70" y1="370" x2="760" y2="370" stroke="#e7e5e4" stroke-width="1.5"/>
+
+      <!-- resistance / breakout level -->
+      <line x1="70" y1="150" x2="760" y2="150" stroke="#3f6212" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="600" y="143" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212">breakout level (becomes resistance)</text>
+
+      <!-- trapped-long zone above the level where the poke happened -->
+      <rect x="300" y="108" width="140" height="42" fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-opacity="0.4" stroke-dasharray="3 3"/>
+      <text x="306" y="100" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#b91c1c">TRAPPED LONGS — bought the break, now offside</text>
+
+      <!-- price path -->
+      <polyline points="80,320 150,288 215,252 280,200 330,158 375,116 405,128 440,172 500,214 560,256 630,310 715,348"
+                fill="none" stroke="#1c1917" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+
+      <!-- bait: green up-arrows near the poke -->
+      <g stroke="#22c55e" stroke-width="3" fill="#22c55e">
+        <line x1="318" y1="250" x2="318" y2="200"/><polygon points="318,188 311,204 325,204"/>
+        <line x1="345" y1="245" x2="345" y2="195"/><polygon points="345,183 338,199 352,199"/>
+      </g>
+      <text x="248" y="280" font-family="'JetBrains Mono',monospace" font-size="11" fill="#15803d">1. aggressive buys</text>
+      <text x="262" y="296" font-family="'JetBrains Mono',monospace" font-size="11" fill="#15803d">(the bait)</text>
+
+      <!-- failure marker at the peak -->
+      <circle cx="375" cy="116" r="6" fill="#fbbf24" stroke="#78350f" stroke-width="1.5"/>
+      <text x="392" y="98" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#78350f">2. no follow-through</text>
+      <text x="392" y="114" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#92400e">absorbed at the extreme</text>
+
+      <!-- reclaim marker -->
+      <circle cx="440" cy="172" r="6" fill="#1c1917"/>
+      <text x="452" y="176" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#1c1917">3. reclaim → trap sprung</text>
+
+      <!-- unwind: red down-arrows on the cascade -->
+      <g stroke="#ef4444" stroke-width="3" fill="#ef4444">
+        <line x1="540" y1="232" x2="540" y2="278"/><polygon points="540,292 533,276 547,276"/>
+        <line x1="610" y1="286" x2="610" y2="332"/><polygon points="610,346 603,330 617,330"/>
+      </g>
+      <text x="560" y="226" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#b91c1c">4. forced exits</text>
+      <text x="560" y="242" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#dc2626">= fuel for the drop</text>
+
+      <!-- liq cluster bars near the bottom -->
+      <rect x="640" y="356" width="90" height="7" rx="2" fill="#ef4444" fill-opacity="0.55"/>
+      <text x="640" y="382" font-family="'JetBrains Mono',monospace" font-size="10" fill="#78716c">stop / liq cluster (the target)</text>
+    </svg>
+    <div class="svg-caption">The loud tape at the high is the bait — the silence (absorption, no progress) is the signal. The trade is the reclaim, not the poke.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 380" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="BTC positioning map for 10 June 2026 showing short liquidation clusters above spot and long liquidation clusters below spot">
+      <rect x="0" y="0" width="800" height="380" fill="#ffffff"/>
+      <text x="24" y="32" font-family="'DM Serif Display',serif" font-size="20" fill="#1c1917">Where the trapped fuel sits — BTC, 10 Jun 2026</text>
+      <text x="24" y="52" font-family="'JetBrains Mono',monospace" font-size="11" fill="#78716c">bar length = liquidation notional ($M) · green = trapped shorts (squeeze up) · red = trapped longs (flush down)</text>
+
+      <!-- center price column axis -->
+      <line x1="300" y1="74" x2="300" y2="340" stroke="#e7e5e4" stroke-width="1.5"/>
+
+      <!-- ABOVE: short-liq clusters (green, squeeze-up fuel) -->
+      <!-- $63,930 = $113M -> width 140 -->
+      <rect x="300" y="92" width="140" height="20" rx="2" fill="#22c55e" fill-opacity="0.75"/>
+      <text x="210" y="106" font-family="'JetBrains Mono',monospace" font-size="11.5" fill="#1c1917">$63,930</text>
+      <text x="448" y="106" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#15803d">$113M short liqs (+3.1%)</text>
+      <!-- $63,070 = $194M -> width 240 (biggest) -->
+      <rect x="300" y="124" width="240" height="22" rx="2" fill="#22c55e" fill-opacity="0.9"/>
+      <text x="210" y="139" font-family="'JetBrains Mono',monospace" font-size="11.5" fill="#1c1917">$63,070</text>
+      <text x="548" y="139" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#15803d">$194M short liqs (+1.7%) — biggest pyre</text>
+
+      <!-- SPOT line -->
+      <line x1="120" y1="200" x2="700" y2="200" stroke="#1c1917" stroke-width="2" stroke-dasharray="7 5"/>
+      <text x="120" y="194" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#1c1917">BTC spot $61,982 · funding +4.78% ann · 98.2nd pctile → longs crowded</text>
+
+      <!-- BELOW: long-liq clusters (red, flush-down fuel) -->
+      <!-- $60,730 = $76M -> width 94 -->
+      <rect x="300" y="248" width="94" height="20" rx="2" fill="#ef4444" fill-opacity="0.85"/>
+      <text x="210" y="262" font-family="'JetBrains Mono',monospace" font-size="11.5" fill="#1c1917">$60,730</text>
+      <text x="402" y="262" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#b91c1c">$76M long liqs (−2.1%)</text>
+      <!-- $60,710 = $69M -> width 85 -->
+      <rect x="300" y="280" width="85" height="20" rx="2" fill="#ef4444" fill-opacity="0.65"/>
+      <text x="210" y="294" font-family="'JetBrains Mono',monospace" font-size="11.5" fill="#1c1917">$60,710</text>
+      <text x="393" y="294" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#dc2626">$69M long liqs (−2.1%)</text>
+
+      <text x="24" y="332" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#78716c">Tension: funding says LONGS are crowded, but the deeper liquidation pyre sits ABOVE among the shorts. CPI decides which lights first.</text>
+    </svg>
+    <div class="svg-caption">Today's actual map (source: NGM Morning Edge, 10 Jun). The crowded side and the bigger fuel pile are on opposite sides — which is exactly what makes the print a coin-flip.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trading against the trapped</div>
+    </div>
+  </div>
+
+  <div class="skim">Never trade the trap you imagine — trade the trap you can measure: crowded positioning + a failed level + a reclaim. No reclaim, no trade.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Require the reclaim</h4>
+        <p>The trap isn't confirmed until price closes back through the broken level. The poke above resistance is the bait; the close back below is the trigger. Trading the poke is just shorting strength and hoping.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Map the fuel first</h4>
+        <p>Before the session, mark the liquidation clusters and note funding extremes. You want to be positioned where the <strong>biggest</strong> stacked notional sits on the side that's crowded. Fuel plus crowding equals asymmetry.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Let absorption confirm</h4>
+        <p>A breakout that gets eaten — heavy delta at the extreme, no price progress — is a trap forming in real time. Absorption at the level is your tell that initiative is missing and the move is hollow.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Trade toward the cluster</h4>
+        <p>Trapped exits are magnets, not afterthoughts. Your target is the opposite liquidation cluster, because that's where the cascade is fed. Take profit <em>into</em> the forced flow, not after it has finished.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — today's BTC standoff (illustrative, not a recommendation)</h5>
+    <table>
+      <tr><td>Spot</td><td>BTC $61,982 · funding +4.78% ann (98.2nd pctile, longs crowded) · CPI today</td></tr>
+      <tr><td>Thesis A — squeeze</td><td>Soft CPI pushes BTC through $63,070 on real spot volume (&gt;$2B/hr) → $194M short cluster becomes trapped shorts → forced buys</td></tr>
+      <tr><td>Entry / stop / target</td><td>Long on reclaim of $63,070 · stop $62,650 · target $64,800 → ~5R if the cluster ignites</td></tr>
+      <tr><td>Thesis B — flush</td><td>Hot CPI breaks $61,000 → crowded longs trapped → $76M liqs at $60,730 → target $60,730 then $59K</td></tr>
+      <tr><td>The asymmetry</td><td>$194M trapped-short fuel above vs $76M trapped-long fuel below — bigger pyre is above, but funding says longs are the crowded side</td></tr>
+      <tr><td>The discipline</td><td>Don't pre-judge the print. Let the level resolve, trade the reclaim, target the opposite cluster.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 5m–15m for the reclaim trigger · 1h–4h for the cluster target. Positioning (funding / OI / liq map) is a daily-bias input, not an entry.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC &amp; ETH positioning · 10 Jun 2026</div>
+    </div>
+  </div>
+
+  <div class="skim">Today's BTC/ETH map is a textbook trapped-traders standoff — crowded longs on BTC, crowded shorts on ETH, and a CPI print due to light one fuse.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTC &amp; ETH perps · 10 Jun 2026 · into US CPI</div>
+    <h4>Two crowds, two traps, one CPI to light the fuse</h4>
+
+    <p>As of <strong>10 June (Sydney)</strong>, BTC sits at <strong>$61,982</strong> and ETH at <strong>$1,658</strong> — both down roughly 2% on the day, sentiment at Extreme Fear into today's US inflation print. The derivatives stack is a clean trapped-traders picture. BTC funding is pinned at the <strong>98.2nd percentile</strong> (+4.78% annualised): longs are crowded and <em>paying</em> to stay long — the exact profile of a side about to get trapped on a flush. Yet the larger liquidation pyre sits <strong>above</strong> price: <strong>$194M</strong> of short liquidations stacked at <strong>$63,070</strong> versus only <strong>$76M</strong> of long liqs at <strong>$60,730</strong>.</p>
+
+    <p>ETH is the cleaner read. Funding is <strong>negative</strong> (−4.75% annualised), so shorts are the crowded, paying side, with <strong>$105M</strong> of short liquidations waiting at <strong>$1,697</strong>. On ETH, the trapped crowd is on the short side; a push higher squeezes them.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot (live)</td><td>$62,034 · −2.1% 24h · vol $39.2B</td></tr>
+        <tr><td>ETH spot (live)</td><td>$1,657.92 · −1.7% 24h · vol $14.7B</td></tr>
+        <tr><td>BTC funding (ann.)</td><td>+4.78% · 98.2nd pctile → longs crowded</td></tr>
+        <tr><td>BTC trapped-short fuel (above)</td><td>$194M @ $63,070 (+1.7%) · $113M @ $63,930 (+3.1%)</td></tr>
+        <tr><td>BTC trapped-long fuel (below)</td><td>$76M @ $60,730 (−2.1%) · $69M @ $60,710 (−2.1%)</td></tr>
+        <tr><td>BTC open interest</td><td>$6.16B · 43.8th pctile 7d — mid-range, not crowded</td></tr>
+        <tr><td>ETH funding (ann.)</td><td>−4.75% → shorts crowded (paying to be short)</td></tr>
+        <tr><td>ETH trapped-short fuel (above)</td><td>$105M @ $1,697 (+2.5%) · $100M @ $1,684 (+1.7%)</td></tr>
+        <tr><td>Context</td><td>BTC ETF outflows 13-day streak ($4.33B) · CPI Wed (today)</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Funding says the <em>longs</em> are the crowded, vulnerable crowd — but the deeper liquidation pyre sits above price where the <em>shorts</em> are stacked. CPI decides which trap lights first: a soft print squeezes the $194M short cluster toward $65K; a hot print flushes the crowded longs into the $76M sitting at $60,730. → see today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a> for the full level map.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Three voices, one prison</div>
+    </div>
+  </div>
+
+  <div class="skim">A 1923 speculator, a modern order-flow author, and today's tape all describe the same cell — the hope that keeps a trapped trader in until the exit is forced.</div>
+
+  <div class="quote">
+    <p>"When the market goes against you, you hope that every day will be the last day — and you lose more than you should had you not listened to hope."</p>
+    <div class="attr"><b>Jesse Livermore</b> · Reminiscences of a Stock Operator · 1923 · <a href="https://www.goodreads.com/author/quotes/303913.Jesse_Livermore">source</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Order flow allows you to see this happening as it happens, so you can confidently say 'traders are getting trapped here.'"</p>
+    <div class="attr"><b>Mike Valtos</b> · Orderflows · <a href="https://www.orderflows.com/2019/10/07/what-causes-trapped-traders-and-how-to-see-it-happening/">orderflows.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"$194M in shorts clustered 1.7% above price vs $76M in longs 2.1% below — a soft CPI triggers the squeeze, a hot CPI flushes to $60,730."</p>
+    <div class="attr"><b>NGM Capital</b> · The Morning Edge · 10 Jun 2026 · <a href="market-briefing.html">today's brief</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where this idea bites back</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake is narrating the trap after the fact — every reversal looks like trapped traders in hindsight.</div>
+
+  <div class="trap anti">
+    <div class="num">1</div>
+    <div>
+      <h5>Hindsight storytelling (the honest caveat)</h5>
+      <p>The concept is real, but "trapped traders" is the most hindsight-abused idea in order flow. Every reversal looks like a trap once it's over. If you can't point to the crowded side (funding / positioning) and the failed level <strong>before</strong> the move, you're storytelling, not trading.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Trading the poke, not the reclaim</h5>
+      <p>Shorting the breakout because "it'll trap them" is just fading strength. The trap only exists once price reclaims the level and the entries are genuinely offside. Front-running the reclaim is how you become the trapped one.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Ignoring who has the bigger fuel</h5>
+      <p>A small trapped crowd doesn't move price. Size the fuel — liquidation notional, OI — before assuming the unwind is tradeable. $20M of trapped longs against a $6B OI book is noise, not a cascade.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Marrying the thesis</h5>
+      <p>The level that traps shorts on a squeeze becomes the level that traps the squeeze-chasers if it fails. Today's trapped-short fuel is tomorrow's trapped-long fuel. Traps cut both ways — stay reversible.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">5</div>
+    <div>
+      <h5>Confusing liquidation with reversal</h5>
+      <p>Jim Dalton's point: a liquidating break removes overhead supply and can <em>strengthen</em> the prevailing trend, not reverse it. A trapped-trader unwind is fuel, not a guaranteed turn. Confirm the direction the fuel actually pushes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">A playbook, a tape-reader's primer, a footprint walkthrough, a volume-profile method, and the live fuel map.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/key-order-flow-strategies-breakouts-trends-trapped-traders-and-stop-runs">Key Order Flow Strategies: Breakouts, Trends, Trapped Traders, and Stop Runs</a>
+        <span>Bookmap — order-flow playbook placing trapped traders alongside stop runs and short squeezes.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.orderflows.com/2019/10/07/what-causes-trapped-traders-and-how-to-see-it-happening/">What Causes Trapped Traders and How to See It Happening</a>
+        <span>Mike Valtos / Orderflows — the "kittens vs elephants" framing and reading the trap in real time.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://tradeproacademy.com/how-to-use-order-flow-to-profit-from-trapped-traders/">How to Use Order Flow to Profit From Trapped Traders</a>
+        <span>TRADEPRO Academy — footprint identification, the two types of trapped trader, and the fade.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.trader-dale.com/order-flow-trapped-traders-how-to-spot-the-trap-10th-feb-27/">Order Flow Trapped Traders: How to Spot the Trap and Trade the Reversal</a>
+        <span>Trader Dale — volume-profile + footprint detection of failed-signal reversals.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/liquidations/BTC">BTC Liquidations &amp; Heatmap</a>
+        <span>CoinGlass — live long/short liquidation data and the heatmap of where the trapped fuel is stacked.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="market-briefing.html">NGM Morning Edge — 10 Jun 2026</a>
+    <a href="https://www.coingecko.com/">CoinGecko (live BTC/ETH)</a>
+    <a href="https://bookmap.com/blog/key-order-flow-strategies-breakouts-trends-trapped-traders-and-stop-runs">Bookmap</a>
+    <a href="https://www.orderflows.com/2019/10/07/what-causes-trapped-traders-and-how-to-see-it-happening/">Orderflows</a>
+    <a href="https://tradeproacademy.com/how-to-use-order-flow-to-profit-from-trapped-traders/">TRADEPRO Academy</a>
+    <a href="https://www.trader-dale.com/order-flow-trapped-traders-how-to-spot-the-trap-10th-feb-27/">Trader Dale</a>
+    <a href="https://www.coinglass.com/liquidations/BTC">CoinGlass</a>
+    <a href="https://www.goodreads.com/author/quotes/303913.Jesse_Livermore">Livermore — Reminiscences</a>
+  </div>
+  <div>Alpha · Issue 45 · 10 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
