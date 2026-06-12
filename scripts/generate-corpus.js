@@ -35,6 +35,14 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Escape, then render the inline markdown the corpus files actually use
+// (**bold**, `code`) so cards don't show raw asterisks/backticks.
+function mdInline(s) {
+  return escapeHtml(s)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
 // ─── Parse source file ──────────────────────────────────────────────────────
 
 function parseSourceFile(filePath, domain) {
@@ -219,7 +227,7 @@ function buildCardHTML(source) {
     extractablesHTML = `
       <div class="card-extractables">
         <div class="card-ext-label">Key takeaways</div>
-        <ol>${source.extractables.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ol>
+        <ol>${source.extractables.map(e => `<li>${mdInline(e)}</li>`).join('')}</ol>
       </div>`;
   }
 
@@ -235,7 +243,7 @@ function buildCardHTML(source) {
         </div>
         <div class="card-title">${escapeHtml(source.title)}</div>
         ${meta ? `<div class="card-meta">${meta}</div>` : ''}
-        ${source.summary ? `<div class="card-summary">${escapeHtml(source.summary)}</div>` : ''}
+        ${source.summary ? `<div class="card-summary">${mdInline(source.summary)}</div>` : ''}
         ${tagsHTML}
         ${extractablesHTML}
         ${linkHTML}
