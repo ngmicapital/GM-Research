@@ -73,7 +73,7 @@ CHANNELS = {
     ],
     "AI / Tech": [
         {"name": "AI Explained", "yt_id": "UCnAYEON3dDXz3RcIigBaQFg"},
-        {"name": "Dwarkesh Patel", "yt_id": "UCuShTtbZ8mhUj8KZbXkZSCA"},
+        {"name": "Dwarkesh Patel", "yt_id": "UCXl4i9dYBrFOabk0xGmbkRA"},
         {"name": "No Priors", "yt_id": None, "search_name": "No Priors AI podcast"},
         {"name": "Latent Space", "yt_id": "UCvi5jNRoRVm436TVAXet1kQ"},
         {"name": "Nick Saraev", "yt_id": "UCddiUEpeqJcYeBxX1IVBKvQ"},
@@ -387,9 +387,100 @@ def fetch_youtube_rss(channel_id, cutoff_date):
         return [], []
 
 
+# ─── YouTube Data API Scanner ─────────────────────────────────────────────────
+# Alternative fetch path on googleapis.com — works in environments where
+# youtube.com is blocked (e.g. cloud routines). ~2 quota units per channel
+# per run against a 10,000/day free quota.
+
+YT_API_BASE = "https://www.googleapis.com/youtube/v3"
+
+
+def parse_iso8601_duration(s):
+    """Parse an ISO 8601 duration (PT1H2M3S, P1DT2H, PT45S) to seconds.
+    Returns None if the string can't be parsed."""
+    if not s:
+        return None
+    m = re.fullmatch(r"P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", s)
+    if not m or not any(m.groups()):
+        return None
+    days, hours, mins, secs = (int(g) if g else 0 for g in m.groups())
+    return days * 86400 + hours * 3600 + mins * 60 + secs
+
+
+def fetch_youtube_api(channel_id, cutoff_date, api_key):
+    """Fetch recent uploads via the YouTube Data API. Same return shape as
+    fetch_youtube_rss: (results, shorts). Durations come from the API itself,
+    so no youtube.com page scrape is needed anywhere on this path."""
+    uploads_playlist = "UU" + channel_id[2:]  # UCxxxx -> UUxxxx uploads playlist
+    r = requests.get(
+        f"{YT_API_BASE}/playlistItems",
+        params={
+            "part": "snippet,contentDetails",
+            "playlistId": uploads_playlist,
+            "maxResults": 15,
+            "key": api_key,
+        },
+        timeout=15,
+    )
+    r.raise_for_status()
+    items = r.json().get("items", [])
+
+    candidates = []
+    for it in items:
+        cd = it.get("contentDetails", {})
+        sn = it.get("snippet", {})
+        video_id = cd.get("videoId", "")
+        published_raw = cd.get("videoPublishedAt") or sn.get("publishedAt", "")
+        if not video_id or not published_raw:
+            continue
+        published = datetime.fromisoformat(published_raw.replace("Z", "+00:00"))
+        if published < cutoff_date:
+            continue
+        candidates.append({
+            "video_id": video_id,
+            "title": sn.get("title", "Unknown"),
+            "desc": sn.get("description", ""),
+            "published": published,
+        })
+
+    # Durations for all candidates in one batched call (API allows 50 ids)
+    durations = {}
+    ids = [c["video_id"] for c in candidates]
+    if ids:
+        r = requests.get(
+            f"{YT_API_BASE}/videos",
+            params={"part": "contentDetails", "id": ",".join(ids), "key": api_key},
+            timeout=15,
+        )
+        r.raise_for_status()
+        for it in r.json().get("items", []):
+            durations[it["id"]] = parse_iso8601_duration(
+                it.get("contentDetails", {}).get("duration", "")
+            )
+
+    results, shorts = [], []
+    for c in candidates:
+        duration = durations.get(c["video_id"])
+        text = (c["title"] + " " + c["desc"]).lower()
+        title_short = any(sig in text for sig in SHORT_FORM_TITLE_SIGNALS)
+        short = title_short or (duration is not None and duration < MIN_LONG_FORM_SECONDS)
+        item = {
+            "title": c["title"],
+            "url": f"https://www.youtube.com/watch?v={c['video_id']}",
+            "video_id": c["video_id"],
+            "published": c["published"].isoformat(),
+            "published_display": c["published"].strftime("%b %d"),
+            "duration_seconds": duration,
+            "duration_display": f"{duration // 60}m" if duration else "",
+            "platform": "youtube",
+        }
+        (shorts if short else results).append(item)
+    return results, shorts
+
+
 # ─── Main Scanner ─────────────────────────────────────────────────────────────
 
-def scan_all_channels(days=1, category_filter=None, skip_dedup=False):
+def scan_all_channels(days=1, category_filter=None, skip_dedup=False, api_key=None):
     # Catch-up mechanism: check if last run was more than 'days' ago
     if not skip_dedup:
         seen_log = load_seen_log()
@@ -428,6 +519,8 @@ def scan_all_channels(days=1, category_filter=None, skip_dedup=False):
         "channels_scanned": 0,
         "channels_with_new": 0,
         "duplicates_filtered": 0,
+        "api_fetches": 0,
+        "rss_fetches": 0,
     }
 
     for category, channels in CHANNELS.items():
@@ -441,7 +534,18 @@ def scan_all_channels(days=1, category_filter=None, skip_dedup=False):
             stats["channels_scanned"] += 1
 
             if ch.get("yt_id"):
-                videos, shorts = fetch_youtube_rss(ch["yt_id"], cutoff)
+                if api_key:
+                    try:
+                        videos, shorts = fetch_youtube_api(ch["yt_id"], cutoff, api_key)
+                        stats["api_fetches"] += 1
+                    except Exception as e:
+                        print(f"  [WARN] API failed for {ch['name']}: {e} — falling back to RSS",
+                              file=sys.stderr)
+                        videos, shorts = fetch_youtube_rss(ch["yt_id"], cutoff)
+                        stats["rss_fetches"] += 1
+                else:
+                    videos, shorts = fetch_youtube_rss(ch["yt_id"], cutoff)
+                    stats["rss_fetches"] += 1
                 new_videos = []
                 for v in videos:
                     vid = v["video_id"]
@@ -485,11 +589,19 @@ def scan_all_channels(days=1, category_filter=None, skip_dedup=False):
     if not skip_dedup:
         save_seen_log(seen_log)
 
+    if stats["api_fetches"] and not stats["rss_fetches"]:
+        fetch_method = "youtube-data-api"
+    elif stats["api_fetches"]:
+        fetch_method = "mixed (api + rss fallback)"
+    else:
+        fetch_method = "rss"
+
     return {
         "results": results,
         "shorts": shorts_by_category,
         "needs_web_search": needs_web_search,
         "stats": stats,
+        "fetch_method": fetch_method,
         "cutoff": cutoff.isoformat(),
         "days": days,
         "run_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
@@ -502,11 +614,17 @@ def main():
     parser.add_argument("--category", type=str, default=None, help="Scan only this category")
     parser.add_argument("--no-dedup", action="store_true", help="Skip dedup (use for first run)")
     parser.add_argument("--output", type=str, default=None, help="Output file (default: stdout)")
+    parser.add_argument("--api-key", type=str, default=os.environ.get("YT_API_KEY"),
+                        help="YouTube Data API v3 key (or set YT_API_KEY env var). Uses "
+                             "googleapis.com — works where youtube.com is blocked (cloud "
+                             "routines). Without a key, falls back to youtube.com RSS.")
 
     args = parser.parse_args()
 
-    print(f"Content Scout — {args.days}-day lookback", file=sys.stderr)
-    data = scan_all_channels(days=args.days, category_filter=args.category, skip_dedup=args.no_dedup)
+    print(f"Content Scout — {args.days}-day lookback"
+          + (" [YouTube Data API]" if args.api_key else " [RSS]"), file=sys.stderr)
+    data = scan_all_channels(days=args.days, category_filter=args.category,
+                             skip_dedup=args.no_dedup, api_key=args.api_key)
 
     output = json.dumps(data, indent=2, ensure_ascii=False)
     if args.output:
@@ -517,6 +635,8 @@ def main():
 
     s = data["stats"]
     print(f"\n--- Scout Summary ---", file=sys.stderr)
+    print(f"Fetch method: {data['fetch_method']} "
+          f"(api: {s['api_fetches']}, rss: {s['rss_fetches']})", file=sys.stderr)
     print(f"Scanned: {s['channels_scanned']} channels", file=sys.stderr)
     print(f"New long-form: {s['total_new']} videos from {s['channels_with_new']} channels across {s['categories_active']} categories", file=sys.stderr)
     print(f"Shorts filtered: {s['total_shorts']}", file=sys.stderr)
