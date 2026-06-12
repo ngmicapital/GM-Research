@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GM Research — Corpus</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #06060a; --bg-1: #0a0a10; --bg-2: #0e0e16; --bg-3: #13131d;
+    --border: #1a1a28; --border-hover: #2a2a3d;
+    --text-0: #ffffff; --text-1: #c8c8d4; --text-2: #8888a0; --text-3: #55556a;
+    --amber: #f59e0b; --amber-dim: #f59e0b18;
+    --green: #22c55e; --green-dim: #22c55e18;
+    --blue: #60a5fa; --blue-dim: #60a5fa18;
+    --purple: #a78bfa; --purple-dim: #a78bfa18;
+    --teal: #2dd4bf; --teal-dim: #2dd4bf18;
+    --red: #ef4444; --red-dim: #ef444418;
+  }
+  [data-theme="light"]{--bg-0:#f5f5f7;--bg-1:#fff;--bg-2:#f0f0f3;--bg-3:#e8e8ee;--border:#d4d4dc;--border-hover:#b8b8c4;--text-0:#111118;--text-1:#333340;--text-2:#66667a;--text-3:#9999aa;--amber:#d97706;--amber-dim:#d9770615;--green:#16a34a;--green-dim:#16a34a12;--blue:#2563eb;--blue-dim:#2563eb12;--purple:#7c3aed;--purple-dim:#7c3aed12;--teal:#0d9488;--teal-dim:#0d948812;--red:#dc2626;--red-dim:#dc262612}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-0); color: var(--text-1); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── Topbar ── */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:56px;border-bottom:1px solid var(--border);background:rgba(10,10,16,0.8);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);position:sticky;top:0;z-index:100}
+  [data-theme="light"] .topbar{background:rgba(255,255,255,0.85)}
+  .topbar-left{display:flex;align-items:center;gap:16px}
+  .logo{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--text-0);letter-spacing:-.5px;display:flex;align-items:center;gap:10px;text-decoration:none}
+  .logo-mark{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--amber),#d97706);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000}
+  [data-theme="light"] .logo-mark{background:linear-gradient(135deg,#d97706,#b45309)}
+  .logo span{color:var(--amber)}
+  .topbar-sep{width:1px;height:20px;background:var(--border)}
+  .topbar-tabs{display:flex;gap:4px}
+  .topbar-tab{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px;text-decoration:none;padding:6px 12px;border-radius:5px;transition:all .2s}
+  .topbar-tab:hover{color:var(--text-1);background:var(--bg-3)}
+  .topbar-tab.active{color:var(--text-0);background:var(--bg-3);border:1px solid var(--border)}
+  .topbar-right{display:flex;gap:16px;align-items:center}
+  .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text-2);transition:all .2s}
+  .theme-toggle:hover{border-color:var(--border-hover)}.theme-toggle .icon-sun{display:none}.theme-toggle .icon-moon{display:block}
+  [data-theme="light"] .theme-toggle .icon-sun{display:block}[data-theme="light"] .theme-toggle .icon-moon{display:none}
+  [data-theme="light"] .theme-toggle{background:var(--bg-1)}
+
+  /* ── Page layout ── */
+  .page { max-width: 1200px; margin: 0 auto; padding: 40px 40px 80px; }
+  .page-header { margin-bottom: 32px; }
+  .page-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--amber); margin-bottom: 8px; }
+  .page-title { font-size: 32px; font-weight: 800; color: var(--text-0); letter-spacing: -1px; }
+  .page-sub { font-size: 14px; color: var(--text-3); margin-top: 8px; }
+
+  /* ── Stats bar ── */
+  .stats-bar { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; padding: 12px 16px; background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px; }
+  .stat { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); }
+  .stat b { color: var(--text-1); font-weight: 600; }
+
+  /* ── Search ── */
+  .search-wrap { margin-bottom: 20px; }
+  .search-input { width: 100%; padding: 10px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-1); background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px; outline: none; transition: border-color .2s; }
+  .search-input:focus { border-color: var(--border-hover); }
+  .search-input::placeholder { color: var(--text-3); }
+  [data-theme="light"] .search-input { background: var(--bg-1); }
+
+  /* ── Domain filter pills ── */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .domain-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--pill-color) 35%, var(--border)); font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--pill-color); cursor: pointer; background: transparent; white-space: nowrap; transition: all .15s; }
+  .domain-pill:hover { border-color: var(--pill-color); background: color-mix(in oklab, var(--pill-color) 10%, transparent); }
+  .domain-pill.active { background: color-mix(in oklab, var(--pill-color) 20%, var(--bg-1)); border-color: var(--pill-color); color: var(--pill-color); font-weight: 600; }
+  .domain-pill span { opacity: .55; font-size: 9px; }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 768px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+
+  .corpus-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; border-left: 4px solid var(--border); transition: border-color .2s; }
+  .corpus-card:hover { border-color: var(--border-hover); }
+
+  .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .card-domain { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; border: 1px solid; font-weight: 600; }
+  .card-tier { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; border: 1px solid; font-weight: 600; }
+  .card-tier.unrated { color: var(--text-3); background: transparent; border-color: var(--border); }
+
+  .card-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: var(--text-0); line-height: 1.3; margin-bottom: 4px; }
+  .card-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
+
+  .card-summary { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-2); line-height: 1.55; margin-bottom: 12px; }
+
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .card-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-3); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); text-transform: lowercase; }
+
+  .card-extractables { margin-bottom: 12px; }
+  .card-ext-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 6px; }
+  .card-extractables ol { padding-left: 18px; font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text-2); line-height: 1.6; }
+  .card-extractables li { margin-bottom: 2px; }
+  .card-extractables li::marker { color: var(--text-3); }
+
+  .card-link { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--amber); display: inline-flex; align-items: center; gap: 4px; transition: opacity .15s; }
+  .card-link:hover { opacity: .75; text-decoration: underline; }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .empty-state .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+
+  .card-hidden { display: none !important; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .topbar { padding: 0 16px; }
+    .topbar-tabs { gap: 2px; }
+    .topbar-tab { font-size: 9px; padding: 5px 8px; letter-spacing: 1px; }
+    .page { padding: 24px 16px 60px; }
+    .page-title { font-size: 24px; }
+    .stats-bar { gap: 12px; padding: 10px 12px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .corpus-card { padding: 16px; }
+    .card-title { font-size: 15px; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--bg-0)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="logo"><div class="logo-mark">GM</div>GM <span>Research</span></a>
+    <div class="topbar-sep"></div>
+    <div class="topbar-tabs">
+      <a href="index.html" class="topbar-tab">Intelligence Archive</a>
+      <a href="visualizations.html" class="topbar-tab">Visualizations</a>
+      <a href="wyckoff.html" class="topbar-tab">Wyckoff</a>
+      <a href="corpus.html" class="topbar-tab active">Corpus</a>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"><span class="icon-moon">&#x1F319;</span><span class="icon-sun">&#x2600;&#xFE0F;</span></button>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-label">Knowledge Base</div>
+    <div class="page-title">Corpus</div>
+    <div class="page-sub">Curated sources across trading, AI, legal, biohacking, and more.</div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">Total: <b>4 sources</b></div>
+    <div class="stat">Domains: <b>2 active</b></div>
+    <div class="stat">Top tier: <b>A</b></div>
+    <div class="stat">Last updated: <b>2026-06-12</b></div>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="corpus-search" placeholder="Search sources by title, summary, or tags..." autocomplete="off">
+  </div>
+
+  <div class="filter-bar">
+    <button class="domain-pill active" data-domain="all" style="--pill-color:#f59e0b">All <span>4</span></button>
+        <button class="domain-pill" data-domain="ai" style="--pill-color:#a78bfa">AI <span>3</span></button>
+        <button class="domain-pill" data-domain="trading" style="--pill-color:#a3e635">Trading <span>1</span></button>
+  </div>
+
+  <div class="card-grid" id="card-grid">
+    
+      <div class="corpus-card" data-domain="trading" style="border-left-color:#a3e635">
+        <div class="card-header">
+          <span class="card-domain" style="color:#a3e635;background:#a3e63518;border-color:#a3e63540">Trading</span>
+          <span class="card-tier" style="color:#60a5fa;background:#60a5fa18;border-color:#60a5fa40">B-tier</span>
+        </div>
+        <div class="card-title">Kalshi Founder: Why Prediction Markets Are the Future - Tarek Mansour | E174</div>
+        <div class="card-meta">When Shift Happens / Tarek Mansour &middot; 2026-06-01</div>
+        <div class="card-summary">Tarek Mansour, co-founder/CEO of Kalshi (largest CFTC-regulated event exchange), in a 75-minute founder interview that is half origin-story psychology (Lebanon volatility, single-mother household, MIT information theory, six dark years before product-market fit) and half prediction-market structu...</div>
+        <div class="card-tags"><span class="card-tag">prediction-markets</span><span class="card-tag">kalshi</span><span class="card-tag">market-structure</span><span class="card-tag">insider-trading</span><span class="card-tag">perpetuals</span></div>
+        
+      <div class="card-extractables">
+        <div class="card-ext-label">Key takeaways</div>
+        <ol><li>**The insider-trading line, and why it exists:** research-accessible information is fair game (polls, satellite scraping, interviews — &quot;that's the whole point, we reward research&quot;); information you can only hold by unique access (employee, politician, athlete) is banned. The argument is liquidity, not fairness-in-the-abstract: market makers won't quote against counterparties with unbeatable information asymmetry, so insider-tolerant markets dry up. Direct rebuttal of Brian Armstrong's &quot;insider trading is necessary in prediction markets.&quot;</li><li>**Kalshi's enforcement stack (what a trader should expect to be visible):** KYC → NASDAQ-style pattern surveillance (sudden unexplained moves before events get flagged; insiders trade big, not $100) → all trades publicly visible (whistleblower-friendly) → investigation → fines up to criminal referral. Plus ex-ante blocking: politically-exposed persons banned from markets they influence, athletes/coaches banned from their own games via league lists — claimed as something no other financial market does today.</li><li>**70–80% of Kalshi users log in to read forecasts, not trade.** Prediction markets as a media product: &quot;going direct&quot; with a truth-aligned incentive structure, prediction-market citations in news growing fast, and a view-only newsfeed product on the roadmap. Implication for traders: price-as-information consumption is the majority use; liquidity comes from a minority.</li><li>**Leverage-normalization framework:** leverage's legitimate job is to lift low-volatility products up to the volatility band where they trade in a healthy, liquid way (and to solve cost-of-capital for long-dated markets — institutions won't tie up full collateral on multi-year questions); it becomes pathological when it amplifies already-volatile underlyings (his critique of offshore perp culture).</li><li>**Regulated perps logic:** futures expiry exists because deliverable commodities have natural end dates; perpetual underlyings (BTC etc.) deserve perpetual derivatives instead of costly roll-overs. Kalshi is launching the first CFTC-regulated perps on offshore-validated demand — &quot;no first-principles reason why the US should be different.&quot;</li></ol>
+      </div>
+        <a href="https://www.youtube.com/watch?v=_KRZHdjELzs" class="card-link" target="_blank" rel="noopener">Source &rarr;</a>
+      </div>
+
+      <div class="corpus-card" data-domain="ai" style="border-left-color:#a78bfa">
+        <div class="card-header">
+          <span class="card-domain" style="color:#a78bfa;background:#a78bfa18;border-color:#a78bfa40">AI</span>
+          <span class="card-tier" style="color:#22c55e;background:#22c55e18;border-color:#22c55e40">A-tier</span>
+        </div>
+        <div class="card-title">How to Build a Self-Improving Company with AI</div>
+        <div class="card-meta">Y Combinator (Tom Blomfield) &middot; 2026-05-21</div>
+        <div class="card-summary">Tom Blomfield, YC General Partner, argues that AI should not be bolted onto existing company structures but should reshape the company's architecture from the ground up. He opens with the &quot;Roman Legion&quot; problem: most companies still operate as rigid hierarchies where information crawls up and com...</div>
+        <div class="card-tags"><span class="card-tag">ai-native</span><span class="card-tag">self-improving-loops</span><span class="card-tag">organizational-design</span><span class="card-tag">founder-advice</span><span class="card-tag">automation</span></div>
+        
+      <div class="card-extractables">
+        <div class="card-ext-label">Key takeaways</div>
+        <ol><li>**The five-layer self-improving loop**: Every autonomous AI workflow requires Sensors/Data → Policy Layer → Tool Layer → Quality Gates → Learning Mechanism. Companies that close the loop achieve compounding improvement while founders sleep.</li><li>**&quot;Burn tokens, not headcount&quot;**: One person with the right AI stack should be equivalent to 1,000 traditional engineers. If your API bill is comfortable, you are under-investing. YC portfolio companies at Demo Day show ~5× higher revenue per employee vs 18 months ago, with the trend continuing into Series A/B.</li><li>**Make the company legible to AI**: Record everything (Slack, email, decisions, actions) so every interaction creates a searchable artifact that feeds back into the AI. This is the prerequisite for the self-improving loop — you cannot improve what the AI cannot read.</li><li>**Middle management's function is replaced, not people**: AI takes over the coordination and information-relay work of middle managers. ICs, DRIs, and humans making high-risk real-world judgments become more important, not less.</li><li>**The YC overnight demo**: An internal YC agent monitored its own query failures, determined the fix, opened a pull request to the YC codebase, had a second agent review it, and deployed — by morning the bug was gone with no human involvement. This is the &quot;holy shit moment&quot; pattern to aim for.</li></ol>
+      </div>
+        <a href="https://www.youtube.com/watch?v=X_JsIHUfUjc" class="card-link" target="_blank" rel="noopener">Source &rarr;</a>
+      </div>
+
+      <div class="corpus-card" data-domain="ai" style="border-left-color:#a78bfa">
+        <div class="card-header">
+          <span class="card-domain" style="color:#a78bfa;background:#a78bfa18;border-color:#a78bfa40">AI</span>
+          <span class="card-tier" style="color:#60a5fa;background:#60a5fa18;border-color:#60a5fa40">B-tier</span>
+        </div>
+        <div class="card-title">Watts, Wafers, and the Future of AI Infra</div>
+        <div class="card-meta">Invest Like the Best / Gavin Baker &middot; 2026-05-20</div>
+        <div class="card-summary">Gavin Baker, managing partner at Atreides Management and long-time technology investor, joins Invest Like the Best (EP.473) to argue that the trajectory of AI is now dictated by two physical limits: watts and wafers. On the power side, the near-term shortage is real but time-bounded — Baker expec...</div>
+        <div class="card-tags"><span class="card-tag">ai-infrastructure</span><span class="card-tag">semiconductors</span><span class="card-tag">energy</span><span class="card-tag">tsmc</span><span class="card-tag">investing</span></div>
+        
+      <div class="card-extractables">
+        <div class="card-ext-label">Key takeaways</div>
+        <ol><li>**Two physical constraints govern AI's next phase**: watts (power supply) and wafers (semiconductor production capacity). Everything else — model improvements, software advances — is bounded by how fast these two physical limits can be relieved.</li><li>**TSMC capacity is the single best AI-bubble indicator**: Baker says if he could watch only one variable to assess whether AI capex has become a bubble, it would be TSMC's wafer production capacity. Current supply restraint is paradoxically what's preventing the industry from overheating — demand for Nvidia to sell $1–1.5T of chips next year exceeds TSMC's ability to supply.</li><li>**Power shortage eases 2027–28 near-term; orbital compute solves it long-term**: New energy sources come online in the 2027–28 window, relieving the near-term power bottleneck. The long-range solution Baker points to is orbital compute — data center racks in space — where SpaceX is uniquely positioned through its satellite fleet and demonstrated cooling expertise.</li><li>**GPU disaggregation and new chip entrants are real**: The monolithic GPU is beginning to unbundle; custom chip companies and the TerraFab JV (Elon/SpaceX) are emerging as credible alternatives. Baker sees this as structurally different from the dotcom era because physical constraints are acting as a natural rate limiter.</li><li>**Value accrual to frontier models is an open question**: Baker explicitly flags the uncertainty of whether the economics of AI keep flowing to large frontier model providers or shift to applications and infrastructure. He frames this as the most important unresolved question for long-term AI investing.</li></ol>
+      </div>
+        <a href="https://www.youtube.com/watch?v=Mmj_G9RlW-I" class="card-link" target="_blank" rel="noopener">Source &rarr;</a>
+      </div>
+
+      <div class="corpus-card" data-domain="ai" style="border-left-color:#a78bfa">
+        <div class="card-header">
+          <span class="card-domain" style="color:#a78bfa;background:#a78bfa18;border-color:#a78bfa40">AI</span>
+          <span class="card-tier" style="color:#22c55e;background:#22c55e18;border-color:#22c55e40">A-tier</span>
+        </div>
+        <div class="card-title">Andrej Karpathy — LLM Knowledge Bases</div>
+        <div class="card-meta">Andrej Karpathy (@karpathy) &middot; 2026-04-28</div>
+        <div class="card-summary">Karpathy describes a personal workflow for using LLMs to build and maintain markdown-based knowledge bases (wikis) about specific research topics. A &quot;large fraction&quot; of his current token throughput goes into knowledge work rather than code, suggesting this pattern has displaced some of his coding...</div>
+        <div class="card-tags"><span class="card-tag">llm-knowledge-base</span><span class="card-tag">second-brain</span><span class="card-tag">markdown-wiki</span><span class="card-tag">agents</span><span class="card-tag">workflow</span></div>
+        
+      <div class="card-extractables">
+        <div class="card-ext-label">Key takeaways</div>
+        <ol><li>&quot;A large fraction of my recent token throughput is going less into manipulating code, and more into manipulating know...</li><li>&quot;I use an LLM to incrementally 'compile' a wiki, which is just a collection of .md files in a directory structure. Th...</li></ol>
+      </div>
+        <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" class="card-link" target="_blank" rel="noopener">Source &rarr;</a>
+      </div>
+  </div>
+</div>
+
+<script>
+// Theme persistence
+(function(){var s=localStorage.getItem('gm-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+function toggleTheme(){var h=document.documentElement,c=h.getAttribute('data-theme'),n=c==='light'?'dark':'light';h.setAttribute('data-theme',n);localStorage.setItem('gm-theme',n)}
+
+// Domain filtering
+(function(){
+  var activeDomain = 'all';
+  document.querySelectorAll('.domain-pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.domain-pill').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeDomain = btn.dataset.domain;
+      applyFilters();
+    });
+  });
+
+  var searchInput = document.getElementById('corpus-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function(){ applyFilters(); });
+  }
+
+  function applyFilters(){
+    var query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    var cards = document.querySelectorAll('.corpus-card');
+    var visibleCount = 0;
+    cards.forEach(function(card){
+      var domainMatch = activeDomain === 'all' || card.dataset.domain === activeDomain;
+      var textMatch = true;
+      if (query) {
+        var text = card.textContent.toLowerCase();
+        textMatch = text.indexOf(query) !== -1;
+      }
+      var show = domainMatch && textMatch;
+      card.classList.toggle('card-hidden', !show);
+      if (show) visibleCount++;
+    });
+
+    // Show/hide empty state
+    var grid = document.getElementById('card-grid');
+    var emptyEl = grid.querySelector('.empty-state');
+    if (visibleCount === 0 && !emptyEl) {
+      var div = document.createElement('div');
+      div.className = 'empty-state dynamic-empty';
+      div.style.gridColumn = '1/-1';
+      div.innerHTML = '<div class="empty-icon">&#x1F50D;</div><div>No sources match your filter.</div>';
+      grid.appendChild(div);
+    } else if (visibleCount > 0 && emptyEl && emptyEl.classList.contains('dynamic-empty')) {
+      emptyEl.remove();
+    }
+    // Also remove dynamic empty if filters cleared
+    var dynEmpty = grid.querySelector('.dynamic-empty');
+    if (dynEmpty && visibleCount > 0) dynEmpty.remove();
+  }
+})();
+</script>
+</body>
+</html>

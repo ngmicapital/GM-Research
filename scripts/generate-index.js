@@ -638,6 +638,7 @@ a{color:inherit;text-decoration:none}
     <div class="mob-sec-lbl">Navigation</div>
     <a href="index.html" class="mob-item active"><span class="mob-ic">&#x1F3E0;</span>Home</a>
     <a href="visualizations.html" class="mob-item"><span class="mob-ic">&#x1F4CA;</span>Visualizations</a>
+    <a href="corpus.html" class="mob-item"><span class="mob-ic">&#x1F4DA;</span>Corpus</a>
     <div class="mob-divider"></div>
     <div class="mob-sec-lbl">Categories</div>
     <a href="index.html" class="mob-item" style="color:#22c55e"><span class="mob-ic">&#x1F4C8;</span>Morning Edge</a>
@@ -669,6 +670,7 @@ a{color:inherit;text-decoration:none}
       <a href="index.html" class="active">~/archive</a>
       <a href="visualizations.html">~/visualisations</a>
       <a href="wyckoff.html">~/wyckoff</a>
+      <a href="corpus.html">~/corpus</a>
     </nav>
     <div class="topbar-meta">
       <span class="live-dot"></span>
