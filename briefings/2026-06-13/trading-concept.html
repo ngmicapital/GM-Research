@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidation Cascades | 13 June 2026</title>
+<meta property="og:description" content="A liquidation cascade is forced selling that feeds itself — each margin call dumps market orders into the next cluster of stops, accelerating the move. Read the fuel (OI, funding, liquidation clusters) before the trigger, and fade the climax once leverage is flushed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Diagram</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidation Cascades</h1>
+  <div class="meta">
+    <span>Sat · 13 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #48</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A liquidation cascade is forced selling that feeds itself — each margin call dumps market orders that push price into the next cluster of liquidation prices, so the move accelerates the further it travels; it matters because in leveraged crypto the cascade, not the headline, is usually the move. The edge isn't predicting the trigger — it's reading the fuel (open interest, funding, liquidation clusters) before the spark and refusing to add risk into a primed book, then fading the climax once leverage is flushed.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Forced selling that feeds itself</div>
+    </div>
+  </div>
+
+  <div class="skim">A liquidation cascade is a feedback loop: forced position closures dump market orders that push price into the next batch of liquidation prices, which forces more closures — selling that manufactures the conditions for more selling.</div>
+
+  <p>Treat a cascade as a <strong>mechanical event, not a market opinion</strong>. When a leveraged position runs out of margin, the exchange's liquidation engine doesn't ask permission or wait for a better price — it fires a <strong>market order</strong> to flatten the position immediately. One forced sell drops the price. A lower price trips the next tranche of longs sitting just below. Those get force-sold too. The book thins as makers step back, so each wave gaps further than the last. That is the whole machine: <strong>price decline → forced sells → lower price → more forced sells.</strong></p>
+
+  <p>The reason crypto cascades are violent — far more than equities or FX — is structural. Perps offer <strong>up to 100×–125× leverage</strong>, positions are marked against a single rolling index, and a huge share of open interest sits in retail hands clustered at round numbers and obvious stops. Add 24/7 trading with thin weekend depth and you get a market that is permanently one shove away from a self-clearing avalanche. The cascade is the deleveraging; the news is just the shove.</p>
+
+  <p>Critically, a cascade runs in <strong>either direction</strong>. A <strong>long cascade</strong> (the common one) flushes over-leveraged longs on the way down. A <strong>short squeeze cascade</strong> flushes over-leveraged shorts on the way up — same engine, forced <em>buys</em> instead of forced sells. Both end the same way: when there's no more crowded leverage left to liquidate.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>LIQUIDATION</b><span>exchange force-closes a position that can't meet margin</span></div>
+    <div class="pill-term"><b>MAINT. MARGIN</b><span>minimum equity % to keep a position open</span></div>
+    <div class="pill-term"><b>LIQ PRICE</b><span>the price where equity hits maintenance margin</span></div>
+    <div class="pill-term"><b>OPEN INTEREST</b><span>total leveraged contracts live — the fuel load</span></div>
+    <div class="pill-term"><b>LIQ ENGINE</b><span>the auto-system that market-sells flattened positions</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    If you only remember one thing: a liquidation cluster is <em>fuel, not a floor</em>. Price is drawn toward stacked liquidations because closing them <em>is</em> the order flow — the magnet you see on the heatmap is the next batch of accelerant.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From margin call to spiral</div>
+    </div>
+  </div>
+
+  <div class="skim">Higher leverage pins the liquidation price closer to entry; cluster those liq prices together and a single break market-sells enough size to reach the next cluster — that's the spiral.</div>
+
+  <p>Start with where a position dies. For an isolated long on a linear (USDT) perp, ignoring fees, the liquidation price is roughly entry adjusted down by your margin buffer minus the maintenance requirement:</p>
+
+  <div class="formula">
+    <b>Liq Price (long)</b> ≈ Entry × ( 1 − 1/L + MMR )<br>
+    <b>Liq Price (short)</b> ≈ Entry × ( 1 + 1/L − MMR )
+    <div class="note">L = leverage · MMR = maintenance margin rate (e.g. 0.5%). At 20× a long, 1/L = 5%, so liquidation sits ≈ 4.5% below entry. At 50×, it's ≈ 1.5% below. The higher the leverage, the tinier the move needed to trigger you.</div>
+  </div>
+
+  <p>Now the step that turns one liquidation into a cascade — <strong>depth depletion</strong>. A forced market sell of size <strong>Q</strong> eats through resting bids. If the visible bid depth between the current price and the next liquidation cluster is smaller than Q, price <strong>gaps straight into that cluster</strong> and trips it. The reflexive amplifier:</p>
+
+  <div class="formula">
+    <b>Price impact</b> ≈ Forced Sell Size (Q) ÷ Bid Depth to next level<br>
+    <b>Cascade condition:</b> &nbsp;Q &gt; Bid Depth &nbsp;→&nbsp; price gaps to next cluster &nbsp;→&nbsp; new Q
+    <div class="note">When makers pull bids (panic, thin weekend book), the denominator collapses, impact explodes, and each wave reaches further than the last. The cascade ends when forced supply finally meets enough passive demand to absorb it — the selling climax.</div>
+  </div>
+
+  <p>The early-warning trio every desk watches: <strong>open interest</strong> (how much leverage is loaded), <strong>funding</strong> (which side is crowded and paying), and the <strong>liquidation map</strong> (where the clusters sit). Crowded one-sided positioning + extreme funding + a dense cluster just below price = a primed book. As one microstructure write-up frames it, the signal is the chain itself: <em>high leverage buildup → extreme funding bias → a price trigger against the majority → forced liquidations → violent reset.</em></p>
+
+  <table class="cmp">
+    <thead><tr><th>Long Cascade</th><th>Short-Squeeze Cascade</th></tr></thead>
+    <tbody>
+      <tr><td>Direction</td><td>Down — forced <em>sells</em> hit bids</td></tr>
+      <tr><td>Who's flushed</td><td>Over-leveraged longs / late chasers</td></tr>
+      <tr><td>Funding tell</td><td>Positive &amp; extreme (longs paying)</td></tr>
+      <tr><td>Climax look</td><td>Capitulation wick + volume spike, OI collapses</td></tr>
+      <tr><td>Mirror</td><td>Up — forced <em>buys</em> lift offers; shorts flushed; negative extreme funding; squeeze ends as OI drops and funding flips positive</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Diagram</div>
+      <div class="section-sub">Anatomy of a long cascade</div>
+    </div>
+  </div>
+
+  <div class="skim">Price stair-steps down through stacked long-liquidation clusters — each break dumps market sells that reach the next cluster — until a capitulation wick where open interest collapses and absorption flips it.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 470" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Liquidation cascade staircase with stacked clusters and an open interest flush panel">
+      <!-- bg -->
+      <rect x="0" y="0" width="800" height="470" fill="#ffffff"/>
+      <!-- title -->
+      <text x="20" y="26" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#1c1917">LONG CASCADE — price seeks the next cluster</text>
+      <text x="20" y="44" font-family="Inter, sans-serif" font-size="11" fill="#78716c">each forced sell gaps price into the liquidations stacked below</text>
+
+      <!-- price axis -->
+      <line x1="80" y1="58" x2="80" y2="300" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="80" y1="300" x2="720" y2="300" stroke="#e7e5e4" stroke-width="1"/>
+      <text x="74" y="74" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">$66k</text>
+      <text x="74" y="134" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">$64k</text>
+      <text x="74" y="194" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">$62k</text>
+      <text x="74" y="254" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">$60k</text>
+
+      <!-- liquidation cluster bands -->
+      <rect x="80" y="120" width="560" height="22" fill="#ef4444" opacity="0.12"/>
+      <rect x="80" y="180" width="560" height="22" fill="#ef4444" opacity="0.16"/>
+      <rect x="80" y="240" width="560" height="22" fill="#ef4444" opacity="0.22"/>
+      <text x="636" y="135" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#b91c1c">long liq cluster · $0.5B</text>
+      <text x="636" y="195" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#b91c1c">long liq cluster · $0.9B</text>
+      <text x="636" y="255" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#b91c1c">long liq cluster · $1.3B</text>
+
+      <!-- climax zone -->
+      <rect x="470" y="258" width="120" height="44" fill="#22c55e" opacity="0.14"/>
+      <text x="530" y="284" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#15803d">CLIMAX</text>
+      <text x="530" y="296" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#15803d">OI ↓ · funding flips</text>
+
+      <!-- price path: drift then gap-steps into each cluster, capitulation wick, bounce -->
+      <polyline points="95,82 150,90 195,80 230,86 232,131 295,138 320,128 322,191 380,198 405,188 408,249 455,256 475,262 500,290 505,255 540,250 600,235 660,242 715,238"
+        fill="none" stroke="#1c1917" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- capitulation wick emphasis -->
+      <line x1="500" y1="262" x2="500" y2="290" stroke="#22c55e" stroke-width="2.4"/>
+
+      <!-- forced-sell arrows at each break -->
+      <g stroke="#ef4444" stroke-width="2" fill="#ef4444">
+        <line x1="232" y1="100" x2="232" y2="124"/><polygon points="227,120 237,120 232,130"/>
+        <line x1="322" y1="160" x2="322" y2="184"/><polygon points="317,180 327,180 322,190"/>
+        <line x1="408" y1="218" x2="408" y2="242"/><polygon points="403,238 413,238 408,248"/>
+      </g>
+      <text x="246" y="112" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#b91c1c">forced sells</text>
+
+      <!-- trigger marker -->
+      <circle cx="232" cy="131" r="4" fill="#fbbf24" stroke="#78350f" stroke-width="1"/>
+      <text x="150" y="116" font-family="JetBrains Mono, monospace" font-size="9" fill="#78350f">trigger / first break</text>
+
+      <text x="588" y="228" font-family="JetBrains Mono, monospace" font-size="9" fill="#15803d">absorption → bounce</text>
+
+      <!-- divider -->
+      <line x1="20" y1="332" x2="780" y2="332" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3 3"/>
+
+      <!-- OI flush panel -->
+      <text x="20" y="356" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#1c1917">THE FLUSH — open interest is wiped as leverage clears</text>
+      <!-- bars -->
+      <rect x="120" y="378" width="120" height="64" fill="#a3e635" opacity="0.55" stroke="#3f6212"/>
+      <rect x="340" y="410" width="120" height="32" fill="#ef4444" opacity="0.45" stroke="#b91c1c"/>
+      <rect x="560" y="426" width="120" height="16" fill="#78716c" opacity="0.45" stroke="#44403c"/>
+      <text x="180" y="458" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#3f6212">PRE — OI high (primed)</text>
+      <text x="400" y="458" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#b91c1c">CASCADE — OI dumps</text>
+      <text x="620" y="458" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#44403c">AFTER — weekly low</text>
+      <text x="700" y="392" font-family="JetBrains Mono, monospace" font-size="9" fill="#78716c">OI</text>
+      <line x1="120" y1="442" x2="690" y2="442" stroke="#e7e5e4" stroke-width="1"/>
+    </svg>
+    <div class="svg-caption"><em>A long cascade: price gaps from one stacked liquidation cluster to the next as forced market sells deplete the bids, bottoming on a capitulation wick where open interest collapses and passive demand finally absorbs the supply. The bottom panel is the cascade's fingerprint — open interest gets wiped as leverage clears.</em></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trading around the flush</div>
+    </div>
+  </div>
+
+  <div class="skim">Don't try to predict the trigger — read the fuel before it, refuse to add risk into a primed book, and fade the climax only after leverage has actually flushed.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Read the fuel, not the news</h4>
+        <p>Before any move, score the board: open-interest percentile (crowded?), funding extreme (one-sided?), and the liquidation map (dense cluster just below/above price?). All three lit = a primed book. The catalyst is unknowable; the fuel load isn't.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Treat the cluster as a magnet, not a level</h4>
+        <p>A big liquidation pool below is a <em>target</em>, not support — price is drawn there because closing it is the flow. Put your invalidation beyond the cluster, not at the round number where everyone else parked theirs.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Don't add into a primed book</h4>
+        <p>When OI is crowded and funding is one-sided against you, the asymmetry is brutal — the whole crowd is your exit liquidity. Cut size or stand aside. Surviving the cascade beats being clever in it.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Fade the climax, not the slide</h4>
+        <p>Counter-trend only after the flush prints: capitulation wick on a volume spike, OI collapsing, funding resetting or flipping. That's the Wyckoff selling climax — supply finally absorbed. Knife-catching mid-cascade is just adding fuel.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — cascade-fade (illustrative, BTC June 2026 bottoming zone)</h5>
+    <p style="margin:0 0 10px;">The June cascade bottomed in the low-$60s/high-$50s (sources differ on the exact wick). A textbook fade waits for the leverage to clear before stepping in front of the move:</p>
+    <table>
+      <tr><td>Setup</td><td>Capitulation wick to ≈$60,400 on a volume spike; intraday OI down &gt;15%; funding flips negative (shorts now paying)</td></tr>
+      <tr><td>Entry</td><td>Long ≈$61,200 on the reclaim + higher low (not the wick itself)</td></tr>
+      <tr><td>Stop</td><td>$59,400 — below the capitulation low · risk = $1,800</td></tr>
+      <tr><td>Target 1</td><td>$63,500 (prior broken cluster) → +$2,300 ≈ <b>+1.28R</b></td></tr>
+      <tr><td>Runner</td><td>$65,400 (pre-cascade supply) → +$4,200 ≈ <b>+2.33R</b></td></tr>
+    </table>
+    <p style="margin:10px 0 0;font-size:12.5px;color:#78716c;font-style:italic;">Illustrative levels around the documented bottoming zone — the point is the sequence (wait for OI flush + funding flip, then fade), not the exact ticks.</p>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> cascades fire on 1m–15m · read the fuel (OI / funding / liq map) on 4h+ · fade the climax on 5m–1h once OI confirms the flush.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC — flushed June 3, re-coiling on a trigger</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC ran a textbook long cascade on June 3 ($1.86B liquidated, 89% longs); ten days on, open interest sits near a weekly low and a fresh long-liq cluster has stacked just below spot — a re-primed book.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 13 June 2026</div>
+    <h4>The flush, the aftermath, and the next trigger</h4>
+
+    <p><strong>What happened (June 3, verified):</strong> A 13-day record ETF outflow streak, Strategy's first BTC sale in nearly four years, and a Mt. Gox 10,306-BTC transfer lit the fuse. Crypto saw <strong>$1.86B liquidated in 24h — $1.66B (89%) longs</strong> — with BTC alone accounting for $896M, ETH $482M, SOL $91M. BTC wicked to ≈$65,372 that day, then bled lower through June 4–6 into the low-$60s/high-$50s <em>[sources differ on the exact cycle low — roughly $59k–$62k]</em>. Textbook long cascade: longs over-positioned, funding rich, then a shove.</p>
+
+    <p><strong>Where we are now (this session):</strong> BTC ≈<strong>$63,400</strong>, +0.1% on the day; ETH ≈$1,662, −0.5%. The aftermath is visible in the derivatives: aggregate BTC <strong>OI ≈$6.2B sitting at roughly the 6th–10th percentile of its 7-day range</strong> — a weekly low, the signature of a market that just deleveraged. Funding is back to a <strong>modest positive (≈2.3%–3.1% annualised)</strong> — longs paying again. And the imbalance has rebuilt long-heavy, with a fresh long-liq cluster stacked right under spot.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot (now)</td><td>≈ $63,400 · +0.13% 24h</td></tr>
+        <tr><td>ETH spot (now)</td><td>≈ $1,662 · −0.50% 24h</td></tr>
+        <tr><td>BTC aggregate OI</td><td>≈ $6.2B · ~6th–10th pctile (7d) — weekly low</td></tr>
+        <tr><td>BTC funding (ann.)</td><td>+2.3% to +3.1% — modest long premium</td></tr>
+        <tr><td>OI imbalance</td><td>long-heavy (~$6.4B longs vs ~$4.6B shorts)</td></tr>
+        <tr><td>Nearest long-liq cluster</td><td>≈ $63,100 / $62,970 (0.5–0.7% below)</td></tr>
+        <tr><td>Cascade trigger (Morning Edge)</td><td>$63,400 — break washes toward $63,000</td></tr>
+        <tr><td>June 3 cascade</td><td>$1.86B liq · 89% longs · BTC low $65,372</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The book is re-primed but lighter — OI near a weekly low means less fuel than early June, yet the cluster sitting <em>directly under price</em> makes $63,400 a knife-edge into a thin Saturday book. Long-biased while it holds; below it the long cluster becomes the magnet. → see today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>, which flags $63,400 as the live cascade trigger.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Why calm markets build the cascade</div>
+    </div>
+  </div>
+
+  <div class="skim">The cascade isn't a glitch — it's the price of the calm that came before it; quiet markets invite the leverage that fuels the flush.</div>
+
+  <div class="quote">
+    <p>“Stability is destabilizing.”</p>
+    <div class="attr"><b>Hyman Minsky</b> · Financial Instability Hypothesis · <a href="https://www.levyinstitute.org/pubs/wp_659.pdf">1982</a></div>
+  </div>
+
+  <div class="quote">
+    <p>“Excessive levels of leverage have resulted in a seemingly hypersensitive market.”</p>
+    <div class="attr"><b>The Kobeissi Letter</b> (@KobeissiLetter) · via <a href="https://beincrypto.com/crypto-market-daily-liquidations-volatility/">BeInCrypto</a> · 2026</div>
+  </div>
+
+  <p style="font-size:13px;color:#78716c;margin-top:10px;">Minsky's point is the mechanism's root cause: long stretches of calm reward more aggressive financing, leverage builds quietly, and the eventual unwind is violent precisely <em>because</em> nothing forced it to clear sooner. Kobeissi is the same idea on the modern crypto tape — the more leverage embedded, the smaller the shove needed to trigger the flush.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">How the cascade gets you</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake is buying "support" mid-cascade — a liquidation cluster isn't a floor, it's the next batch of accelerant.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Catching the knife mid-cascade</h5>
+      <p>Buying the "support" line while liquidations are still firing puts you long into forced supply. Wait for the OI flush and a reclaim — the floor only exists once the selling has nothing left to liquidate.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Mistaking the cluster for a wall</h5>
+      <p>Stacked liquidations are magnets, not barriers. Price gravitates <em>toward</em> them because closing them is the order flow. Plan for the level to be hit, not held.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Carrying leverage into thin liquidity</h5>
+      <p>Weekends, holidays, and macro-event windows hollow out the bid stack. The same forced-sell size that's absorbed on a Tuesday gaps three clusters on a Saturday. Size down when the book is thin.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Reading the headline number as the cause</h5>
+      <p>"$1.86B liquidated" is the <em>symptom</em>, printed after the fact. The tradeable signal was the primed book before it — crowded OI and rich funding. The dollar figure tells you it happened, not that it's over.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: the "exchanges hunt your stops" conspiracy</h5>
+      <p>Cascades are real, but the framing that an exchange personally targets your liquidation is mostly myth. No one needs to hunt you — your own crowded leverage plus an automated liq engine and a public liquidation map do the work. The cluster is visible to everyone; that's exactly why it gets taken. Blame the positioning, not a villain.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Where to go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">One clean explainer of the mechanism, two forensics of the June 2026 flush, and a microstructure piece on the OI/funding signals that front-run it.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://blog.millionero.com/blog/crypto-liquidation-cascade-explained/">Crypto Liquidation Cascade: How Forced Selling Crashes Markets</a>
+        <span>Clean walk-through of the feedback loop, leverage's role, and why thin books accelerate it. "It feeds on itself."</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.cryptotimes.io/2026/06/03/bitcoin-price-drops-below-66000-while-massive-selloff-leads-1-86b-in-liquidations/">Bitcoin Drops Below $66,000 While Massive Selloff Leads $1.86B in Liquidations</a>
+        <span>The June 3 numbers: $1.86B liquidated, 89% longs, the ETF-outflow / Strategy-sale / Mt. Gox catalysts.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://crypto.news/the-fed-iran-and-saylor-anatomy-of-the-june-crypto-crash/">The Fed, Iran, and Saylor: Anatomy of the June Crypto Crash</a>
+        <span>The macro tinder behind the flush — Fed repricing, Strait of Hormuz, and a tower of leverage waiting for a shove.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Microstructure</div>
+      <div class="fr-body">
+        <a href="https://medium.com/@XT_com/bitcoin-futures-market-microstructure-liquidation-cascades-funding-regimes-and-open-interest-978b107b4889">Bitcoin Futures Microstructure: Liquidation Cascades, Funding Regimes &amp; OI Signals</a>
+        <span>The pre-cascade chain: OI spikes + extreme funding as the warning, "high OI relative to market cap is a leverage thermometer."</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.cryptotimes.io/2026/06/03/bitcoin-price-drops-below-66000-while-massive-selloff-leads-1-86b-in-liquidations/">Crypto Times — June 3 liquidations</a>
+    <a href="https://crypto.news/the-fed-iran-and-saylor-anatomy-of-the-june-crypto-crash/">crypto.news — June crash anatomy</a>
+    <a href="https://blog.millionero.com/blog/crypto-liquidation-cascade-explained/">Millionero — cascade explainer</a>
+    <a href="https://medium.com/@XT_com/bitcoin-futures-market-microstructure-liquidation-cascades-funding-regimes-and-open-interest-978b107b4889">XT — futures microstructure</a>
+    <a href="https://www.levyinstitute.org/pubs/wp_659.pdf">Levy Institute — Minsky (Wray)</a>
+    <a href="https://beincrypto.com/crypto-market-daily-liquidations-volatility/">BeInCrypto — Kobeissi quote</a>
+    <a href="https://www.coingecko.com/">CoinGecko — spot prices</a>
+    <a href="https://www.coinglass.com/tv/Binance_BTCUSDT">Coinglass — BTC derivatives / liq map</a>
+  </div>
+  <div>Alpha · Issue #48 · 13 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
