@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidity Heatmaps | 14 June 2026</title>
+<meta property="og:description" content="A liquidity heatmap is the order book rendered over time: bright bands are real resting limit orders that pull price like a magnet — and are not the same as a model-estimated liquidation heatmap.">
+<meta name="description" content="A liquidity heatmap is the order book rendered over time: bright bands are real resting limit orders that pull price like a magnet — and are not the same as a model-estimated liquidation heatmap.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Liquidity Heatmaps: where resting orders pile up, and where price gets pulled","preview":"A liquidity heatmap renders the order book over time — bright bands mark real resting size that pulls price like a magnet, distinct from a model-estimated liquidation heatmap.","tags":["Liquidity","Order Flow","Heatmap"]}</script>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidity Heatmaps</h1>
+  <div class="meta">
+    <span>Sun · 14 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #49</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A <strong>liquidity heatmap</strong> is the order book rendered over time: bright horizontal bands are large resting limit orders, and price is drawn toward them like a magnet — until they hold (support/resistance), get eaten (absorption), or vanish (spoof). Trade the <strong>reaction at the band, not the band itself</strong> — and never confuse this map of real resting orders with a Coinglass-style liquidation heatmap, which is a model estimate of where leverage gets force-closed, not actual orders.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The order book, painted across time</div>
+    </div>
+  </div>
+
+  <div class="skim">A liquidity heatmap stacks every snapshot of the limit-order book side by side over time, so resting size shows up as bright horizontal bands you can watch build, hold, or evaporate.</div>
+
+  <p>A depth-of-market ladder shows you the book <em>right now</em>. A liquidity heatmap shows you the book <em>through time</em> — it takes each instant's resting limit orders, colours them by size, and scrolls them left as new snapshots paint on the right. Per Bookmap, "on the right side of the vertical timeline is the current order book; on the left is the position of the order book in the past." That time axis is the whole point: it lets you see <strong>which liquidity is sticky and which is fleeting</strong>, something a static ladder physically cannot show.</p>
+
+  <p>Brightness encodes size. "Brighter colors indicate higher concentrations of resting orders, while lighter colors represent thinner liquidity." A persistent bright line at one price is a large passive participant parked there and refusing to move — a wall. The map's background is the <strong>passive</strong> side (limit orders waiting); the trade bubbles printed on top are the <strong>aggressive</strong> side (market orders eating them). You are watching supply and demand negotiate in real time, with a memory.</p>
+
+  <p>This builds directly on <strong>Order Book Resiliency</strong> (Issue #42) — the heatmap is resiliency rendered visually: a band that reloads as fast as it gets hit looks like a stubborn glowing line; one that thins each time price touches it fades to nothing. It also makes <strong>Iceberg orders</strong> (Issue #47) legible — a hidden refill shows up as a band that keeps re-lighting after every print that should have cleared it.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>RESTING ORDER</b><span>a limit order sitting in the book, waiting — passive size</span></div>
+    <div class="pill-term"><b>BAND</b><span>a bright horizontal trace = a large resting order held over time</span></div>
+    <div class="pill-term"><b>MAGNET</b><span>a heavy band price tends to gravitate toward to fill against</span></div>
+    <div class="pill-term"><b>ABSORPTION</b><span>a band that gets hit repeatedly yet holds — real demand/supply</span></div>
+    <div class="pill-term"><b>SPOOF</b><span>a band that vanishes just before price arrives — fake size</span></div>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    A liquidity heatmap is not a forecast — it is a live map of where real orders sit. Price doesn't <em>have</em> to reach a band; it's just pulled toward where the fills are, and the trade is in how the band behaves on contact.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How depth becomes heat — and why price chases it</div>
+    </div>
+  </div>
+
+  <div class="skim">Each price level's resting size is normalised against the heaviest size on screen and mapped to a colour; price gets pulled toward heavy bands because that's where large fills — and trapped stops — are waiting.</div>
+
+  <p>The rendering rule is simple. For every column of time and every price row, sum the resting limit size at that level, normalise it against the largest resting block currently in view, and map the ratio to a colour ramp. Big relative size → bright; thin → dark. As price moves, the active trades (market orders) paint as bubbles on top, so you can see aggression colliding with the passive wall underneath.</p>
+
+  <div class="formula">
+    <b>brightness</b>(price, t) ∝ resting_size(price, t) / max_resting_size_in_view<br>
+    <b>magnet pull</b> ← unfilled liquidity + clustered stops/leverage on the far side of price<br>
+    <span style="display:block;margin-top:6px">read on contact → band <b>holds</b> = absorption/support · band <b>pulls</b> = spoof · band <b>breaks on volume</b> = real continuation</span>
+    <div class="note">Brightness is relative to the current window, not absolute — a "bright" band only means large <em>versus what else is on screen right now</em>.</div>
+  </div>
+
+  <p>Why does price chase the bright stuff? Because a market exists to <strong>facilitate trade</strong>, and the heaviest resting liquidity is where the most trade can happen. Large players who need to fill size are drawn to where the opposing orders are; and on the far side of price sit clustered stops and leveraged positions that, when triggered, become forced market orders pointing straight at that liquidity. The result is the "magnet" behaviour: price probes toward dense bands, fills against them, and then either rejects (the band absorbed it) or accelerates through (the band was overwhelmed).</p>
+
+  <p>Crucially, there are <strong>two different objects both called "heatmap,"</strong> and conflating them is the single most expensive error in this space:</p>
+
+  <table class="cmp">
+    <thead><tr><th>Dimension</th><th>Liquidity heatmap (Bookmap / ATAS)</th><th>Liquidation heatmap (Coinglass / Hyblock)</th></tr></thead>
+    <tbody>
+      <tr><td>Shows</td><td>Actual resting limit orders in the book</td><td>Estimated price levels where leverage gets force-closed</td></tr>
+      <tr><td>Source</td><td>Real Level-2 order-book feed</td><td>Modelled from open interest + assumed leverage tiers</td></tr>
+      <tr><td>Truth value</td><td>Real orders (but can be cancelled/spoofed)</td><td>Probability, not certainty — positions may close early</td></tr>
+      <tr><td>Time axis</td><td>Historical book, scrolling</td><td>Forward projection of where clusters sit</td></tr>
+      <tr><td>Best use</td><td>Execution: support/resistance, absorption, targets</td><td>Context: where a cascade could accelerate</td></tr>
+    </tbody>
+  </table>
+
+  <p>The liquidity heatmap is observed; the liquidation heatmap is <strong>inferred</strong>. Coinglass itself frames its levels as estimates — they "represent probability, not certainty," and "the actual liquidation amounts may be lower than displayed because some traders close positions manually before reaching their liquidation price." Both are useful. Only one is real orders.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">One persistent wall, one spoof, one magnet pull</div>
+    </div>
+  </div>
+
+  <div class="skim">A schematic heatmap: a glowing bid wall holds below, an ask wall caps above, a mid-band spoof evaporates before price arrives, and price gets dragged down to sweep the bid liquidity before snapping back.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Schematic liquidity heatmap showing resting bid and ask walls, a spoofed band, and price pulled toward liquidity">
+      <rect x="0" y="0" width="800" height="420" fill="#1c1917"/>
+      <!-- plot frame -->
+      <rect x="80" y="36" width="660" height="328" fill="#0c0a09" stroke="#292524" stroke-width="1"/>
+
+      <!-- axis labels -->
+      <text x="80" y="24" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1">PRICE × TIME — RESTING LIQUIDITY</text>
+      <text x="84" y="382" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">← earlier</text>
+      <text x="648" y="382" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">now (live book) →</text>
+
+      <!-- price gridline labels (right axis) -->
+      <text x="746" y="80" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">64,800</text>
+      <text x="746" y="186" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">63,600</text>
+      <text x="746" y="330" fill="#78716c" font-family="JetBrains Mono, monospace" font-size="10">62,000</text>
+
+      <!-- ASK WALL (resistance) — persistent bright band near top -->
+      <rect x="80" y="68" width="660" height="16" fill="#ef4444" opacity="0.20"/>
+      <rect x="80" y="72" width="660" height="8" fill="#fbbf24" opacity="0.85"/>
+      <rect x="80" y="74" width="660" height="4" fill="#fde68a"/>
+      <text x="92" y="64" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10.5">ASK WALL · resistance · holds across time</text>
+
+      <!-- SPOOF BAND — only painted on the left, fades before price arrives -->
+      <rect x="80" y="178" width="250" height="12" fill="#a3e635" opacity="0.55"/>
+      <rect x="330" y="178" width="80" height="12" fill="#a3e635" opacity="0.18"/>
+      <text x="92" y="172" fill="#bef264" font-family="JetBrains Mono, monospace" font-size="10.5">SPOOF · large size shown…</text>
+      <text x="300" y="208" fill="#facc15" font-family="JetBrains Mono, monospace" font-size="10.5">…pulled before price reaches it</text>
+      <line x1="410" y1="184" x2="448" y2="184" stroke="#facc15" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+      <!-- BID WALL (support / magnet) — persistent bright band near bottom -->
+      <rect x="80" y="316" width="660" height="18" fill="#22c55e" opacity="0.20"/>
+      <rect x="80" y="321" width="660" height="9" fill="#a3e635" opacity="0.9"/>
+      <rect x="80" y="323" width="660" height="4" fill="#ecfccb"/>
+      <text x="92" y="352" fill="#bef264" font-family="JetBrains Mono, monospace" font-size="10.5">BID WALL · magnet · price pulled down to fill against it</text>
+
+      <!-- minor scattered liquidity for texture -->
+      <rect x="120" y="130" width="120" height="6" fill="#a3e635" opacity="0.22"/>
+      <rect x="500" y="250" width="160" height="6" fill="#a3e635" opacity="0.22"/>
+      <rect x="200" y="230" width="90" height="5" fill="#a3e635" opacity="0.16"/>
+
+      <!-- PRICE PATH — drifts, gets pulled into the bid wall, sweeps just below, snaps back -->
+      <polyline points="92,150 170,158 250,168 330,196 410,232 470,280 520,316 545,330 558,326 575,300 600,250 635,210 690,196"
+                fill="none" stroke="#fafaf9" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- sweep marker -->
+      <circle cx="552" cy="332" r="4.5" fill="#ef4444"/>
+      <text x="470" y="356" fill="#fca5a5" font-family="JetBrains Mono, monospace" font-size="10">sweep ↓ then reject</text>
+
+      <!-- magnet arrow -->
+      <line x1="430" y1="250" x2="430" y2="312" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <polygon points="430,318 426,308 434,308" fill="#a3e635"/>
+      <text x="438" y="285" fill="#bef264" font-family="JetBrains Mono, monospace" font-size="10">magnet pull</text>
+
+      <!-- price now label -->
+      <circle cx="690" cy="196" r="4" fill="#fafaf9"/>
+      <text x="600" y="186" fill="#e7e5e4" font-family="JetBrains Mono, monospace" font-size="10">price now</text>
+
+      <!-- legend -->
+      <rect x="80" y="396" width="14" height="8" fill="#a3e635"/>
+      <text x="100" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="9.5">bright = heavy resting size</text>
+      <rect x="300" y="396" width="14" height="8" fill="#a3e635" opacity="0.18"/>
+      <text x="320" y="403" fill="#a8a29e" font-family="JetBrains Mono, monospace" font-size="9.5">dim = thin / fading liquidity</text>
+      <text x="560" y="403" fill="#fafaf9" font-family="JetBrains Mono, monospace" font-size="9.5">— white line = price</text>
+    </svg>
+    <div class="svg-caption">A liquidity heatmap reads left-to-right through time. The bid wall (bottom) holds and acts as a magnet; price is dragged down, sweeps just below it, and rejects. The mid spoof never gets tested — its size is pulled the moment price approaches. The ask wall above caps the bounce.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trade the contact, target the next band</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: a bright band is a location, not a signal — you don't enter at the band, you enter on how the band behaves when price arrives.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Wait for the reaction, not the touch</h4>
+        <p>A glowing wall is a place where something will happen, not proof it holds. Let price reach it and watch: aggressive prints absorbed with no progress = long the hold; price slicing through on rising volume = the wall failed, go with the break.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Behaviour separates real from fake</h4>
+        <p>Real liquidity sits and gets eaten yet stays lit (absorption). Spoofed liquidity is the band that "appears well in advance, but vanishes right before price touches it." If a wall pulls as price approaches, it was never support — fade the head-fake.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Use the far band as your target</h4>
+        <p>The opposite wall is where price wants to go to collect fills — "price often moves toward these areas to 'collect' that liquidity" and pauses or reverses on arrival. Park take-profit just <em>before</em> the heavy band, not inside it, where the queue eats you.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Stack confluence, never trade it naked</h4>
+        <p>A band plus rising CVD into it, plus stretched funding on the trapped side, is a setup. A band alone is a coin flip. The heatmap tells you <em>where</em>; CVD and funding tell you <em>who's offside</em> and whether the magnet will actually pull.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — BID-WALL HOLD, longing the absorption</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC drifts down into a persistent bright bid band at <strong>$62,000</strong> that's been lit for hours; funding is negative (shorts crowded), CVD ticking up as price falls (buyers absorbing).</td></tr>
+      <tr><td>Trigger</td><td>Price sweeps to <strong>$61,900</strong>, the band stays lit, sell prints get absorbed with no further progress, price reclaims $62,000.</td></tr>
+      <tr><td>Entry</td><td>Long $62,050 on the reclaim</td></tr>
+      <tr><td>Stop</td><td>$61,750 (below the swept low, where the wall is proven failed) → 300 risk</td></tr>
+      <tr><td>Target</td><td>$63,600 — the next heavy band / spoof-cleared air above → 1,550 reward</td></tr>
+      <tr><td>R multiple</td><td><strong>≈ 5.1R</strong> if the far band is reached; trail under each new bright bid band on the way up</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> heatmaps are an execution tool — 1m–15m for the entry on contact, with the 1h–4h structure deciding which wall you trust. Bands matter most intraday; they decay as the book rebuilds.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">The June 3–4 magnet that ate the longs</div>
+    </div>
+  </div>
+
+  <div class="skim">In the 3–4 June cascade, the cluster of long-liquidation levels under $62K behaved exactly like a magnet — price was dragged down to sweep them near $61,300 before snapping back.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 14 June 2026</div>
+    <h4>Liquidity below became the destination, not the floor</h4>
+
+    <p>The cleanest recent illustration of magnet behaviour was the <strong>3–4 June</strong> flush. Spot-ETF outflows and a corporate sale knocked sentiment, and BTC slid into a dense band of long-liquidation levels stacked beneath the low-$62K shelf. Rather than holding as "support," that liquidity <em>was the target</em>: price was pulled straight down to collect it, printing <strong>~$61,300</strong> before recovering toward <strong>~$62,500</strong>.</p>
+
+    <p>The forced selling tells the story — <strong>~$1.8B</strong> liquidated on 3 June alone (the largest single day since February 2026), with longs accounting for <strong>~$1.35B</strong>, and roughly <strong>$3B</strong> over the two days. That's the leveraged side of the heatmap firing: each margin call was a forced market sell pointing straight at the cluster, accelerating the move until the stops were cleared. By 13 June BTC had stabilised in the low-$60Ks (~<strong>$63–64K</strong>), still some <strong>~51%</strong> under the October-2025 high near <strong>$126,200</strong>; ETH sat near <strong>$1,679</strong>.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>3 Jun · cascade low (est.)</td><td>~$61,300 BTC — long-liq cluster swept</td></tr>
+        <tr><td>3 Jun · single-day liqs</td><td>~$1.8B (largest since Feb 2026)</td></tr>
+        <tr><td>3 Jun · long share</td><td>~$1.35B of the total</td></tr>
+        <tr><td>3–4 Jun · two-day liqs</td><td>~$3.0B</td></tr>
+        <tr><td>13 Jun · BTC spot</td><td>~$63,500–64,100</td></tr>
+        <tr><td>13 Jun · ETH spot</td><td>~$1,679</td></tr>
+        <tr><td>vs Oct-2025 ATH</td><td>~ −51% (ATH ~$126,200)</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Under the low-$60Ks, the leverage map said "stops live here" — and on a weak tape, clustered liquidity below price is a destination, not a floor. The heatmap's lesson is positioning, not prediction: with longs crowded and a dense liq-cluster beneath, the path of least resistance was down into the fills. Numbers above are estimates from the move's reporting; treat liquidation levels as a model, not a guarantee. <em>(Cross-ref: this builds on Liquidation Cascades, Issue #48.)</em>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Why price seeks liquidity</div>
+    </div>
+  </div>
+
+  <div class="skim">A market-profile classic on why trade gravitates to liquidity, and two contemporary order-flow sources on reading the map honestly.</div>
+
+  <div class="quote">
+    <p>"A market that is not facilitating trade will not survive for long."</p>
+    <div class="attr"><b>James Dalton</b> · Mind Over Markets · 1990 (rev. 2013) · <a href="https://archive.org/details/isbn_9780934380539">Internet Archive</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"The heatmap is a way to determine where liquidity is in the market and how liquidity-providers are behaving."</p>
+    <div class="attr"><b>Bookmap</b> · The Complete Guide to Market Depth Visualization · 2026 · <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">bookmap.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Liquidation zones show probability, not certainty — never assume price must reach a liquidation cluster."</p>
+    <div class="attr"><b>Zipmex Research</b> · What Is a Liquidation Heatmap? (2026) · <a href="https://zipmex.com/blog/what-is-a-liquidation-heatmap/">zipmex.com</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the heatmap eats beginners</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake: treating a bright band as a buy/sell button instead of a location whose meaning is decided by how it behaves on contact.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Reading it as a crystal ball</h5>
+      <p>A band shows where orders <em>are</em>, not where price <em>must</em> go. Price can ignore liquidity entirely on a strong trend day. Use it to locate the fight, then let the tape decide who wins.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Front-running spoofed size</h5>
+      <p>Crypto books are full of orders that exist only to be seen. If you buy a "huge bid" before price tests it, you're holding the bag when it gets pulled. Wait for the band to actually absorb prints before trusting it.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Trusting one exchange's book</h5>
+      <p>A wall on a single venue is thin evidence; depth is fragmented across Binance, Bybit, OKX and the rest. Spoofs and real walls both look the same on one feed — confirm across venues or aggregate.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Assuming you see the whole book</h5>
+      <p>Icebergs hide the bulk of their size, and many crypto venues throttle or delay L2 to retail. The brightest band you can see may be a fraction of what's actually resting — or a placeholder over a hidden refill.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: the liquidation heatmap as prophecy</h5>
+      <p>The Coinglass/Hyblock liquidation map is genuinely useful for context — but it is <strong>modelled, not measured</strong>. Levels are estimated from open interest and assumed leverage; many positions close manually first, so "the actual liquidation amounts may be lower than displayed." Treating its glowing clusters as guaranteed magnets — or worse, confusing it with a real order-book liquidity heatmap — is how traders get chopped front-running a level that was always a probability, never a promise.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Sources pulled for this issue</div>
+    </div>
+  </div>
+
+  <div class="skim">Start with the Bookmap guide for the real-order map, then the Coinglass tool and Zipmex explainer for the estimated-liquidation cousin.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Heatmap in Trading: The Complete Guide to Market Depth Visualization</a>
+        <span>Bookmap — definition, the time axis, absorption vs spoofing, reading bands as support/resistance.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://atas.net/blog/heatmap/">Heatmap Trading | Liquidity Heat Map | Order Flow Explained</a>
+        <span>ATAS — how saturated colour maps to order density, and how spoof bands fade before price arrives.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-to-set-profit-targets-using-liquidity-maps">How to Set Profit Targets Using Liquidity Maps</a>
+        <span>Bookmap — targeting the next bright band, where price moves to "collect" liquidity and stalls.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Tool</div>
+      <div class="fr-body">
+        <a href="https://www.coinglass.com/pro/futures/LiquidationHeatMap">BTC Liquidation Heatmap</a>
+        <span>Coinglass — the estimated-liquidation cousin; read it for cascade context, not as real orders.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://zipmex.com/blog/what-is-a-liquidation-heatmap/">What Is a Liquidation Heatmap? The Complete Guide for Crypto Traders</a>
+        <span>Zipmex — how liquidation levels are modelled from OI and leverage, and why they're probability not certainty.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/en/learning-center/getting-started/liquidity-heatmap/heatmap-overview">Bookmap · Heatmap Overview</a>
+    <a href="https://bookmap.com/blog/heatmap-in-trading-the-complete-guide-to-market-depth-visualization">Bookmap · Complete Guide</a>
+    <a href="https://atas.net/blog/heatmap/">ATAS · Heatmap Trading</a>
+    <a href="https://bookmap.com/blog/how-to-set-profit-targets-using-liquidity-maps">Bookmap · Profit Targets</a>
+    <a href="https://www.coinglass.com/pro/futures/LiquidationHeatMap">Coinglass · Liquidation Heatmap</a>
+    <a href="https://zipmex.com/blog/what-is-a-liquidation-heatmap/">Zipmex · Liquidation Heatmap Guide</a>
+    <a href="https://archive.org/details/isbn_9780934380539">Dalton · Mind Over Markets</a>
+  </div>
+  <div>Alpha · Issue #49 · 14 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
