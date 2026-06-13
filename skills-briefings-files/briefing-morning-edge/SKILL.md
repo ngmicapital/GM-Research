@@ -116,6 +116,16 @@ After all data is collected, write the full HTML following the May 15 template.
 8. `.container` wrapping all 8 sections
 9. `.footer` with data sources
 
+**Fill the `gm-meta` block (authoritative card metadata).** Replace `{{GM_META}}` in the `<head>`
+with a JSON object of the form
+  `{"headline":"<exact card headline, plain text, no HTML, <=90 chars>","preview":"<one-sentence card summary, plain text, <=180 chars>","tags":["tag1","tag2","tag3"]}` (1-3 short tags).
+Valid JSON only — escape any double quotes inside strings, no trailing commas, real Unicode
+characters (no HTML entities like `&amp;` / `&mdash;`). This block is **authoritative**: the homepage
+uses it verbatim for The Morning Edge card’s headline/preview/tags and the “Today’s Lead” hero.
+Keep it consistent with the `.tldr` thesis (same view and wording). If omitted or malformed,
+`generate-index.js` silently falls back to scraping the `.tldr` / headlines (old behaviour), so
+filling it is strongly preferred.
+
 ### Title
 HTML `<title>` tag: `The Morning Edge ☀️ - [DD Month YYYY]`
 Header `<h1>`: `The Morning Edge &#9728;&#65039;` (renders as "The Morning Edge ☀️")

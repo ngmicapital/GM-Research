@@ -153,6 +153,16 @@ Include so `generate-index.js` extracts headline + preview:
 <p class="tldr-text">{One sentence: "{Concept} is [what it is]; [why it matters]."} {One sentence with practical takeaway.}</p>
 ```
 
+Also replace `{{GM_META}}` in the template `<head>` with the **`gm-meta`** block — the authoritative
+card metadata, a JSON object of the form
+  `{"headline":"<exact card headline, plain text, no HTML, <=90 chars>","preview":"<one-sentence card summary, plain text, <=180 chars>","tags":["tag1","tag2","tag3"]}` (1-3 short tags).
+Valid JSON only: escape any double quotes inside strings, no trailing commas, real Unicode characters
+(no HTML entities like `&amp;` / `&mdash;`). This block is **authoritative** — the homepage uses it
+verbatim for the Alpha card’s headline/preview/tags and the “Today’s Lead” hero. Keep it consistent
+with the visible `.tldr-text` (same thesis and wording). If omitted or malformed, `generate-index.js`
+silently falls back to scraping your `.tldr-text` / headlines (old behaviour), so filling it is
+strongly preferred.
+
 ### Match the canonical template
 Read `template.html` in this folder (`skills-briefings-files/briefing-alpha/trading-concept/template.html`).
 Replace the `{{tokens}}` (CONCEPT_NAME, DATE, ISSUE_NUMBER, READING_TIME, TLDR) and fill each
@@ -294,6 +304,7 @@ Before declaring complete:
 - [ ] Common Traps includes an honest "overhyped" callout where warranted
 - [ ] All Further Reading URLs were actually fetched in Step 1 — no hallucinations
 - [ ] `.tldr-text` paragraph present for site-index extraction
+- [ ] `{{GM_META}}` replaced with a valid `gm-meta` JSON block (headline/preview/tags) consistent with the `.tldr-text`
 - [ ] Concept isn't a duplicate of anything in the last 30 days
 - [ ] Concept is in the orderflow family unless there's a clear reason to go outside
 - [ ] Tone: direct, practical, trader-native — no MBA-speak, no hedging filler

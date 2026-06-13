@@ -143,6 +143,16 @@ It contains the verbatim CSS (dark-navy vars, Charter font, sidebar drawer, all 
 Replace `{{DATE}}`, `{{STORY_COUNT}}` tokens, then fill the story-card stubs and persistent sections.
 **Do NOT reconstruct the design from scratch** — the template is canonical.
 
+**Fill the `gm-meta` block (authoritative card metadata).** Replace `{{GM_META}}` in the `<head>`
+with a JSON object of the form
+  `{"headline":"<exact card headline, plain text, no HTML, <=90 chars>","preview":"<one-sentence card summary, plain text, <=180 chars>","tags":["tag1","tag2","tag3"]}` (1-3 short tags).
+It MUST be valid JSON — escape any double quotes inside strings, no trailing commas, and use real
+Unicode characters (no HTML entities like `&amp;` / `&mdash;`). This block is **authoritative**: the
+homepage uses it verbatim for The Brief’s card headline/preview/tags and the “Today’s Lead” hero,
+so make it match your lead story — same headline thesis and wording. If you omit it or it is
+malformed, `generate-index.js` silently falls back to scraping the lead story headline/summary (the
+old behaviour), so filling it is strongly preferred.
+
 Save to:
 - **Windows (local):** `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\legal-brief.html`
 - **Cloud/Linux:** `/tmp/legal-brief-YYYY-MM-DD.html`

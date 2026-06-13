@@ -239,6 +239,15 @@ These elements are mandatory — `generate-index.js` and the health-check bot de
    expects an index back-link in every briefing).
 7. **Theme toggle + `#DC3545` accent** — keep the template's toggle button, the `praxis-theme`
    localStorage logic, and the red accent variables. Light theme is the default.
+8. **`gm-meta` block (authoritative card metadata).** Replace `{{GM_META}}` in the template’s
+   `<head>` with a JSON object of the form
+  `{"headline":"<exact card headline, plain text, no HTML, <=90 chars>","preview":"<one-sentence card summary, plain text, <=180 chars>","tags":["tag1","tag2","tag3"]}` (1-3 short tags).
+   It MUST be valid JSON — escape any double quotes inside strings, no trailing commas, and use real
+   Unicode characters (no HTML entities like `&amp;` / `&mdash;`). This block is **authoritative**: the
+   homepage uses it verbatim for the praxis card’s headline/preview/tags and the “Today’s Lead” hero.
+   Keep it consistent with the visible convergence thesis in the hidden `.tldr-text` (same thesis and
+   wording). If you omit it or it is malformed, `generate-index.js` silently falls back to scraping
+   `.tldr-text` (the old behaviour, item 4) — so filling it is strongly preferred.
 
 > **⚠ Known template/extractor mismatch — VERIFY, don't assume (flagged from evidence this session).**
 > The *current* `template.html` and the recent published issues (2026-06-11, 2026-06-13) use
