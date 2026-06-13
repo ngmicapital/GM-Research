@@ -1,0 +1,51 @@
+name: CI
+
+# Validates code changes before they reach main. Briefings push directly to
+# main (handled by deploy.yml), so this runs on feature branches and PRs.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax check all scripts
+        run: |
+          for f in scripts/*.js scripts/lib/*.js; do
+            echo "checking $f"
+            node --check "$f"
+          done
+
+      - name: Unit tests (shared lib)
+        run: node --test scripts/lib/lib.test.js
+
+      - name: Generators run + index output-integrity
+        run: |
+          node scripts/generate-index.js
+          node scripts/generate-visualizations.js
+
+      - name: No backslash-close tag artifacts in generated HTML
+        run: |
+          if grep -nP '<\\[a-zA-Z/]' index.html visualizations.html; then
+            echo "::error::backslash-close tag artifact found in generated HTML"
+            exit 1
+          fi
+          echo "clean"
+
+      - name: Flag stale committed generated files
+        run: |
+          if ! git diff --quiet -- index.html visualizations.html; then
+            echo "::warning::index.html/visualizations.html differ from a fresh build (they are regenerated on deploy, but committing the regen keeps the repo accurate)"
+            git --no-pager diff --stat -- index.html visualizations.html || true
+          else
+            echo "generated files up to date"
+          fi

@@ -793,3 +793,33 @@ if (issues === 0) {
   // Warnings are non-fatal: always exit 0 so the deploy pipeline is never blocked.
   // process.exit(1) is reserved for hard errors (e.g. unreadable briefings directory).
 }
+
+// --- Output-integrity check (FATAL) ------------------------------------------
+// Unlike the extraction warnings above (content quality, non-fatal), these catch
+// BROKEN generated markup — a generator/template bug that must never publish.
+{
+  const out = fs.readFileSync(OUTPUT_FILE, 'utf8');
+  const integrity = [];
+  const bs = out.match(/<\\[a-zA-Z/]/g);
+  if (bs) integrity.push(`backslash-close tag artifact x${bs.length} (e.g. "${bs[0]}") — check template literals`);
+  for (const tag of ['b', 'small']) {
+    const open  = (out.match(new RegExp(`<${tag}>`, 'g'))  || []).length;
+    const close = (out.match(new RegExp(`</${tag}>`, 'g')) || []).length;
+    if (open !== close) integrity.push(`unbalanced <${tag}> tags: ${open} open vs ${close} close`);
+  }
+  if (integrity.length) {
+    console.error('\n  ✗  OUTPUT INTEGRITY FAILED:');
+    integrity.forEach(m => console.error(`     - ${m}`));
+    console.error('  Refusing to continue — generated index.html contains broken markup.\n');
+    process.exit(1);
+  }
+  console.log('✓  Output integrity: inline markup balanced, no tag artifacts');
+}
+
+// `--strict` (used by briefing-authoring pre-publish checks) also makes the
+// extraction warnings above fatal. CI runs WITHOUT --strict, so pre-existing
+// content warnings never block unrelated code changes.
+if (issues > 0 && process.argv.includes('--strict')) {
+  console.error(`\n  ✗  --strict: ${issues} extraction issue(s) above are fatal. Fix the briefing HTML.\n`);
+  process.exit(1);
+}
