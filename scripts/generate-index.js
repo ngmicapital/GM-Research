@@ -1013,7 +1013,9 @@ function buildFeedXml(briefingEntries, transcriptsByDate) {
   items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   const top = items.slice(0, 50);
 
-  const lastBuild = new Date().toUTCString();
+  // Deterministic: stamp the feed with the newest item's date so feed.xml only
+  // changes when content changes — not on every rebuild (avoids spurious diffs).
+  const lastBuild = top.length ? rfc822(top[0].date) : rfc822('1970-01-01');
   const itemsXml = top.map(it => `    <item>
       <title>${escapeXml(it.title)}</title>
       <link>${escapeXml(it.link)}</link>
