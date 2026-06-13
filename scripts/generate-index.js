@@ -10,6 +10,7 @@ const TRANSCRIPTS_DIR = path.join(ROOT, 'transcripts');
 const MANIFEST_FILE   = path.join(TRANSCRIPTS_DIR, 'manifest.json');
 const OUTPUT_FILE     = path.join(ROOT, 'index.html');
 const FEED_FILE       = path.join(ROOT, 'feed.xml');
+const SITEMAP_FILE    = path.join(ROOT, 'sitemap.xml');
 
 // --- Shared library -------------------------------------------------------
 
@@ -960,6 +961,13 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     var t;
     input.addEventListener('input',function(){clearTimeout(t);t=setTimeout(apply,120);});
   }
+  // Keyboard: "/" focuses search; Esc clears it when focused.
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target&&e.target.tagName||'').toLowerCase();
+    var typing=tag==='input'||tag==='textarea'||(e.target&&e.target.isContentEditable);
+    if(e.key==='/'&&!typing&&input){e.preventDefault();input.focus();}
+    else if(e.key==='Escape'&&input&&document.activeElement===input){input.value='';apply();input.blur();}
+  });
 
   // Load earlier issues — reveal the lazy tail (stays revealed thereafter).
   if(moreBtn)moreBtn.addEventListener('click',function(){
@@ -1040,6 +1048,33 @@ ${itemsXml}
 `;
 }
 
+// --- sitemap.xml --------------------------------------------------------------
+// Deterministic — lastmod comes from content dates, never the wall clock.
+function buildSitemapXml(briefingEntries, transcriptsByDate) {
+  const urls = [];
+  const newest = briefingEntries.length ? briefingEntries[0].date : '2026-01-01';
+  urls.push({ loc: SITE_URL, lastmod: newest, priority: '1.0' });
+  urls.push({ loc: `${SITE_URL}visualizations.html`, lastmod: newest, priority: '0.7' });
+  briefingEntries.forEach(e => {
+    e.briefings.forEach(key => {
+      urls.push({ loc: `${SITE_URL}briefings/${e.date}/${BRIEFING_META[key].filename}`, lastmod: e.date, priority: '0.8' });
+    });
+  });
+  Object.entries(transcriptsByDate).forEach(([date, ts]) => {
+    ts.forEach(t => urls.push({ loc: `${SITE_URL}transcripts/${t.slug}/index.html`, lastmod: date, priority: '0.6' }));
+  });
+  const body = urls.map(u => `  <url>
+    <loc>${escapeXml(u.loc)}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${body}
+</urlset>
+`;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 let briefingEntries = [];
@@ -1069,6 +1104,9 @@ console.log(`index.html written — ${briefingEntries.length} date(s), ${bCount}
 
 fs.writeFileSync(FEED_FILE, buildFeedXml(briefingEntries, transcriptsByDate));
 console.log(`feed.xml written — ${Math.min(50, bCount + tCount)} item(s)`);
+
+fs.writeFileSync(SITEMAP_FILE, buildSitemapXml(briefingEntries, transcriptsByDate));
+console.log(`sitemap.xml written — ${2 + bCount + tCount} url(s)`);
 
 // ─── Post-build UI validator ──────────────────────────────────────────────────
 // Checks every card extraction for common issues and warns loudly.
