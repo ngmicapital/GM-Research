@@ -9,6 +9,7 @@ const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
 const TRANSCRIPTS_DIR = path.join(ROOT, 'transcripts');
 const MANIFEST_FILE   = path.join(TRANSCRIPTS_DIR, 'manifest.json');
 const OUTPUT_FILE     = path.join(ROOT, 'index.html');
+const FEED_FILE       = path.join(ROOT, 'feed.xml');
 
 // --- Shared library -------------------------------------------------------
 
@@ -16,13 +17,49 @@ const { escapeHtml, stripHtml } = require('./lib/text');
 const { todayAEST } = require('./lib/dates');
 const { BRIEFING_META, ORDER, extractTags } = require('./lib/briefings');
 
+const SITE_URL = 'https://ngmicapital.github.io/GM-Research/';
+
+// Estimate reading time (whole minutes) for a briefing's full HTML body.
+// Drops <script>/<style> blocks, strips the remaining tags, counts whitespace-
+// delimited words, and returns max(1, round(words/200)) — 200 wpm reading speed.
+function readingTimeMinutes(html) {
+  if (!html) return 1;
+  const text = String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+// RFC-822 date string anchored at noon UTC, for RSS <pubDate>.
+// e.g. "Sat, 13 Jun 2026 12:00:00 GMT"
+function rfc822(ds) {
+  const d = new Date(`${ds}T12:00:00Z`);
+  if (isNaN(d.getTime())) return new Date().toUTCString();
+  return d.toUTCString();
+}
+
+// Escape text for inclusion in XML (RSS) — superset of HTML escaping that also
+// handles the apostrophe, since XML attribute/text rules are stricter.
+function escapeXml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // Extract a headline, preview summary + tags from a briefing HTML file
 function extractBriefingMeta(filePath, key) {
   let headline = '';
   let preview = '';
   let tags = [];
+  let minutes = 1;
   try {
     const html = fs.readFileSync(filePath, 'utf8');
+    minutes = readingTimeMinutes(html);
 
     // Strategy 1: TL;DR block (market, ai, biohacker)
     // Handles: <div class="tldr-text">, <p class="tldr-text">, and plain <p> inside .tldr
@@ -181,7 +218,7 @@ function extractBriefingMeta(filePath, key) {
     // Extract tags (shared canonical patterns + rabbit-hole <strong> fallback)
     tags = extractTags(html, key);
   } catch(e) { /* file read error — use defaults */ }
-  return { headline, preview, tags };
+  return { headline, preview, tags, minutes };
 }
 
 // ─── Card HTML generators ────────────────────────────────────────────────────
@@ -191,16 +228,17 @@ const RECIPE_DATE = '2026-04-03';
 function briefingCard(date, key) {
   const m = BRIEFING_META[key];
   const filePath = path.join(BRIEFINGS_DIR, date, m.filename);
-  const { headline, preview, tags } = extractBriefingMeta(filePath, key);
+  const { headline, preview, tags, minutes } = extractBriefingMeta(filePath, key);
   const title = headline || m.preview;
   const tagsHTML = tags.slice(0,2).map(t => `<span>${escapeHtml(t)}</span>`).join('');
   const tagsAttr = tags.join(',').toLowerCase();
+  const rtHTML = `<span class="t-rt">${minutes} min</span>`;
   return `
     <a href="briefings/${date}/${m.filename}" class="tline" data-cat="${m.cat}" data-tags="${escapeHtml(tagsAttr)}">
       <div class="t-bar"></div>
       <div class="t-ic">${m.icon}</div>
       <div class="t-name">${m.typeLabel}</div>
-      <div class="t-ttl">${escapeHtml(title)}${preview ? `<small>${escapeHtml(preview)}</small>` : ''}</div>
+      <div class="t-ttl">${escapeHtml(title)}${rtHTML}${preview ? `<small>${escapeHtml(preview)}</small>` : ''}</div>
       <div class="t-tags">${tagsHTML}</div>
     </a>`;
 }
@@ -249,7 +287,7 @@ function leadStoryHTML(today, briefingEntries) {
   const leadKey = todayEntry.briefings[0];
   const m = BRIEFING_META[leadKey];
   const fp = path.join(BRIEFINGS_DIR, today, m.filename);
-  const { headline, preview, tags } = extractBriefingMeta(fp, leadKey);
+  const { headline, preview, tags, minutes } = extractBriefingMeta(fp, leadKey);
   if (!headline) return '';
 
   const alsoKeys = todayEntry.briefings.slice(1, 5);
@@ -266,6 +304,9 @@ function leadStoryHTML(today, briefingEntries) {
   }).join('');
 
   const tagStr = tags.slice(0,3).join(' &middot; ');
+  const metaBits = [];
+  if (tagStr) metaBits.push(tagStr);
+  metaBits.push(`${minutes} min read`);
 
   return `
   <section class="lead-story" data-cat="${m.cat}">
@@ -273,7 +314,7 @@ function leadStoryHTML(today, briefingEntries) {
       <div class="ls-eyebrow">// TODAY&rsquo;S LEAD &mdash; ${m.typeLabel.toUpperCase()}</div>
       <h1 class="ls-hl">${escapeHtml(headline)}</h1>
       <p class="ls-body">${escapeHtml(preview)}</p>
-      ${tagStr ? `<div class="ls-meta">${tagStr}</div>` : ''}
+      <div class="ls-meta">${metaBits.join(' &middot; ')}</div>
     </a>
     <aside class="ls-right">
       <div class="ls-ah">// ALSO TODAY</div>
@@ -336,13 +377,35 @@ function buildHTML(briefingEntries, transcriptsByDate) {
   const filterBarHTML = `
 <div class="filter-bar">
   ${filterCats.map((c,i) => `<button class="f-chip${i===0?' active':''}" data-filter="${c.key}"${c.cat?` data-cat="${c.cat}"`:''}>${c.label} <span>${c.count}</span></button>`).join('')}
+  <button class="f-clear" id="f-clear" hidden aria-label="Clear all active filters">&times; clear <span id="f-clear-n"></span></button>
+  <span class="f-count" id="f-count" role="status" aria-live="polite"></span>
 </div>`;
 
   const heroHTML = leadStoryHTML(today, briefingEntries);
 
-  const feedHTML = allDates.map(date =>
-    dateGroupHTML(date, briefingMap[date]||[], transcriptsByDate[date]||[], date===today)
-  ).join('');
+  // Count of searchable issues (briefings + transcripts), used in the search
+  // placeholder. The recipe row is excluded — it is a one-off, not an "issue".
+  const issueCount = briefingEntries.reduce((n,e) => n + e.briefings.length, 0)
+                   + Object.values(transcriptsByDate).reduce((n,a) => n + a.length, 0);
+
+  // ── Lazy feed display ──────────────────────────────────────────────────────
+  // Every date-section is server-rendered (works with JS off). The first
+  // LAZY_VISIBLE dates show immediately; the remainder are wrapped in a
+  // .tsec-collapsed container revealed by the "Load earlier issues" button
+  // (and auto-revealed by search/filter so they cover the whole archive).
+  const LAZY_VISIBLE = 8;
+  const visibleDates = allDates.slice(0, LAZY_VISIBLE);
+  const hiddenDates  = allDates.slice(LAZY_VISIBLE);
+  const sectionFor = date =>
+    dateGroupHTML(date, briefingMap[date]||[], transcriptsByDate[date]||[], date===today);
+  const visibleFeed = visibleDates.map(sectionFor).join('');
+  const hiddenFeed  = hiddenDates.map(sectionFor).join('');
+  const loadMoreHTML = hiddenDates.length ? `
+  <div class="load-more-wrap" id="load-more-wrap">
+    <button class="load-more" id="load-more" aria-expanded="false">Load earlier issues &darr; &middot; ${allDates.length} total</button>
+  </div>` : '';
+  const feedHTML = visibleFeed
+    + (hiddenDates.length ? `<div class="tsec-collapsed" id="tsec-rest">${hiddenFeed}</div>` : '');
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -351,6 +414,7 @@ function buildHTML(briefingEntries, transcriptsByDate) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GM Research — Intelligence Archive</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate" type="application/rss+xml" title="GM Research" href="feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -534,9 +598,13 @@ a{color:inherit;text-decoration:none}
 @media(max-width:768px){
   body{overflow-x:hidden}
   .mob-hamburger{display:flex}
-  .topbar-inner{padding:0 16px}
+  .topbar-inner{padding:0 12px;gap:10px}
   .topbar-nav,.logo-wm{display:none}
+  .topbar-search{max-width:none;flex:1 1 auto;min-width:0;margin:0}
   .topbar-meta span.topbar-date-str{display:none}
+  .topbar-meta{gap:6px}
+  .topbar-meta span:not(.topbar-date-str){display:none}
+  .live-dot{display:none}
   .ticker{display:none}
   .section-hdr{padding:20px 16px 16px}
   .kw-bar{padding:8px 16px;gap:8px}
@@ -545,7 +613,7 @@ a{color:inherit;text-decoration:none}
   .ls-right{border-left:0;border-top:1px dashed var(--rule);padding:12px 0 0;margin-top:4px}
   .tsec-hdr{padding:12px 16px 8px}
   .tline{grid-template-columns:4px 36px 1fr;padding:12px 16px;gap:12px;align-items:start}
-  .t-name,.t-tags{display:none}
+  .t-name,.t-tags,.t-rt{display:none}
   .t-ic{margin-top:2px}
   .t-ttl{font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .t-ttl small{margin-top:4px;font-size:11px}
@@ -554,6 +622,45 @@ a{color:inherit;text-decoration:none}
 @media(min-width:769px) and (max-width:900px){
   .tline{grid-template-columns:4px 36px 100px 1fr 80px}
   .t-name{width:100px}
+}
+
+/* ── Topbar search ── */
+.topbar-search{display:flex;align-items:center;gap:7px;flex:1 1 320px;max-width:380px;margin:0 8px;padding:0 12px;height:34px;border:1px solid var(--rule);border-radius:999px;background:color-mix(in oklab,var(--ink) 4%,transparent);transition:border-color .15s,background .15s}
+.topbar-search:focus-within{border-color:var(--accent);background:color-mix(in oklab,var(--ink) 7%,transparent)}
+.ts-ic{font-size:12px;opacity:.55;flex-shrink:0;line-height:1}
+.topbar-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.01em}
+.topbar-search input::placeholder{color:var(--muted);opacity:.8}
+.topbar-search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+
+/* ── Reading-time chip (desktop) ── */
+.t-rt{display:inline-block;margin-left:8px;padding:1px 6px;border-radius:999px;border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;color:var(--muted);vertical-align:middle;letter-spacing:.04em;white-space:nowrap}
+
+/* ── Filter result-count + clear ── */
+.f-clear{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in oklab,var(--neg) 45%,var(--rule));font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--neg);cursor:pointer;background:transparent;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.f-clear:hover{background:color-mix(in oklab,var(--neg) 14%,transparent)}
+.f-clear[hidden]{display:none}
+.f-clear span{opacity:.65;font-size:9px}
+.f-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;flex-shrink:0;margin-left:2px}
+.f-count:empty{display:none}
+
+/* ── Lazy feed / load-more ── */
+.tsec-collapsed{display:none}
+.load-more-wrap{padding:22px 40px 30px;display:flex;justify-content:center;border-top:1px solid var(--rule)}
+.load-more-wrap[hidden]{display:none}
+.load-more{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--ink);background:color-mix(in oklab,var(--ink) 5%,var(--paper-2));border:1px solid var(--rule);border-radius:999px;padding:9px 20px;cursor:pointer;transition:all .15s}
+.load-more:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in oklab,var(--accent) 8%,transparent)}
+.load-more[hidden]{display:none}
+.no-results{padding:48px 40px;text-align:center;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:13px}
+.no-results[hidden]{display:none}
+
+/* ── Focus-visible a11y outlines ── */
+a:focus-visible,.f-chip:focus-visible,.kw-pill:focus-visible,.f-clear:focus-visible,.load-more:focus-visible,.theme-btn:focus-visible,.topbar-search input:focus-visible,.mob-hamburger:focus-visible,.mob-item:focus-visible,.mob-close:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.topbar-search:focus-within{outline:none}
+
+@media(max-width:768px){
+  .load-more-wrap{padding:18px 16px 24px}
+  .no-results{padding:36px 16px}
+  .t-rt{display:none}
 }
 </style>
 </head>
@@ -597,6 +704,10 @@ a{color:inherit;text-decoration:none}
         <span class="bot">RSRCH</span>
       </span>
     </a>
+    <form class="topbar-search" role="search" onsubmit="return false">
+      <span class="ts-ic" aria-hidden="true">&#x1F50D;</span>
+      <input type="search" id="q" name="q" autocomplete="off" spellcheck="false" aria-label="Search briefings" placeholder="search ${issueCount} issues&hellip;">
+    </form>
     <nav class="topbar-nav">
       <a href="index.html" class="active">~/archive</a>
       <a href="visualizations.html">~/visualisations</a>
@@ -641,9 +752,11 @@ ${kwBarHTML}
 ${filterBarHTML}
 
 <!-- Feed -->
-<div class="feed">
+<main class="feed" id="feed">
 ${feedHTML || '<p style="padding:40px;color:var(--muted);font-family:JetBrains Mono,monospace">No briefings yet.</p>'}
-</div>
+${loadMoreHTML}
+<p class="no-results" id="no-results" hidden>No issues match your search.</p>
+</main>
 
 <!-- Footer -->
 <footer class="footer">
@@ -652,13 +765,20 @@ ${feedHTML || '<p style="padding:40px;color:var(--muted);font-family:JetBrains M
     <span class="footer-dot"></span>
     <span>Updated daily</span>
     <span class="footer-dot"></span>
+    <a href="feed.xml">RSS</a>
+    <span class="footer-dot"></span>
     <span>Powered by Claude</span>
   </div>
 </footer>
 
 <script>
-// Theme persistence
-(function(){var s=localStorage.getItem('gm-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+// Theme persistence — if unset, initialise from the OS prefers-color-scheme.
+(function(){
+  var s=localStorage.getItem('gm-theme');
+  if(s){document.documentElement.setAttribute('data-theme',s);return;}
+  var prefersLight=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches;
+  document.documentElement.setAttribute('data-theme',prefersLight?'light':'dark');
+})();
 function toggleTheme(){var h=document.documentElement,n=h.getAttribute('data-theme')==='light'?'dark':'light';h.setAttribute('data-theme',n);localStorage.setItem('gm-theme',n)}
 // Headline font: ?font=terminal overrides --hl-font to JetBrains Mono for comparison
 (function(){if(new URLSearchParams(window.location.search).get('font')==='terminal')document.documentElement.style.setProperty('--hl-font',"'JetBrains Mono',monospace");})();
@@ -703,40 +823,211 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     });
   }catch(e){}
 })();
-// Filter chips + keyword pills
+// Search + multi-select category filters + keyword pills + URL state + lazy reveal
 (function(){
-  function applyFilter(type,value){
-    document.querySelectorAll('.f-chip').forEach(function(b){b.classList.remove('active');});
-    document.querySelectorAll('.kw-pill').forEach(function(b){b.classList.remove('active');});
-    if(type==='cat'){
-      var btn=document.querySelector('.f-chip[data-filter="'+value+'"]');
-      if(btn)btn.classList.add('active');
-      document.querySelectorAll('.tline').forEach(function(row){
-        row.classList.toggle('f-hide',value!=='all'&&row.dataset.cat!==value);
-      });
-    } else {
-      var kw=value.toLowerCase();
-      var btn2=document.querySelector('.kw-pill[data-kw="'+value+'"]');
-      if(btn2)btn2.classList.add('active');
-      document.querySelectorAll('.tline').forEach(function(row){
-        var tags=(row.dataset.tags||'').toLowerCase().split(',');
-        row.classList.toggle('f-hide',!tags.some(function(t){return t.trim()===kw;}));
-      });
+  var rows=[].slice.call(document.querySelectorAll('.tline'));
+  var secs=[].slice.call(document.querySelectorAll('.tsec'));
+  var chips=[].slice.call(document.querySelectorAll('.f-chip[data-cat]'));     // category chips (not "All")
+  var allChip=document.querySelector('.f-chip[data-filter="all"]');
+  var pills=[].slice.call(document.querySelectorAll('.kw-pill'));
+  var input=document.getElementById('q');
+  var count=document.getElementById('f-count');
+  var clearBtn=document.getElementById('f-clear');
+  var clearN=document.getElementById('f-clear-n');
+  var noRes=document.getElementById('no-results');
+  var rest=document.getElementById('tsec-rest');
+  var moreWrap=document.getElementById('load-more-wrap');
+  var moreBtn=document.getElementById('load-more');
+
+  var activeCats={};          // set of active category keys
+  var userExpanded=false;     // true once the user clicked "Load earlier issues"
+
+  function catsActive(){return Object.keys(activeCats).length>0;}
+
+  function setExpanded(on){
+    if(!rest)return;
+    rest.style.display=on?'block':'';
+    if(moreWrap)moreWrap.hidden=on;
+  }
+
+  // Reveal/collapse the lazy tail based on whether any filter/search is active.
+  function syncLazy(active){
+    if(!rest)return;
+    if(active||userExpanded)setExpanded(true);
+    else setExpanded(false);
+  }
+
+  function apply(){
+    var q=(input&&input.value||'').trim().toLowerCase();
+    var filtering=q.length>0||catsActive();
+    // When filtering/searching, the whole archive must be reachable.
+    syncLazy(filtering);
+
+    var visible=0;
+    for(var i=0;i<rows.length;i++){
+      var row=rows[i];
+      var catOk=!catsActive()||activeCats[row.dataset.cat];
+      var qOk=!q||(row.textContent||'').toLowerCase().indexOf(q)!==-1;
+      var show=catOk&&qOk;
+      row.classList.toggle('f-hide',!show);
+      if(show)visible++;
     }
-    document.querySelectorAll('.tsec').forEach(function(sec){
+    for(var s=0;s<secs.length;s++){
+      var sec=secs[s];
       sec.classList.toggle('f-hide',sec.querySelectorAll('.tline:not(.f-hide)').length===0);
+    }
+
+    // Category chip active state + "All" reflects no active categories.
+    chips.forEach(function(c){c.classList.toggle('active',!!activeCats[c.dataset.cat]);});
+    if(allChip)allChip.classList.toggle('active',!catsActive());
+
+    // Keyword pill active state mirrors an exact query match.
+    pills.forEach(function(p){p.classList.toggle('active',q&&(p.dataset.kw||'').toLowerCase()===q);});
+
+    // Result count (only meaningful while a filter/search is active).
+    if(count)count.textContent=filtering?(visible+' result'+(visible===1?'':'s')):'';
+    if(noRes)noRes.hidden=!(filtering&&visible===0);
+
+    // Clear control + active-filter count (categories).
+    var n=Object.keys(activeCats).length;
+    if(clearBtn)clearBtn.hidden=n===0;
+    if(clearN)clearN.textContent=n?('('+n+')'):'';
+
+    writeHash(q);
+  }
+
+  function writeHash(q){
+    var parts=[];
+    var cats=Object.keys(activeCats);
+    if(cats.length)parts.push('cat='+cats.join(','));
+    if(q)parts.push('q='+encodeURIComponent(q));
+    var hash=parts.length?('#'+parts.join('&')):'';
+    var url=location.pathname+location.search+hash;
+    try{history.replaceState(null,'',url);}catch(e){}
+  }
+
+  function readHash(){
+    var h=(location.hash||'').replace(/^#/,'');
+    if(!h)return;
+    h.split('&').forEach(function(kv){
+      var eq=kv.indexOf('=');
+      var k=eq<0?kv:kv.slice(0,eq);
+      var v=eq<0?'':kv.slice(eq+1);
+      if(k==='cat'){
+        decodeURIComponent(v).split(',').forEach(function(c){
+          c=c.trim();
+          if(c&&document.querySelector('.f-chip[data-cat="'+c+'"]'))activeCats[c]=true;
+        });
+      } else if(k==='q'&&input){
+        try{input.value=decodeURIComponent(v);}catch(e){input.value=v;}
+      }
     });
   }
-  document.querySelectorAll('.f-chip').forEach(function(btn){
-    btn.addEventListener('click',function(){applyFilter('cat',btn.dataset.filter);});
+
+  // Category chip toggles (set semantics; OR across categories).
+  chips.forEach(function(c){
+    c.addEventListener('click',function(){
+      var cat=c.dataset.cat;
+      if(activeCats[cat])delete activeCats[cat];else activeCats[cat]=true;
+      apply();
+    });
   });
-  document.querySelectorAll('.kw-pill').forEach(function(btn){
-    btn.addEventListener('click',function(e){e.preventDefault();applyFilter('kw',btn.dataset.kw);});
+  // "All" clears the category set (search box is left untouched).
+  if(allChip)allChip.addEventListener('click',function(){activeCats={};apply();});
+
+  // Keyword pill → set the search box value and apply.
+  pills.forEach(function(p){
+    p.addEventListener('click',function(e){
+      e.preventDefault();
+      if(input)input.value=p.dataset.kw||'';
+      apply();
+    });
   });
+
+  // Clear control resets the active categories.
+  if(clearBtn)clearBtn.addEventListener('click',function(){activeCats={};apply();});
+
+  // Debounced search input (~120ms).
+  if(input){
+    var t;
+    input.addEventListener('input',function(){clearTimeout(t);t=setTimeout(apply,120);});
+  }
+
+  // Load earlier issues — reveal the lazy tail (stays revealed thereafter).
+  if(moreBtn)moreBtn.addEventListener('click',function(){
+    userExpanded=true;setExpanded(true);moreBtn.setAttribute('aria-expanded','true');
+  });
+
+  readHash();
+  apply();
 })();
 </script>
 </body>
 </html>`;
+}
+
+// ─── RSS 2.0 feed ─────────────────────────────────────────────────────────────
+// Newest-first, most recent ~50 items across briefings + transcripts. Absolute
+// links into the GitHub Pages site; pubDate anchored at noon UTC per the day.
+function buildFeedXml(briefingEntries, transcriptsByDate) {
+  const items = [];
+
+  briefingEntries.forEach(e => {
+    e.briefings.forEach(key => {
+      const m = BRIEFING_META[key];
+      const fp = path.join(BRIEFINGS_DIR, e.date, m.filename);
+      const { headline, preview } = extractBriefingMeta(fp, key);
+      const link = `${SITE_URL}briefings/${e.date}/${m.filename}`;
+      items.push({
+        date: e.date,
+        title: `${m.typeLabel}: ${headline || m.preview}`,
+        link,
+        category: m.typeLabel,
+        description: preview || m.preview,
+      });
+    });
+  });
+
+  Object.entries(transcriptsByDate).forEach(([date, ts]) => {
+    ts.forEach(t => {
+      const link = `${SITE_URL}transcripts/${t.slug}/index.html`;
+      items.push({
+        date,
+        title: `Transcript: ${t.title}`,
+        link,
+        category: 'Transcript',
+        description: t.source || t.title || '',
+      });
+    });
+  });
+
+  // Newest-first; cap at 50.
+  items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const top = items.slice(0, 50);
+
+  const lastBuild = new Date().toUTCString();
+  const itemsXml = top.map(it => `    <item>
+      <title>${escapeXml(it.title)}</title>
+      <link>${escapeXml(it.link)}</link>
+      <guid isPermaLink="true">${escapeXml(it.link)}</guid>
+      <pubDate>${rfc822(it.date)}</pubDate>
+      <category>${escapeXml(it.category)}</category>
+      <description>${escapeXml(it.description)}</description>
+    </item>`).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>GM Research</title>
+    <link>${escapeXml(SITE_URL)}</link>
+    <description>Daily intelligence briefings on markets, law, AI, biohacking, trading and more.</description>
+    <language>en</language>
+    <lastBuildDate>${lastBuild}</lastBuildDate>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${escapeXml(SITE_URL)}feed.xml" rel="self" type="application/rss+xml"/>
+${itemsXml}
+  </channel>
+</rss>
+`;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -765,6 +1056,9 @@ fs.writeFileSync(OUTPUT_FILE, buildHTML(briefingEntries, transcriptsByDate));
 const bCount = briefingEntries.reduce((n,e) => n + e.briefings.length, 0);
 const tCount = Object.values(transcriptsByDate).reduce((n,a) => n + a.length, 0);
 console.log(`index.html written — ${briefingEntries.length} date(s), ${bCount} briefing(s), ${tCount} transcript(s)`);
+
+fs.writeFileSync(FEED_FILE, buildFeedXml(briefingEntries, transcriptsByDate));
+console.log(`feed.xml written — ${Math.min(50, bCount + tCount)} item(s)`);
 
 // ─── Post-build UI validator ──────────────────────────────────────────────────
 // Checks every card extraction for common issues and warns loudly.
