@@ -87,16 +87,16 @@ If the user has pasted any of the following, incorporate it directly before gene
 ## Step 0: Deduplication Check (do not repeat last issue's thread)
 
 Praxis recurs every other day, so the same idea can resurface fast. Before drafting, scan the **prior
-2–3 issues** so you don't re-run the same authors and the same governing thesis. Do NOT read prior
-HTML in full — grep the headline lines:
+2–3 issues** so you don't re-run the same authors and the same governing thesis. Run this FIRST:
 
-**On Windows (local):**
-```powershell
-Select-String -Path "C:\Users\Tony\Documents\briefings-site\briefings\*\praxis-brief.html" `
-  -Pattern 'card-label|<h3>' -SimpleMatch | Sort-Object Filename | Select-Object -Last 30
 ```
-(The `.card-label` lines carry the source/author; the `<h3>` lines carry the card headlines. Together
-they tell you which authors and which thesis you used last time.)
+node scripts/recent-coverage.js praxis-brief
+```
+
+It prints the last few issues (date, headline, tags) and a "Topics covered recently" line, read from each
+issue's `gm-meta` (falling back to extraction) — cleaner and gm-meta-aware, so you don't have to grep the
+markup by hand. The headlines are the recent governing theses and the tags/topics tell you which
+authors and ideas you used last time. Use it to apply the Rules below.
 
 **Rules:**
 1. **Don't repeat the thread.** If last issue's governing thesis was "the leverage is internal" built on

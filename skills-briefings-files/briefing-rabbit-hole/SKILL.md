@@ -105,8 +105,23 @@ biography, and "how things work" are all in-scope, as the archive shows.
 ## Step 0: Deduplication Check (don't re-run a recent topic)
 
 Rabbit Hole runs daily, so it is easy to drift back to a recent subject or domain. Before drafting, scan
-the **prior 3–4 issues** so you don't repeat a topic or lean on the same category two days running. Do
-NOT read prior HTML in full — grep the headline/category lines:
+the **prior 3–4 issues** so you don't repeat a topic or lean on the same category two days running.
+
+Run this FIRST:
+
+```
+node scripts/recent-coverage.js rabbit-hole
+```
+
+It prints the last few issues (date, headline, tags) and a "Topics covered recently" line, read from each
+issue's `gm-meta` (falling back to extraction). The headlines are the recent **topics** and the tags are
+the recent **domains** (from `.header-category`). The rule is simple: **don't repeat a topic or angle from
+that list.** If you genuinely have a *new* angle on a recurring theme — a different disaster, a different
+organism, a different war — that's allowed, but frame it explicitly as a **follow-up**, not a re-run; the
+same story re-told is off the table.
+
+If you want the raw `<title>` / `header-category` lines as well (the helper's headline is gm-meta-first;
+this shows the literal markup), grep them too — do NOT read prior HTML in full:
 
 **On Windows (local):**
 ```powershell

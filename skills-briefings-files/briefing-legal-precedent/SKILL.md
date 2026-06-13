@@ -32,7 +32,33 @@ today, drop it.
 
 ---
 
-## Step 0: Deduplication Check (MANDATORY — DO NOT SKIP)
+## Step 0: Check recent coverage — dedup AND thread ongoing storylines (MANDATORY — DO NOT SKIP)
+
+### 0A. Thread the running sagas (run FIRST)
+
+Before the exclusion check, run:
+
+```
+node scripts/recent-coverage.js legal-brief
+```
+
+This prints the last few briefs (date, headline, tags) **plus the per-issue `story-titles`** and a
+"Topics covered recently" line, read from each issue's `gm-meta` (falling back to extraction). Use it to
+**thread ongoing storylines instead of re-introducing them cold.** Crypto/AI law is a serial: the same
+bill, case, rule, or deadline recurs across days (e.g. the CLARITY Act, MiCA, a GENIUS Act rulemaking, a
+named enforcement action). When a saga appears in the recent story-titles:
+
+- Pick it up where it left off — e.g. *"Day N of \<X>: today \<the new development>; prior \<what we said>"* —
+  rather than explaining the matter from scratch as if the reader has never seen it.
+- State the **new** development in the first sentence (this is also what the `Update` exception in 0B
+  requires) and link it back to the prior beat.
+- Use this to spot what to chase: a saga with a fresh filing/vote/deadline is a strong `Update` candidate;
+  a saga with no new development is a *non-repeat* (see 0B), not a story.
+
+This complements — does not replace — the exclusion check below: 0A tells you what to **thread**, 0B tells
+you what to **exclude**.
+
+### 0B. Build the exclusion list
 
 Build an exclusion list of story headlines from the last 3 issues. **Do NOT read prior HTML files in
 full — that is expensive and unnecessary.** Instead, grep just the headline lines:

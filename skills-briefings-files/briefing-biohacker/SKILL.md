@@ -28,6 +28,31 @@ lands in the archive and indexes cleanly, you are in the right place.
 
 ---
 
+## Step 0: Check recent coverage (DEDUP — run before authoring the report)
+
+The Biohacker Report has a known recurring failure: it repeats the same topics — **creatine, Zone 2,
+sleep** — cycle after cycle without a new angle. The fix is a mechanical dedup pass against the recently
+published issues. Before writing the report, run:
+
+```
+node scripts/recent-coverage.js biohacker-report
+```
+
+It prints the last few issues (date, headline, tags) and a "Topics covered recently" line, read from each
+issue's `gm-meta` (falling back to extraction). **Do not repeat a topic shown there unless you have a
+genuinely new finding** — and if you do, frame it explicitly as a follow-up (the new study/result first),
+not a re-run of the same evergreen explainer. Rotate to fresh material otherwise.
+
+> **IMPORTANT — where this actually runs.** Because the report's *content* is authored by the user's Cowork
+> **"biohacker-report"** skill (not this repo file — see the framing above), **that Cowork skill is the one
+> that must run this command as its dedup step**, since it owns topic selection. This repo-side file only
+> **documents the mechanism**: the helper lives in this repo (`scripts/recent-coverage.js`) and reads this
+> repo's published archive, so the Cowork skill should invoke it (or the equivalent recent-coverage check)
+> against `C:\Users\Tony\Documents\briefings-site` before picking topics. Keeping the dedup note here means
+> the mechanism is discoverable from the site contract even though enforcement happens in the Cowork skill.
+
+---
+
 ## Cadence
 
 **The Biohacker Report publishes on EVEN days of the month** (2, 4, 6, 8, …). Its counterpart, **Praxis**,

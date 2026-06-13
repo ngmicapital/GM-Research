@@ -30,8 +30,27 @@ Target read time: **4–6 minutes skim, 10–12 minutes full read**. Follow thes
 
 ## STEP 0 — PICK THE CONCEPT
 
-### 0A. Scan recent briefings to avoid duplicates
-The local briefings archive lives at `C:\Users\Tony\Documents\briefings-site\briefings\`. List the last 30 date folders; for each, check whether `trading-concept.html` exists. Extract the concept covered (in the `<title>` and `<h1>` — e.g. "Alpha — Liquidations"). Build a `covered` set.
+### 0A. Scan recent briefings to avoid duplicates — DEDUP + CROSS-LINK
+Run this FIRST, before picking anything:
+
+```
+node scripts/recent-coverage.js trading-concept
+```
+
+It prints the last few Alpha issues (date, headline, tags) and a "Topics covered recently" line, read
+from each issue's `gm-meta` (falling back to extraction). The headlines name the concepts already
+covered — that is your `covered` set, gm-meta-aware and cleaner than scanning folders by hand. Use it to:
+
+- **Dedup:** do NOT re-explain a concept that appears in the recent list. Pick fresh material (see 0B).
+  Pass a larger `[n]` (e.g. `node scripts/recent-coverage.js trading-concept 30`) if you want a wider
+  window to clear the 30-day duplicate bar in the Quality Bar.
+- **Cross-link:** when the fresh concept you pick *builds on* one of the recent ones (e.g. today's Delta
+  Divergence builds on a recent CVD issue), say so explicitly in the brief — a one-line
+  "builds on \<prior concept> (Issue #N)" cross-reference — instead of re-teaching the prerequisite.
+
+(If you need the raw `<title>`/`<h1>` for any issue, the archive still lives at
+`C:\Users\Tony\Documents\briefings-site\briefings\` — but the helper output is the authoritative
+`covered` set.)
 
 ### 0B. Pick a fresh concept
 

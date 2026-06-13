@@ -32,6 +32,22 @@ If the user has pasted any of the following, incorporate it directly before gene
 
 ---
 
+## Step 0: Check recent coverage (run FIRST — drives the since-yesterday delta)
+
+Before fetching data or writing a word, run:
+
+```
+node scripts/recent-coverage.js market-briefing
+```
+
+This prints the last few Morning Edge issues (date, headline, tags), **yesterday's stated thesis**, and **current macro from `data/ticker.json`** (SPX / WTI / Gold / VIX / DXY, 24h). Use it to open the briefing with a **since-yesterday delta** instead of a cold snapshot:
+
+- Lead with **what moved** overnight and whether **yesterday's thesis is playing out or reversing** — the output hands you yesterday's thesis verbatim and the current quotes to compare it against.
+- Put a short **"what changed since yesterday"** strip near the top (just under the TL;DR / above §1 Macro): yesterday's call → today's read, naming the levels that confirmed or broke it.
+- If yesterday's thesis is being invalidated, say so plainly and pivot — don't quietly drop it.
+
+This is context, not a section to copy. Fetch live data in Step 1 to confirm/extend the delta before writing.
+
 ## Step 1: Fetch Live Data (MCP tools FIRST, browser only as fallback)
 
 Use MCP tools for ALL data collection before writing. These always work without a browser.
