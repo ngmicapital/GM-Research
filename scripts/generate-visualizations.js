@@ -10,23 +10,8 @@ const OUTPUT_FILE   = path.join(ROOT, 'visualizations.html');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function stripHtml(s) {
-  return s.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&times;/g, '×').replace(/\s+/g, ' ').trim();
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatShortDate(ds) {
-  const d = new Date(`${ds}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-}
-
-function formatDayLabel(ds) {
-  const d = new Date(`${ds}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
-}
+const { escapeHtml, stripHtml } = require('./lib/text');
+const { formatShortDate, formatDayLabel } = require('./lib/dates');
 
 // ─── Read all briefings ──────────────────────────────────────────────────────
 

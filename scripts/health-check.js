@@ -20,6 +20,8 @@
 const fs   = require('fs');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
+const { stripHtml } = require('./lib/text');
+const { BRIEFING_FILENAMES, TAG_PATTERNS, extractTags } = require('./lib/briefings');
 
 const ROOT            = path.join(__dirname, '..');
 const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
@@ -31,72 +33,10 @@ const DEPLOY_YML      = path.join(ROOT, '.github', 'workflows', 'deploy.yml');
 const TODAY = new Date().toISOString().slice(0, 10);
 const REPORT_FILE = path.join(REPORTS_DIR, `${TODAY}.json`);
 
-// ─── Minimal HTML entity decoder (for raw-HTML tag text) ─────────────────────
-function decodeEntities(s) {
-  return s
-    .replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&middot;/g, '·')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&hellip;/g, '…').replace(/&ldquo;/g, '"').replace(/&rdquo;/g, '"')
-    .replace(/&lsquo;/g, '‘').replace(/&rsquo;/g, '’')
-    .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#([0-9]+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)));
-}
-
-// ─── Tag extraction (mirrors generate-index.js logic) ─────────────────────────
-
-const TAG_PATTERNS = {
-  'market-briefing':  /\b(BTC|ETH|SOL|Gold|SPX|VIX|WTI|Brent|DXY|NVDA|TSLA)\b/g,
-  'legal-brief':      /\b(SEC|CFTC|ESMA|FCA|MAS|ASIC|OCC|MiCA|GENIUS|CLARITY|FIT21|Ripple|Coinbase|Binance)\b/g,
-  'ai-briefing':      /\b(Claude|GPT|Gemini|DeepSeek|Mistral|NVIDIA|Llama|Anthropic|OpenAI|Google)\b/g,
-  'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone|ergothioneine|mTOR|NAD|rapamycin|semaglutide|tirzepatide|longevity|fasting|autophagy)\b/gi,
-  // Rabbit hole: header-category (new format: "History · Biography"), then further-card-pill (old format)
-  'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
-  'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
-  'trading-concept':  /\b(Wyckoff|Accumulation|Distribution|Markup|Markdown|Spring|Upthrust|Upwave|Creek|Composite Man|Phase [ABCDE]|Support|Resistance|Breakout|Retest|Volume|BTC|ETH|SOL)\b/gi,
-};
-
-const BRIEFING_FILENAMES = {
-  'market-briefing':  'market-briefing.html',
-  'legal-brief':      'legal-brief.html',
-  'ai-briefing':      'ai-briefing.html',
-  'biohacker-report': 'biohacker-report.html',
-  'rabbit-hole':      'rabbit-hole.html',
-  'praxis-brief':     'praxis-brief.html',
-  'trading-concept':  'trading-concept.html',
-};
-
-function extractTags(html, key) {
-  const tagRe = TAG_PATTERNS[key];
-  if (!tagRe) return [];
-  tagRe.lastIndex = 0;
-  const found = new Set();
-  let m;
-  while ((m = tagRe.exec(html))) {
-    const val = decodeEntities((m[1] || m[2] || '').trim());
-    if (!val) continue;
-    // header-category may be "History · Biography" — split into individual tags
-    if (val.includes('·')) {
-      val.split('·').map(s => s.trim()).filter(Boolean).forEach(t => found.add(t));
-    } else {
-      found.add(val);
-    }
-  }
-  let tags = [...found].slice(0, 3);
-  // Rabbit-hole fallback: extract capitalised words from <strong> blocks
-  if (key === 'rabbit-hole' && tags.length === 0) {
-    const fallbackRe = /<strong>([A-Z][A-Za-zÀ-ɏ]{2,}(?:\s[A-Z][A-Za-zÀ-ɏ]{2,})?)/g;
-    const skipWords = new Set(['The','This','That','These','Those','When','What','Why','How','Who','Where','More','Less','Most','Just','Also','Only','Even','Very','Much','Many','Some','Other','Such','Each','Both','Then','They','With','From','Into','About','After','Before','During','Through','While','Which','Their','There']);
-    const fb = new Set();
-    let fm;
-    fallbackRe.lastIndex = 0;
-    while ((fm = fallbackRe.exec(html)) && fb.size < 10) {
-      const word = fm[1].split(/[\s:,–—]/)[0];
-      if (!skipWords.has(word) && word.length >= 3) fb.add(word);
-    }
-    tags = [...fb].slice(0, 3);
-  }
-  return tags;
-}
+// ─── Tag extraction + briefing metadata ──────────────────────────────────────
+// stripHtml, TAG_PATTERNS, BRIEFING_FILENAMES and extractTags are imported from
+// scripts/lib so health-check's tag logic is byte-for-byte identical to the
+// published index (generate-index.js). See requires at top of file.
 
 function extractStrongCandidates(html) {
   // Extract words from <strong> elements for rabbit-hole fallback
