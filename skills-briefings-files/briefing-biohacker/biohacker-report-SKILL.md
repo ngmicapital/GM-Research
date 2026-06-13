@@ -19,21 +19,21 @@ Vipassana. He wants the evidence, the mechanism, and the practical application �
 
 ---
 
-## STEP 0 — DEDUP (lean grep, not a full HTML read)
+## STEP 0 — DEDUP (run the coverage helper, not a full HTML read)
 
 This brief runs every 2 days. Creatine, Zone 2, and sleep have been covered repeatedly without
 new angles — do not include them unless there is a genuinely new study, finding, or mechanism.
 
-Grep topic headlines from the last 3–4 biohacker issues to build an exclusion list:
+Run the shared coverage helper to build the exclusion list. It reads each recent issue's gm-meta
+block first (authoritative headline + tags), so it's richer and more accurate than scraping raw
+headlines:
 
 ```powershell
-Select-String -Path "C:\Users\Tony\Documents\briefings-site\briefings\*\biohacker-report.html" `
-  -Pattern '<h3>|class="wisdom-source-label"|class="item-title"' -SimpleMatch |
-  Sort-Object Filename | Select-Object -Last 80 |
-  ForEach-Object { $_.Line -replace '.*?>(.*?)<.*','$1' -replace '<[^>]+>','' }
+node scripts/recent-coverage.js biohacker-report
 ```
 
-Print the list as "DEDUP — covered recently (avoid repeating without new angle):".
+Read its output — the recent headlines, the "Topics covered recently:" line, and the guidance
+note — and treat it as your "DEDUP — covered recently (avoid repeating without new angle):" list.
 A topic may repeat only with a **new study, new mechanism, or new practical protocol** — flag it
 with `⚡ Update:` at the start of its headline.
 
@@ -85,9 +85,25 @@ so future runs have it. Either way, do NOT read a prior full briefing body for c
 
 ### Index extraction (REQUIRED — add to header)
 The `template.html` has a hidden `<p class="tldr-text" style="display:none">` element inside
-the header. This is what `generate-index.js` uses to generate the index card headline and preview.
-Fill it with: 1 sentence stating the strongest insight + which sections/sources it comes from.
-**Do not leave it empty or generic** ("covers longevity and training" is not acceptable).
+the header. This is the fallback `generate-index.js` uses to generate the index card headline and
+preview. Fill it with: 1 sentence stating the strongest insight + which sections/sources it comes
+from. **Do not leave it empty or generic** ("covers longevity and training" is not acceptable).
+
+**gm-meta (AUTHORITATIVE — fill this too):** the template's `<head>` carries a
+`<script type="application/json" id="gm-meta">{{GM_META}}</script>` block. Replace `{{GM_META}}`
+with valid JSON of this exact shape:
+
+```json
+{"headline":"<=90 chars plain text","preview":"<=180 chars plain text","tags":["t1","t2","t3"]}
+```
+
+When present and well-formed, this block is **authoritative** for the homepage index card + hero —
+it overrides the `.tldr-text` extraction. If you omit it or it is malformed JSON, the index
+**falls back** to the hidden `.tldr-text` above. Rules:
+- Plain text only — use real Unicode characters (−, ×, ±, —), never HTML entities (`&minus;`, `&times;`).
+- Escape any `"` inside string values as `\"` so the JSON stays valid.
+- Keep `headline` / `preview` consistent with the visible headline and tldr — same insight, not a divergent one.
+- `tags` = up to 3 short topic tags (e.g. the key longevity / training / supplement themes of this issue).
 
 ### Issue numbering
 Count existing files: `(ls briefings/*/biohacker-report.html).Count` → Issue #BIO-NNN.

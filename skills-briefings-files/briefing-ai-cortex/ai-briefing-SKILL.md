@@ -101,9 +101,25 @@ so future runs have it. Either way, do NOT read a prior full briefing body for c
 8. **§08 — Watchlist** — 3–5 numbered items: what to watch next 24h and why
 
 ### TL;DR / index extraction
-The `<p class="skim tldr-text">` in the TL;DR section is what `generate-index.js` extracts as
-the card headline + preview. It must open with the **single biggest development** in bold, then
+The `<p class="skim tldr-text">` in the TL;DR section is the fallback `generate-index.js` extracts
+as the card headline + preview. It must open with the **single biggest development** in bold, then
 carry the key numbers for each section. This is the most-read sentence in the whole brief.
+
+**gm-meta (AUTHORITATIVE — fill this too):** the template's `<head>` carries a
+`<script type="application/json" id="gm-meta">{{GM_META}}</script>` block. Replace `{{GM_META}}`
+with valid JSON of this exact shape:
+
+```json
+{"headline":"<=90 chars plain text","preview":"<=180 chars plain text","tags":["t1","t2","t3"]}
+```
+
+When present and well-formed, this block is **authoritative** for the homepage index card + hero —
+it overrides the `.tldr-text` extraction. If you omit it or it is malformed JSON, the index
+**falls back** to the `.skim tldr-text` above. Rules:
+- Plain text only — use real Unicode characters (−, ×, ±, —), never HTML entities (`&minus;`, `&times;`).
+- Escape any `"` inside string values as `\"` so the JSON stays valid.
+- Keep `headline` / `preview` consistent with the visible TL;DR — same biggest development, not a divergent one.
+- `tags` = up to 3 short topic tags (e.g. the key model / open-source / AI×crypto themes of this issue).
 
 ### Issue numbering
 Count existing `ai-briefing.html` files: `(ls briefings/*/ai-briefing.html).Count` on Windows.
