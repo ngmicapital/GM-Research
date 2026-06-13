@@ -29,7 +29,7 @@ const TAG_PATTERNS = {
   'market-briefing':  /\b(BTC|ETH|SOL|Gold|SPX|VIX|WTI|Brent|DXY|NVDA|TSLA)\b/g,
   'legal-brief':      /\b(SEC|CFTC|ESMA|FCA|MAS|ASIC|OCC|MiCA|GENIUS|CLARITY|FIT21|Ripple|Coinbase|Binance)\b/g,
   'ai-briefing':      /\b(Claude|GPT|Gemini|DeepSeek|Mistral|NVIDIA|Llama|Anthropic|OpenAI|Google)\b/g,
-  'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone)\b/g,
+  'biohacker-report': /\b(Creatine|GLP-1|VO2max|Huberman|Zone 2|Sleep|HRV|Cortisol|Testosterone|Longevity|Rapamycin|Metformin|Spermidine|Ergothioneine|DunedinPACE|piRNA|mTOR|AMPK|NAD|Epigenetic|Autophagy|Circadian|Inflammation|Microbiome|Mitochondria|VO2|Sirtuin|Telomere|Fasting|Collagen|Magnesium|Omega-3|Vitamin D|Zone2)\b/g,
   // Rabbit hole: header-category first (new format: "History · Biography"), then further-card-pill (old format)
   'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
   'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
