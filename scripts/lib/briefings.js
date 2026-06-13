@@ -74,4 +74,23 @@ function extractTags(html, key) {
   return tags;
 }
 
-module.exports = { BRIEFING_META, ORDER, BRIEFING_FILENAMES, TAG_PATTERNS, extractTags };
+// Read an explicit <script type="application/json" id="gm-meta"> block if the
+// briefing emits one (the forward-looking metadata contract). Returns
+// { headline, preview, tags } or null. Defensive — any parse/shape error
+// returns null so callers fall back to regex extraction for legacy briefings.
+function readMeta(html) {
+  const m = String(html).match(/<script[^>]*\bid=["']gm-meta["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (!m) return null;
+  let o;
+  try { o = JSON.parse(m[1].trim()); } catch (e) { return null; }
+  if (!o || typeof o !== 'object') return null;
+  const headline = typeof o.headline === 'string' ? o.headline.trim() : '';
+  if (!headline) return null;            // headline is the minimum useful signal
+  const preview = typeof o.preview === 'string' ? o.preview.trim() : '';
+  const tags = Array.isArray(o.tags)
+    ? o.tags.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()).slice(0, 3)
+    : [];
+  return { headline, preview, tags };
+}
+
+module.exports = { BRIEFING_META, ORDER, BRIEFING_FILENAMES, TAG_PATTERNS, extractTags, readMeta };

@@ -15,7 +15,7 @@ const FEED_FILE       = path.join(ROOT, 'feed.xml');
 
 const { escapeHtml, stripHtml } = require('./lib/text');
 const { todayAEST } = require('./lib/dates');
-const { BRIEFING_META, ORDER, extractTags } = require('./lib/briefings');
+const { BRIEFING_META, ORDER, extractTags, readMeta } = require('./lib/briefings');
 
 const SITE_URL = 'https://ngmicapital.github.io/GM-Research/';
 
@@ -60,6 +60,14 @@ function extractBriefingMeta(filePath, key) {
   try {
     const html = fs.readFileSync(filePath, 'utf8');
     minutes = readingTimeMinutes(html);
+
+    // Metadata contract: if the briefing emits an explicit gm-meta JSON block,
+    // trust it and skip the regex strategies below. Legacy briefings (no block)
+    // fall through unchanged, so this never alters existing output.
+    const meta = readMeta(html);
+    if (meta) {
+      return { headline: meta.headline, preview: meta.preview, tags: meta.tags, minutes };
+    }
 
     // Strategy 1: TL;DR block (market, ai, biohacker)
     // Handles: <div class="tldr-text">, <p class="tldr-text">, and plain <p> inside .tldr

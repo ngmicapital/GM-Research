@@ -8,7 +8,7 @@ const assert = require('node:assert');
 
 const { escapeHtml, stripHtml } = require('./text');
 const { formatDate, formatShortDate, formatDayLabel, todayAEST } = require('./dates');
-const { BRIEFING_META, ORDER, BRIEFING_FILENAMES, extractTags } = require('./briefings');
+const { BRIEFING_META, ORDER, BRIEFING_FILENAMES, extractTags, readMeta } = require('./briefings');
 
 test('escapeHtml escapes the four HTML-significant characters', () => {
   assert.strictEqual(escapeHtml('a & b < c > d "e"'), 'a &amp; b &lt; c &gt; d &quot;e&quot;');
@@ -70,4 +70,18 @@ test('extractTags splits middot-joined rabbit-hole categories', () => {
 
 test('extractTags returns [] for unknown types', () => {
   assert.deepStrictEqual(extractTags('<p>anything</p>', 'no-such-type'), []);
+});
+
+test('readMeta returns null when no gm-meta block is present', () => {
+  assert.strictEqual(readMeta('<html><body><p>no meta here</p></body></html>'), null);
+});
+
+test('readMeta parses a valid gm-meta block and caps tags at 3', () => {
+  const html = '<head><script type="application/json" id="gm-meta">{"headline":"Big thesis","preview":"the why","tags":["BTC","VIX","macro","extra"]}</script></head>';
+  assert.deepStrictEqual(readMeta(html), { headline: 'Big thesis', preview: 'the why', tags: ['BTC', 'VIX', 'macro'] });
+});
+
+test('readMeta is defensive against malformed JSON and a missing headline', () => {
+  assert.strictEqual(readMeta('<script id="gm-meta">{not json}</script>'), null);
+  assert.strictEqual(readMeta('<script id="gm-meta">{"preview":"no headline"}</script>'), null);
 });
