@@ -425,11 +425,11 @@ function buildHTML(briefingEntries, transcriptsByDate) {
 <meta property="og:title" content="GM Research — Intelligence Archive">
 <meta property="og:description" content="Daily AI-generated intelligence briefings on markets, law, AI, biohacking, trading and more.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.svg">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.svg">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="application/rss+xml" title="GM Research" href="feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
