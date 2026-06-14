@@ -90,5 +90,5 @@ Per-type tag regex patterns + the `extractTags` logic now live in **one place** 
 
 - **Timezone is AEST** (`Australia/Sydney`) — `generate-index.js` computes "today" in AEST for the lead-story hero and TODAY tag. Date folders follow that convention; occasional gap days are normal.
 - Briefing pages must keep a `<title>`, an `og:description` (or `meta name="description"`), and a back-link to the index (`../../index.html`) — health-check flags recent files missing these.
-- Do not add a "← All Briefings" back-navigation bar at the top of briefing bodies — removed site-wide 2026-05-20; the index handles navigation.
+- Do not add a "← All Briefings" back-navigation bar at the top of briefing bodies — removed site-wide 2026-05-20. The required index back-link (above) instead lives in the FOOTER — templates ship a small centered footer link to `../../index.html` just before `</body>`. health-check checks for the link anywhere in the file (position-agnostic), so footer placement satisfies the back-link requirement without re-introducing a top bar.
 - Commit message style follows the existing history: `Add <type> for YYYY-MM-DD`, `chore: daily health check [YYYY-MM-DD]`, `chore(index): regenerate ...`.
