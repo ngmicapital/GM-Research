@@ -1,0 +1,89 @@
+name: Failure Alert (Telegram)
+
+# Pings Telegram when a GitHub-side workflow fails (deploy, ticker, CI). The daily
+# briefings are authored by LOCAL scheduled tasks (not Actions), so those failures
+# aren't visible here — the daily "missing briefing" check below covers that gap.
+#
+# SETUP (one-time, by the repo owner): add two repository secrets under
+# Settings → Secrets and variables → Actions:
+#   TELEGRAM_BOT_TOKEN  — your bot token from @BotFather
+#   TELEGRAM_CHAT_ID    — your chat id (message @userinfobot to get it)
+# Until both are set this workflow no-ops gracefully (never errors).
+
+on:
+  workflow_run:
+    workflows: ["Build & Deploy Briefings Site", "Update Ticker Data", "CI"]
+    types: [completed]
+  schedule:
+    - cron: '0 22 * * *'   # 22:00 UTC ≈ 08:00 AEST — after the morning briefings should exist
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether to alert
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          WF_URL: ${{ github.event.workflow_run.html_url }}
+          WF_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$EVENT" = "workflow_run" ]; then
+            if [ "$CONCLUSION" = "failure" ]; then
+              echo "alert=true" >> "$GITHUB_OUTPUT"
+              echo "text=GM-Research: workflow '${WF_NAME}' FAILED%0A${WF_URL}%0A(commit ${WF_SHA})" >> "$GITHUB_OUTPUT"
+            else
+              echo "alert=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Checkout (for the daily missing-briefing check)
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+
+      - name: Daily missing-briefing check
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        id: missing
+        run: |
+          TODAY=$(TZ=Australia/Sydney date +%F)
+          DIR="briefings/${TODAY}"
+          # Five types are expected daily; praxis(odd)/biohacker(even) alternate.
+          EXPECTED="market-briefing legal-brief ai-briefing rabbit-hole trading-concept"
+          DAY=$(TZ=Australia/Sydney date +%-d)
+          if [ $((DAY % 2)) -eq 0 ]; then EXPECTED="$EXPECTED biohacker-report"; else EXPECTED="$EXPECTED praxis-brief"; fi
+          MISSING=""
+          for t in $EXPECTED; do
+            [ -f "${DIR}/${t}.html" ] || MISSING="${MISSING} ${t}"
+          done
+          if [ -n "$MISSING" ]; then
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+            echo "text=GM-Research: ${TODAY} briefings MISSING:${MISSING}" >> "$GITHUB_OUTPUT"
+          else
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+            echo "All expected ${TODAY} briefings present."
+          fi
+
+      - name: Send Telegram message
+        if: ${{ steps.decide.outputs.alert == 'true' || steps.missing.outputs.alert == 'true' }}
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MSG1: ${{ steps.decide.outputs.text }}
+          MSG2: ${{ steps.missing.outputs.text }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set — skipping alert (add them in repo Settings → Secrets)."
+            exit 0
+          fi
+          TEXT="${MSG1}${MSG2}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=${TEXT}" > /dev/null
+          echo "Telegram alert sent."
