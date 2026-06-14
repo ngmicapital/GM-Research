@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Spoofing &amp; Layering | Sunday, 15 June 2026</title>
+<meta property="og:description" content="Spoofing posts large order-book walls only to cancel them before they fill — a false story painted on the book. The four tells that separate a bait wall from genuine resting liquidity.">
+<meta name="description" content="Spoofing posts large order-book walls only to cancel them before they fill. The four tells that separate a bait wall from genuine resting liquidity.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Spoofing: order-book walls placed only to be cancelled before they fill","preview":"Spoofing posts large limit orders with intent to cancel — a false story painted on the book. The four tells that separate a bait wall from genuine resting size.","tags":["Order Flow","Liquidity","Manipulation"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Traps</a>
+      <a href="#s08"><span class="num">§08</span>Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Spoofing &amp; Layering</h1>
+  <div class="meta">
+    <span>Sunday · 15 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #50</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Spoofing</strong> is posting a large order with no intent to trade it — a fake wall placed to manufacture a false impression of supply or demand, then cancelled before it can fill; <strong>layering</strong> is the same trick stacked across multiple price levels. The practical takeaway: a wall is a claim, a print is proof — when displayed size won't trade, it isn't liquidity, it's advertising, so demand volume at the level before you ever fade it.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition · the false story on the book</div>
+    </div>
+  </div>
+
+  <div class="skim">Spoofing is placing a large visible order you never intend to fill, to scare or lure other traders, then yanking it the instant price gets close.</div>
+
+  <p>Start from intent, not size. A genuine resting order says "I will trade here." A <strong>spoof</strong> says "I want you to <em>believe</em> I will trade here" — and then it vanishes. The U.S. legal definition under the 2010 Dodd-Frank Act is brutally compact: "the illegal practice of bidding or offering <strong>with intent to cancel before execution</strong>." That single clause — intent to cancel — is the whole concept. Everything else is plumbing.</p>
+
+  <p><strong>Layering</strong> is spoofing with choreography. Instead of one fat wall, the manipulator stacks multiple orders across several price levels on one side of the book to fake a wall of depth — while their <em>real</em> order sits quietly on the opposite side. The displayed size pushes price toward the genuine order, it fills, and the fake stack is cancelled. Same legal element, more theatre. Both are prohibited in regulated futures and equities; both are rampant in crypto precisely because most venues are unregulated.</p>
+
+  <p>This is the deceptive twin of the <a href="../2026-06-12/trading-concept.html">Iceberg order (Issue, 12 Jun)</a>: an iceberg <em>hides</em> real size behind a tiny tip, a spoof <em>displays</em> size that isn't real. One under-shows truth, the other over-shows a lie — and the tell that separates them, refresh-on-fill, is the same instrument read in opposite directions.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>SPOOF WALL</b> <span>large displayed order placed with intent to cancel</span></div>
+    <div class="pill-term"><b>PHANTOM SIZE</b> <span>liquidity that shows on the book but never trades</span></div>
+    <div class="pill-term"><b>AIR POCKET</b> <span>the void left when a wall is pulled; price slices through</span></div>
+    <div class="pill-term"><b>LAYERING</b> <span>fake depth stacked across multiple price levels</span></div>
+    <div class="pill-term"><b>OTR</b> <span>order-to-trade ratio — a core surveillance flag</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    If you only remember one thing: a wall is a claim, a print is proof. Size that refuses to trade isn't liquidity — it's advertising.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">The Mechanics</div>
+      <div class="section-sub">Display · deceive · cancel · flip</div>
+    </div>
+  </div>
+
+  <div class="skim">Show fake size to bend the book, wait for honest traders and bots to react, fill your real order on the other side, then cancel the fake before it can be hit.</div>
+
+  <p>The cycle has four beats. <strong>1 — Display:</strong> drop an outsized order near the touch, big enough to dominate the visible book and read as a wall. <strong>2 — Deceive:</strong> order-flow traders and especially order-book-reading bots front-run the apparent imbalance — they sell into a fake ask wall or buy under a fake bid wall, pushing price toward it. <strong>3 — Flip:</strong> the spoofer's genuine order on the <em>opposite</em> side gets filled at the improved price the fake wall created. <strong>4 — Cancel:</strong> the fake wall is pulled in milliseconds, before price can actually trade against it, leaving an air pocket the move accelerates through.</p>
+
+  <p>The mechanic only works against participants who treat displayed size as commitment. That's why bots are the prime victims — they respond to a large order instantly, with no skepticism about whether it will still be there in 200ms. The whole edge is latency and credibility: be fast enough to cancel before fill, big enough to be believed.</p>
+
+  <p>Surveillance desks don't read intent — they read statistics. Two ratios do most of the flagging:</p>
+
+  <div class="formula">
+    <b>Cancellation Rate</b> = orders cancelled ÷ orders placed<br>
+    <b>Order-to-Trade Ratio (OTR)</b> = total orders entered ÷ total trades executed<br>
+    <div class="note">A spoofer's flagged side runs a cancellation rate near 100% and a wildly high OTR — thousands of placed-and-pulled orders for a handful of fills, lopsided to one side and clustered near the touch. JPMorgan's traders entered <b>hundreds of thousands</b> of such orders across 2008–2016 [CFTC, 2020].</div>
+  </div>
+
+  <table class="cmp">
+    <thead><tr><th>Trait</th><th>Spoofing</th><th>Layering</th></tr></thead>
+    <tbody>
+      <tr><td>Orders shown</td><td>One dominant wall near the touch</td><td>Many orders stacked across price levels</td></tr>
+      <tr><td>Where</td><td>Side opposite the spoofer's real intent</td><td>One side faked; genuine order on the other</td></tr>
+      <tr><td>Goal</td><td>Manufacture false supply/demand</td><td>Manufacture false <em>depth</em>, then sweep it</td></tr>
+      <tr><td>Legal element</td><td>Intent to cancel before fill</td><td>Intent to cancel before fill (identical)</td></tr>
+      <tr><td>Top tell</td><td>Wall pulls on approach, no volume prints</td><td>Whole stack vanishes together after the flip</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Pull, Visualised</div>
+      <div class="section-sub">Before &amp; after the wall vanishes</div>
+    </div>
+  </div>
+
+  <div class="skim">Left: a fat ask wall lures shorts and bends price up toward it. Right: the wall is pulled at the last second, an air pocket opens, and price slices through while the spoofer's real bid below gets filled.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-panel diagram: a spoof ask wall displayed, then pulled, leaving an air pocket price slices through">
+      <defs>
+        <marker id="arrUp" markerWidth="10" markerHeight="10" refX="5" refY="2" orient="auto"><path d="M0,8 L5,0 L10,8 Z" fill="#3f6212"/></marker>
+        <marker id="arrR" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L8,5 L0,10 Z" fill="#78716c"/></marker>
+      </defs>
+
+      <!-- Panel titles -->
+      <text x="200" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#1c1917">BEFORE — WALL DISPLAYED</text>
+      <text x="600" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#1c1917">AFTER — WALL PULLED</text>
+
+      <!-- divider -->
+      <line x1="400" y1="40" x2="400" y2="404" stroke="#e7e5e4" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+      <!-- ── Price ladder labels (shared scale, left) ── -->
+      <!-- levels: 64600 top ... 64000 bottom -->
+      <g font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">
+        <text x="44" y="78" text-anchor="end">64,600</text>
+        <text x="44" y="118" text-anchor="end">64,500</text>
+        <text x="44" y="218" text-anchor="end">64,200</text>
+        <text x="44" y="318" text-anchor="end">64,000</text>
+      </g>
+
+      <!-- ════════ LEFT PANEL ════════ -->
+      <!-- ask wall (fake) at 64,500 -->
+      <rect x="56" y="100" width="288" height="34" rx="3" fill="#ef4444" opacity="0.85"/>
+      <text x="200" y="122" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#ffffff">SPOOF ASK · 800 BTC · 64,500</text>
+      <text x="200" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#78716c">displayed — never intended to fill</text>
+
+      <!-- price candle climbing toward wall -->
+      <g>
+        <rect x="150" y="240" width="22" height="56" fill="#22c55e"/>
+        <line x1="161" y1="228" x2="161" y2="240" stroke="#22c55e" stroke-width="2"/>
+        <rect x="186" y="200" width="22" height="40" fill="#22c55e"/>
+        <line x1="197" y1="188" x2="197" y2="200" stroke="#22c55e" stroke-width="2"/>
+        <rect x="222" y="168" width="22" height="32" fill="#22c55e"/>
+        <line x1="233" y1="158" x2="233" y2="168" stroke="#22c55e" stroke-width="2"/>
+      </g>
+      <!-- aggressor arrow up -->
+      <line x1="270" y1="280" x2="270" y2="158" stroke="#3f6212" stroke-width="2.5" marker-end="url(#arrUp)"/>
+      <text x="300" y="230" font-family="Inter, sans-serif" font-size="10.5" fill="#3f6212">shorts &amp; bots</text>
+      <text x="300" y="244" font-family="Inter, sans-serif" font-size="10.5" fill="#3f6212">chase the wall</text>
+
+      <!-- spoofer's real bid below -->
+      <rect x="56" y="300" width="150" height="26" rx="3" fill="#22c55e" opacity="0.5"/>
+      <text x="131" y="317" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#14532d">REAL BID 64,000</text>
+
+      <!-- ════════ RIGHT PANEL ════════ -->
+      <!-- ghost of pulled wall -->
+      <rect x="456" y="100" width="288" height="34" rx="3" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.7"/>
+      <text x="600" y="122" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#ef4444">⟶ PULLED · CANCELLED</text>
+      <!-- air pocket band -->
+      <rect x="456" y="140" width="288" height="56" fill="#fbbf24" opacity="0.18"/>
+      <text x="600" y="172" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#78350f">AIR POCKET — no resting size</text>
+
+      <!-- price slicing through -->
+      <g>
+        <rect x="556" y="240" width="22" height="44" fill="#22c55e"/>
+        <line x1="567" y1="228" x2="567" y2="240" stroke="#22c55e" stroke-width="2"/>
+        <rect x="592" y="180" width="22" height="60" fill="#22c55e"/>
+        <line x1="603" y1="168" x2="603" y2="180" stroke="#22c55e" stroke-width="2"/>
+        <rect x="628" y="96" width="22" height="84" fill="#22c55e"/>
+        <line x1="639" y1="84" x2="639" y2="96" stroke="#22c55e" stroke-width="2"/>
+      </g>
+      <line x1="675" y1="270" x2="675" y2="92" stroke="#3f6212" stroke-width="2.5" marker-end="url(#arrUp)"/>
+      <text x="690" y="180" font-family="Inter, sans-serif" font-size="10.5" fill="#3f6212">price slices</text>
+      <text x="690" y="194" font-family="Inter, sans-serif" font-size="10.5" fill="#3f6212">through the void</text>
+
+      <!-- real bid filled -->
+      <rect x="456" y="300" width="150" height="26" rx="3" fill="#22c55e" opacity="0.85"/>
+      <text x="531" y="317" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#ffffff">REAL BID FILLED ✓</text>
+
+      <!-- timeline arrow between panels -->
+      <line x1="360" y1="378" x2="440" y2="378" stroke="#78716c" stroke-width="1.5" marker-end="url(#arrR)"/>
+      <text x="400" y="400" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#78716c">milliseconds</text>
+    </svg>
+    <div class="svg-caption">The spoof cycle: a fake ask wall at 64,500 lures aggressive selling and drags price up toward it; the wall is cancelled a tick before contact, an air pocket opens, and the spoofer's genuine bid below fills as price slices clean through the vacated level. Illustrative — levels chosen for clarity.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trading around fake liquidity</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never fade a wall until it has proven itself with prints. Real liquidity trades; phantom liquidity disappears the moment you'd want to lean on it.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Demand volume, not size</h4>
+        <p>A wall is a claim; volume prints are proof. If price reaches the level and no fills fire — no volume dots on the heatmap, no absorption — the size was never real. A genuine wall stays and gets at least partially filled before it moves.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Trade the air pocket, not the wall</h4>
+        <p>Fake walls vanish just before contact, leaving a vacuum. Price accelerates <em>through</em> the vacated level, not off it. Position for continuation into the void — the bounce the wall advertised is exactly the trade it was built to bait.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Treat round numbers as theatre</h4>
+        <p>Bait walls cluster at round numbers, VWAP, and prior highs/lows — the obvious spots where retail parks stops. A giant wall at BTC 65,000 is a question, not an answer. Repetition is the tell: a wall that appears and pulls twice with zero volume is fishing.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Never read the wall alone</h4>
+        <p>Layer the tell with CVD / volume imbalance and iceberg-refresh checks. Wall + matching aggressive flow + refill-on-fill = real defence. Wall with none of that = advertising. As the practitioners put it: don't rely on fake-wall detection by itself.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — fading the fake, illustrative</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC trades 64,000. An 800-contract ask wall parks at 64,500 (round-ish, prior swing high). It appears, pulls, reappears twice as price probes — and no volume prints when tagged.</td></tr>
+      <tr><td>Read</td><td>Phantom size. Do <strong>not</strong> short into it. Wait for the pull-on-approach with CVD still rising — that confirms aggressive buyers, not the wall, own the level.</td></tr>
+      <tr><td>Entry</td><td>Long 64,520 on reclaim as the wall cancels and the air pocket opens</td></tr>
+      <tr><td>Stop</td><td>64,300 (back below the vacated shelf) — risk 220</td></tr>
+      <tr><td>Target</td><td>65,200 (next genuine resting cluster) — reward 680</td></tr>
+      <tr><td>R-multiple</td><td>≈ 3.1R if the void plays out; invalidated instantly if real size reloads at 64,500</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> spoofing lives on the DOM and heatmap — a 1s–5m execution lens, with context from 15m–4h structure. It is invisible and irrelevant on the daily chart; this is a pure microstructure read.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Where it shows on today's book</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is pinned near 64,000 with round-number 64k/65k as obvious magnets — exactly the levels where bait walls present. Real-time spoof attribution needs L2 replay; the verified record shows how the game is actually played.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 15 Jun 2026</div>
+    <h4>The honest version: walls at round numbers, and the enforcement record</h4>
+
+    <p>BTC sits at <strong>$64,007</strong> as this publishes (−0.35% on the day), with ETH at <strong>$1,670</strong>. With price coiled under the round 64k/65k shelf — the kind of obvious level the day's <a href="market-briefing.html" style="color:#bef264">Morning Edge</a> is watching for the funding picture — the visible book around these handles is precisely where phantom size tends to flash. But here's the discipline: <strong>I can't honestly name a specific live spoofer today</strong> — proving intent-to-cancel requires tick-level L2 replay and order-ID tracking I don't have in front of me. So the specific, verified instances are the prosecuted ones.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot (now)</td><td>$64,007 · −0.35% 24h · ~$16.8B vol</td></tr>
+        <tr><td>ETH spot (now)</td><td>$1,670 · −0.29% 24h</td></tr>
+        <tr><td>JPMorgan (CFTC, 2020)</td><td>$920.2M penalty · metals + Treasuries · 2008–2016 · 100,000s of spoof orders</td></tr>
+        <tr><td>Sarao / Flash Crash</td><td>6 May 2010 · E-mini S&amp;P · ~$200M bets modified 19,000×</td></tr>
+        <tr><td>Coscia / Panther</td><td>2011 conduct · CFTC $2.8M + FCA ~$900k · first Dodd-Frank spoofing conviction</td></tr>
+        <tr><td>Crypto "Spoofy"</td><td>Bitfinex, Aug 2017 · 900–5,000 BTC walls placed &amp; cancelled</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <p>The record is the point. JPMorgan's traders ran <strong>hundreds of thousands</strong> of orders they meant to cancel across eight years in regulated, deep futures — and still got caught, for a record <strong>$920.2 million</strong>. In crypto, the 2017 "Spoofy" episode on Bitfinex showed 900–5,000 BTC walls appearing and vanishing with no enforcement at all, because the venue sat outside any regulator's reach. Same mechanic, opposite consequence.</p>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      In regulated futures, persistent spoofing is hard and prosecuted; in thin crypto books it's trivial and unpoliced — so on the current BTC tape, treat any monster wall at a round number as positioning bait until prints prove it real, and trade the pull rather than the picture.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Classic to contemporary</div>
+    </div>
+  </div>
+
+  <div class="skim">A century apart, the same idea: the tape can be made to tell a story the operator wants you to believe — and the modern tell is whether the size ever actually trades.</div>
+
+  <div class="quote">
+    <p>"Manipulation is the art of advertising through the medium of the tape. The tape should tell the story the manipulator wishes its readers to see."</p>
+    <div class="attr"><b>Jesse Livermore</b> · via Edwin Lefèvre, <em>Reminiscences of a Stock Operator</em> · 1923</div>
+  </div>
+
+  <div class="quote">
+    <p>"When a wall vanishes the moment price gets close, it's often just phantom liquidity."</p>
+    <div class="attr"><b>Bookmap</b> · "How Price Reacts Around Fake Liquidity" · 2024 · <a href="https://bookmap.com/blog/how-price-reacts-around-fake-liquidity-bait-walls-and-phantom-size">bookmap.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"False signals of supply or demand designed to deceive market participants."</p>
+    <div class="attr"><b>CFTC</b> · In re JPMorgan, record $920.2M spoofing order · 29 Sep 2020 · <a href="https://www.cftc.gov/PressRoom/PressReleases/8260-20">cftc.gov</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Including the overhyped read</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: shorting into the ask wall (or longing the bid wall). That's the exact trade the spoofer built the wall to harvest.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Calling every wall a spoof</h5>
+      <p>Most large resting orders are genuine — real defence by funds and market makers who fully intend to trade. A wall that gets filled was real. Reserve the label for size that pulls on approach with no prints; over-applying it makes you fade honest liquidity.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Fading the wall</h5>
+      <p>Selling into a fat ask (or buying a fat bid) is precisely the reaction the spoofer is paying for. If it's a spoof, you're providing the exit liquidity for their real order on the other side; if it's real, you're fading committed size. Both lose.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Trusting screenshots and bots</h5>
+      <p>An order-book screenshot is one frame of a moving film — walls are placed and pulled in milliseconds, so a static image proves nothing. Order-book-reading bots that react to size instantly are the spoofer's favourite mark; don't be the slow human version of one.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">4</div>
+    <div>
+      <h5>Overhyped: "the whales spoof the whole market"</h5>
+      <p>Honest read — spoofing nudges and traps; it rarely sets trend. Its price impact is local and fleeting, and in deep, liquid books it's expensive and risky to sustain. "The spoofer did it" is usually a cope for a bad read or a missed level. Use it to refine entries, not to explain away a losing thesis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">One reference, two practitioner guides, and the primary enforcement document — all read for this issue.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://en.wikipedia.org/wiki/Spoofing_(finance)">Spoofing (finance)</a>
+        <span>Definition, the Dodd-Frank "intent to cancel" standard, and the Coscia, Sarao and Moncada enforcement cases in one place.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/how-price-reacts-around-fake-liquidity-bait-walls-and-phantom-size">How Price Reacts Around Fake Liquidity: Bait Walls and Phantom Size</a>
+        <span>The four tells of a fake wall and how to trade the air pocket when it pulls — the practitioner core of this issue.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/cracking-the-spoofing-code-inside-the-world-of-market-manipulation">Cracking the Spoofing Code</a>
+        <span>Why cancellation speed is the whole game, and why detection is hard against algorithmic spoofers.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.cftc.gov/PressRoom/PressReleases/8260-20">CFTC Orders JPMorgan to Pay Record $920 Million for Spoofing</a>
+        <span>Primary source: the largest spoofing penalty ever, with the exact restitution / disgorgement / penalty breakdown.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://en.wikipedia.org/wiki/Spoofing_(finance)">Wikipedia — Spoofing (finance)</a>
+    <a href="https://www.cftc.gov/PressRoom/PressReleases/8260-20">CFTC PR 8260-20 — JPMorgan $920.2M</a>
+    <a href="https://bookmap.com/blog/how-price-reacts-around-fake-liquidity-bait-walls-and-phantom-size">Bookmap — Bait Walls &amp; Phantom Size</a>
+    <a href="https://bookmap.com/blog/cracking-the-spoofing-code-inside-the-world-of-market-manipulation">Bookmap — Cracking the Spoofing Code</a>
+    <a href="https://medium.com/hackernoon/meet-spoofy-how-a-single-entity-dominates-the-price-of-bitcoin-39c711d28eb4">HackerNoon — Meet "Spoofy"</a>
+    <a href="https://www.gate.com/learn/articles/what-is-spoofing-in-financial-markets/8047">Gate Learn — Spoofing in Financial Markets</a>
+    <span>Live prices: CoinGecko, 15 Jun 2026. Education, not advice.</span>
+  </div>
+  <div>Alpha · Issue #50 · Sunday, 15 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
