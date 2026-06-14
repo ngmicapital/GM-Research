@@ -44,9 +44,10 @@ The most common warning is `RAW HTML ENTITY in headline` — an HTML entity (e.g
 
 Re-run `node scripts/generate-index.js` after the fix and confirm the output ends with `✓  UI validator: all card extractions look clean` before proceeding.
 
-Two distinct check layers run after the build:
+Three distinct check layers run after the build:
 - **Extraction warnings** (`⚠️` / `⚠  [validator]`) — content-quality issues (generic headline, raw entity, empty preview). Non-fatal by default; `node scripts/generate-index.js --strict` makes them exit non-zero (briefing-authoring pre-publish gate).
 - **Output-integrity check** (`✗  OUTPUT INTEGRITY FAILED`) — broken generated markup (backslash-close tag artifacts, unbalanced `<b>`/`<small>`). Always **FATAL** — a generator/template bug that must never publish.
+- **Blocking content defects** (`X  BLOCKING content defect(s)`) — a leaked template token (`{{...}}`), a leftover `<!-- TEMPLATE for ... -->` comment, or a raw HTML entity in extracted card text, in any of the latest 3 dates. Always **FATAL regardless of `--strict`** — these publish visibly-broken briefings.
 
 ## Architecture
 

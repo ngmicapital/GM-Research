@@ -1167,6 +1167,30 @@ if (issues === 0) {
 // `--strict` (used by briefing-authoring pre-publish checks) also makes the
 // extraction warnings above fatal. CI runs WITHOUT --strict, so pre-existing
 // content warnings never block unrelated code changes.
+// Blocking content defects (FATAL, always): leaked template tokens/comments or raw
+// HTML entities in card text publish visibly-broken output, so they block regardless
+// of --strict (the soft warnings above stay non-fatal). Checks the latest 3 dates.
+{
+  const blocking = [];
+  briefingEntries.slice(0, 3).forEach(e => e.briefings.forEach(key => {
+    const fp = path.join(BRIEFINGS_DIR, e.date, BRIEFING_META[key].filename);
+    let raw; try { raw = fs.readFileSync(fp, 'utf8'); } catch (err) { return; }
+    const meta = extractBriefingMeta(fp, key);
+    const tok = [...new Set(raw.match(/\{\{[A-Za-z0-9_]+\}\}/g) || [])];
+    if (tok.length) blocking.push(`${e.date}/${key}: leaked template token(s) ${tok.join(', ')}`);
+    if (/<!--\s*TEMPLATE for/i.test(raw)) blocking.push(`${e.date}/${key}: leaked "<!-- TEMPLATE for ... -->" comment`);
+    if (/&[a-zA-Z]+;/.test(meta.headline)) blocking.push(`${e.date}/${key}: raw HTML entity in headline "${meta.headline}"`);
+    if (/&[a-zA-Z]+;/.test(meta.preview)) blocking.push(`${e.date}/${key}: raw HTML entity in preview`);
+    meta.tags.forEach(t => { if (/&[a-zA-Z]+;/.test(t)) blocking.push(`${e.date}/${key}: raw HTML entity in tag "${t}"`); });
+  }));
+  if (blocking.length) {
+    console.error('\n  X  BLOCKING content defect(s) - these publish visibly-broken output:');
+    blocking.forEach(b => console.error('     - ' + b));
+    console.error('  Refusing to continue. Fix the briefing(s) above.\n');
+    process.exit(1);
+  }
+}
+
 if (issues > 0 && process.argv.includes('--strict')) {
   console.error(`\n  ✗  --strict: ${issues} extraction issue(s) above are fatal. Fix the briefing HTML.\n`);
   process.exit(1);
