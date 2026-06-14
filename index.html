@@ -324,11 +324,11 @@ a:focus-visible,.f-chip:focus-visible,.kw-pill:focus-visible,.f-clear:focus-visi
     <span class="tk" data-tk="btc"><b>BTC</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
     <span class="tk" data-tk="eth"><b>ETH</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
     <span class="tk" data-tk="sol"><b>SOL</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
-    <span class="tk"><b>SPX</b> <span class="tkv" id="tk-spx">&#x2014;</span> <span class="tkd" id="tk-spx-d">&#x2014;</span></span>
-    <span class="tk"><b>WTI</b> <span class="tkv" id="tk-wti">&#x2014;</span> <span class="tkd" id="tk-wti-d">&#x2014;</span></span>
-    <span class="tk"><b>Gold</b> <span class="tkv" id="tk-gold">&#x2014;</span> <span class="tkd" id="tk-gold-d">&#x2014;</span></span>
-    <span class="tk"><b>VIX</b> <span class="tkv" id="tk-vix">&#x2014;</span> <span class="tkd" id="tk-vix-d">&#x2014;</span></span>
-    <span class="tk"><b>DXY</b> <span class="tkv" id="tk-dxy">&#x2014;</span> <span class="tkd" id="tk-dxy-d">&#x2014;</span></span>
+    <span class="tk" data-tk="spx"><b>SPX</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
+    <span class="tk" data-tk="wti"><b>WTI</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
+    <span class="tk" data-tk="gold"><b>Gold</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
+    <span class="tk" data-tk="vix"><b>VIX</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
+    <span class="tk" data-tk="dxy"><b>DXY</b> <span class="tkv">&#x2014;</span> <span class="tkd">&#x2014;</span></span>
   </div>
 </div>
 
@@ -4102,11 +4102,6 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     document.querySelectorAll(sel+' .tkv').forEach(function(el){el.textContent=val;});
     document.querySelectorAll(sel+' .tkd').forEach(function(el){el.textContent=fmtP(pct);el.className='tkd '+(pct>=0?'up':'dn');});
   }
-  function setById(valId,dId,val,pct){
-    var v=document.getElementById(valId),d=document.getElementById(dId);
-    if(v)v.textContent=val;
-    if(d){d.textContent=fmtP(pct);d.className='tkd '+(pct>=0?'up':'dn');}
-  }
   // Crypto: live via CoinGecko
   try{
     var cr=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true&precision=2');
@@ -4120,10 +4115,9 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     var yr=await fetch('data/ticker.json',{cache:'no-store'});
     var yd=await yr.json();
     var qs=yd.quotes||{};
-    var ym={'spx':['tk-spx','tk-spx-d'],'wti':['tk-wti','tk-wti-d'],'gold':['tk-gold','tk-gold-d'],'vix':['tk-vix','tk-vix-d'],'dxy':['tk-dxy','tk-dxy-d']};
-    Object.keys(ym).forEach(function(k){
+    ['spx','wti','gold','vix','dxy'].forEach(function(k){
       var q=qs[k]; if(!q) return;
-      setById(ym[k][0],ym[k][1],fmtN(q.price),q.pct||0);
+      setTk('[data-tk="'+k+'"]',fmtN(q.price),q.pct||0);  // querySelectorAll → fills BOTH marquee copies
     });
   }catch(e){}
 })();
