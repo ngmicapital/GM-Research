@@ -4118,9 +4118,14 @@ function closeMenu(){var m=document.getElementById('mob-menu'),o=document.getEle
     if(cd.ethereum){setTk('[data-tk="eth"]',fmtN(cd.ethereum.usd),cd.ethereum.usd_24h_change);}
     if(cd.solana){setTk('[data-tk="sol"]',fmtN(cd.solana.usd),cd.solana.usd_24h_change);}
   }catch(e){}
-  // Equities / macro: same-origin data/ticker.json (baked hourly by .github/workflows/update-ticker.yml)
+  // Equities / macro: fresh from the ticker-data branch via raw CDN (CORS-enabled, ~5min cache);
+  // falls back to the same-origin snapshot if the CDN is unavailable. Keeping ticker.json on the
+  // ticker-data branch (see update-ticker.yml) means main gets zero ticker commits.
   try{
-    var yr=await fetch('data/ticker.json',{cache:'no-store'});
+    var TURL='https://raw.githubusercontent.com/ngmicapital/GM-Research/ticker-data/data/ticker.json';
+    var yr;
+    try{ yr=await fetch(TURL,{cache:'no-store'}); if(!yr.ok) throw 0; }
+    catch(e){ yr=await fetch('data/ticker.json',{cache:'no-store'}); }
     var yd=await yr.json();
     var qs=yd.quotes||{};
     ['spx','wti','gold','vix','dxy'].forEach(function(k){

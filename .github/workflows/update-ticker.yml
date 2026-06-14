@@ -17,25 +17,30 @@ jobs:
       - name: Fetch equity/macro quotes from Yahoo Finance
         run: node scripts/fetch-ticker.js
 
-      - name: Commit ticker data
+      - name: Publish ticker to the ticker-data branch (keeps main history clean)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/ticker.json
-          if git diff --cached --quiet; then
-            echo "No changes."
-            exit 0
-          fi
-          git commit -m "chore(ticker): update equity/macro quotes"
-          # Retry-with-rebase: handles the case where another commit lands on main
-          # while this job was running (otherwise `git push` is rejected).
+          # Build a tree with just data/ticker.json via plumbing — no branch checkout, so the
+          # runner's main checkout is untouched and main gets ZERO ticker commits. The client
+          # reads this branch from raw.githubusercontent (CORS-enabled, ~5min cache).
+          BLOB=$(git hash-object -w data/ticker.json)
+          SUB=$(printf '100644 blob %s\tticker.json\n' "$BLOB" | git mktree)
+          ROOT=$(printf '040000 tree %s\tdata\n' "$SUB" | git mktree)
           for i in 1 2 3 4 5; do
-            if git push origin main; then
-              echo "Pushed on attempt $i."
-              exit 0
+            git fetch -q origin ticker-data || true
+            PARENT=$(git rev-parse -q --verify origin/ticker-data || true)
+            if [ -n "$PARENT" ] && [ "$(git rev-parse "$PARENT^{tree}")" = "$ROOT" ]; then
+              echo "No ticker change."; exit 0
             fi
-            echo "Push rejected, rebasing onto latest main (attempt $i)..."
-            git pull --rebase origin main
+            if [ -n "$PARENT" ]; then
+              COMMIT=$(git commit-tree "$ROOT" -p "$PARENT" -m "chore(ticker): update equity/macro quotes")
+            else
+              COMMIT=$(git commit-tree "$ROOT" -m "chore(ticker): update equity/macro quotes")
+            fi
+            if git push origin "$COMMIT:refs/heads/ticker-data"; then
+              echo "Pushed ticker-data on attempt $i."; exit 0
+            fi
+            echo "Push rejected (attempt $i), retrying..."; sleep 3
           done
-          echo "Failed to push after 5 attempts." >&2
-          exit 1
+          echo "Failed to push ticker-data after 5 attempts." >&2; exit 1
