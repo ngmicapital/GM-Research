@@ -1126,6 +1126,12 @@ briefingEntries.slice(0, 3).forEach(e => {  // only check latest 3 dates
     if (/&[a-zA-Z]+;/.test(preview))                 warn(`RAW HTML ENTITY in preview: "${preview}"`);
     tags.forEach(t => { if (/&[a-zA-Z]+;/.test(t)) warn(`RAW HTML ENTITY in tag: "${t}"`); });
     SUSPICIOUS.forEach(s => { if (headline.includes(s)) warn(`SUSPICIOUS headline contains "${s}": "${headline}"`); });
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const tok = [...new Set(raw.match(/\{\{[A-Za-z0-9_]+\}\}/g) || [])];
+      if (tok.length) warn(`LEAKED template token(s): ${tok.join(', ')} — fill or strip before publishing`);
+      if (/<!--\s*TEMPLATE for/i.test(raw)) warn('LEAKED template instruction comment — strip the "<!-- TEMPLATE for ... -->" line from the published HTML');
+    } catch (e) { /* file read errors surface via extractBriefingMeta */ }
   });
 });
 if (issues === 0) {
