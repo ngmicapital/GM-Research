@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Open Interest Dynamics | Wed 17 June 2026</title>
+<meta property="og:description" content="Open interest counts live contracts, not trades. Read against price, it splits a real trend from a hollow short-covering bounce — and flags crowded books before they cascade.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Open Interest Dynamics: read OI against price to separate new money from short-covering","preview":"Open interest counts live contracts, not trades. Read against price, it splits a real trend from a hollow short-covering bounce — and flags crowded books before they cascade.","tags":["Open Interest","Funding","Liquidation"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Open Interest Dynamics</h1>
+  <div class="meta">
+    <span>Wed · 17 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #52</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Open interest</strong> is the count of derivative contracts still open — not how many traded, but how much exposure is still standing once the trading stops; it tells you whether a move is backed by fresh conviction or just positions being unwound. Read OI's direction against price's direction and a four-box decoder falls out: <strong>rising price on rising OI is real demand</strong>, <strong>rising price on falling OI is short-covering that fades</strong>, and <strong>falling price on falling OI</strong> — like BTC's −22% OI flush on 4 June — is longs being liquidated, not new sellers arriving.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition · the third dimension</div>
+    </div>
+  </div>
+
+  <div class="skim">Open interest is the number of futures or perpetual contracts still open — the market's standing exposure, not its trading activity.</div>
+
+  <p>Price tells you direction. Volume tells you how much changed hands. <strong>Open interest tells you something neither can: how much money is still committed to the trade after the dust settles.</strong> Ignore it and you will mistake a short-covering bounce for real demand — and stand in front of a crowded book right before it flushes.</p>
+
+  <p>Formally, open interest is the total number of derivative contracts — futures or perpetual swaps — that have been opened and not yet closed, expired, or settled. <strong>One new buyer matched with one new seller creates exactly one unit of OI.</strong> When an existing long and an existing short close against each other, that unit disappears. If a new trader simply takes over an existing position from someone exiting, OI does not move at all — the contract still exists, only its owner changed.</p>
+
+  <p>That last case is the whole point. Volume can be enormous while OI sits flat — that is positions changing hands, not new risk arriving. <strong>OI rising means net-new contracts are being created; OI falling means net contracts are being torn up.</strong> In crypto perps there is no expiry, so OI is a clean, continuous read on how much leverage is parked in the market right now.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>OI</b><span>live contracts not yet closed</span></div>
+    <div class="pill-term"><b>NOTIONAL OI</b><span>OI × price, in USD</span></div>
+    <div class="pill-term"><b>PERP</b><span>futures with no expiry, held by funding</span></div>
+    <div class="pill-term"><b>ΔOI</b><span>change in OI: + new money, − unwind</span></div>
+    <div class="pill-term"><b>OI / MCAP</b><span>leverage relative to market size</span></div>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    Rising OI = new money taking risk; falling OI = risk leaving. Price says which side is winning; OI says how committed they are.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">The four-box decoder</div>
+    </div>
+  </div>
+
+  <div class="skim">Pair the sign of ΔOI with the sign of the price change and four distinct stories fall out — three of them tradeable, one a trap dressed as a trend.</div>
+
+  <p>The signal comes from one pairing: the direction of <strong>price</strong> against the direction of <strong>open interest</strong> over the same window. Each is just a sign — up or down — so there are four combinations. This is the price/OI matrix futures traders have used since long before perps existed; <strong>John J. Murphy</strong> codified it in <em>Technical Analysis of the Financial Markets</em>, and it maps cleanly onto crypto.</p>
+
+  <div class="formula">
+ΔOI = OI(t) − OI(t−1)
+<b>Notional OI (USD)</b> = OI (contracts) × price
+
+Price ↑ + OI ↑  →  new longs, real trend      <b>[CONFIRM]</b>
+Price ↑ + OI ↓  →  short covering, hollow      <b>[FADE]</b>
+Price ↓ + OI ↑  →  new shorts, real downtrend  <b>[CONFIRM]</b>
+Price ↓ + OI ↓  →  long liquidation / unwind   <b>[WASHOUT]</b>
+    <div class="note">Sign, not size, drives the read — but the larger the ΔOI, the louder the signal.</div>
+  </div>
+
+  <table class="cmp">
+    <tr><th>State</th><th>What it means</th><th>Posture</th></tr>
+    <tr><td>Price ↑ · OI ↑</td><td>New longs paying up; fresh money entering with conviction.</td><td>Trend is real — trail it, don't fade it.</td></tr>
+    <tr><td>Price ↑ · OI ↓</td><td>Shorts buying to close; no new demand behind the move.</td><td>Suspect rally — sell strength into resistance.</td></tr>
+    <tr><td>Price ↓ · OI ↑</td><td>New shorts pressing; sellers committing real capital.</td><td>Downtrend is real — respect the move.</td></tr>
+    <tr><td>Price ↓ · OI ↓</td><td>Longs closing or being force-closed; supply drying up.</td><td>Late in the flush — watch for the reversal.</td></tr>
+  </table>
+
+  <p>Crypto adds two refinements. <strong>First, read OI in notional USD, not contracts</strong> — a 5% OI rise at $66K is more leverage than the same rise at $59K. <strong>Second, overlay funding.</strong> When OI climbs while funding sits at an extreme — BTC is at the 99th percentile of its weekly range today, roughly 7% annualised — the new money is one-sided and expensive to hold. That is the exact fuel a liquidation cascade burns, which is why this issue builds directly on the <em>liquidation cascade</em> (Issue #48, 13 Jun) and <em>trapped traders</em> (Issue #45, 10 Jun): OI is the inventory those mechanics consume.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Decoder, Drawn</div>
+      <div class="section-sub">Two diagrams</div>
+    </div>
+  </div>
+
+  <div class="skim">A 2×2 grid maps every price/OI combination to its meaning; a second panel shows OI building into a top, then collapsing in a cascade.</div>
+
+  <div class="svg-wrap">
+  <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Price versus open interest 2x2 decoder matrix">
+    <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+    <text x="400" y="34" text-anchor="middle" font-family="'DM Serif Display',serif" font-size="22" fill="#1c1917">The Price × Open-Interest Decoder</text>
+
+    <!-- quadrant fills -->
+    <rect x="180" y="64"  width="270" height="150" fill="#fef2f2" stroke="#e7e5e4"/>
+    <rect x="450" y="64"  width="270" height="150" fill="#f0fdf4" stroke="#e7e5e4"/>
+    <rect x="180" y="214" width="270" height="150" fill="#f5f5f4" stroke="#e7e5e4"/>
+    <rect x="450" y="214" width="270" height="150" fill="#fffbeb" stroke="#e7e5e4"/>
+
+    <!-- center cross -->
+    <line x1="450" y1="64" x2="450" y2="364" stroke="#1c1917" stroke-width="2"/>
+    <line x1="180" y1="214" x2="720" y2="214" stroke="#1c1917" stroke-width="2"/>
+
+    <!-- TR: new longs -->
+    <text x="585" y="118" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#15803d">PRICE ↑ · OI ↑</text>
+    <text x="585" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" font-weight="700" fill="#1c1917">New longs</text>
+    <text x="585" y="172" text-anchor="middle" font-family="Inter,sans-serif" font-size="12.5" fill="#44403c">Fresh money, real trend</text>
+    <text x="585" y="194" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10.5" font-weight="700" fill="#15803d">CONFIRM — trail it</text>
+
+    <!-- TL: new shorts -->
+    <text x="315" y="118" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#b91c1c">PRICE ↓ · OI ↑</text>
+    <text x="315" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" font-weight="700" fill="#1c1917">New shorts</text>
+    <text x="315" y="172" text-anchor="middle" font-family="Inter,sans-serif" font-size="12.5" fill="#44403c">Sellers committing, real downtrend</text>
+    <text x="315" y="194" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10.5" font-weight="700" fill="#b91c1c">CONFIRM — respect it</text>
+
+    <!-- BR: short covering -->
+    <text x="585" y="260" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#b45309">PRICE ↑ · OI ↓</text>
+    <text x="585" y="290" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" font-weight="700" fill="#1c1917">Short covering</text>
+    <text x="585" y="314" text-anchor="middle" font-family="Inter,sans-serif" font-size="12.5" fill="#44403c">No new demand, hollow bounce</text>
+    <text x="585" y="336" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10.5" font-weight="700" fill="#b45309">FADE — into resistance</text>
+
+    <!-- BL: long liquidation -->
+    <text x="315" y="260" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#57534e">PRICE ↓ · OI ↓</text>
+    <text x="315" y="290" text-anchor="middle" font-family="Inter,sans-serif" font-size="16" font-weight="700" fill="#1c1917">Long liquidation</text>
+    <text x="315" y="314" text-anchor="middle" font-family="Inter,sans-serif" font-size="12.5" fill="#44403c">Forced unwind, supply drying up</text>
+    <text x="315" y="336" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10.5" font-weight="700" fill="#57534e">WASHOUT — watch reversal</text>
+
+    <!-- axis labels -->
+    <text x="92" y="139" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212" transform="rotate(-90 92 139)">OPEN INTEREST ↑</text>
+    <text x="92" y="289" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212" transform="rotate(-90 92 289)">OPEN INTEREST ↓</text>
+    <text x="315" y="392" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212">← PRICE DOWN</text>
+    <text x="585" y="392" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212">PRICE UP →</text>
+  </svg>
+  <div class="svg-caption">The decoder. The same price move carries the opposite meaning depending on whether open interest expands (new positions) or contracts (positions closing).</div>
+  </div>
+
+  <div class="svg-wrap">
+  <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Open interest builds into a top then collapses in a liquidation cascade">
+    <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+    <text x="400" y="30" text-anchor="middle" font-family="'DM Serif Display',serif" font-size="20" fill="#1c1917">Build-up, then flush — OI into a top and the cascade</text>
+
+    <!-- cascade highlight band -->
+    <rect x="500" y="46" width="150" height="338" fill="#fef2f2" stroke="none"/>
+
+    <!-- PRICE panel -->
+    <text x="70" y="62" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212">PRICE</text>
+    <polyline points="70,182 200,165 330,135 430,102 500,80 560,150 620,190 680,174 740,180" fill="none" stroke="#1c1917" stroke-width="2.5"/>
+    <circle cx="500" cy="80" r="4.5" fill="#22c55e"/>
+    <text x="500" y="68" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="#15803d">high</text>
+
+    <!-- divider -->
+    <line x1="70" y1="216" x2="740" y2="216" stroke="#e7e5e4" stroke-width="1"/>
+
+    <!-- OI panel -->
+    <text x="70" y="248" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212">OPEN INTEREST</text>
+    <path d="M70,372 L70,348 L200,330 L330,300 L430,272 L500,258 L540,300 L600,352 L680,356 L740,354 L740,372 Z" fill="#ecfccb" stroke="#65a30d" stroke-width="2"/>
+
+    <!-- annotations -->
+    <text x="300" y="290" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3f6212">OI builds — crowded longs, conviction looks real</text>
+    <text x="575" y="205" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#b91c1c">CASCADE</text>
+    <text x="575" y="338" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#b91c1c">price ↓ &amp; OI ↓</text>
+    <text x="575" y="354" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#b91c1c">longs liquidated</text>
+
+    <line x1="70" y1="372" x2="740" y2="372" stroke="#78716c" stroke-width="1"/>
+  </svg>
+  <div class="svg-caption">Open interest expands as leverage piles in (rising price + rising OI = real trend). When price breaks, those same longs are force-closed and price and OI fall together. The −22% OI flush on 4 June 2026 was exactly this right edge.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Confluence, not a standalone</div>
+    </div>
+  </div>
+
+  <div class="skim">Never trade OI alone — use it to grade a move's quality: does the price action have committed money behind it, or none at all?</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Grade the breakout</h4>
+        <p>When price clears a level, check ΔOI on the break. Breakout <strong>with rising OI</strong> means participants are pressing the new range — it tends to hold. Breakout on <strong>flat or falling OI</strong> means nobody is backing it; treat it as fade-prone until OI confirms.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Spot the hollow bounce</h4>
+        <p>A rally on <strong>falling OI</strong> is shorts buying back, not buyers arriving. It runs only until the shorts are done, then stalls. Sell strength into resistance rather than chase a move with no new demand underneath it.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Map the fuel</h4>
+        <p>Rising notional OI at extreme funding marks a crowded, one-sided book. That OI <em>is</em> the liquidation fuel — the bigger it gets, the harder the eventual flush. Treat record OI + extreme funding as a risk warning, not a trend confirmation.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Read the washout</h4>
+        <p>Falling price on <strong>collapsing OI</strong> is longs being flushed, not fresh sellers arriving. Once OI is spent, the downside fuel is gone — that is where reversals start, not where you panic-sell into the hole.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked read — BTC, late May → 6 June 2026</h5>
+    <table>
+      <tr><td>Setup</td><td>Total-market OI climbs above ~$111B into the rally toward ~$67K; funding persistently positive — crowded, leveraged longs.</td></tr>
+      <tr><td>Signal</td><td>Price ↑ + OI ↑ reads as a real trend — but funding at an extreme flags a one-sided book. That is a <em>warning</em>, not a confirmation.</td></tr>
+      <tr><td>Trigger</td><td>Price loses $63K on 4 Jun; stacked long-liquidation clusters sat between $65K–$60K, directly in the path.</td></tr>
+      <tr><td>Result</td><td>$67K → $59.1K low; over $3B liquidated, ~85% longs; market OI dropped 22% in the move (price ↓ + OI ↓ = forced unwind).</td></tr>
+      <tr><td>Lesson</td><td>The OI build told you the fuel was there; the OI collapse told you it was being burned — not that new shorts had stepped in.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> ΔOI is most actionable on the 1h–4h for swing context and the daily for regime reads; intraday OI spikes pair best with the footprint and tape (Issues #51, #25) for execution.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC &amp; ETH · FOMC day</div>
+    </div>
+  </div>
+
+  <div class="skim">Today the decoder is flashing two different signals: BTC's OI is high and its funding extreme while OI bleeds off into the Fed; ETH's OI is washed out near weekly lows.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BTC / ETH-PERP · 4H · 17 Jun 2026</div>
+    <h4>Crowded BTC longs de-risk into the Fed; ETH sits on an empty tank</h4>
+
+    <p>At <strong>~$65.8K</strong>, BTC aggregated open interest is <strong>$6.76B</strong> — the 76th percentile of its weekly range — but it is bleeding lower (<strong>−$59.6M</strong> over the last day) even as price holds roughly flat. Price flat while OI falls is positions being trimmed, not new conviction: leveraged longs taking risk off ahead of <strong>Warsh's first FOMC decision</strong> tonight (2pm EDT / ~4am AEST). Yet funding is screaming — <strong>99th percentile, ~7% annualised</strong> — so the longs that remain are paying up and one-sided.</p>
+
+    <p>ETH is the mirror image. Price <strong>~$1,797</strong> with open interest of <strong>$4.03B</strong> sitting in the bottom ~5% of its weekly range — the positioning that drives cascades has already washed out. That is an empty tank: little forced-selling fuel left, and room for OI to rebuild fast if a trend starts. The liquidation map agrees — ETH's heavier cluster sits <em>below</em> (~$1,751–$1,754), so a flush there would be the classic price ↓ + OI ↓ washout, not new shorts pressing.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC price</td><td>$65,794</td></tr>
+        <tr><td>BTC OI (agg)</td><td>$6.76B · 76th pct (7d)</td></tr>
+        <tr><td>BTC ΔOI 1d</td><td>−$59.6M (bleeding off)</td></tr>
+        <tr><td>BTC funding (ann.)</td><td>~7.0% · 99th pct (7d) — extreme long bias</td></tr>
+        <tr><td>BTC long-liq magnet</td><td>$65,300–$65,160 (~$165M / $105M)</td></tr>
+        <tr><td>ETH price</td><td>$1,796.8</td></tr>
+        <tr><td>ETH OI (agg)</td><td>$4.03B · bottom ~5% (7d) — washed out</td></tr>
+        <tr><td>ETH funding (ann.)</td><td>~3.7% · 88th pct (7d)</td></tr>
+        <tr><td>ETH long-liq magnet</td><td>$1,751–$1,754 (~$110M / $101M)</td></tr>
+        <tr><td>Macro catalyst</td><td>FOMC (Warsh) 2pm EDT, ~4am AEST 18 Jun</td></tr>
+        <tr><td>Snapshot</td><td>17 Jun 2026 AEST · TrueNorth / Coinglass</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      BTC's high-OI, extreme-funding book is the crowded side; OI bleeding off pre-FOMC is longs de-risking, not capitulating. The real signal is what tonight's print does to OI — expansion means a fresh trend; a collapse lights up the $65.3K cluster just below. ETH's washed-out OI is the cleaner long-side asymmetry. → See today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a> for the full derivatives detail.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 VOICES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Reads on commitment</div>
+    </div>
+  </div>
+
+  <div class="skim">The principle is a century old — money flow reveals commitment — and the crypto-perp twist is that an OI surge can be covering, not conviction.</div>
+
+  <div class="quote">
+    <p>"There is nothing new in Wall Street… Whatever happens in the stock market today has happened before and will happen again."</p>
+    <div class="attr"><b>Jesse Livermore</b> · <em>Reminiscences of a Stock Operator</em> (Lefèvre) · 1923 · <a href="https://www.gutenberg.org/ebooks/56880">gutenberg.org</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"If price is the direction of the market and volume shows its speed, open interest reveals the commitment behind the move."</p>
+    <div class="attr"><b>CoinSwitch — What Is Open Interest (OI) in Crypto Trading?</b> · 2026 · <a href="https://coinswitch.co/switch/crypto/what-is-open-interest-oi-in-crypto-trading/">coinswitch.co</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"BTC's OI is high and its funding extreme; ETH's OI is on the floor. The crowded side is paying to sit there — the washed-out side isn't."</p>
+    <div class="attr"><b>Alpha desk read</b> · NGM Capital · 17 Jun 2026</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where OI misleads</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake is reading rising OI as automatically bullish — OI is directionless; it only confirms whichever way price is already moving.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Treating OI as directional</h5>
+      <p>Rising OI is neither bullish nor bearish on its own — it only says new money is committing. <strong>Always pair it with price.</strong> "OI is pumping" with no price context is noise, not a signal.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Watching contracts, not notional</h5>
+      <p>Quoting OI in coins or contracts hides how leverage changes as price moves. <strong>Track notional USD (OI × price) and OI/MCap</strong>, or you will misjudge how crowded the book actually is — especially after a big price swing.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing volume with OI</h5>
+      <p>Huge volume can leave OI dead flat — that is positions changing hands, not new risk arriving. Trade a high-volume, flat-OI session as a fresh trend and you are trading churn.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Reading extreme OI as strength</h5>
+      <p>Record-high OI at extreme funding is a crowded, fragile book — not a strong trend. It is the setup for a cascade, not a reason to add. That was the lesson of 4 June: peak OI marked the top, not the launchpad.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>The "OI is predictive" overclaim — overhyped</h5>
+      <p>OI is descriptive, not a crystal ball. Much exchange-published OI is end-of-period and aggregated across venues with different contract conventions, so cross-exchange "OI heatmap" products often double-count or lag. OI tells you what positioning <em>is</em> — not where price goes next. Anyone selling it as a leading indicator is selling hype.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Verified sources</div>
+    </div>
+  </div>
+
+  <div class="skim">One reference for the definition, one forensic of the cascade it explains, two on the current regime.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://en.wikipedia.org/wiki/Open_interest_(futures)">Open interest (futures) — Wikipedia</a>
+        <span>The clean definition and the unit-creation rule: one new buyer + one new seller makes one unit; an existing long and short closing removes one.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://wazirx.com/blog/bitcoin-liquidation-cascade-june-2026/">Bitcoin June 2026 Liquidation Cascade Explained — WazirX</a>
+        <span>The worked example, with numbers: $67K → $59.1K, market OI down 22%, &gt;$3B liquidated, ~85% longs. The right edge of diagram two.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://phemex.com/blogs/bitcoin-open-interest-hits-6-month-low-june-outlook">Bitcoin Open Interest Hits 6-Month Low — Phemex</a>
+        <span>The post-cascade positioning reset: a de-leveraged, washed-out book with most forced-selling fuel already spent. (Treat its specific price targets as one desk's view.)</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://web3.gate.com/crypto-wiki/article/what-are-the-key-crypto-derivatives-market-signals-in-2026-futures-open-interest-funding-rates-and-liquidation-data-20260103">Key Crypto Derivatives Market Signals in 2026 — Gate</a>
+        <span>How OI, funding, and liquidation data combine into a positioning read — the three-variable view this brief is built on.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.coinglass.com/tv/Binance_BTCUSDT">TrueNorth / Coinglass — live BTC &amp; ETH derivatives</a>
+    <a href="https://en.wikipedia.org/wiki/Open_interest_(futures)">Wikipedia — Open Interest</a>
+    <a href="https://wazirx.com/blog/bitcoin-liquidation-cascade-june-2026/">WazirX — June 2026 cascade</a>
+    <a href="https://phemex.com/blogs/bitcoin-open-interest-hits-6-month-low-june-outlook">Phemex — OI 6-month low</a>
+    <a href="https://web3.gate.com/crypto-wiki/article/what-are-the-key-crypto-derivatives-market-signals-in-2026-futures-open-interest-funding-rates-and-liquidation-data-20260103">Gate — 2026 derivatives signals</a>
+    <a href="market-briefing.html">GM Research — Morning Edge (17 Jun 2026)</a>
+    <a href="https://www.gutenberg.org/ebooks/56880">Reminiscences of a Stock Operator (Gutenberg)</a>
+  </div>
+  <div>Alpha · Issue #52 · 17 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
