@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Maker vs Taker | 18 June 2026</title>
+<meta property="og:description" content="Maker vs Taker: makers post resting limit orders and earn the spread; takers cross it for instant fills and pay the fee — and makers pull quotes first when fear hits.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Maker vs Taker: who provides liquidity, who pays for it","preview":"Makers post resting limit orders and earn the spread; takers cross it for instant fills and pay the fee. In fear regimes makers pull quotes first — books thin, slippage spikes.","tags":["Order Flow","Liquidity","Spread"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Anatomy</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Traps</a>
+      <a href="#s08"><span class="num">§08</span>Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Maker vs Taker</h1>
+  <div class="meta">
+    <span>Wed · 18 Jun 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #53</span>
+    <span class="pill">11 MIN</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Maker vs taker is the split that defines every fill: a <strong>maker</strong> posts a resting limit order and supplies liquidity; a <strong>taker</strong> crosses the spread with a market order and removes it. It matters because the maker earns the spread (often a fee rebate) while the taker pays for immediacy — and because makers widen or pull their quotes the instant adverse-selection risk rises, which is exactly when books thin and slippage punishes takers. Practical takeaway: in calm tape, take the fill if you need it; in fear-driven, deleveraging tape like today's BTC, the disappearing bids <em>are</em> makers stepping back — size down and lean on limits.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Two roles, one trade</div>
+    </div>
+  </div>
+
+  <div class="skim">Every print on the tape is a handshake between two roles: a <b>maker</b> who posted a resting order, and a <b>taker</b> who crossed the spread to hit it.</div>
+
+  <p>Every fill has two sides, not one. A <strong>maker</strong> is the trader who got there first — they posted a <strong>limit order</strong> that rested in the book, advertised a price, and waited. A <strong>taker</strong> is the trader who showed up impatient — they sent a <strong>market order</strong> (or a marketable limit) that crossed the spread and executed against the maker's resting size immediately. The maker supplied the liquidity; the taker consumed it. That single distinction is the bedrock under CVD, order-flow imbalance, absorption and every sweep we've covered this month — all of them are just patterns in <em>who is making and who is taking</em>.</p>
+
+  <p>As Larry Harris frames it, dealers "make themselves available so that other traders can trade when they want to trade. They supply liquidity." The maker is selling <strong>immediacy</strong>; the taker is buying it. The price of that immediacy is the <strong>bid–ask spread</strong> plus, on most venues, an explicit <strong>taker fee</strong> — while the maker is often paid a <strong>rebate</strong> for the service of quoting both sides of the book.</p>
+
+  <p>This builds directly on <strong>Trade Classification</strong> (Issue earlier this month), which tagged each print as buyer- or seller-initiated — that tag is literally "which side took." Today is the role beneath the tag: the economics and incentives that decide who posts and who crosses, and why the makers are the first to vanish when conditions sour.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>MAKER</b><span>posts a resting limit order — adds liquidity</span></div>
+    <div class="pill-term"><b>TAKER</b><span>crosses the spread with a market order — removes liquidity</span></div>
+    <div class="pill-term"><b>SPREAD</b><span>gap between best bid and best ask — the maker's edge</span></div>
+    <div class="pill-term"><b>REBATE</b><span>fee a venue pays a maker for providing liquidity</span></div>
+    <div class="pill-term"><b>IMMEDIACY</b><span>the thing a taker buys and a maker sells</span></div>
+  </div>
+
+  <div class="remember">
+    <b>If you only remember one thing</b>
+    The maker is paid for patience; the taker pays for speed — and in stress, the makers leave first.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">The Mechanics</div>
+      <div class="section-sub">Spread · rebate · adverse selection</div>
+    </div>
+  </div>
+
+  <div class="skim">The spread is the maker's wage for bearing two risks — inventory and adverse selection; raise either risk and the spread widens with it.</div>
+
+  <p>A maker quotes both sides — a <strong>bid</strong> below the mid and an <strong>ask</strong> above it. If the maker buys at the bid and later sells at the ask with no price drift, they pocket the <strong>spread</strong>. Do that thousands of times a day across roughly balanced flow and the spread becomes a wage for a service: continuous, two-sided quoting that lets everyone else trade on demand.</p>
+
+  <div class="formula">
+    <b>Maker gross edge</b> ≈ (Ask − Bid) per round-trip&nbsp; + &nbsp;Maker rebate&nbsp; − &nbsp;infra / exchange cost<br>
+    <b>Taker cost</b> ≈ (½ × Spread) crossing cost&nbsp; + &nbsp;Taker fee&nbsp; + &nbsp;Slippage if the order walks the book
+    <div class="note">Simplified, per fill. The maker's edge is gross of the two risks below; the taker's cost is the price of instant execution.</div>
+  </div>
+
+  <p>The maker is not printing free money. Two well-modelled risks eat the spread:</p>
+  <p><strong>1. Inventory risk</strong> (the Ho–Stoll problem): if flow turns one-sided, the maker accumulates a position they never wanted and must hedge or unwind it — often at a worse price. <strong>2. Adverse selection</strong> (the Glosten–Milgrom problem): some takers know something. When an informed taker lifts the offer right before a move, the maker is run over. To recover what they systematically lose to informed flow, the maker <strong>widens the spread on everyone</strong> — economists call that widening the <em>adverse-selection spread</em>. Uninformed takers paying the wider spread subsidise the maker's losses to the informed ones.</p>
+
+  <p>Exchanges codify all of this with the <strong>maker–taker fee model</strong>, borrowed from equities. Takers pay more; makers pay less or earn a rebate — some venues even run negative maker fees for high-volume desks. Per Binance Academy, makers "receive lower fees or rebates because they provide the liquidity that attracts traders," while takers "pay higher fees since they benefit from liquidity makers have already supplied." Exact numbers are venue- and volume-tier specific (taker fees commonly sit in the low single-digit basis points up to ~0.15%; maker fees lower or negative) — but the structure is the point: <strong>the venue pays you to build the book and charges you to drain it.</strong></p>
+
+  <table class="cmp">
+    <thead>
+      <tr><th>Dimension</th><th>Maker</th><th>Taker</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Order type</td><td>Limit — rests in the book</td><td>Market / marketable limit</td></tr>
+      <tr><td>Liquidity</td><td>Adds it</td><td>Removes it</td></tr>
+      <tr><td>Execution</td><td>Maybe, eventually</td><td>Now, effectively guaranteed</td></tr>
+      <tr><td>Price</td><td>Sets it</td><td>Pays it — crosses the spread</td></tr>
+      <tr><td>Fee</td><td>Lower, or a rebate</td><td>Higher</td></tr>
+      <tr><td>Main risk</td><td>Adverse fill / never filled</td><td>Slippage + fee</td></tr>
+      <tr><td>Net</td><td>Earns the spread</td><td>Pays the spread</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Anatomy of a Fill</div>
+      <div class="section-sub">Who rests, who crosses</div>
+    </div>
+  </div>
+
+  <div class="skim">The order book is a ladder built entirely of makers; a taker is the order that climbs it.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Order book ladder with a taker market order crossing the spread to consume the best ask">
+      <defs>
+        <marker id="ah1" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#3f6212"></path>
+        </marker>
+      </defs>
+      <!-- title -->
+      <text x="24" y="26" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#3f6212">ORDER BOOK · DEPTH-OF-MARKET</text>
+      <text x="776" y="26" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">bar length = resting size (makers)</text>
+
+      <!-- ASKS group label -->
+      <text x="24" y="52" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#b91c1c">▲ ASKS · makers' resting offers</text>
+
+      <!-- ask rows -->
+      <rect x="268" y="60" width="235" height="20" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="250" y="75" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,520</text>
+      <text x="511" y="75" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">41.2</text>
+
+      <rect x="268" y="86" width="150" height="20" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="250" y="101" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,500</text>
+      <text x="426" y="101" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">26.0</text>
+
+      <rect x="268" y="112" width="192" height="20" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="250" y="127" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,480</text>
+      <text x="468" y="127" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">33.4</text>
+
+      <!-- best ask (thin) — consumed by taker -->
+      <rect x="268" y="138" width="66" height="20" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <rect x="266" y="136" width="70" height="24" rx="3" fill="none" stroke="#65a30d" stroke-width="2.5"></rect>
+      <text x="250" y="153" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#1c1917">64,460</text>
+      <text x="344" y="153" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#3f6212">← best ask · consumed</text>
+
+      <!-- spread band -->
+      <rect x="24" y="164" width="752" height="26" rx="3" fill="#fef3c7" stroke="#fbbf24" stroke-dasharray="5 4"></rect>
+      <text x="400" y="181" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#78350f">BID–ASK SPREAD = $40 · the maker's edge / the taker's cost</text>
+
+      <!-- BIDS group label -->
+      <text x="24" y="211" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#15803d">▼ BIDS · makers' resting bids</text>
+
+      <!-- bid rows -->
+      <rect x="268" y="218" width="72" height="20" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="250" y="233" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#1c1917">64,420</text>
+      <text x="348" y="233" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">12.8 · best bid</text>
+
+      <rect x="268" y="244" width="205" height="20" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="250" y="259" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,400</text>
+      <text x="481" y="259" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">35.6</text>
+
+      <rect x="268" y="270" width="128" height="20" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="250" y="285" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,380</text>
+      <text x="404" y="285" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">22.2</text>
+
+      <rect x="268" y="296" width="300" height="20" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="250" y="311" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#44403c">64,360</text>
+      <text x="576" y="311" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">52.1</text>
+
+      <!-- taker arrow -->
+      <line x1="120" y1="352" x2="298" y2="150" stroke="#65a30d" stroke-width="6" stroke-linecap="round" marker-end="url(#ah1)"></line>
+      <text x="24" y="388" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#3f6212">TAKER · market BUY</text>
+      <text x="24" y="406" font-family="Inter, sans-serif" font-size="11.5" fill="#57534e">crosses the spread → removes liquidity → pays the taker fee + any slippage from walking the book</text>
+    </svg>
+    <div class="svg-caption">A market <b>BUY</b> (taker) crosses the spread and consumes the resting best ask (a maker). The maker collects the spread/rebate for having quoted; the taker pays the fee and eats any slippage from walking up the ladder.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 320" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Two order books compared: a calm regime with a deep tight book versus a stressed regime where makers widen and pull quotes">
+      <defs>
+        <marker id="ah2" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#3f6212"></path>
+        </marker>
+      </defs>
+      <text x="24" y="24" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#3f6212">SAME ASSET, TWO REGIMES — what a same-size taker meets</text>
+
+      <!-- panels -->
+      <rect x="16" y="40" width="372" height="252" rx="6" fill="#faf8f5" stroke="#e7e5e4"></rect>
+      <rect x="412" y="40" width="372" height="252" rx="6" fill="#faf8f5" stroke="#e7e5e4"></rect>
+      <text x="32" y="62" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="700" fill="#15803d">CALM · low adverse-selection risk</text>
+      <text x="428" y="62" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="700" fill="#b91c1c">STRESS · makers price the risk</text>
+
+      <!-- CALM ladder (price col anchor end x=130, bars x=140) -->
+      <rect x="140" y="78" width="180" height="16" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="130" y="90" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">+$30</text>
+      <rect x="140" y="98" width="162" height="16" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="130" y="110" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">best ask</text>
+      <rect x="32" y="118" width="288" height="12" rx="2" fill="#fef3c7" stroke="#fbbf24"></rect>
+      <text x="176" y="127" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#78350f">SPREAD $15</text>
+      <rect x="140" y="134" width="170" height="16" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="130" y="146" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">best bid</text>
+      <rect x="140" y="154" width="190" height="16" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="130" y="166" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">−$30</text>
+      <line x1="70" y1="208" x2="158" y2="104" stroke="#65a30d" stroke-width="5" stroke-linecap="round" marker-end="url(#ah2)"></line>
+      <text x="32" y="246" font-family="Inter, sans-serif" font-size="11" fill="#57534e">Tight spread · deep book.</text>
+      <text x="32" y="264" font-family="Inter, sans-serif" font-size="11" fill="#57534e">Taker clears 1 level, fills near mid,</text>
+      <text x="32" y="280" font-family="Inter, sans-serif" font-size="11" fill="#57534e">slippage minimal.</text>
+
+      <!-- STRESS ladder (price col anchor end x=526, bars x=536) -->
+      <rect x="536" y="74" width="60" height="14" rx="2" fill="none" stroke="#ef4444" stroke-dasharray="4 3" opacity="0.8"></rect>
+      <text x="526" y="85" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#b91c1c">pulled</text>
+      <rect x="536" y="92" width="46" height="14" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="526" y="103" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">thin ask</text>
+      <rect x="536" y="110" width="34" height="14" rx="2" fill="#ef4444" opacity="0.85"></rect>
+      <text x="526" y="121" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">best ask</text>
+      <rect x="428" y="128" width="340" height="40" rx="2" fill="#fef3c7" stroke="#fbbf24" stroke-dasharray="5 4"></rect>
+      <text x="598" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#78350f">SPREAD $120 — widened</text>
+      <rect x="536" y="172" width="38" height="14" rx="2" fill="#22c55e" opacity="0.85"></rect>
+      <text x="526" y="183" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#44403c">best bid</text>
+      <rect x="536" y="190" width="58" height="14" rx="2" fill="none" stroke="#22c55e" stroke-dasharray="4 3" opacity="0.8"></rect>
+      <text x="526" y="201" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#15803d">pulled</text>
+      <line x1="462" y1="244" x2="566" y2="116" stroke="#65a30d" stroke-width="5" stroke-linecap="round" marker-end="url(#ah2)"></line>
+      <text x="428" y="262" font-family="Inter, sans-serif" font-size="11" fill="#57534e">Makers widen &amp; pull · thin book.</text>
+      <text x="428" y="278" font-family="Inter, sans-serif" font-size="11" fill="#57534e">Same-size taker walks 2–3 levels — slippage spikes.</text>
+    </svg>
+    <div class="svg-caption">Same book, two regimes. When adverse-selection risk jumps, makers widen their quotes and pull resting size — the book thins and the <em>same</em> taker order travels far further. This is the §05 mechanism in one picture.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">When to make, when to take</div>
+    </div>
+  </div>
+
+  <div class="skim">Default to maker when you have a level and time; pay the taker fee only when being filled <i>now</i> is worth more than the spread.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Post, don't chase</h4>
+        <p>When you have a pre-planned level and patience, rest a limit at or just inside the book. You collect the spread/rebate and avoid paying for immediacy. The cost is fill uncertainty — your order may never trade, or fill only when you turn out to be wrong.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Take when immediacy &gt; spread</h4>
+        <p>If the move is happening and missing it costs more than the spread plus fee, cross it. Stops, breakouts and risk-off exits are taker events by nature — don't try to make liquidity into a cascade and watch your limit get left behind.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Read who's initiating</h4>
+        <p>Aggressive prints lifting offers = takers paying up for immediacy. Passive size soaking them up = makers holding. Persistent taker buying into a flat tape that won't lift price is makers <strong>absorbing</strong> — the tell we covered in the Absorption issue.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Watch the makers leave</h4>
+        <p>Thinning books, widening spreads and vanishing resting size mean makers are pricing adverse-selection risk higher. That's your cue to size down, widen stops, and stop assuming your limit will be there when you need to get out.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — making vs taking the same level</h5>
+    <p style="margin-bottom:10px">You want long BTC at the <strong>$64,400</strong> support shelf. Two ways in:</p>
+    <table>
+      <tr><td>Maker route</td><td>Rest a bid at 64,400. Filled at 64,400, fee ≈ 0% (small rebate). Stop 63,900 (risk $500), target 65,400 (reward $1,000) → <strong>2.0R</strong>, and you were <em>paid</em> to enter.</td></tr>
+      <tr><td>Taker route</td><td>Price already bouncing — market buy at 64,460 (paid the spread + ~0.05% fee ≈ $60 on 1 BTC). Same stop 63,900 (risk now $560), same target 65,400 (reward $940) → <strong>≈1.7R</strong>.</td></tr>
+      <tr><td>The read</td><td>The maker route is ~0.3R better here — <em>but only if you get filled</em>. If price never trades 64,400 and runs, the maker earns 0R while the taker is already long. That trade-off — better price vs certain fill — is the whole decision.</td></tr>
+    </table>
+    <div class="tf-note"><b>Timeframe fit:</b> maker logic shines on 15m–4h swing entries at pre-planned levels; taker logic dominates on 1m–5m momentum, stop-outs and exits where the fill matters more than the basis points.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC · post-FOMC deleverage</div>
+    </div>
+  </div>
+
+  <div class="skim">In today's extreme-fear, deleveraging tape, the maker/taker tell isn't in the price — it's in a book that's thinning out beneath spot.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 18 Jun 2026</div>
+    <h4>Fear tape: the makers are the ones leaving</h4>
+
+    <p>BTC sits at <strong>$64,342</strong> after surrendering the $65.7K shelf — but the maker/taker signal isn't the print, it's the structure behind it. Open interest fell <strong>$198.9M in 24h</strong> to $6.42B (a 7-day-low percentile) while funding holds <strong>negative at −2.56% annualised</strong>. That is deleveraging, not fresh conviction: positions are being closed, not opened.</p>
+
+    <p>ETH OI is worse — pinned at the <strong>0.4th percentile</strong> of its 7-day range, which today's Morning Edge called outright "market apathy." In maker/taker terms, that is passive participants stepping back. When makers thin their quotes, the book gets shallow exactly where it bites — note the long-liquidation clusters at <strong>$63,940 and $63,810</strong> flagged as "thin ice." Thin ice <em>is</em> sparse maker liquidity. A modest taker sell into that air pocket travels far further than it would in a deep book — the right-hand panel of the §03 diagram, live.</p>
+
+    <p><strong>[Read, not tick data]</strong> I'm inferring maker withdrawal from OI, funding and the liquidation map — not from a tick-by-tick spread feed — but the regime (extreme fear, Fear &amp; Greed <strong>18</strong>, contracting OI, negative funding) is the textbook environment in which makers widen and pull. → see today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a> for the full macro read.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot</td><td>$64,342 (−2.05% 1D)</td></tr>
+        <tr><td>BTC funding (ann.)</td><td>−2.56% — shorts paying</td></tr>
+        <tr><td>BTC open interest</td><td>$6.42B (−$198.9M / 24h → deleverage)</td></tr>
+        <tr><td>ETH OI percentile</td><td>0.4th (7D) — multi-week low, "apathy"</td></tr>
+        <tr><td>Fear &amp; Greed</td><td>18 — Extreme Fear</td></tr>
+        <tr><td>Long-liq "thin ice"</td><td>$63,940 / $63,810 (sparse maker bids)</td></tr>
+        <tr><td>Short-liq magnet</td><td>$66,460 (+3.31%)</td></tr>
+        <tr><td>Close to watch</td><td>16:00 UTC · 02:00 AEST</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      When funding is negative, OI is contracting and the book below is "thin ice," the absent bids are makers refusing to catch a falling knife — so every taker sell lands harder. Trade for the slippage, not the screen price.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">Classic + current + today's tape</div>
+    </div>
+  </div>
+
+  <div class="skim">One canonical microstructure voice on what makers <i>are</i>, one current order-flow desk on when they <i>leave</i>, one read straight off today's tape.</div>
+
+  <div class="quote">
+    <p>"Dealers make themselves available so that other traders can trade when they want to trade. They supply liquidity."</p>
+    <div class="attr"><b>Larry Harris</b> · <i>Trading and Exchanges: Market Microstructure for Practitioners</i> · 2003 · <a href="https://www.slideshare.net/slideshow/trading-and-exchanges-larry-harris-summary-points/29410907">summary</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Before a strong move starts, passive orders vanish… market makers cancel their limit orders to avoid being caught on the wrong side of momentum."</p>
+    <div class="attr"><b>Bookmap</b> · "Volatility Days and Liquidity Behavior" · 2026 · <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">bookmap.com</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"ETH OI near a multi-week low → market apathy."</p>
+    <div class="attr"><b>The Morning Edge</b> · NGM Capital · 18 Jun 2026 · <a href="market-briefing.html">today's briefing</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where it goes wrong</div>
+    </div>
+  </div>
+
+  <div class="skim">The biggest mistake is treating the maker rebate as free money — it isn't; non-fills and adverse fills cost far more than a basis point of rebate.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Chasing the rebate</h5>
+      <p>Posting passive purely to harvest the maker rebate ignores adverse selection: your resting orders often fill <em>because</em> informed flow chose to trade against you. A 0.01% rebate doesn't begin to cover being on the wrong side of the next move.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Assuming your limit will be there</h5>
+      <p>In stress, makers pull. The bid you're relying on to exit can evaporate before your stop even triggers. Liquidity is a fair-weather friend — plan your exits for the thin book, not the deep one you see when nothing is happening.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Confusing taker volume with conviction</h5>
+      <p>Aggressive taker buying that <em>doesn't</em> lift price isn't strength — it's makers absorbing. Read effort versus result, not raw aggression; heavy lifting that goes nowhere is supply quietly being distributed into the buyers.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Spread blindness on illiquid alts</h5>
+      <p>On thin books the spread plus slippage dwarfs the headline fee. A 0.05% taker fee is noise next to a 0.8% spread you cross on a low-cap. Always price the spread you'll <em>actually</em> pay, not just the fee schedule.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: "maker = smart, taker = dumb"</h5>
+      <p>There is nothing inherently superior about making. Makers earn small, frequent edges and carry inventory and adverse-selection risk; takers pay for certainty and directional conviction. Professionals do both, deliberately. Maker vs taker is a <strong>cost-of-immediacy decision, not a skill hierarchy</strong> — anyone selling "always be the maker" is selling a fee hack, not an edge.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">A primer, the volatility mechanism, the crypto-fee mechanics, the economics of who pays for taker flow, and the canonical text.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.binance.com/en/academy/articles/what-are-makers-and-takers">What Are Makers and Takers — Binance Academy</a>
+        <span>Clean primer on the two roles and the maker–taker fee model, with why rebates exist.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">Volatility Days and Liquidity Behavior — Bookmap</a>
+        <span>How makers widen spreads and pull resting orders when volatility spikes — the §05 mechanism in detail.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.dydx.xyz/crypto-learning/market-makers-vs-market-takers">Market Makers vs Market Takers — dYdX</a>
+        <span>Crypto-native walkthrough of the rebate/fee mechanics and how makers add market depth.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://a16z.com/breaking-down-the-payment-for-order-flow-debate/">Breaking Down the Payment for Order Flow Debate — a16z</a>
+        <span>The economics of who pays for — and profits from — retail taker order flow. Where maker/taker meets PFOF.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.slideshare.net/slideshow/trading-and-exchanges-larry-harris-summary-points/29410907">Trading and Exchanges — Larry Harris (summary)</a>
+        <span>The canonical text on liquidity supply, dealers, spreads and adverse selection. Read the chapter on bid–ask spreads.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.binance.com/en/academy/articles/what-are-makers-and-takers">Binance Academy — Makers &amp; Takers</a>
+    <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">Bookmap — Volatility &amp; Liquidity</a>
+    <a href="https://www.dydx.xyz/crypto-learning/market-makers-vs-market-takers">dYdX — Makers vs Takers</a>
+    <a href="https://a16z.com/breaking-down-the-payment-for-order-flow-debate/">a16z — PFOF Debate</a>
+    <a href="https://www.slideshare.net/slideshow/trading-and-exchanges-larry-harris-summary-points/29410907">Harris — Trading and Exchanges</a>
+    <a href="market-briefing.html">The Morning Edge — 18 Jun 2026 (NGM Capital)</a>
+  </div>
+  <div>Alpha · Issue #53 · 18 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
