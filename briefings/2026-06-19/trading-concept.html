@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidity Voids | Fri · 19 Jun 2026</title>
+<meta property="og:description" content="A liquidity void is a price band where the order book is nearly empty — flow rips through it with little resistance. On thin-book days like today's BTC, that's where gaps and traps form.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Liquidity Voids: the order-book air pockets price falls through on thin books","preview":"A liquidity void is a price band with almost no resting orders — flow rips through it with little resistance. On thin-book days like today's BTC, that's where gaps and traps form.","tags":["Liquidity","Order Flow","Microstructure"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Diagram</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Voices</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidity Voids</h1>
+  <div class="meta">
+    <span>Fri · 19 Jun 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #54</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A <strong>liquidity void</strong> is a price band where the order book is nearly empty — so a single aggressive order can travel many ticks with almost no resistance, printing a vertical move on tiny volume. They open when traders yank resting orders ahead of risk (data prints, level breaks, volatility spikes), and price almost always revisits the vacated zone once liquidity rebuilds. Practical takeaway: treat voids as <strong>caution zones, not levels</strong> — don't chase the flush through a blank book; fade the exhaustion once bids or offers re-liquify at the new extreme.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Definition &amp; first principles</div>
+    </div>
+  </div>
+
+  <div class="skim">A liquidity void — an "air pocket" — is a stretch of price with almost no resting limit orders, so flow rips through it fast and the chart prints a vertical, low-volume move.</div>
+
+  <p>Forget the chart for a second and look at the book. Price doesn't move because of candles; it moves because incoming market orders <strong>consume resting limit orders, level by level</strong>. Where each price tick holds plenty of resting size, an aggressor gets absorbed and price grinds. Where the next several ticks are nearly empty, that same aggressor <strong>walks the book</strong> — one order clears many levels at once — and price covers ground in seconds on barely any traded volume. That empty stretch is the void.</p>
+
+  <p>Bookmap's order-flow desk frames it cleanly: an air pocket forms when "there's suddenly very little or no visible buying or selling interest" at certain levels, so "even small trades can trigger huge price moves" because "there aren't enough limit orders to slow things down." The key inversion most beginners miss: a void is the <strong>absence of liquidity</strong>, not a surge of conviction. Price can scream higher or lower with nobody actually pressing size — there's simply no one on the other side.</p>
+
+  <p>This builds directly on the resting-depth picture from <a href="../2026-06-14/trading-concept.html">Liquidity Heatmaps (Issue, 14 Jun)</a> and <a href="../2026-06-05/trading-concept.html">Order-Book Resiliency (Issue, 5 Jun)</a> — a heatmap shows you the walls; a void is the dark gap <em>between</em> them, and resiliency is how fast that gap refills after price tears through it.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>Resting liquidity</b><span>passive limit orders sitting in the book, waiting</span></span>
+    <span class="pill-term"><b>DOM</b><span>Depth of Market — the live ladder of bids/asks</span></span>
+    <span class="pill-term"><b>Walk the book</b><span>one market order eating successive price levels</span></span>
+    <span class="pill-term"><b>Re-liquification</b><span>fresh orders rebuilding after a flush</span></span>
+    <span class="pill-term"><b>Air pocket</b><span>the blank zone price falls through</span></span>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    A void is the absence of a level, not a level. Price <em>accelerates through</em> it — it does not bounce off it.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How a void moves price</div>
+    </div>
+  </div>
+
+  <div class="skim">Displacement per unit of flow is inversely proportional to depth — as resting size per tick collapses toward zero, the same order size moves price exponentially further.</div>
+
+  <p>Reduce it to one relationship. The distance price travels is the aggressor's size divided by how much resting depth sits in its path:</p>
+
+  <div class="formula">
+    ΔP  ≈  <b>Q</b> / <b>D</b>
+    <div class="note">Q = aggressor (market-order) size · D = resting depth per tick in the path. Hold Q fixed and let D → 0 (a void): ΔP blows up. A tiny order in an empty book moves price like a whale would in a deep one.</div>
+  </div>
+
+  <p>This is just <a href="../2026-05-25/trading-concept.html">Kyle's Lambda (Issue, 25 May)</a> told locally: λ is the price impact per unit of order flow, and a void is a <strong>local spike in λ</strong> — a patch of the book where impact per contract is abnormally high. Same physics, zoomed in.</p>
+
+  <p><strong>How voids open — the reflexive loop.</strong> Liquidity has an inverse relationship with volatility. As price accelerates, market makers and traders <em>pull</em> resting orders to avoid being run over, which thins the book, which makes the next order move price further, which scares off more liquidity. Bookmap's volatility-day breakdown gives the life cycle in four stages:</p>
+
+  <p><strong>(1) Liquidity removal</strong> — passive orders vanish ahead of the move. <strong>(2) Spread expansion</strong> — bid/ask gaps widen as makers step back. <strong>(3) Stop cascades</strong> — a key level breaks, clustered stops fire and feed the move. <strong>(4) Re-liquification</strong> — after the flush, larger players rebuild size near the <em>new</em> extreme. That fourth stage is why price "typically revisits areas it moved through quickly": the vacated zone becomes structural support/resistance once orders refill it.</p>
+
+  <table class="cmp">
+    <thead><tr><th>&nbsp;</th><th>Wall (thick book)</th><th>Void (air pocket)</th></tr></thead>
+    <tbody>
+      <tr><td>Resting depth</td><td>Large size stacked at each tick</td><td>Near-zero across several ticks</td></tr>
+      <tr><td>Aggressor effect</td><td>Absorbed — price stalls / chops</td><td>Walks many ticks per single order</td></tr>
+      <tr><td>Volume printed</td><td>High — real size changes hands</td><td>Low — few contracts clear the range</td></tr>
+      <tr><td>Chart signature</td><td>Grind, congestion, tight range</td><td>Vertical candle, long wick, gap-like</td></tr>
+      <tr><td>How you trade it</td><td>Fade into the wall</td><td>Don't chase — fade the exhaustion after</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Diagram</div>
+      <div class="section-sub">Book → void → traversal → chart</div>
+    </div>
+  </div>
+
+  <div class="skim">Left: the order-book ladder with walls above and below and an empty band between them. Right: the same band on the chart — a vertical air-pocket candle that only stops at the next wall.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="An order book ladder with a liquidity void between two walls, and the resulting vertical price move on the chart">
+      <!-- titles -->
+      <text x="40" y="34" font-family="'JetBrains Mono',monospace" font-size="13" font-weight="700" fill="#1c1917">THE BOOK (DOM)</text>
+      <text x="560" y="34" font-family="'JetBrains Mono',monospace" font-size="13" font-weight="700" fill="#1c1917">THE CHART</text>
+
+      <!-- ===== LEFT: order book ladder ===== -->
+      <!-- price axis -->
+      <line x1="150" y1="56" x2="150" y2="392" stroke="#d6d3d1" stroke-width="1.5"/>
+
+      <!-- void band highlight (behind bars) -->
+      <rect x="40" y="176" width="430" height="118" fill="#a3e635" fill-opacity="0.14" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="5 4" rx="3"/>
+      <text x="160" y="240" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="700" fill="#3f6212">LIQUIDITY VOID</text>
+      <text x="160" y="258" font-family="'Inter',sans-serif" font-size="11" fill="#3f6212">almost no resting orders</text>
+
+      <!-- ASK walls (above) — red, extend right -->
+      <rect x="150" y="64"  width="200" height="20" fill="#ef4444" rx="2"/>
+      <text x="40" y="79"  font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">$63,440</text>
+      <text x="358" y="79" font-family="'JetBrains Mono',monospace" font-size="10" fill="#991b1b">ask wall · short-liq</text>
+
+      <rect x="150" y="100" width="92"  height="20" fill="#ef4444" fill-opacity="0.8" rx="2"/>
+      <text x="40" y="115" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">$63,100</text>
+
+      <rect x="150" y="136" width="46"  height="20" fill="#ef4444" fill-opacity="0.65" rx="2"/>
+      <text x="40" y="151" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">$62,800</text>
+      <text x="206" y="151" font-family="'Inter',sans-serif" font-size="10" fill="#78716c">← last shelf</text>
+
+      <!-- inside the void: tiny slivers -->
+      <rect x="150" y="196" width="9" height="16" fill="#a8a29e" rx="2"/>
+      <text x="40" y="208" font-family="'JetBrains Mono',monospace" font-size="11" fill="#a8a29e">$62,600</text>
+      <rect x="150" y="244" width="7" height="16" fill="#a8a29e" rx="2"/>
+      <text x="40" y="256" font-family="'JetBrains Mono',monospace" font-size="11" fill="#a8a29e">$62,400</text>
+
+      <!-- BID walls (below) — green -->
+      <rect x="150" y="300" width="210" height="20" fill="#22c55e" rx="2"/>
+      <text x="40" y="315" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">$62,210</text>
+      <text x="368" y="315" font-family="'JetBrains Mono',monospace" font-size="10" fill="#15803d">bid wall · long-liq magnet</text>
+
+      <rect x="150" y="336" width="84" height="20" fill="#22c55e" fill-opacity="0.8" rx="2"/>
+      <text x="40" y="351" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">$61,950</text>
+
+      <!-- aggressor arrow traversing the void -->
+      <defs>
+        <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#ef4444"/>
+        </marker>
+      </defs>
+      <line x1="120" y1="158" x2="120" y2="298" stroke="#ef4444" stroke-width="4" marker-end="url(#arrowRed)"/>
+      <text x="64" y="232" font-family="'Inter',sans-serif" font-size="10" fill="#991b1b" transform="rotate(-90 64 232)">market sells walk the book</text>
+
+      <!-- ===== RIGHT: chart price path ===== -->
+      <!-- frame -->
+      <line x1="560" y1="56" x2="560" y2="392" stroke="#d6d3d1" stroke-width="1.5"/>
+      <line x1="560" y1="392" x2="770" y2="392" stroke="#d6d3d1" stroke-width="1.5"/>
+
+      <!-- void band mirrored on chart -->
+      <rect x="560" y="176" width="210" height="118" fill="#a3e635" fill-opacity="0.12"/>
+      <text x="585" y="170" font-family="'JetBrains Mono',monospace" font-size="10" fill="#3f6212">air pocket</text>
+
+      <!-- price path: grind at top, vertical drop through void, stall at wall -->
+      <polyline points="568,96 596,90 612,104 630,98 648,110 666,118 678,140 690,150"
+                fill="none" stroke="#1c1917" stroke-width="2.5"/>
+      <!-- vertical air-pocket leg -->
+      <polyline points="690,150 700,176 708,232 716,294"
+                fill="none" stroke="#ef4444" stroke-width="3"/>
+      <!-- stall + reclaim at the bid wall -->
+      <polyline points="716,294 726,308 736,300 748,288 760,294"
+                fill="none" stroke="#22c55e" stroke-width="2.5"/>
+
+      <!-- wall guide lines on chart -->
+      <line x1="560" y1="150" x2="770" y2="150" stroke="#ef4444" stroke-width="1" stroke-dasharray="4 4" stroke-opacity="0.5"/>
+      <text x="652" y="146" font-family="'JetBrains Mono',monospace" font-size="9" fill="#991b1b">shelf $62,800</text>
+      <line x1="560" y1="300" x2="770" y2="300" stroke="#22c55e" stroke-width="1" stroke-dasharray="4 4" stroke-opacity="0.6"/>
+      <text x="640" y="332" font-family="'JetBrains Mono',monospace" font-size="9" fill="#15803d">magnet $62,210</text>
+
+      <!-- annotation -->
+      <text x="724" y="226" font-family="'Inter',sans-serif" font-size="10" fill="#991b1b">fast,</text>
+      <text x="724" y="240" font-family="'Inter',sans-serif" font-size="10" fill="#991b1b">low-vol</text>
+      <text x="724" y="254" font-family="'Inter',sans-serif" font-size="10" fill="#991b1b">slide</text>
+    </svg>
+    <div class="svg-caption">The void is the dark gap between the $62,800 shelf and the $62,210 magnet. On the book it's empty rungs; on the chart it's a near-vertical leg that only decelerates when the aggressor hits the next wall — then bids re-liquify and price reclaims.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trading the air pocket</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: never trade <em>inside</em> the void — trade its edges. Entries belong at the walls that bound it, not in the blank middle where slippage and reversal risk both peak.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Trade the edges, not the middle</h4>
+        <p>A void has no level to lean on. Position at the walls that bound it — the shelf it leaves or the magnet it points at — and treat everything in between as untradeable transit space.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Fade the flush, don't chase it</h4>
+        <p>The vertical candle is the worst possible entry: max slippage, max reversal risk. Wait for <strong>re-liquification</strong> — bids or offers visibly reloading at the new extreme — then position for the revisit back into the vacated zone.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Map the magnet</h4>
+        <p>A void points at the next pool of liquidity — a resting wall or a <a href="../2026-05-18/trading-concept.html">stop / liquidation cluster</a>. That pool is your target, not a round number. Price wants to reach where the orders actually are.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Size to the spread, not the chart</h4>
+        <p>When depth thins, spreads blow out. Base stops on liquidity zones rather than fixed-tick distances, and cut size so one air-pocket tick can't silently double the risk you signed up for.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — fade the air-pocket flush (illustrative)</h5>
+    <table>
+      <tr><td>Context</td><td>BTC in Wyckoff Markdown, book thin (OI 18th pct, 7d). $62,210 long-liq cluster ($118M) is the magnet below.</td></tr>
+      <tr><td>Trigger</td><td>Price loses the $62,800 shelf into a near-empty book and air-pockets ~$850 in minutes, overshooting the cluster to a $61,950 flush low on light volume.</td></tr>
+      <tr><td>Entry (fade)</td><td>Bids re-liquify; price reclaims $62,210 → long at <strong>$62,260</strong>.</td></tr>
+      <tr><td>Stop</td><td>Below the flush low → <strong>$61,900</strong> (risk ≈ $360).</td></tr>
+      <tr><td>Target</td><td>The opposing $63,440 short-liq magnet (reward ≈ $1,180).</td></tr>
+      <tr><td>R-multiple</td><td>≈ <strong>3.3 : 1</strong> — the edge is in the <em>revisit</em>, not the chase.</td></tr>
+    </table>
+    <p style="margin:10px 0 0;font-size:12.5px;color:#78716c;font-style:italic;">Levels mirror today's tape for illustration — not a live signal. The setup is conditional on bids actually reloading; if they don't, there's no trade.</p>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> voids read on the 1m–15m DOM / footprint for execution; the bias and the target magnet come from 1h–4h structure. Context HTF, trigger LTF.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC · thin book into the $62,210 magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">Today's BTC is the textbook setup: a thinned book in Markdown with a $118M stop cluster parked 1.4% below — exactly the geometry that turns an ordinary slide into an air pocket.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 19 Jun 2026</div>
+    <h4>Markdown into a hollow book</h4>
+
+    <p><strong>BTC sits at $63,057</strong>, extending the post-Warsh slide, with Fear &amp; Greed at <strong>20 (Extreme Fear)</strong> and open interest at the <strong>18th percentile (7d)</strong>. The shelf between spot and the <strong>$62,210 long-liq cluster ($118M)</strong> is the candidate air pocket: if bids below the $62,800 region stay pulled and price loses that shelf, the path to $62,210 is short on resting depth and can travel fast on thin volume.</p>
+
+    <p><strong>The honest nuance.</strong> Low OI cuts both ways — it means less <em>liquidation</em> fuel for a self-feeding cascade, which is bullish-ish for stability. But resting-depth voids are a <em>separate axis</em> from leverage: a book can be low-OI <em>and</em> hollow at the same time. When thin resting depth sits above a stop cluster, you get the gappy-slide-then-reclaim shape, not a clean grind. Don't read "low OI" as "safe book."</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>Snapshot</td><td>19 Jun 2026 · AEST session (UTC+10)</td></tr>
+        <tr><td>BTC spot</td><td>$63,057</td></tr>
+        <tr><td>Last shelf (void top)</td><td>~$62,800</td></tr>
+        <tr><td>Air-pocket target</td><td>$62,210 · long-liq $118M</td></tr>
+        <tr><td>Opposing magnet</td><td>$63,440 · short-liq $118M (+0.55%)</td></tr>
+        <tr><td>Open interest (7d)</td><td>18th pct — thin book</td></tr>
+        <tr><td>Funding (ann.)</td><td>7.41% · 100th pct — crowded longs</td></tr>
+        <tr><td>Reference void event</td><td>10 Oct 2025 — top-of-book depth −90%</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <p>For the canonical extreme, rewind to <strong>10 Oct 2025</strong> — the largest liquidation cascade on record, ~<strong>$19B</strong> wiped out as BTC printed a roughly −17% intraday leg (widely reported ≈$126K → ≈$105K). FTI's forensic put numbers on the void: top-of-book depth <strong>shrank more than 90%</strong> and spreads blew out from single-digit basis points to double-digit percentages as market makers stepped away. That's a void at industrial scale — same mechanism as a 4h shelf break, just with the safety rails removed.</p>
+
+    <div class="read">
+      <b>Read</b>
+      With resting depth thin and a $118M stop cluster parked 1.4% below, the path of least resistance is a fast, low-volume slide — not a grind. The bounce, if it comes, sets up <em>after</em> the flush on re-liquification, not into it. <a href="market-briefing.html" style="color:#bef264;">→ see today's Morning Edge</a> for the full Markdown thesis.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Voices</div>
+      <div class="section-sub">One classic, two contemporary</div>
+    </div>
+  </div>
+
+  <div class="skim">A century apart, the same idea: a void is the line of least resistance made visible — and when it opens, there is simply nothing on the other side.</div>
+
+  <div class="quote">
+    <p>"Prices, like everything else, move along the line of least resistance."</p>
+    <div class="attr"><b>Jesse Livermore</b> · <em>Reminiscences of a Stock Operator</em> (Lefèvre) · 1923</div>
+  </div>
+
+  <div class="quote">
+    <p>"Liquidity still existed, but only in small clips and at prices that did little to clear the imbalance of sellers over buyers."</p>
+    <div class="attr"><b>Volkan Kubali, FTI Consulting</b> · forensic on the 10 Oct 2025 crash · <a href="https://www.fticonsulting.com/insights/articles/crypto-crash-october-2025-leverage-met-liquidity">link</a> · 2025</div>
+  </div>
+
+  <div class="quote">
+    <p>"There are no orders left to slow the move."</p>
+    <div class="attr"><b>Bookmap</b> · order-flow education, "Volatility Days and Liquidity Behavior" · <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">link</a> · 2025</div>
+  </div>
+
+  <p style="font-size:12.5px;color:#78716c;font-style:italic;margin-top:12px;">No fabricated trader tweets here — the contemporary voices are a named forensic analyst and a published order-flow desk, both verifiable at the links above.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where traders blow up</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating the void as a level to trade against, when it's the one place on the chart with nothing to trade against.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Resting limits inside the void</h5>
+      <p>Putting a bid (or offer) in the middle of a blank zone expecting a bounce. There's no liquidity there to defend it — price accelerates through, and you're filled at the worst tick right before the reversal happens at the <em>wall</em>, not in the gap.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Chasing the breakout candle</h5>
+      <p>The vertical move looks like momentum to join. It's actually the moment of maximum slippage and maximum reversal risk — you're paying up into a vacuum that re-liquifies and snaps back. Enter on the reload, not the flush.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Reading "low OI" as "safe book"</h5>
+      <p>Low open interest means less liquidation fuel, but it says nothing about <strong>resting depth</strong>. The two are different axes. A market can be low-leverage and hollow at once — which is precisely the setup that air-pockets toward a stop cluster.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">4</div>
+    <div>
+      <h5>Honest flag: "liquidity void" as ICT chart-gap jargon</h5>
+      <p>In real microstructure, a void is observable <em>live</em> on the DOM / heatmap — a blank patch you can see before price gets there. The ICT/SMC repurposing of "liquidity void" usually means a 3-candle chart gap (essentially a fair-value gap) drawn <em>after</em> the fact and dressed up as an institutional secret. The live-book version is causal and tradeable; the retro-fitted rectangle is a description of what already happened. Use the book, not the post-hoc box.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">One primer on the mechanism, one on the four-stage life cycle, and one forensic of the void at industrial scale.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/what-happens-when-book-liquidity-disappears-how-to-trade-air-pockets">What Happens When Book Liquidity Disappears? How to Trade Air Pockets</a>
+        <span>Bookmap, Aug 2025 — the cleanest primer on what air pockets are, the five ways they form, and how to treat them as caution zones.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">Volatility Days and Liquidity Behavior: Reading Chaos Through Order Flow</a>
+        <span>Bookmap, Dec 2025 — the removal → spread → cascade → re-liquification life cycle, and why price revisits what it ran through.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.fticonsulting.com/insights/articles/crypto-crash-october-2025-leverage-met-liquidity">Crypto Crash October 2025: Leverage Met Liquidity</a>
+        <span>FTI Consulting (V. Kubali), Dec 2025 — the −90% top-of-book depth collapse and $19B cascade, dissected as a liquidity event.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Classic</div>
+      <div class="fr-body">
+        <a href="https://www.investopedia.com/articles/trading/05/011705.asp">The "line of least resistance" — Livermore's principle</a>
+        <span>Reminiscences of a Stock Operator (1923) framed price moving the path of least resistance — the original intuition behind voids.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/blog/what-happens-when-book-liquidity-disappears-how-to-trade-air-pockets">Bookmap — Air Pockets</a>
+    <a href="https://bookmap.com/blog/volatility-days-and-liquidity-behavior-how-to-read-market-chaos-through-order-flow">Bookmap — Volatility &amp; Liquidity</a>
+    <a href="https://www.fticonsulting.com/insights/articles/crypto-crash-october-2025-leverage-met-liquidity">FTI Consulting — Oct 2025 Crash</a>
+    <a href="market-briefing.html">Morning Edge — 19 Jun 2026</a>
+    <span style="display:inline-block;margin-right:12px;">Livermore, Reminiscences of a Stock Operator (Lefèvre, 1923)</span>
+  </div>
+  <div>Alpha · Issue #54 · Fri · 19 Jun 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
