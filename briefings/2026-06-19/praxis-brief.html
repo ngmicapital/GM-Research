@@ -1,0 +1,535 @@
+<!-- praxis-brief 2026-06-19 — "The Instrument Problem" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Praxis &mdash; June 19, 2026</title>
+  <meta property="og:description" content="Four wearables, one night: deep-sleep readings from 47 to 81 minutes. Goodhart's Law, the Stoics, and the discipline of calibration — knowing a metric's error bars before acting." />
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+  <style>
+    :root {
+      --bg:       #FFFFFF;
+      --surface:  #F8F9FA;
+      --border:   #E5E7EB;
+      --accent:   #DC3545;
+      --text:     #111827;
+      --muted:    #6B7280;
+      --tag-bg:   #FEE2E2;
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0d0f14;
+      --surface:  #141720;
+      --border:   #1e2330;
+      --accent:   #DC3545;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --tag-bg:   #2a1515;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 0 0 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .theme-toggle:hover { opacity: 0.8; }
+
+    .header {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FEE2E2 50%, #FDF2F2 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .header {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2a0d0d 50%, #1a0808 100%);
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(220,53,69,0.15) 0%, transparent 65%),
+                  radial-gradient(ellipse at 20% 100%, rgba(220,53,69,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-family: 'Courier New', monospace;
+      position: relative;
+    }
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .tldr-text { display: none; }
+    .header-accent-bar {
+      width: 48px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 16px auto 0;
+      position: relative;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 0;
+    }
+
+    .section { margin-bottom: 48px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+    }
+    .section-number {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card-label {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .card p:last-child { margin-bottom: 0; }
+    .card strong { color: var(--text); font-weight: 600; }
+
+    .insight-block {
+      border-left: 3px solid var(--accent);
+      background: var(--tag-bg);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 12px 0;
+    }
+    [data-theme="dark"] .insight-block {
+      background: rgba(220,53,69,0.08);
+    }
+    .insight-block p {
+      font-size: 14px;
+      color: var(--text);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .takeaway-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+    .takeaway-list li {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .takeaway-list li:last-child { border-bottom: none; }
+    .takeaway-list li::before {
+      content: '\2192';
+      color: var(--accent);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .takeaway-list strong { color: var(--text); font-weight: 600; }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .tool-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .tool-body h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .tool-body p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .tool-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .horizon-item {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .horizon-item:last-child { border-bottom: none; }
+    .horizon-tag {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .horizon-tag.finance { background: #EFF6FF; color: #1D4ED8; }
+    .horizon-tag.work { background: #F0FDF4; color: #15803D; }
+    .horizon-tag.regulation { background: #FFF7ED; color: #C2410C; }
+    .horizon-tag.ai { background: #F5F3FF; color: #7C3AED; }
+    .horizon-tag.mind { background: #FDF4FF; color: #9333EA; }
+    .horizon-tag.culture { background: #ECFDF5; color: #059669; }
+    .horizon-tag.health { background: #FFF1F2; color: #BE123C; }
+    .horizon-tag.crypto { background: #FFFBEB; color: #B45309; }
+    [data-theme="dark"] .horizon-tag.finance { background: #1e2a4a; color: #93C5FD; }
+    [data-theme="dark"] .horizon-tag.work { background: #1a2e1a; color: #86EFAC; }
+    [data-theme="dark"] .horizon-tag.regulation { background: #2a1e0a; color: #FCD34D; }
+    [data-theme="dark"] .horizon-tag.ai { background: #1e1a2e; color: #C4B5FD; }
+    [data-theme="dark"] .horizon-tag.mind { background: #1e1225; color: #D8B4FE; }
+    [data-theme="dark"] .horizon-tag.culture { background: #0a1e18; color: #6EE7B7; }
+    [data-theme="dark"] .horizon-tag.health { background: #2a0a10; color: #FDA4AF; }
+    [data-theme="dark"] .horizon-tag.crypto { background: #2a1e05; color: #FDE68A; }
+    .horizon-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .horizon-item p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .standalone-quote {
+      border-left: 3px solid var(--border);
+      padding: 12px 20px;
+      margin: 16px 0;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .standalone-quote cite {
+      display: block;
+      font-style: normal;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .footer {
+      max-width: 800px;
+      margin: 48px auto 0;
+      padding: 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-meta {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .footer-sources {
+      margin-top: 8px;
+    }
+  </style>
+  <script type="application/json" id="gm-meta">{"headline":"The instrument problem: when the metric overrides your judgment","preview":"Four wearables, one night: deep-sleep readings from 47 to 81 minutes. Goodhart's Law, the Stoics, and the discipline of calibration — knowing a metric's error bars before acting.","tags":["Epistemics","Measurement","Calibration"]}</script>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">&#127769;</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-label">Praxis &middot; Intelligence Briefing &middot; June 19, 2026</div>
+  <h1>Praxis</h1>
+  <div class="header-sub">Key Ideas &middot; Strategy &middot; Tools &middot; Horizon</div>
+  <p class="tldr-text" style="display:none">This issue: the instrument problem. Four trackers logged one night's deep sleep anywhere from 47 to 81 minutes; validation studies (SLEEP Advances 2025, JMIR 2023) show wearables nail total sleep but score sleep stages at only fair-to-moderate agreement with the clinical gold standard. With Goodhart's Law (Strathern, 1997) and the Daily Stoic on calibrating before you act on a number.</p>
+  <div class="header-accent-bar"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- SECTION 01: Key Ideas & Insights -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <span class="section-title">Key Ideas &amp; Insights</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Health &middot; Dan Go (Dango.co) &middot; "I Wore Four Trackers at Once" &middot; Jun 2026</div>
+      <h3>Four wearables, one night, four different verdicts on your sleep</h3>
+      <p>Dan Go strapped an Apple Watch, an Oura ring, a Whoop, and Google's new Fitbit Air onto his body simultaneously for a week, expecting them to roughly agree. They didn't. One morning, one device reported <strong>81 minutes of deep sleep while two others reported 47</strong> — same body, same night, a ~70% spread on exactly the number people screenshot and obsess over.</p>
+      <p>The science explains why. In a 2023 multicentre validation against polysomnography (PSG) — the clinical gold standard — eleven consumer trackers caught over 90% of true sleep epochs (high <strong>sensitivity</strong>) but managed only 29&ndash;52% <strong>specificity</strong>, and a 2025 <em>SLEEP Advances</em> trial of six wrist devices found sleep-stage agreement of just Cohen's &kappa; 0.21&ndash;0.53 ("fair to moderate"). Translation: these devices are good at "asleep vs awake" and weak at "which stage" — the deep/REM/light breakdown is largely inference, and on average the algorithms are biased toward simply calling everything light sleep.</p>
+      <div class="insight-block">
+        <p>A wearable's deep-sleep figure isn't a measurement — it's a confident-looking estimate. The danger isn't the error. It's that the error arrives formatted as a fact.</p>
+      </div>
+      <p>Go's sharper observation isn't about accuracy at all. After five years of tracking he already knew his trends, and the daily score began <em>overriding</em> his own body: "I'd wake up feeling incredible... then I'd check my recovery score, it'd say 67, and suddenly I'd feel worse than I did ten seconds earlier. The number was now arguing with my own body — and the number was winning."</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Concept &middot; Goodhart's Law &middot; Goodhart (1975) / Strathern (1997)</div>
+      <h3>When a measure becomes a target, it stops measuring</h3>
+      <p>The instrument problem has a name in economics. In 1975 the British economist Charles Goodhart observed that "any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes." The anthropologist Marilyn Strathern gave it the form everyone now quotes — <strong>"when a measure becomes a target, it ceases to be a good measure"</strong> — in a 1997 paper on audit culture in British universities.</p>
+      <p>The mechanism is simple and merciless: the moment a number carries reward or punishment, people optimise the number rather than the thing it was a proxy for. Recovery scores, OKRs, response-time SLAs, model benchmarks, engagement metrics — each begins as a useful proxy and degrades the instant it becomes the goal. (Its cousins, Campbell's Law and the Cobra Effect, describe the same trap in policy and incentives.)</p>
+      <div class="insight-block">
+        <p>Every dashboard is a proxy. Treat the proxy as the territory and you'll optimise the map while the ground erodes underneath it.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Philosophy &middot; Daily Stoic &middot; "It Is Not a Fact" &middot; Jun 17, 2026</div>
+      <h3>The inner instrument: stating a feeling like a fact</h3>
+      <p>The same failure runs inward. The Daily Stoic's June 17 note borrows a Noah Kahan lyric to name it — how quickly we "state a feeling like a fact." A first impression ("this is a disaster," "they're against me") arrives wearing the costume of objective data, and we act on it before ever checking the reading.</p>
+      <p>Epictetus's move was to insert a gap between the impression (<em>phantasia</em>) and assent: the impression is real; that it is <em>true</em> is a separate claim requiring its own evidence. The wearable's 67, the quarterly KPI, and the gut-feeling of doom all share one bug — each presents as settled fact a reading that is actually a noisy estimate.</p>
+      <div class="insight-block">
+        <p>External or internal, the bug is identical: granting authority to a number you haven't calibrated. The skill of the decade isn't collecting more readings — it's knowing the error bars on the ones you already have.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 02: Strategy & Practice -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <span class="section-title">Strategy &amp; Practice</span>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Practice &middot; Calibration over collection</div>
+      <h3>Four moves to keep judgment in the loop</h3>
+      <p>You don't fix the instrument problem by throwing out the instruments — you fix it by calibrating yourself to them. Four moves, in ascending order of leverage:</p>
+      <ul class="takeaway-list">
+        <li><strong>Ask what the number actually validates.</strong> "Total sleep" from a wearable is trustworthy; "deep-sleep minutes" is barely better than a weighted guess. Before you react to any metric, find what it has been validated to measure — most consumer and business metrics have a published accuracy somewhere. Trust the parts that are measured; discount the parts that are inferred.</li>
+        <li><strong>Trade single readings for trends.</strong> One night's 47-vs-81 spread is noise; the 30-day direction is signal. A noisy instrument is only useful in aggregate — never let a single data point override a decision it has no statistical right to make.</li>
+        <li><strong>Register your judgment before you check the score.</strong> Decide how you slept, how the quarter went, or how the meeting landed <em>first</em> — then look. When the number and your read diverge, that gap is information, not an order. (Go went wearable-free for five months and felt better, precisely because he stopped outsourcing the first read to his wrist.)</li>
+        <li><strong>Pre-mortem every target for Goodhart.</strong> The moment you set a KPI, name the behaviour it could distort and pair it with a counter-metric. If "calls per day" rises, watch "calls resolved." A target without a guardrail is a gamed target waiting to happen.</li>
+      </ul>
+      <div class="insight-block">
+        <p>Calibration is cheap and rare: a five-second pause to ask "how accurate is this reading, and what is it really a proxy for?" before you let it move you.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 03: Tools & Resources -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <span class="section-title">Tools &amp; Resources</span>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128208;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Concept</span>
+        <h4>Sensitivity vs. specificity (why precision &ne; accuracy)</h4>
+        <p>A device can be highly sensitive — catching nearly every true positive — yet poorly specific, crying wolf constantly. Wearables run &gt;90% sensitive at detecting sleep but &lt;50% specific at detecting wake. Internalise this pair and you stop confusing a confident gadget with a correct one.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128202;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Primary Source</span>
+        <h4>Wearable sleep-tracker validation studies (JMIR 2023; SLEEP Advances 2025)</h4>
+        <p>Peer-reviewed head-to-head tests of consumer trackers against polysomnography. If you act on your ring or watch's data, read these once to learn which fields to believe (total sleep) and which to treat as decoration (stage minutes).</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#127919;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Book</span>
+        <h4>Superforecasting &mdash; Philip Tetlock &amp; Dan Gardner (2015)</h4>
+        <p>The definitive manual on calibration: separating confidence from accuracy, scoring your own forecasts, and updating in small increments rather than lurches. The direct antidote to stating a feeling like a fact.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128201;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Concept</span>
+        <h4>Goodhart's Law &mdash; Strathern (1997)</h4>
+        <p>One sentence that will save you from a hundred bad metrics. The primary source is Strathern's paper "'Improving ratings': audit in the British University system" (<em>European Review</em>, 1997) — the origin of the famous "measure becomes a target" formulation.</p>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-icon">&#128240;</div>
+      <div class="tool-body">
+        <span class="tool-tag">Newsletter</span>
+        <h4>Dan Go &mdash; Dango.co / High Performance Founder</h4>
+        <p>The four-tracker experiment essay in full — a rare wearables piece that argues for <em>less</em> tracking, and the source of the line about the number arguing with your body and winning.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 04: On the Horizon -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <span class="section-title">On the Horizon</span>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag finance">Finance</span>
+      <h4>Tokenized stocks: the ticker without the ownership</h4>
+      <p>2026's tokenized-equity boom (Robinhood stock tokens, Kraken's xStocks, Backed, Dinari) is the purest instrument-problem product yet: a blockchain token that tracks a stock's <em>price</em> while conveying no shares, no votes, no legal ownership. Robinhood's own 2025 SEC disclosure states its EEA stock tokens give exposure "without conveying legal ownership or shareholder rights." Investors see a familiar ticker and assume they own the company. They own the reading — and inherit whatever tracking error and counterparty risk sit between the token and the share.</p>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag ai">AI</span>
+      <h4>AI disruption now has a balance sheet</h4>
+      <p>Tim Ferriss published his own book-sales data on June 12 under the title "Has AI Already Killed How-To Nonfiction?", arguing that how-to titles are being hollowed out <em>now</em>, not in some future year. Whatever you make of his conclusion, treat it as an instrument reading: a leading indicator most creators would rather not look at. (A concrete follow-up to the June 15 issue on where knowledge work's value migrates when answers go free.)</p>
+    </div>
+
+    <div class="horizon-item">
+      <span class="horizon-tag work">Work</span>
+      <h4>Benchmarks are the next thing to be Goodharted</h4>
+      <p>As teams adopt AI models by leaderboard score, Goodhart's Law comes for evaluations: models increasingly train toward the benchmark, so the benchmark quietly stops measuring real capability. Expect "eval contamination," private held-out test sets, and rotating questions to become the new credibility standard — and expect any single headline benchmark number to mean less, not more.</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-meta">
+    Praxis Intelligence Briefing &middot; June 19, 2026 &middot; Sydney<br>
+    This issue: the instrument problem &mdash; precision is not accuracy, and the discipline is knowing your error bars before you act.
+    <div class="footer-sources">
+      Sources: Dan Go, "I Wore an Apple Watch, Oura, Whoop, and Fitbit Air All at the Same Time," dango.co (Jun 2026) &middot;
+      "Accuracy of 11 Wearable, Nearable, and Airable Consumer Sleep Trackers: Prospective Multicenter Validation Study," <em>JMIR mHealth uHealth</em> 2023;11:e50983 (mhealth.jmir.org/2023/1/e50983) &middot;
+      "A performance validation of six commercial wrist-worn wearable sleep-tracking devices for sleep stage scoring compared to polysomnography," <em>SLEEP Advances</em> 2025;6(2):zpaf021 (academic.oup.com/sleepadvances/article/6/2/zpaf021) &middot;
+      M. Strathern, "'Improving ratings': audit in the British University system," <em>European Review</em> 5(3), 1997; C. Goodhart (1975) &middot;
+      Daily Stoic, "It Is Not a Fact" (Jun 17, 2026) &middot;
+      Robinhood, "About Stock Tokens" &amp; 2025 SEC disclosure; Kraken xStocks FAQ &middot;
+      T. Ferriss, "Has AI Already Killed How-To Nonfiction?", tim.blog (Jun 12, 2026) &middot;
+      P. Tetlock &amp; D. Gardner, <em>Superforecasting</em> (2015).
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('praxis-theme', next);
+    const btn = document.querySelector('.theme-toggle');
+    btn.innerHTML = next === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  }
+  (function() {
+    const saved = localStorage.getItem('praxis-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) btn.innerHTML = saved === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  })();
+</script>
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#DC3545;font-weight:600;"> &middot; Praxis</span></div>
+</body>
+</html>
