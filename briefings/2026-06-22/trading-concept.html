@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Stop Clusters &amp; Magnet Zones | 22 June 2026</title>
+<meta property="og:description" content="Stop-loss orders pile up at equal highs and lows, forming liquidity pools price gets pulled toward and swept before reversing. A stop is a market order waiting to fire.">
+<meta name="description" content="Stop clusters and magnet zones: how resting stop-loss orders at obvious levels become liquidity pools that pull price in, get swept, and reverse. Alpha trading-concept brief.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Stop clusters and magnet zones: the resting-order pools that pull price","preview":"Stop-loss orders pile up at equal highs and lows, forming liquidity pools price gets magnetically pulled toward and swept before reversing. Trade the reaction, not the spike.","tags":["Liquidity","Order Flow","Wyckoff"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Stop Clusters &amp; Magnet Zones</h1>
+  <div class="meta">
+    <span>Monday · 22 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #57</span>
+    <span class="pill">11 MIN READ</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Stop clusters</strong> are pools of resting stop-loss orders that build up at obvious levels — equal highs, equal lows, round numbers, prior-session extremes — and they act as <strong>magnets</strong> because triggering them converts dormant stops into forced market orders that accelerate price into the level. Mark where the crowd's stops <em>must</em> sit, expect price to be pulled there and swept, and trade the reaction <em>after</em> the pool is taken — never the breakout into it.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Resting stops as stored fuel</div>
+    </div>
+  </div>
+
+  <div class="skim">A stop cluster is a pool of resting stop orders parked at an obvious level; price is drawn to it because hitting the pool dumps a burst of forced flow into the book.</div>
+
+  <p>Price doesn't drift to round numbers and old highs by accident. It's <strong>pulled</strong> there. Underneath an obvious swing low sits a wall of stop-loss orders from every long who bought the range — and every one of those stops is a <strong>market sell waiting to fire</strong>. A dense band of them is not "support". It is stored fuel, and price burns toward fuel.</p>
+
+  <p>A <strong>stop cluster</strong> forms wherever the crowd is taught to hide its risk: just beyond <strong>equal highs</strong> and <strong>equal lows</strong>, prior-day high/low (PDH/PDL), session opens, and psychological round numbers. The herd places stops in the same handful of spots, so the orders stack into a pool. To a desk that needs to move size, that pool is the only place deep enough to fill into without paying brutal slippage — which is exactly why it gets targeted. Run the stops, harvest the liquidity, then go the other way.</p>
+
+  <p>The language to keep straight: <strong>buy-side liquidity</strong> sits <em>above</em> the market (the stops of shorts, plus breakout buy-stops) and <strong>sell-side liquidity</strong> sits <em>below</em> (the stops of longs, plus breakdown sell-stops). When price reaches a pool and the resting stops fire, that's a <strong>liquidity grab</strong> or <strong>sweep</strong>. This is the same event Wyckoff named a <em>spring</em> (below support) or <em>upthrust</em> (above resistance) ninety years ago — it builds directly on the <a href="../2026-05-31/trading-concept.html">Wyckoff Spring (Issue #37)</a> and is the resting-stop cousin of the <a href="../2026-06-14/trading-concept.html">Liquidity Heatmaps (Issue #49)</a> you already know: a heatmap maps resting <em>limit</em> orders; a stop cluster maps resting <em>stop</em> orders, which behave very differently when touched.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>Stop cluster</b><span>dense band of stop-loss orders at one level</span></div>
+    <div class="pill-term"><b>Buy-side liq.</b><span>stops/buy-stops resting above price</span></div>
+    <div class="pill-term"><b>Sell-side liq.</b><span>stops/sell-stops resting below price</span></div>
+    <div class="pill-term"><b>Magnet zone</b><span>level price gravitates toward to take liquidity</span></div>
+    <div class="pill-term"><b>Sweep / grab</b><span>spike that triggers the pool, then reverses</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    If you only remember one thing: a stop is a market order waiting to fire — a cluster of them is stored fuel, and price burns toward the fuel before it can trend.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Stops → market orders → magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">A stop is latent aggressive flow, so a cluster is a battery of it; price gets pulled in, the pool discharges, and what happens <em>next</em> tells you sweep versus breakout.</div>
+
+  <p>The mechanic runs in four beats:</p>
+
+  <p><strong>1. Accumulation.</strong> Longs buy a range and tuck stops below the lows; shorts sell it and tuck stops above the highs. The more times a level is touched without breaking, the more obvious it looks — and the heavier the pool that piles up just beyond it. Equal highs and equal lows are the densest because every touch adds a fresh layer of stops.</p>
+
+  <p><strong>2. Attraction.</strong> Price is drawn toward the larger untapped pool — it's the path of least resistance to real liquidity. This is the "magnet". Nothing mystical: large participants would rather source fills where orders are stacked than chase a thin book.</p>
+
+  <p><strong>3. Trigger cascade.</strong> Price tags the level and the resting stops convert to market orders <em>in the direction of the move</em>. Sell-stops below a low fire as market sells, accelerating the drop; that self-reinforcing burst is what makes a sweep look violent and fast — it shares its engine with the <a href="../2026-06-13/trading-concept.html">Liquidation Cascade (Issue #48)</a>.</p>
+
+  <p><strong>4. The tell.</strong> Now the only question that matters: did the cluster firing meet <em>fresh passive liquidity</em> on the other side? If absorbing bids step in and price reclaims the level — it was a <strong>sweep</strong> (reversal). If new resting liquidity stacks in the breakout direction and price holds beyond the level — it was a <strong>genuine breakout</strong> (continuation).</p>
+
+  <div class="formula">
+    <b>Pool fuel</b> ≈ Σ ( resting stop size beyond the level )<br>
+    &nbsp;&nbsp;→ bigger, more obvious level = deeper pool = stronger magnet<br><br>
+    <b>SWEEP</b> (fade it)&nbsp;&nbsp;= spike into pool · <b>no</b> new passive liq in spike direction · reclaim ≤ a few bars<br>
+    <b>BREAKOUT</b> (follow it) = spike into pool · <b>fresh</b> passive liq stacks beyond level · price holds
+    <div class="note">~80% of retail stops cluster within 1–2% beyond obvious highs/lows, which is what makes the pools targetable in the first place (Mind Math Money).</div>
+  </div>
+
+  <p>The same wick is read two opposite ways depending on what follows it. That is why the discipline is structural, not predictive:</p>
+
+  <table class="cmp">
+    <thead><tr><th>Read</th><th>Sweep (reversal)</th><th>Breakout (continuation)</th></tr></thead>
+    <tbody>
+      <tr><td>Volume</td><td>Aggressive spike, no follow-through</td><td>Sustained aggressive + passive support</td></tr>
+      <tr><td>Liquidity</td><td>No new bids/offers step in the spike direction</td><td>Resting liquidity shifts to support the break</td></tr>
+      <tr><td>Price action</td><td>Quick stall, reclaim of the level</td><td>Continued directional movement past it</td></tr>
+      <tr><td>Absorption</td><td>High volume at level, minimal progress</td><td>Volume keeps driving price forward</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Where stops rest, and how a sweep plays out</div>
+    </div>
+  </div>
+
+  <div class="skim">Diagram one maps the two pools and the sweep-and-reverse sequence; diagram two shows why a stop is a magnet — it's a market order in waiting.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomy of a stop-cluster sweep: equal highs hold buy-side stops, equal lows hold sell-side stops; price wicks below the lows to sweep the pool, then reverses">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <text x="24" y="34" font-family="'JetBrains Mono',monospace" font-size="14" font-weight="700" fill="#1c1917">Anatomy of a stop-cluster sweep</text>
+
+      <!-- Liquidity bands -->
+      <rect x="120" y="62" width="540" height="40" fill="#a3e635" opacity="0.18"/>
+      <rect x="120" y="278" width="540" height="50" fill="#ef4444" opacity="0.15"/>
+
+      <!-- Range lines -->
+      <line x1="120" y1="110" x2="660" y2="110" stroke="#3f6212" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <line x1="120" y1="270" x2="660" y2="270" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="124" y="78" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#3f6212">BUY-SIDE LIQUIDITY · shorts' stops (squeeze fuel)</text>
+      <text x="124" y="322" font-family="'JetBrains Mono',monospace" font-size="11" font-weight="700" fill="#b91c1c">SELL-SIDE LIQUIDITY · longs' stops (flush fuel)</text>
+      <text x="666" y="114" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#3f6212">equal highs</text>
+      <text x="666" y="274" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#b91c1c">equal lows</text>
+
+      <!-- Candles: wick (line) + body (rect). up=#22c55e down=#ef4444 -->
+      <!-- C1 up -->
+      <line x1="150" y1="258" x2="150" y2="210" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="140" y="215" width="20" height="35" fill="#22c55e"/>
+      <!-- C2 up -->
+      <line x1="206" y1="222" x2="206" y2="170" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="196" y="175" width="20" height="40" fill="#22c55e"/>
+      <!-- C3 up, tags equal highs (first equal high) -->
+      <line x1="262" y1="170" x2="262" y2="110" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="252" y="130" width="20" height="40" fill="#22c55e"/>
+      <!-- C4 down, pullback -->
+      <line x1="318" y1="126" x2="318" y2="198" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="308" y="130" width="20" height="55" fill="#ef4444"/>
+      <!-- C5 down, tags equal lows (first equal low) -->
+      <line x1="374" y1="182" x2="374" y2="270" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="364" y="185" width="20" height="50" fill="#ef4444"/>
+      <!-- C6 up, back to highs (second equal high) -->
+      <line x1="430" y1="235" x2="430" y2="110" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="420" y="140" width="20" height="95" fill="#22c55e"/>
+      <!-- C7 down into support -->
+      <line x1="486" y1="135" x2="486" y2="218" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="476" y="140" width="20" height="65" fill="#ef4444"/>
+      <!-- C8 THE SWEEP: small body at support, long lower wick deep into red band -->
+      <line x1="542" y1="200" x2="542" y2="315" stroke="#dc2626" stroke-width="2"/>
+      <rect x="532" y="205" width="20" height="14" fill="#ef4444"/>
+      <!-- C9 RECLAIM: strong up candle -->
+      <line x1="598" y1="220" x2="598" y2="145" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="588" y="150" width="20" height="65" fill="#22c55e"/>
+
+      <!-- Magnet pull arrow toward sell-side pool -->
+      <path d="M 540 250 q 30 35 4 56" fill="none" stroke="#78716c" stroke-width="1.4" stroke-dasharray="4 4"/>
+      <polygon points="540,308 548,300 533,299" fill="#78716c"/>
+      <text x="556" y="262" font-family="'JetBrains Mono',monospace" font-size="10" fill="#78716c">magnet pull</text>
+
+      <!-- Step annotations -->
+      <text x="300" y="100" font-family="'Inter',sans-serif" font-size="11.5" font-weight="600" fill="#3f6212">equal highs = buy-side pool builds</text>
+      <text x="300" y="258" font-family="'Inter',sans-serif" font-size="11.5" font-weight="600" fill="#b91c1c">equal lows = sell-side pool builds</text>
+      <text x="500" y="352" font-family="'Inter',sans-serif" font-size="11.5" font-weight="700" fill="#1c1917">① Sweep — wick takes the pool, stops fire as market sells</text>
+      <text x="556" y="138" font-family="'Inter',sans-serif" font-size="11.5" font-weight="700" fill="#16a34a">② Reclaim &amp; reverse = spring</text>
+
+      <!-- baseline -->
+      <line x1="120" y1="384" x2="660" y2="384" stroke="#e7e5e4" stroke-width="1"/>
+      <text x="120" y="404" font-family="'JetBrains Mono',monospace" font-size="10" fill="#a8a29e">time →</text>
+      <text x="600" y="404" font-family="'JetBrains Mono',monospace" font-size="10" fill="#a8a29e">the pool that gets taken first becomes the floor</text>
+    </svg>
+    <div class="svg-caption">Stops pile up beyond the range edges. Price is pulled <em>down</em> to the deeper sell-side pool, wicks through to trigger it, finds no follow-through, and reverses — a textbook sweep / Wyckoff spring.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 320" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before and after: resting stop-sell orders sit dormant below the low, then convert to market sells when price touches the level, accelerating the drop">
+      <rect x="0" y="0" width="800" height="320" fill="#ffffff"/>
+      <text x="24" y="32" font-family="'JetBrains Mono',monospace" font-size="14" font-weight="700" fill="#1c1917">Why it's a magnet: a stop is a market order waiting to fire</text>
+
+      <!-- LEFT: BEFORE -->
+      <text x="60" y="70" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#3f6212">BEFORE · stops resting (dormant)</text>
+      <!-- last price line -->
+      <line x1="60" y1="92" x2="300" y2="92" stroke="#16a34a" stroke-width="2"/>
+      <text x="304" y="96" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#16a34a">last 63,800</text>
+      <!-- the level -->
+      <line x1="60" y1="150" x2="300" y2="150" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="304" y="154" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#b91c1c">low 63,650</text>
+      <!-- dormant stops (dashed, faded) -->
+      <rect x="78" y="168" width="150" height="16" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.8"/>
+      <rect x="78" y="190" width="120" height="16" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.8"/>
+      <rect x="78" y="212" width="170" height="16" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.8"/>
+      <rect x="78" y="234" width="100" height="16" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.8"/>
+      <text x="60" y="276" font-family="'Inter',sans-serif" font-size="11" fill="#78716c">Stop-sells are not in the visible book —</text>
+      <text x="60" y="292" font-family="'Inter',sans-serif" font-size="11" fill="#78716c">they're latent, invisible until price touches 63,650.</text>
+
+      <!-- CENTER arrow -->
+      <line x1="350" y1="170" x2="450" y2="170" stroke="#1c1917" stroke-width="2"/>
+      <polygon points="450,170 438,162 438,178" fill="#1c1917"/>
+      <text x="352" y="158" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1c1917">price tags</text>
+      <text x="352" y="190" font-family="'JetBrains Mono',monospace" font-size="10" fill="#1c1917">the cluster</text>
+
+      <!-- RIGHT: AFTER -->
+      <text x="500" y="70" font-family="'JetBrains Mono',monospace" font-size="11.5" font-weight="700" fill="#b91c1c">AFTER · 63,650 tagged → cascade</text>
+      <!-- the level -->
+      <line x1="500" y1="150" x2="740" y2="150" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="500" y="144" font-family="'JetBrains Mono',monospace" font-size="10.5" fill="#b91c1c">63,650 broken</text>
+      <!-- firing stops as solid red market-sell arrows -->
+      <line x1="560" y1="168" x2="560" y2="246" stroke="#ef4444" stroke-width="3"/>
+      <polygon points="560,250 552,238 568,238" fill="#ef4444"/>
+      <line x1="600" y1="168" x2="600" y2="246" stroke="#ef4444" stroke-width="3"/>
+      <polygon points="600,250 592,238 608,238" fill="#ef4444"/>
+      <line x1="640" y1="168" x2="640" y2="246" stroke="#ef4444" stroke-width="3"/>
+      <polygon points="640,250 632,238 648,238" fill="#ef4444"/>
+      <text x="500" y="276" font-family="'Inter',sans-serif" font-size="11" font-weight="600" fill="#b91c1c">Each stop fires as a MARKET SELL —</text>
+      <text x="500" y="292" font-family="'Inter',sans-serif" font-size="11" fill="#78716c">forced flow drives price down, feeding the next stop.</text>
+    </svg>
+    <div class="svg-caption">A resting stop is invisible until touched, then it discharges as aggressive flow — which is precisely why a dense cluster pulls price toward it and accelerates once tagged.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Mark the pools, let price come, fade the sweep</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: mark the pools first, let price come to them, and trade the reaction <em>after</em> the sweep — never chase the move into the cluster.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num"><em>1</em></div>
+      <div>
+        <h4>Map the pools before the session</h4>
+        <p>Mark equal highs/lows, PDH/PDL, the weekly open, and round numbers. Those are the only places deep stop liquidity can sit. If you can see the obvious level, so can every desk that needs to fill into it.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>2</em></div>
+      <div>
+        <h4>Wait for the sweep, not the approach</h4>
+        <p>The signal is the failed-breakout wick — a sharp thrust through the pool with no follow-through. The spike into the level is the bait; you want the reaction out of it. "Trade the reaction, not the initial spike."</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>3</em></div>
+      <div>
+        <h4>Confirm with flow, not the wick alone</h4>
+        <p>Demand a reclaim of the level plus evidence the spike was absorbed — stalling delta, a CVD divergence, no fresh passive liquidity in the spike direction. A wick with continuation is a breakout, not a sweep.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>4</em></div>
+      <div>
+        <h4>Target the opposite pool</h4>
+        <p>Liquidity runs to liquidity. Once the sell-side pool is taken and price reclaims, the next magnet is the buy-side pool above — that's your objective, not an arbitrary R multiple.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example · BTC spring long off the sell-side pool</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC ranges 63.6K–64.6K; equal lows park sell-side stops just under 63,650, equal highs / a 330M short-squeeze pool sit at 64,550.</td></tr>
+      <tr><td>Trigger</td><td>Wick to <strong>62,900</strong> sweeps the sell-side pool, no follow-through, price <strong>reclaims 63,650</strong> within two 15m bars.</td></tr>
+      <tr><td>Entry</td><td>Long <strong>63,720</strong> on the reclaim close.</td></tr>
+      <tr><td>Stop</td><td><strong>62,800</strong> — below the sweep wick (where you'd be wrong, not where the crowd hides).</td></tr>
+      <tr><td>Target</td><td><strong>64,550</strong> buy-side pool (the opposite magnet).</td></tr>
+      <tr><td>R math</td><td>Risk 920 pts, reward 830 pts ≈ <strong>0.9R</strong> to first pool; trail beyond 64,550 if the squeeze pool ignites for the 65K+ extension.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 5m–1h execution; mark the pools off 4h / 1D swing structure. The sweep itself usually prints on a single lower-timeframe wick — be at the screen, or work a reclaim limit.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC pinned between two stop pools</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is wedged between a sell-side flush pool at 63,650 and a 330M short-squeeze pool at 64,550 — the sub-63K recovery already swept one side.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 22 June 2026</div>
+    <h4>Bitcoin is coiling on top of a freshly-swept sell-side pool</h4>
+
+    <p>This is a stop-cluster textbook case playing out in real time. Per this morning's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>, BTC is in <strong>Wyckoff Phase C — spring territory</strong>, holding $64K for 48+ hours <strong>after recovering from sub-$63K lows</strong>. That recovery <em>is</em> the sweep: price dipped below the obvious range low, took the sell-side pool of longs' stops, found no follow-through, and reclaimed. The brief's own key levels name both pools precisely — <strong>$63,650 as the flush</strong> (sell-side) and <strong>$64,550 as the squeeze</strong> (buy-side).</p>
+
+    <p>What loads the next move: funding sits at <strong>6.75% annualized — the 93rd percentile</strong> of its 7-day range. Overcrowded longs paying heavy carry means a thick band of <em>their</em> stops is parked just under 63,650. Above, ~<strong>$330M of short liquidations</strong> are stacked at 64,550 — a buy-side pool that becomes a magnet the moment price probes it. Price is literally suspended between two batteries of forced flow.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot (live)</td><td>$63,697 &nbsp;·&nbsp; −0.23% 24h (CoinGecko)</td></tr>
+        <tr><td>Morning Edge snapshot</td><td>$64,033 &nbsp;·&nbsp; +0.35% 1D</td></tr>
+        <tr><td>Sell-side pool (flush)</td><td>$63,650 &nbsp;— longs' stops below the range low</td></tr>
+        <tr><td>Buy-side pool (squeeze)</td><td>$64,550 &nbsp;— ~$330M short liqs, squeeze trigger</td></tr>
+        <tr><td>Already swept</td><td>sub-$63K low → reclaimed (the spring)</td></tr>
+        <tr><td>Funding (annualized)</td><td>6.75% &nbsp;·&nbsp; 93rd percentile (longs pay)</td></tr>
+        <tr><td>Fear &amp; Greed</td><td>22 — Extreme Fear</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      One pool is already taken; the tape is now a coin between the two remaining magnets. A clean reclaim that holds above 63,650 argues the spring is working and 64,550 is the target — but 93rd-percentile funding means a second flush to re-sweep the lows is just as live. Trade the reaction at whichever pool fires next, not the drift between them. → see <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The shakeout, named across a century</div>
+    </div>
+  </div>
+
+  <div class="skim">From Wyckoff's Composite Man to today's order-flow desks, the same event keeps getting renamed — the voices below show the through-line.</div>
+
+  <div class="quote">
+    <p>"All the fluctuations in the market and in all the various stocks should be studied as if they were the result of one man's operations. Let us call him the Composite Man."</p>
+    <div class="attr"><b>Richard D. Wyckoff</b> · The Richard D. Wyckoff Method of Trading · c. 1931</div>
+  </div>
+
+  <div class="quote">
+    <p>"The Spring, the 'Turtle Soup' and the Liquidity Sweep are exactly the same phenomenon: a sweep into a zone where stops accumulate, followed by a reversal."</p>
+    <div class="attr"><b>Rubén Villahermosa</b> · Smart Money Concepts, tradingwyckoff.com · <a href="https://tradingwyckoff.com/en/smart-money-concepts/">link</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"After the spike, the price doesn't continue. You won't see new bids or offers stepping in. Trade the reaction, not the initial spike."</p>
+    <div class="attr"><b>Bookmap</b> · Order-Flow Education, "Stop Hunt or Just Noise?" · 2026 · <a href="https://bookmap.com/blog/stop-hunt-or-just-noise-how-to-read-the-real-intent-behind-a-move">link</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">How the pool eats you instead</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: buying the breakout into the cluster — at that price, you are the liquidity being harvested.</div>
+
+  <div class="trap">
+    <div class="num"><em>1</em></div>
+    <div>
+      <h5>Chasing the break into the pool</h5>
+      <p>Buying the thrust through equal highs (or shorting the break of equal lows) puts you in exactly where smart money needs counterparties. If there's no fresh passive liquidity backing the break, you bought the bait. Wait for the reaction.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num"><em>2</em></div>
+    <div>
+      <h5>Stops on the obvious level</h5>
+      <p>A stop sitting one tick under the swing low <em>is</em> the cluster. You are not hiding — you are donating. Place risk beyond where the sweep would invalidate the idea (past the wick), or size down and use a structural stop, not a herd stop.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num"><em>3</em></div>
+    <div>
+      <h5>Treating every wick as a sweep</h5>
+      <p>A long wick only counts once price reclaims the level and the move shows no follow-through. A wick with continuation and stacking liquidity is a genuine breakout. Confirm the reclaim before you fade — otherwise you're top/bottom-ticking a trend.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num"><em>4</em></div>
+    <div>
+      <h5>Assuming the pool always reverses</h5>
+      <p>Pools also fuel continuation. When the sweep meets fresh passive liquidity in the breakout direction and price holds, the cluster was the ignition for a trend, not a reversal. The tell is the order flow after the trigger — not your bias going in.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num"><em>5</em></div>
+    <div>
+      <h5>Overhyped: "the market is fully manipulated"</h5>
+      <p>The SMC repackaging of this — equal highs and lows as "liquidity", the implication that every move is engineered against you — is mostly rebranding. The mechanic is real and old: Wyckoff's spring/upthrust, Raschke's Turtle Soup, the failed breakout. The mystique and the conspiracy framing are not. Stops cluster at obvious levels because traders are predictable, not because a cabal is hunting <em>you</em> specifically. Trade the structure; skip the lore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Sweeps, stop hunts, and how to tell them apart</div>
+    </div>
+  </div>
+
+  <div class="skim">Start with the order-flow read on intent, then the SMC how-to, then the sweep-vs-hunt distinction.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/stop-hunt-or-just-noise-how-to-read-the-real-intent-behind-a-move">Stop Hunt or Just Noise? How to Read the Real Intent Behind a Move</a>
+        <span>Bookmap — the order-flow signature that separates a true sweep (absorption + reclaim) from a real breakout.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.mindmathmoney.com/articles/liquidity-sweep-trading-strategy-how-smart-money-hunts-stop-losses-for-profit">Liquidity Sweep Trading Strategy: How Smart Money Hunts Stop Losses</a>
+        <span>Mind Math Money — where pools form, why ~80% of stops cluster within 1–2% of obvious levels, and how to fade the grab.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.zeiierman.com/blog/liquidity-sweeps-vs-stop-hunts">Liquidity Sweeps vs Stop Hunts: Differences with Examples</a>
+        <span>Zeiierman — clean breakdown of the two terms traders conflate, with annotated chart examples.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Chart</div>
+      <div class="fr-body">
+        <a href="https://www.tradingview.com/chart/ETHUSDT/ER33YYKI-Understanding-Liquidity-Where-Big-Players-Hunt-Stops/">Understanding Liquidity: Where Big Players Hunt Stops</a>
+        <span>BigBeluga on TradingView — a marked-up ETH map of buy-side / sell-side pools and where price gets pulled.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://bookmap.com/blog/stop-hunt-or-just-noise-how-to-read-the-real-intent-behind-a-move">Bookmap</a>
+    <a href="https://www.mindmathmoney.com/articles/liquidity-sweep-trading-strategy-how-smart-money-hunts-stop-losses-for-profit">Mind Math Money</a>
+    <a href="https://www.zeiierman.com/blog/liquidity-sweeps-vs-stop-hunts">Zeiierman</a>
+    <a href="https://tradingwyckoff.com/en/smart-money-concepts/">tradingwyckoff.com (SMC)</a>
+    <a href="https://www.tradingview.com/chart/ETHUSDT/ER33YYKI-Understanding-Liquidity-Where-Big-Players-Hunt-Stops/">TradingView · BigBeluga</a>
+    <a href="market-briefing.html">GM Research — Morning Edge, 22 Jun 2026</a>
+    <a href="https://www.coingecko.com/en/coins/bitcoin">CoinGecko (live BTC)</a>
+  </div>
+  <div>Alpha · Issue #57 · 22 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
