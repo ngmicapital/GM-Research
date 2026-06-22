@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Orderbook Depth & Spread | Mon 23 June 2026</title>
+<meta property="og:description" content="Order book depth is the resting size stacked at each price; the spread is the cost of immediacy. Read depth asymmetry and spread regime, not the mid — price travels toward the thinner side.">
+<meta name="description" content="Order book depth is the resting size stacked at each price; the spread is the cost of immediacy. Read depth asymmetry and spread regime, not the mid.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+ul{margin:0 0 16px 20px}
+li{margin-bottom:8px;color:var(--ink-2)}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+.xlink{background:var(--accent-dim);border:1px dashed var(--accent);border-radius:4px;padding:11px 16px;margin:16px 0;font-size:13px;color:var(--ink-2)}
+.xlink b{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);display:block;margin-bottom:3px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Orderbook Depth & Spread: the cost of immediacy and the map of what price must absorb","preview":"Depth is the resting size stacked at each price; the spread is the cost of immediacy. Read depth asymmetry and spread regime, not the mid — price travels toward the thinner side.","tags":["Order Flow","Liquidity","DOM"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Orderbook Depth & Spread</h1>
+  <div class="meta">
+    <span>Monday 23 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #58</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Order book depth is the resting limit-order size stacked at each price level; the spread is the gap between best bid and best ask</strong> — together they price the cost of immediacy and reveal what the market can and can't absorb. Read depth asymmetry and spread regime, not just the mid: a tight spread sitting over a thin book is a trap, and the side with thinner resting size is usually the way price travels next.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Depth, spread, and the price of immediacy</div>
+    </div>
+  </div>
+
+  <div class="skim">Depth is the resting limit-order size stacked at each price level; the spread is the gap between best bid and best ask — the live price of trading right now.</div>
+
+  <p>The top of book is one number on each side: the best bid, the best ask, the last print. That is where trading happens <em>now</em>. <strong>Depth of Market (DOM)</strong> — the Level 2 ladder — is everything behind that number: how much size rests at every price below the bid and above the ask. The <strong>spread</strong> is the width at the very top of that ladder. The mid-price tells you where the last trade fired; depth and spread tell you what the market can absorb and what immediacy costs. That gap is the edge — the price chart is a result, the book is the cause.</p>
+
+  <p>The spread is not arbitrary. It is the market maker's quoted price for providing immediacy, and microstructure research decomposes it into three costs: <strong>order-processing</strong>, <strong>inventory risk</strong> (the cost of holding a position the maker didn't want), and <strong>adverse selection</strong> (the risk of trading against someone better informed). When uncertainty rises, the adverse-selection component blows out and makers widen the quote — frequently <em>before</em> price moves at all. A spread that widens on no move is information, not noise.</p>
+
+  <p>Depth and spread are two readings of one thing. A 2021 study of intraday limit-order books documents an <strong>inverse relation between depth and spread</strong> — when the book is deep, the spread is tight; when depth thins out, makers widen the spread to be paid for the rising risk. So a widening spread over a thinning book isn't two signals; it's the same signal twice: <strong>liquidity is leaving</strong>.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>TOP OF BOOK</b><span>best bid / best ask — Level 1</span></span>
+    <span class="pill-term"><b>DOM / L2</b><span>full ladder of resting size per price</span></span>
+    <span class="pill-term"><b>SPREAD</b><span>best ask − best bid; cost of immediacy</span></span>
+    <span class="pill-term"><b>DEPTH</b><span>cumulative resting size within a band</span></span>
+    <span class="pill-term"><b>MID</b><span>(bid + ask) / 2 — a reference, not a fill</span></span>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    If you only remember one thing: the spread is what immediacy <em>costs</em> and depth is what the market can <em>absorb</em>. The top-of-book price is a snapshot; the book is the map of what price has to chew through next.
+  </div>
+
+  <div class="xlink">
+    <b>Builds on</b>
+    Everything covered this month — bid/ask imbalance, absorption, sweep orders, liquidity voids, order-book resiliency, stop-cluster magnets — is a <em>behaviour</em> of this one structure. Depth and spread are the substrate; the rest is what aggressive flow does to it.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How depth and spread generate signal</div>
+    </div>
+  </div>
+
+  <div class="skim">Aggressive market orders eat depth and widen the spread; passive limit orders refill depth and tighten it — the tug between them is the signal.</div>
+
+  <p><strong>1. The book is a queue.</strong> Limit orders rest at each price under price-time priority. A market buy lifts the best ask and consumes that level's size. If the order is larger than the level, it walks up to the next ask, and the next — each step is worse fill. That walk <em>is</em> slippage, and for the moment it takes makers to react, the spread widens.</p>
+
+  <p><strong>2. Refill or retreat.</strong> Right after a sweep, makers either reload the consumed level — a <em>resilient</em> book, where the spread snaps back in milliseconds — or they step away. A book that doesn't refill is a thin book, and the spread stays wide while price gaps to the next pocket of size. Resiliency is the recovery half of this same mechanic.</p>
+
+  <p><strong>3. Asymmetry is the read.</strong> Sum the resting size on each side within a band (say ±0.5% of mid). The <em>thinner</em> side is the path of least resistance — price travels toward less resting size, not more. This is the single most useful thing the book tells you, and it's invisible if you only watch the mid.</p>
+
+  <div class="formula">
+    <b>Quoted spread</b> = Ask<sub>best</sub> − Bid<sub>best</sub><br>
+    <b>Relative spread</b> = (Spread / Mid) × 10,000 &nbsp;→&nbsp; basis points<br>
+    <b>Depth imbalance (band)</b> = (ΣBidSize − ΣAskSize) / (ΣBidSize + ΣAskSize) &nbsp;→&nbsp; +1 bid-heavy … −1 ask-heavy<br>
+    <b>Microprice</b> = (Bid×AskSize + Ask×BidSize) / (BidSize + AskSize)
+    <div class="note">The microprice leans toward the side with <em>less</em> size — it's a depth-weighted mid that front-runs the naive (bid+ask)/2, because the thin side is where the next print is likeliest.</div>
+  </div>
+
+  <p>The cost you actually pay is rarely half the quoted spread. Small orders kiss the top of book; size walks it. That's why the spread you <em>see</em> and the spread you <em>pay</em> are different numbers:</p>
+
+  <table class="cmp">
+    <thead><tr><th>&nbsp;</th><th>Quoted Spread</th><th>Effective Spread</th></tr></thead>
+    <tbody>
+      <tr><td>Measures</td><td>Best ask − best bid (top of book only)</td><td>2 × |fill price − mid| — what you actually paid</td></tr>
+      <tr><td>Diverges when</td><td>Your order ≤ top-of-book size</td><td>Order walks the book, or the book is thin</td></tr>
+      <tr><td>Tells you</td><td>Nominal cost of immediacy</td><td>True cost including impact and slippage</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">An order-book ladder — depth, spread, asymmetry</div>
+    </div>
+  </div>
+
+  <div class="skim">One diagram: the DOM ladder with bid/ask depth bars, the spread at the top, and the thin side price wants to travel toward.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 460" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Order book depth ladder showing bids, asks, spread and depth asymmetry">
+      <rect x="0" y="0" width="800" height="460" fill="#ffffff"/>
+      <text x="400" y="30" text-anchor="middle" font-family="'DM Serif Display',serif" font-size="20" fill="#1c1917">The Book — Depth, Spread &amp; Asymmetry</text>
+      <text x="400" y="50" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#78716c">resting size at each price · bars scale with size · BTC/USDT illustrative</text>
+
+      <!-- column guides -->
+      <line x1="400" y1="70" x2="400" y2="430" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="150" y="86" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#3f6212" font-weight="700">BID DEPTH ←</text>
+      <text x="650" y="86" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#991b1b" font-weight="700">→ ASK DEPTH</text>
+
+      <!-- ASKS (above mid) — bars grow right from x=410, red -->
+      <!-- ask 64,500 size 18 -->
+      <rect x="410" y="100" width="150" height="20" fill="#ef4444" opacity="0.85"/>
+      <text x="566" y="115" font-family="'JetBrains Mono',monospace" font-size="11" fill="#991b1b">18.0</text>
+      <text x="392" y="115" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">64,500</text>
+      <!-- ask 64,450 size 6 (THIN VOID) -->
+      <rect x="410" y="128" width="52" height="20" fill="#ef4444" opacity="0.4"/>
+      <rect x="408" y="126" width="58" height="24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4 3"/>
+      <text x="472" y="143" font-family="'JetBrains Mono',monospace" font-size="11" fill="#b45309" font-weight="700">6.0 ◂ thin</text>
+      <text x="392" y="143" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">64,450</text>
+      <!-- best ask 64,420 size 12 -->
+      <rect x="410" y="156" width="100" height="20" fill="#ef4444"/>
+      <text x="516" y="171" font-family="'JetBrains Mono',monospace" font-size="11" fill="#991b1b">12.0</text>
+      <text x="392" y="171" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1c1917" font-weight="700">64,420 · best ask</text>
+
+      <!-- SPREAD band -->
+      <rect x="120" y="180" width="560" height="30" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="400" y="200" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" fill="#78350f" font-weight="700">◄ SPREAD = $2  (≈0.3 bps) · cost of immediacy ►</text>
+
+      <!-- BIDS (below mid) — bars grow left from x=390, green -->
+      <!-- best bid 64,418 size 14 -->
+      <rect x="280" y="214" width="110" height="20" fill="#22c55e"/>
+      <text x="274" y="229" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#15803d">14.0</text>
+      <text x="408" y="229" font-family="'JetBrains Mono',monospace" font-size="11" fill="#1c1917" font-weight="700">64,418 · best bid</text>
+      <!-- bid 64,380 size 22 -->
+      <rect x="208" y="242" width="182" height="20" fill="#22c55e" opacity="0.9"/>
+      <text x="202" y="257" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#15803d">22.0</text>
+      <text x="408" y="257" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">64,380</text>
+      <!-- bid 64,350 size 40 (WALL) -->
+      <rect x="80" y="270" width="310" height="20" fill="#16a34a"/>
+      <text x="74" y="285" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="#15803d" font-weight="700">40.0 ◂ wall</text>
+      <text x="408" y="285" font-family="'JetBrains Mono',monospace" font-size="11" fill="#44403c">64,350</text>
+
+      <!-- deep magnet 63,610 -->
+      <line x1="120" y1="320" x2="680" y2="320" stroke="#a3e635" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="408" y="315" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212" font-weight="700">63,610 · deep liquidation magnet ↓ ($109.9M)</text>
+
+      <!-- asymmetry summary boxes -->
+      <rect x="60" y="350" width="300" height="64" rx="4" fill="#f7fee7" stroke="#a3e635" stroke-width="1"/>
+      <text x="210" y="372" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212" font-weight="700">ΣBID (±0.5%) = 76 BTC</text>
+      <text x="210" y="392" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212">near-book is bid-heavy / supported</text>
+      <text x="210" y="408" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#78716c">depth imbalance DI = +0.36</text>
+
+      <rect x="440" y="350" width="300" height="64" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+      <text x="590" y="372" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#991b1b" font-weight="700">ΣASK (±0.5%) = 36 BTC</text>
+      <text x="590" y="392" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#991b1b">thin asks above → least resistance ↑</text>
+      <text x="590" y="408" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#78716c">but the magnet sits below</text>
+    </svg>
+    <div class="svg-caption">The mid-price ($64,419) hides the story: the near-book is bid-heavy with thin asks above (DI = +0.36, leans up), yet a deep liquidation magnet rests at $63,610 below. Asymmetry, not the mid, frames the flush-then-recover path.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 260" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Spread regime over a coil, sweep and refill">
+      <rect x="0" y="0" width="800" height="260" fill="#ffffff"/>
+      <text x="400" y="28" text-anchor="middle" font-family="'DM Serif Display',serif" font-size="18" fill="#1c1917">Spread Regime: the spread leads the move</text>
+
+      <!-- phase dividers -->
+      <line x1="300" y1="50" x2="300" y2="220" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="470" y1="50" x2="470" y2="220" stroke="#e7e5e4" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="180" y="66" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212" font-weight="700">COIL</text>
+      <text x="385" y="66" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#991b1b" font-weight="700">SWEEP / FLUSH</text>
+      <text x="600" y="66" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="#3f6212" font-weight="700">REFILL</text>
+
+      <!-- spread band (top edge - bottom edge): narrow, balloons, narrows -->
+      <path d="M 80 130 L 300 132 L 360 100 L 410 96 L 470 128 L 720 134" fill="none" stroke="#fbbf24" stroke-width="2"/>
+      <path d="M 80 142 L 300 140 L 360 178 L 410 182 L 470 150 L 720 144" fill="none" stroke="#fbbf24" stroke-width="2"/>
+      <path d="M 80 130 L 300 132 L 360 100 L 410 96 L 470 128 L 720 134 L 720 144 L 470 150 L 410 182 L 360 178 L 300 140 L 80 142 Z" fill="#fef3c7" opacity="0.6"/>
+      <text x="120" y="120" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78350f">tight spread</text>
+      <text x="360" y="92" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78350f" font-weight="700">spread blows out</text>
+      <text x="650" y="125" font-family="'JetBrains Mono',monospace" font-size="9" fill="#78350f">snaps back</text>
+
+      <!-- price line -->
+      <path d="M 80 165 L 300 165 L 360 205 L 410 200 L 470 150 L 720 130" fill="none" stroke="#1c1917" stroke-width="2.5"/>
+      <circle cx="385" cy="208" r="4" fill="#ef4444"/>
+      <text x="385" y="230" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#991b1b">stops swept</text>
+      <text x="720" y="120" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="9" fill="#15803d">recovery</text>
+      <text x="92" y="180" font-family="'JetBrains Mono',monospace" font-size="9" fill="#44403c">price (black)</text>
+    </svg>
+    <div class="svg-caption">In a coil the spread is tight and stable. As aggressive flow sweeps the thin side, the spread balloons <em>before</em> price resolves — then snaps back as makers refill. Watch the spread to anticipate the move, not confirm it.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trade the book, not the mid</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: trade toward thin depth and treat a widening spread as a stand-aside signal — never add size into a blowing-out spread.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Read asymmetry, not absolutes</h4>
+        <p>Sum cumulative depth within ±0.5% on each side; the lighter side is the likely path. "There's a huge bid wall" means nothing alone — only net depth imbalance versus the other side is the read.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Spread regime is risk regime</h4>
+        <p>Tight, stable spread = orderly, size-friendly. A spread widening with no price move means makers are pulling and adverse selection is rising — cut size or stand aside. Don't market in.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Size to executable depth</h4>
+        <p>Before sending a market order, sum the resting size you'd actually consume to your price — that's your real slippage, the effective spread. In a thin book, use limits or scale in.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>Pair depth with flow</h4>
+        <p>Static depth lies — it can be spoofed or pulled. Confirm with the tape: depth that holds while aggressive flow hits it is absorption; depth that vanishes before contact is a spoof.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked Example — today's BTC coil  [Analyst Opinion]</h5>
+    <table>
+      <tr><td>Context</td><td>BTC coiling at <strong>$64,381</strong>, range $63,232–$65,469. Perp spread tight (~$1–3). Near-book bid-heavy (DI ≈ +0.36); asks thin above; deep long-liq magnet at $63,610.</td></tr>
+      <tr><td>Read</td><td>Tight spread + supported near-book looks bullish, but the real liquidity below is the $63,610 cluster where stops rest. Classic spring set-up: flush the magnet, then mark up.</td></tr>
+      <tr><td>Plan</td><td>Don't chase the coil mid. Bid the flush <em>into</em> $63,610; risk below the cluster low; target the $65,690 short-liq cluster above.</td></tr>
+      <tr><td>Entry / Stop / Target</td><td>Enter $63,650 · stop $63,350 (below cluster) · target $65,690</td></tr>
+      <tr><td>R math</td><td>Risk $300 · reward $2,040 → <strong>≈ 6.8R</strong> on the swing leg if the spring holds</td></tr>
+    </table>
+    <div class="tf-note"><b>Timeframe fit:</b> depth + spread read is 1m–15m execution; the coil structure is the 4h bias. &nbsp;→ see today's <a href="market-briefing.html">Morning Edge</a>.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Depth &amp; spread on today's $64K coil</div>
+    </div>
+  </div>
+
+  <div class="skim">Where the concept shows up right now: a tight-spread, thick-near-book coil whose real liquidity sits at the cluster edges.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · Mon 23 Jun 2026</div>
+    <h4>The tight spread is hiding the real liquidity geography</h4>
+
+    <p>It's <strong>day two of the same coil</strong>. BTC sits at <strong>$64,381</strong> inside a $63,232–$65,469 range, with <strong>Extreme Fear (23)</strong> and a hawkish FOMC dot plot (10Y at 4.508%) capping the upside. The perp spread is tight and the visible book is thick near mid — textbook coil microstructure. Calm, orderly, size-friendly.</p>
+
+    <p>But the depth that <em>matters</em> sits at the edges. A <strong>$63,610 long-liquidation cluster</strong> ($109.9M notional, 1.24% below) sits under the coil; a <strong>$65,690 short-liquidation cluster</strong> sits above. Those clusters are depth magnets — resting liquidations behave like a thick passive level that price gets pulled into and through. The tight mid-spread tells you nothing about them; the asymmetry does.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot / perp</td><td>$64,381</td></tr>
+        <tr><td>Coil range (24h)</td><td>$63,232 – $65,469</td></tr>
+        <tr><td>Long-liq magnet (below)</td><td>$63,610 · −1.24% · $109.9M</td></tr>
+        <tr><td>Short-liq magnet (above)</td><td>$65,690</td></tr>
+        <tr><td>Near-book depth tilt</td><td>bid-heavy · DI ≈ +0.36</td></tr>
+        <tr><td>Sentiment</td><td>Extreme Fear (23)</td></tr>
+        <tr><td>Macro ceiling</td><td>US 10Y 4.508% (FOMC hawkish)</td></tr>
+        <tr><td>As of</td><td>~08:00 AEST / 22:00 UTC (22 Jun)</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      The tight spread says "calm"; the cluster geography says "spring-loaded." Depth asymmetry — a magnet below, a magnet above — frames the flush-to-$63,610-then-recover path the Morning Edge is watching. → see today's <a href="market-briefing.html" style="color:#bef264;">Morning Edge</a>.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The academic, the exchange, and today's tape</div>
+    </div>
+  </div>
+
+  <div class="skim">Why these voices: the scholar who defined liquidity, the exchange now reassessing depth, and our own read of the live coil.</div>
+
+  <div class="quote">
+    <p>"Liquidity is the ability to trade large size quickly, at low cost, when you want to trade."</p>
+    <div class="attr"><b>Larry Harris</b> · Trading and Exchanges: Market Microstructure for Practitioners · 2003 · <a href="https://books.google.com/books/about/Trading_and_Exchanges.html?id=Rd9hDRR1Yx4C">Google Books</a></div>
+  </div>
+
+  <div class="quote">
+    <p>Order-book depth alone is an incomplete — and sometimes misleading — picture of liquidity; much of the displayed size can vanish under stress.</p>
+    <div class="attr"><b>CME Group</b> · Reassessing Liquidity: Beyond Order Book Depth · 2025 · <a href="https://www.cmegroup.com/articles/2025/reassessing-liquidity-beyond-order-book-depth.html">cmegroup.com</a> · [paraphrase of thesis]</div>
+  </div>
+
+  <div class="quote">
+    <p>"The tight spread says calm; the $63,610 cluster says spring-loaded. Read the asymmetry, not the mid."</p>
+    <div class="attr"><b>The Morning Edge</b> · NGM Capital · 23 Jun 2026 · <a href="market-briefing.html">today's briefing</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where depth-and-spread reads go wrong</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: trusting displayed depth as if it were real, executable size.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Displayed depth ≠ executable depth</h5>
+      <p>Much of the resting size on a crypto book is conditional — it cancels or reprices the instant aggressive flow approaches. Size to what holds when hit, not what shows when calm.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Treating the spread as a fixed cost</h5>
+      <p>The spread is a live signal, not a constant tax. A spread that widens with no price move is makers pricing in risk — it <em>leads</em> volatility. Ignore it and you'll add size into the worst fills.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Reading depth absolutes instead of asymmetry</h5>
+      <p>A "big bid wall" is meaningless without the other side. A wall with a bigger wall opposite is not support — it's the heavy side of an imbalance leaning the wrong way for you.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Mistaking a spoof wall for demand</h5>
+      <p>A large, lone level that never trades and pulls before contact is spoof- or iceberg-bait, not resting demand. Confirm whether it actually absorbs flow before you lean on it.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: "order-book depth = liquidity"</h5>
+      <p>Honest call — this is a half-truth, and even CME now warns that depth overstates true liquidity. In crypto's fragmented, cancel-heavy books the displayed ladder is a <em>hypothesis</em>, not ground truth. Depth is necessary, not sufficient; pair it with flow and resiliency or it'll get you faded.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Where to go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">From the definitional guide to the academic depth-spread relation — every link verified in research.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.tradingview.com/support/solutions/43000516459-depth-of-market-dom-what-it-is-and-how-traders-can-use-it/">Depth of Market (DOM): what it is and how traders can use it</a>
+        <span>TradingView — the clean definition of the DOM ladder and Level 2 data, and how more resting orders read as more liquidity.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://bookmap.com/blog/inside-the-market-order-books-and-what-youre-missing-out-on">Inside the Market: Order Books and What You're Missing Out On</a>
+        <span>Bookmap — how orderflow traders use depth and heatmaps for support/resistance, and why displayed liquidity differs from real liquidity.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://whaleportal.com/blog/order-book-depth-explained/">Order Book Depth &amp; Heatmaps Explained: Reading Crypto Liquidity</a>
+        <span>Whaleportal — crypto-specific: deep vs shallow books, estimating slippage, and why a thin book lets a small trade move price.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Research</div>
+      <div class="fr-body">
+        <a href="https://www.cmegroup.com/articles/2025/reassessing-liquidity-beyond-order-book-depth.html">Reassessing Liquidity: Beyond Order Book Depth</a>
+        <span>CME Group (2025) — the case that depth alone is an incomplete, sometimes misleading, gauge of true liquidity.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Academic</div>
+      <div class="fr-body">
+        <a href="https://www.mdpi.com/2227-7072/9/4/60">The Relation between Intraday Limit Order Book Depth and Spread</a>
+        <span>JRFM (2021) — documents the inverse relation: deeper book, tighter spread; thinner book, wider spread, at each level.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://www.tradingview.com/support/solutions/43000516459-depth-of-market-dom-what-it-is-and-how-traders-can-use-it/">TradingView · DOM</a>
+    <a href="https://bookmap.com/blog/inside-the-market-order-books-and-what-youre-missing-out-on">Bookmap · Order Books</a>
+    <a href="https://whaleportal.com/blog/order-book-depth-explained/">Whaleportal · Depth</a>
+    <a href="https://www.cmegroup.com/articles/2025/reassessing-liquidity-beyond-order-book-depth.html">CME Group · Reassessing Liquidity</a>
+    <a href="https://www.mdpi.com/2227-7072/9/4/60">JRFM · Depth &amp; Spread</a>
+    <a href="market-briefing.html">NGM Capital · Morning Edge 23 Jun 2026</a>
+  </div>
+  <div>Alpha · Issue #58 · Monday 23 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
