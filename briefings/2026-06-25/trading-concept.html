@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Queue Position &amp; Order Priority | June 25, 2026</title>
+<meta property="og:description" content="Queue position is where your resting limit order sits in the FIFO line at its price — it governs whether you fill at all and whether that fill helps or hurts you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div style="font-family:sans-serif;font-size:12px;padding:8px 16px;background:#0A1628;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a></div>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Queue Position &amp; Order Priority</h1>
+  <div class="meta">
+    <span>Thu · June 25, 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #60</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Queue position is where your resting limit order sits in the first-in-first-out line at its price; it silently governs whether you fill at all, and whether that fill helps you or buries you. Place your level and hold it — every re-quote sends you to the back of the line, and a suspiciously fast passive fill usually means informed flow is about to run you over.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The line behind every limit order</div>
+    </div>
+  </div>
+
+  <div class="skim">Your limit order doesn't get the price — it gets a <strong>place in a queue</strong> at that price, behind everyone who posted there before you, and you only trade once all of them are cleared.</div>
+
+  <p>Most traders think a limit order is a price. It isn't. It's a <strong>ticket in a line</strong>. When you post a bid at $62,500, you don't reserve the right to buy at $62,500 — you join the back of the queue of every other resting bid sitting at $62,500, and the matching engine will serve them in front of you, oldest first. Your fill is not a function of price being touched. It's a function of how much aggressive selling has to chew through the orders ahead of you before the engine ever reaches yours.</p>
+
+  <p>This is the rule that runs every major order-driven venue — Binance, Bybit, OKX, Coinbase, CME, the lot. The engine matches on <strong>price-time priority</strong>: best price first, and within a price level, first-come-first-served. Among all the bids at $62,500, the one that arrived earliest trades first; yours, posted last, trades last. Two traders quoting the identical price can have completely different outcomes — one gets filled and rebated, the other watches the price walk away untouched — purely because of <strong>when</strong> they joined the line.</p>
+
+  <p>Why does an experienced discretionary trader care? Because queue position quietly decides three things you actually feel: whether your passive entry fills at all, whether your maker rebate is real or imaginary, and — the subtle one — whether the fills you <em>do</em> get are the good ones or the poisoned ones. A front-of-queue fill is not a prize. It is frequently the market telling you it knows something you don't.</p>
+
+  <div class="pills">
+    <span class="pill-term"><b>FIFO</b><span>First-in-first-out: earliest order at a price trades first</span></span>
+    <span class="pill-term"><b>Price-time priority</b><span>Best price wins, then earliest arrival</span></span>
+    <span class="pill-term"><b>Queue ahead</b><span>Total resting size in front of you at your price</span></span>
+    <span class="pill-term"><b>Maker / passive</b><span>An order that rests and adds liquidity</span></span>
+    <span class="pill-term"><b>Adverse selection</b><span>Getting filled precisely because the price is about to move against you</span></span>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    A limit order buys you a queue spot, not a price. The price being touched means nothing — the size resting ahead of you is everything.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Price-time priority, front to back</div>
+    </div>
+  </div>
+
+  <div class="skim">An incoming market order consumes resting size <strong>front-to-back</strong> at the best price; you fill only after the cumulative aggressive volume exceeds everything queued ahead of you — and your queue position resets to last every time you re-price.</div>
+
+  <p>Walk it step by step. You post a passive bid at $62,500. The engine timestamps it to the microsecond and slots it behind every bid already resting at $62,500. The total size in front of you — call it the <strong>queue ahead</strong> — is the only thing standing between you and a fill.</p>
+
+  <p>Now a market sell arrives. It trades against the bid side at the best price, taking the oldest resting order first, then the next, then the next, marching down the line. Your order starts executing only once the running total of aggressive sell volume at $62,500 has cleared everyone ahead of you. If a 55 BTC market sell hits a level where 100 BTC rests in front of you, you fill <strong>zero</strong> — and you're still 45 BTC from the front.</p>
+
+  <div class="formula">
+    <b>Queue ahead</b> &nbsp;Q = Σ qᵢ &nbsp;for every order i at your price that arrived <b>before</b> you<br>
+    <b>Fill trigger</b> &nbsp;you begin filling once cumulative aggressive volume V at your price ≥ Q<br>
+    <b>Fill probability</b> &nbsp;P(fill) ↑ as Q ↓ , as taker arrival rate λ ↑ , as your time-in-book ↑<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P(fill) ↓ every time you cancel-and-replace (Q resets to the full queue)
+    <div class="note">A resting limit order is a free option you wrote to the market: you are exercised — filled — only when it suits the taker, which is usually when it doesn't suit you.</div>
+  </div>
+
+  <p>Two consequences fall straight out of this. First, <strong>cancel-and-replace is expensive in a currency you can't see</strong>: every time you nudge your limit a tick to chase price, the engine treats it as a brand-new order and sends you to the very back of the line. You can re-quote your way from second-in-line to dead-last in three clicks. Second, the orders that fill <em>fastest</em> are the most dangerous — a front-of-queue order fills with near-certainty exactly when the price is about to break through your level, because that's the only time enough aggressive flow shows up to reach you. Speed of fill and quality of fill pull in opposite directions.</p>
+
+  <table class="cmp">
+    <tr><th>Front of queue</th><th>Back of queue</th></tr>
+    <tr><td>High fill probability</td><td>Low fill probability — price often leaves first</td></tr>
+    <tr><td>Fills on small flow</td><td>Needs a big sweep to reach you</td></tr>
+    <tr><td>Maximum adverse selection — picked off first</td><td>If you fill, the move usually had real size behind it</td></tr>
+    <tr><td>HFT / co-located firms win this race</td><td>Where discretionary size actually lives</td></tr>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">The FIFO queue, consumed</div>
+    </div>
+  </div>
+
+  <div class="skim">A market sell eats the bid queue from the front; you sit at the back, and 100 BTC of selling has to clear before the engine reaches you — diagram one. The fill you finally get is conditional on bad news — diagram two.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="FIFO bid queue at 62,500 being consumed front to back by an incoming market sell">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <text x="400" y="34" text-anchor="middle" font-family="DM Serif Display, serif" font-size="21" fill="#1c1917">Bid queue @ $62,500 — first in, first out</text>
+      <text x="400" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#78716c">the engine serves the oldest order first; you joined last</text>
+
+      <!-- direction labels -->
+      <text x="70" y="112" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#3f6212">◄ FRONT — filled first</text>
+      <text x="670" y="112" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#78716c">BACK — filled last ►</text>
+
+      <!-- market sell arrow landing on the front -->
+      <line x1="145" y1="118" x2="145" y2="146" stroke="#ef4444" stroke-width="2.5"/>
+      <polygon points="145,152 139,140 151,140" fill="#ef4444"/>
+      <text x="145" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#ef4444">MARKET SELL 55 BTC lands here</text>
+
+      <!-- queue boxes: T1 30, T2 25 (filled) | T3 20, T4 25, YOU 2 (resting) -->
+      <!-- T1 -->
+      <rect x="70" y="150" width="150" height="80" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+      <text x="145" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#166534">T1 · 30 BTC</text>
+      <text x="145" y="205" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#166534">FILLED</text>
+      <!-- T2 -->
+      <rect x="230" y="150" width="125" height="80" rx="4" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+      <text x="292" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#166534">T2 · 25 BTC</text>
+      <text x="292" y="205" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#166534">FILLED</text>
+      <!-- T3 -->
+      <rect x="365" y="150" width="100" height="80" rx="4" fill="#f3f0ea" stroke="#a8a29e" stroke-width="1.5"/>
+      <text x="415" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#44403c">T3 · 20</text>
+      <text x="415" y="205" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">resting</text>
+      <!-- T4 -->
+      <rect x="475" y="150" width="125" height="80" rx="4" fill="#f3f0ea" stroke="#a8a29e" stroke-width="1.5"/>
+      <text x="537" y="185" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#44403c">T4 · 25</text>
+      <text x="537" y="205" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">resting</text>
+      <!-- YOU -->
+      <rect x="610" y="150" width="60" height="80" rx="4" fill="#f7fee7" stroke="#a3e635" stroke-width="2.5"/>
+      <text x="640" y="183" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#3f6212">YOU</text>
+      <text x="640" y="203" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#3f6212">2 BTC</text>
+
+      <!-- bracket: 100 BTC ahead of you -->
+      <line x1="70" y1="252" x2="600" y2="252" stroke="#78716c" stroke-width="1.5"/>
+      <line x1="70" y1="252" x2="70" y2="244" stroke="#78716c" stroke-width="1.5"/>
+      <line x1="600" y1="252" x2="600" y2="244" stroke="#78716c" stroke-width="1.5"/>
+      <text x="335" y="272" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#44403c">100 BTC must clear before YOU trade</text>
+
+      <!-- after the 55 BTC sell -->
+      <rect x="70" y="298" width="660" height="92" rx="5" fill="#faf8f5" stroke="#e7e5e4" stroke-width="1"/>
+      <text x="86" y="322" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#1c1917">After the 55 BTC sell:</text>
+      <text x="86" y="344" font-family="Inter, sans-serif" font-size="12.5" fill="#44403c">T1 + T2 cleared → 45 BTC (T3 + T4) still ahead of you. You fill ZERO.</text>
+      <text x="86" y="365" font-family="Inter, sans-serif" font-size="12.5" fill="#44403c">If buyers lift the bid now → price leaves, you never fill (you miss).</text>
+      <text x="86" y="384" font-family="Inter, sans-serif" font-size="12.5" fill="#b91c1c">If a 102 BTC sweep hits → all 100 ahead clear, YOU fill at 62,500… into a falling market.</text>
+    </svg>
+    <div class="svg-caption">Diagram 1 — Price-time priority. The aggressor consumes the queue oldest-first; your fill depends entirely on the size stacked in front of you, never on the price simply being printed.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The passive-fill asymmetry: no fill when price rises, picked-off fill when price falls">
+      <rect x="0" y="0" width="800" height="360" fill="#ffffff"/>
+      <text x="400" y="32" text-anchor="middle" font-family="DM Serif Display, serif" font-size="20" fill="#1c1917">The passive-fill asymmetry</text>
+
+      <!-- divider -->
+      <line x1="400" y1="58" x2="400" y2="300" stroke="#e7e5e4" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+      <!-- LEFT panel: price rises, no fill -->
+      <text x="210" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#78716c">PRICE RISES</text>
+      <!-- your bid line -->
+      <line x1="50" y1="235" x2="370" y2="235" stroke="#a3e635" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="50" y="252" font-family="JetBrains Mono, monospace" font-size="10" fill="#3f6212">your bid 62,500</text>
+      <!-- rising price path (y decreases upward) -->
+      <polyline points="60,230 110,210 160,212 210,180 260,150 320,120 365,105" fill="none" stroke="#44403c" stroke-width="2.5"/>
+      <circle cx="60" cy="230" r="4" fill="#44403c"/>
+      <text x="210" y="300" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#78350f">No fill → you miss the long</text>
+      <rect x="120" y="312" width="180" height="26" rx="13" fill="#fef3c7" stroke="#fbbf24" stroke-width="1"/>
+      <text x="210" y="329" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#78350f">opportunity cost only</text>
+
+      <!-- RIGHT panel: price falls, picked off -->
+      <text x="590" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="#78716c">PRICE FALLS</text>
+      <!-- your bid line -->
+      <line x1="430" y1="170" x2="760" y2="170" stroke="#a3e635" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="430" y="160" font-family="JetBrains Mono, monospace" font-size="10" fill="#3f6212">your bid 62,500</text>
+      <!-- falling path crossing the bid -->
+      <polyline points="435,108 480,120 530,150 575,170 620,205 680,235 755,250" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+      <!-- fill marker at crossing -->
+      <circle cx="575" cy="170" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="575" y="158" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#b91c1c">FILL</text>
+      <text x="700" y="268" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#b91c1c">→ 62,350</text>
+      <text x="590" y="300" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" font-weight="700" fill="#b91c1c">Instant fill → picked off, −0.24%</text>
+      <rect x="500" y="312" width="180" height="26" rx="13" fill="#fee2e2" stroke="#ef4444" stroke-width="1"/>
+      <text x="590" y="329" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#b91c1c">adverse selection</text>
+    </svg>
+    <div class="svg-caption">Diagram 2 — The fills you want most are the ones you don't get; the fills you get fastest are the ones moving against you. Queue priority is an option the market exercises on its own terms.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Defend your spot, dodge the pick-off</div>
+    </div>
+  </div>
+
+  <div class="skim">Pick your level once and <strong>sit on it</strong> — chasing the touch by re-pricing nukes your queue spot — and treat a suspiciously fast passive fill at a key level as a warning, not a win.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num">1</div>
+      <div>
+        <h4>Use post-only to lock maker status and a queue spot</h4>
+        <p>Post-only guarantees your order rests (never crosses) so you keep maker fees and actually join the line. The trade-off is real: it will reject rather than take, so in fast markets you risk no fill at all. Use it when the rebate and the level matter more than certainty of execution.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">2</div>
+      <div>
+        <h4>Stop cancel-and-replacing — every re-quote sends you to the back</h4>
+        <p>Trailing your limit a tick higher to chase price feels active; mechanically it throws away your queue position and restarts you behind everyone. Decide your level from your thesis and hold it. Re-price only when the thesis changes, never to flirt with the touch.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">3</div>
+      <div>
+        <h4>Read the depth ahead, not just the price</h4>
+        <p>Before you rest size, look at how much is already queued at your level. Thin ahead means a quick fill — and quick adverse selection. Thick ahead means slow fill but the move usually had conviction behind it by the time it reaches you. Size your expectation by the queue, not the candle wick.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num">4</div>
+      <div>
+        <h4>A fast fill at a key level is a tell</h4>
+        <p>If your limit fills instantly at a defended level, ask why enough aggressive flow showed up to reach you. Often it's because informed size is about to push straight through. The old market-maker line — "if you got filled, you were wrong" — is queue logic. Manage immediately; don't relax into the position.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example — resting a bid at $62,500</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC trading $62,527. You want to buy the $62,500 round-number bid with 2 BTC, post-only.</td></tr>
+      <tr><td>Queue ahead</td><td>85 BTC already rests at $62,500 when you join → you are behind 85 BTC.</td></tr>
+      <tr><td>Flow #1</td><td>A 40 BTC market sell hits → clears the front 40; 45 BTC still ahead of you; you fill 0.</td></tr>
+      <tr><td>Outcome A (miss)</td><td>Buyers step in, price lifts to $62,560. You never filled. No position, no loss — but no trade.</td></tr>
+      <tr><td>Outcome B (pick-off)</td><td>A 120 BTC sweep clears all 85 ahead + your 2 BTC at $62,500; price continues to $62,350. You're long, instantly −$300/BTC (−0.24%).</td></tr>
+      <tr><td>R math</td><td>Planned stop $62,300, target $63,200 → 200 risk / 700 reward. Filled into a flush at $62,350, you're already 75% of the way to your stop on entry. Effective R collapsed before you did anything wrong.</td></tr>
+      <tr><td>Lesson</td><td>The fill wasn't edge. It was the queue handing you the position the aggressor wanted to offload.</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> execution-layer (tick–1m fills); bias-agnostic. Matters most for makers, scalpers, and anyone resting real size at higher-timeframe levels — the lower your edge-per-trade, the more queue and adverse selection decide your P&amp;L.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC at the $60K queue magnet</div>
+    </div>
+  </div>
+
+  <div class="skim">A round number like <strong>$60,000</strong> stacks the deepest bid queues — and in a downtrend those front-of-queue bids are exactly the ones that get picked off, while everyone who chased the bounce by re-pricing lost their spot in line.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · June 25, 2026</div>
+    <h4>The $60.9K confluence is a queue-position lesson in real time</h4>
+
+    <p>BTC is trading around <strong>$60,887.98</strong> on June 25 with <strong>daily VWAP at $60,856.11</strong> and the main intraday confluence sitting almost exactly overhead at <strong>$60,995.31</strong>. That is textbook <strong>queue magnet</strong> territory: when a market stalls around a crowded reference price, patient buyers pile passive bids there and the queue at that level gets deeper than the chart alone suggests.</p>
+
+    <p>The trap is that deep queues are not automatically safe queues. Today's Porygon run still shows <strong>bearish 4h structure, seller-led delta, and negative basis</strong>. If aggressive flow leans sell-side while everyone camps the same visible level, the traders at the very front of that queue become the easiest inventory transfer. And when price starts to lift, anyone who keeps <strong>re-pricing higher to chase the bounce</strong> just keeps resetting to the back of the next queue.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC spot (now)</td><td>$60,887.98 · -2.71% 24h</td></tr>
+        <tr><td>ETH spot (now)</td><td>$1,619.92 · -2.49% 24h</td></tr>
+        <tr><td>Daily queue magnet</td><td>$60,995.31 confluence</td></tr>
+        <tr><td>Next reclaim test</td><td>$62,282.90 (PW low + W-VWAP)</td></tr>
+        <tr><td>Higher resistance</td><td>$63,227.54 (PD high + Fib 0.236)</td></tr>
+        <tr><td>Book / flow</td><td>5.89x bid-heavy book, but sellers still control delta</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      Queue logic matters most when everyone can see the same level. In today's tape, the obvious passive bid around $60.9K is useful only if you are willing to hold your place and accept that front-of-queue fills can be the market offloading risk into you. The better tactical read matches today's <a href="market-briefing.html">Morning Edge</a>: no bullish regime claim until BTC can reclaim weekly value, because the visible queue is still a magnet for adverse selection, not proof of support.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Microstructure voices</div>
+    </div>
+  </div>
+
+  <div class="skim">The canonical microstructure text, the academic that priced the queue, and a 2026 crypto-execution primer all land on the same point: <strong>time in line is a tradeable cost</strong>.</div>
+
+  <div class="quote">
+    <p>"Time precedence rules encourage traders seeking to trade to submit their orders as early as possible."</p>
+    <div class="attr"><b>Larry Harris</b> · Trading and Exchanges: Market Microstructure for Practitioners · 2003 · <a href="https://global.oup.com/academic/product/trading-and-exchanges-9780195144703">OUP</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"Queue position of a limit order influences its adverse selection risk and inhibits inventory risk management."</p>
+    <div class="attr"><b>Ciamac Moallemi &amp; Kai Yuan</b> · A Model for Queue Position Valuation in a Limit Order Book · 2016 · <a href="https://moallemi.com/ciamac/papers/queue-value-2016.pdf">PDF</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"In a price-time priority book, that queue position is valuable because later orders at the same price stand behind earlier ones."</p>
+    <div class="attr"><b>CoW DAO</b> · What You Need to Know About Crypto Post-Only Orders · 2026 · <a href="https://cow.fi/learn/what-you-need-to-know-about-crypto-post-only-orders-in-2026">cow.fi</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where makers bleed</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating a passive <strong>fill as confirmation</strong> your level held — when a front-of-queue fill is often the opposite signal.</div>
+
+  <div class="trap">
+    <div class="num">1</div>
+    <div>
+      <h5>Treating a fill as validation</h5>
+      <p>A passive fill at your level is not the market agreeing with you — front-of-queue orders fill precisely when informed flow is about to run them over. <b>Fix:</b> treat fast fills at key levels as adverse-selection signals; have your invalidation ready before you're filled, not after.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">2</div>
+    <div>
+      <h5>Re-quoting your queue spot into oblivion</h5>
+      <p>Cancel-and-replace — or trailing your limit a tick to chase — resets you to the back of the line every single time. <b>Fix:</b> pick the level from your thesis and hold it; re-price only when the thesis changes, not to chase the touch.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">3</div>
+    <div>
+      <h5>Assuming "price touched my level" means filled</h5>
+      <p>A thin wick to your price clears only the front of the queue; if real size rested ahead, you never traded despite the candle kissing your number. <b>Fix:</b> judge fill odds by the depth stacked ahead of you, not by the low or high of the bar.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <div class="num">4</div>
+    <div>
+      <h5>Ignoring cancel/replace cost on fee'd venues</h5>
+      <p>Some venues rate-limit or charge for excessive cancels; chronic re-quoting both destroys queue position and can quietly cost you. <b>Fix:</b> fewer, more deliberate orders — your queue spot and your fee tier both reward patience.</p>
+    </div>
+  </div>
+
+  <div class="trap anti">
+    <div class="num">5</div>
+    <div>
+      <h5>Overhyped: "queue position is alpha you can trade"</h5>
+      <p>For a discretionary crypto trader, micro-optimising queue position is HFT turf — co-located firms win the FIFO race in microseconds and use bespoke order types to jump the line (the practice Haim Bodek exposed). You will not out-latency them. <b>Fix:</b> don't LARP as a market maker. Use queue logic <em>defensively</em> — avoid getting picked off, stop nuking your spot — not as a speed edge you can't win.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Go deeper</div>
+    </div>
+  </div>
+
+  <div class="skim">One textbook for the rules, two papers for the maths, one primer for crypto execution, one interview for the dark arts.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://moallemi.com/ciamac/papers/queue-value-2016.pdf">A Model for Queue Position Valuation in a Limit Order Book</a>
+        <span>Moallemi &amp; Yuan — the canonical paper that puts a dollar value on where you sit in the queue and the adverse-selection cost baked into it.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Paper</div>
+      <div class="fr-body">
+        <a href="https://arxiv.org/abs/2502.18625">The Market Maker's Dilemma: Fill Probability vs Post-Fill Returns</a>
+        <span>Albers et al. (2025) — formalises the trade-off you feel at the screen: better queue position lifts fill probability but worsens what the fill is worth.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://www.binance.com/en/academy/articles/understanding-matching-engines-in-trading">Understanding Matching Engines in Trading</a>
+        <span>Binance Academy — plain-English walkthrough of price-time priority (FIFO) and how an incoming order is matched against the book.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://cow.fi/learn/what-you-need-to-know-about-crypto-post-only-orders-in-2026">What You Need to Know About Crypto Post-Only Orders (2026)</a>
+        <span>CoW DAO — practical crypto-execution piece on post-only mechanics, queue value, and why a touched price can leave you unfilled.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Interview</div>
+      <div class="fr-body">
+        <a href="https://chatwithtraders.com/ep-049-haim-bodek/">Chat With Traders Ep. 049 — Haim Bodek</a>
+        <span>The HFT whistleblower on special order types and "queue jumping" — how a few firms reserve superior queue position ahead of price-time priority.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://moallemi.com/ciamac/papers/queue-value-2016.pdf">Moallemi &amp; Yuan — Queue Position Valuation</a>
+    <a href="https://arxiv.org/abs/2502.18625">The Market Maker's Dilemma (arXiv 2502.18625)</a>
+    <a href="https://global.oup.com/academic/product/trading-and-exchanges-9780195144703">Harris — Trading and Exchanges</a>
+    <a href="https://www.binance.com/en/academy/articles/understanding-matching-engines-in-trading">Binance Academy — Matching Engines</a>
+    <a href="https://cow.fi/learn/what-you-need-to-know-about-crypto-post-only-orders-in-2026">CoW DAO — Post-Only Orders 2026</a>
+    <a href="https://chatwithtraders.com/ep-049-haim-bodek/">Chat With Traders — Haim Bodek</a>
+    <a href="https://www.coingecko.com/en/coins/bitcoin">CoinGecko — BTC/ETH live prices</a>
+  </div>
+  <div>Alpha · Issue #60 · June 9, 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+</body>
+</html>
