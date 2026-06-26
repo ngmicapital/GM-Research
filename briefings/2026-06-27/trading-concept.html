@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — VWAP &amp; Anchored VWAP | 27 June 2026</title>
+<meta property="og:description" content="VWAP is cumulative value traded ÷ cumulative volume — the fair-value line institutional execution is graded against. Trade its side, fade its bands, anchor it to every swing.">
+<meta name="description" content="VWAP is cumulative value traded ÷ cumulative volume — the fair-value line institutional execution is graded against. Trade its side, fade its bands, anchor it to every swing.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"VWAP: the volume-weighted mean every execution algo is built to beat","preview":"VWAP is cumulative value traded ÷ cumulative volume — the fair-value line institutions execute against. Trade its side, fade its bands, anchor it to every swing.","tags":["VWAP","Order Flow","Wyckoff"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>The Picture</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>In Their Words</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Go Deeper</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — VWAP &amp; Anchored VWAP</h1>
+  <div class="meta">
+    <span>Saturday · 27 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue #61</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>VWAP</strong> is the volume-weighted average price — cumulative value traded divided by cumulative volume — and it is the single most structurally significant line on an intraday chart because the execution algos at every desk are programmed to beat it, which makes price gravitate to, react at, and respect it. Trade with the side of VWAP price holds, fade the ±2σ band extremes back toward the mean, and drop a fresh anchored VWAP off every major swing to read who is actually offside.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §01 WHAT IT IS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The volume-weighted fair-value line</div>
+    </div>
+  </div>
+
+  <div class="skim">VWAP is cumulative value traded divided by cumulative volume — the average price weighted by <em>size</em>, not time, and the benchmark institutional execution is graded against.</div>
+
+  <p>VWAP is not an indicator you overlay for decoration. It is the one line on the chart that has real money mechanically defending it. Every trade contributes its price multiplied by its size to a running total; divide that total value by the total volume and you get the price at which the average unit actually changed hands. A 500-BTC print at <strong>$60,000</strong> bends the line hard; a 0.01-BTC print barely moves it. That weighting-by-size is the entire difference from a moving average, which counts every bar equally no matter how thin.</p>
+
+  <p>It matters because institutions benchmark large orders against the session VWAP. A buy filled <em>below</em> VWAP is a good fill; <em>above</em> it, a poor one — and that scorecard drives the VWAP execution algorithms at every brokerage. The line is self-reinforcing: price respects VWAP because the biggest participants are programmed to execute around it, and they execute around it because price respects it. The first desk to benchmark against it was James Elkins at Abel Noser in <strong>1984</strong>, executing for the Ford Motor pension fund; it was formalised in a 1988 <em>Journal of Finance</em> paper. Four decades later it runs under most of the algorithmic volume you trade against.</p>
+
+  <p>Brian Shannon, the modern anchored-VWAP authority, frames it the way a Wyckoff trader already thinks: <strong>"Volume is the cause and price is the effect."</strong> VWAP is simply the running tally of that cause — the price where the day's effort actually accumulated.</p>
+
+  <div class="pills">
+    <div class="pill-term"><b>Session VWAP</b><span>resets at the session open (00:00 UTC for crypto)</span></div>
+    <div class="pill-term"><b>Anchored VWAP</b><span>VWAP measured from a user-chosen event bar</span></div>
+    <div class="pill-term"><b>VWAP bands</b><span>±1/±2/±3σ envelopes around the mean</span></div>
+    <div class="pill-term"><b>Slippage</b><span>the gap between your fill and the VWAP benchmark</span></div>
+    <div class="pill-term"><b>Typical price</b><span>(H+L+C)/3 used per bar in the rolling sum</span></div>
+  </div>
+
+  <div class="remember">
+    <b>Remember</b>
+    If you only remember one thing: VWAP is where the volume <em>actually</em> traded, so it is where the biggest orders are graded — fade its extremes, trade its side, and never ignore the line the algos are built to defend.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §02 MECHANICS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From every print to one weighted line</div>
+    </div>
+  </div>
+
+  <div class="skim">Multiply each print's price by its size, keep a running sum of that value and of volume, divide one by the other — then wrap the result in standard-deviation bands to map where price is statistically stretched.</div>
+
+  <p>The calculation is a cumulative ratio, recomputed on every bar from the anchor (session open or a chosen event) forward. It never looks back over a fixed window the way a 20-period EMA does — it accumulates from the anchor to <em>now</em>.</p>
+
+  <div class="formula">
+    <b>VWAP</b> = Σ ( P<sub>j</sub> × Q<sub>j</sub> ) / Σ ( Q<sub>j</sub> )
+    <div class="note">P<sub>j</sub> = typical price of bar j, usually (High + Low + Close) / 3 · Q<sub>j</sub> = volume of bar j · sums run cumulatively from the anchor.</div>
+  </div>
+
+  <p>The bands are the second half of the tool. Compute the volume-weighted standard deviation of price around VWAP and plot it as an envelope:</p>
+
+  <div class="formula">
+    <b>Band</b><sub>k</sub> = VWAP ± k·σ<sub>vw</sub> &nbsp;&nbsp;(k = 1, 2, 3)
+    <div class="note">±1σ ≈ the "Value Zone" where price spends ~68% of the session · ±2σ ≈ ~95% · ±3σ = statistical anomaly, where mean reversion becomes the base case.</div>
+  </div>
+
+  <p>One mechanical quirk drives most VWAP behaviour: <strong>the line stiffens as the session ages</strong>. Early on, each new print is large relative to the tiny cumulative volume, so VWAP swings freely. By late session the cumulative denominator is huge, so new trades barely move it — late-day "rejections" off VWAP are partly an artefact of that inertia. Crypto's 00:00 UTC reset re-sensitises the line each day; that is why session VWAP is an intraday tool, while multi-day context needs an <em>anchored</em> VWAP instead.</p>
+
+  <table class="cmp">
+    <tr><th>Property</th><th>VWAP</th><th>Moving average</th></tr>
+    <tr><td>Weighting</td><td>By volume — a big print moves it more</td><td>By time — every bar counts equally</td></tr>
+    <tr><td>Window</td><td>Cumulative from anchor; resets each session</td><td>Fixed lookback, floats forever</td></tr>
+    <tr><td>What it represents</td><td>The actual average fill — where size traded</td><td>A smoothed price, blind to size</td></tr>
+    <tr><td>Who defends it</td><td>Execution algos benchmarked against it</td><td>Nobody is contractually graded on it</td></tr>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §03 VISUAL -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">The Picture</div>
+      <div class="section-sub">Price oscillating around VWAP with σ-bands</div>
+    </div>
+  </div>
+
+  <div class="skim">A rising VWAP with ±1σ and ±2σ envelopes: price stretches to the +2σ band and reverts, pulls back to the mean and holds, while an anchored VWAP off the swing low maps the trend.</div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Session VWAP with standard-deviation bands and price mean-reverting around it">
+      <rect x="0" y="0" width="800" height="420" fill="#ffffff"/>
+      <!-- grid -->
+      <line x1="60" y1="40" x2="60" y2="380" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="60" y1="380" x2="760" y2="380" stroke="#e7e5e4" stroke-width="1"/>
+      <!-- band envelope (+/-2 sigma) -->
+      <polygon points="60,150 760,70 760,330 60,290" fill="#f7fee7" stroke="none" opacity="0.7"/>
+      <!-- +2 sigma -->
+      <line x1="60" y1="150" x2="760" y2="70" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <text x="66" y="142" font-family="JetBrains Mono, monospace" font-size="11" fill="#3f6212">+2σ · fade zone</text>
+      <!-- +1 sigma -->
+      <line x1="60" y1="195" x2="760" y2="115" stroke="#bef264" stroke-width="1" stroke-dasharray="2 4"/>
+      <text x="66" y="188" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">+1σ</text>
+      <!-- VWAP center -->
+      <line x1="60" y1="240" x2="760" y2="160" stroke="#3f6212" stroke-width="3"/>
+      <text x="610" y="150" font-family="JetBrains Mono, monospace" font-size="12" fill="#3f6212" font-weight="700">SESSION VWAP</text>
+      <!-- -1 sigma -->
+      <line x1="60" y1="285" x2="760" y2="205" stroke="#bef264" stroke-width="1" stroke-dasharray="2 4"/>
+      <text x="66" y="300" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">−1σ</text>
+      <!-- -2 sigma -->
+      <line x1="60" y1="330" x2="760" y2="250" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <text x="66" y="346" font-family="JetBrains Mono, monospace" font-size="11" fill="#3f6212">−2σ</text>
+      <!-- price path: weaves around VWAP, stretches to +2sigma then reverts, pulls back to VWAP and holds -->
+      <polyline points="60,288 120,262 175,300 230,235 290,168 320,150 350,205 400,248 440,250 500,205 560,168 620,158 690,118 760,150" fill="none" stroke="#1c1917" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- event A: stretch to +2 sigma -> fade -->
+      <circle cx="320" cy="150" r="6" fill="#ef4444"/>
+      <path d="M320,128 l-7,-14 14,0 z" fill="#ef4444"/>
+      <text x="262" y="112" font-family="Inter, sans-serif" font-size="11.5" fill="#ef4444" font-weight="600">Stretch to +2σ → fade</text>
+      <!-- event B: pullback holds VWAP -> long -->
+      <circle cx="440" cy="250" r="6" fill="#22c55e"/>
+      <path d="M440,272 l-7,14 14,0 z" fill="#22c55e"/>
+      <text x="392" y="296" font-family="Inter, sans-serif" font-size="11.5" fill="#16a34a" font-weight="600">Pullback holds VWAP → long</text>
+      <!-- y axis label -->
+      <text x="20" y="215" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c" transform="rotate(-90 20 215)">PRICE</text>
+      <text x="700" y="398" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">TIME →</text>
+    </svg>
+    <div class="svg-caption">Session VWAP (solid) with ±1σ/±2σ envelopes. The edge lives at the band extremes — a stretch to +2σ on fading volume reverts to the mean; a pullback that holds VWAP in an uptrend is the continuation long. The middle is noise.</div>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 800 360" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Anchored VWAP flipping from resistance to support after a reclaim">
+      <rect x="0" y="0" width="800" height="360" fill="#ffffff"/>
+      <line x1="60" y1="30" x2="60" y2="320" stroke="#e7e5e4" stroke-width="1"/>
+      <line x1="60" y1="320" x2="760" y2="320" stroke="#e7e5e4" stroke-width="1"/>
+      <!-- anchored VWAP rising from swing low -->
+      <line x1="110" y1="290" x2="760" y2="120" stroke="#3f6212" stroke-width="3"/>
+      <text x="560" y="112" font-family="JetBrains Mono, monospace" font-size="12" fill="#3f6212" font-weight="700">ANCHORED VWAP</text>
+      <!-- anchor point -->
+      <circle cx="110" cy="290" r="7" fill="#a3e635" stroke="#3f6212" stroke-width="2"/>
+      <text x="86" y="312" font-family="JetBrains Mono, monospace" font-size="11" fill="#3f6212" font-weight="700">ANCHOR · swing low</text>
+      <!-- price: below AVWAP (resistance), reclaim, retest from above (support), bounce -->
+      <polyline points="110,290 150,255 195,238 235,250 275,232 300,222" fill="none" stroke="#1c1917" stroke-width="2.5" stroke-linejoin="round"/>
+      <text x="150" y="225" font-family="Inter, sans-serif" font-size="11" fill="#ef4444" font-weight="600">below → resistance</text>
+      <!-- reclaim through line -->
+      <polyline points="300,222 340,210 375,188 410,196" fill="none" stroke="#1c1917" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="378" cy="190" r="6" fill="#22c55e"/>
+      <text x="330" y="172" font-family="Inter, sans-serif" font-size="11.5" fill="#16a34a" font-weight="600">reclaim</text>
+      <!-- retest from above -> support -> bounce -->
+      <polyline points="410,196 455,214 495,212 540,180 595,160 650,150 720,128" fill="none" stroke="#1c1917" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="478" cy="213" r="6" fill="#22c55e"/>
+      <path d="M478,235 l-7,14 14,0 z" fill="#22c55e"/>
+      <text x="430" y="262" font-family="Inter, sans-serif" font-size="11.5" fill="#16a34a" font-weight="600">retest = support → bounce</text>
+      <text x="690" y="345" font-family="JetBrains Mono, monospace" font-size="10" fill="#78716c">TIME →</text>
+    </svg>
+    <div class="svg-caption">Anchored VWAP dropped on a swing low. It caps price as resistance until the reclaim, then flips to support on the retest — the role reversal Brian Shannon trades. Above a rising AVWAP, buyers are "innocent until proven guilty."</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §04 IN PRACTICE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Trade the side, fade the band, anchor the swing</div>
+    </div>
+  </div>
+
+  <div class="skim">The one rule: align with the side of VWAP price holds — long above a rising VWAP, short below a falling one — and only <em>fade</em> VWAP at the ±2σ/±3σ extremes, never in the middle.</div>
+
+  <div class="practice">
+    <div class="practice-card">
+      <div class="num"><em>1</em></div>
+      <div>
+        <h4>Trade the side, not the touch</h4>
+        <p>Above a rising VWAP, buyers own the session; below a falling one, sellers do. Don't fight the side until price reclaims or loses the line <strong>on a volume expansion</strong> — that flip, not a casual touch, is the signal.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>2</em></div>
+      <div>
+        <h4>Buy the pullback that holds</h4>
+        <p>In an uptrend, the first pullback that tags VWAP (or −1σ) and reclaims is the continuation long; stop below the band, trail against VWAP. The mirror works for shorts under a falling VWAP.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>3</em></div>
+      <div>
+        <h4>Fade only the extreme</h4>
+        <p>A stretch to ±2σ/±3σ on <strong>fading</strong> volume with a rejection candle reverts toward the mean — the "institutional reversion" trade. Target VWAP itself; the band edge is the entry, not the destination.</p>
+      </div>
+    </div>
+    <div class="practice-card">
+      <div class="num"><em>4</em></div>
+      <div>
+        <h4>Anchor the catalyst</h4>
+        <p>Drop an anchored VWAP on the swing high/low, the CPI/FOMC bar, or the breakout candle. Where it sits versus price tells you whether longs or shorts <em>from that event</em> are offside and likely to defend or capitulate.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="worked">
+    <h5>Worked example · anchored-VWAP reclaim long [illustrative]</h5>
+    <table>
+      <tr><td>Setup</td><td>BTC dips to a swing low at <strong>$58,189</strong>, then an anchored VWAP from that low rises through the consolidation.</td></tr>
+      <tr><td>Trigger</td><td>Price reclaims the AVWAP and holds above it on rising volume.</td></tr>
+      <tr><td>Entry</td><td>$59,000 (reclaim + retest hold)</td></tr>
+      <tr><td>Stop</td><td>$58,400 (below the AVWAP and the anchor low) — risk $600</td></tr>
+      <tr><td>Target</td><td>$60,800, just under the $60,860 short-liquidation shelf — reward ≈ $1,800</td></tr>
+      <tr><td>R-multiple</td><td>≈ 3.0R, with the AVWAP as the trailing invalidation</td></tr>
+    </table>
+  </div>
+
+  <div class="tf-note"><b>Timeframe fit:</b> 1m–15m for session-VWAP execution and band fades · 1h–4h anchored VWAP for swing bias · the anchor's timeframe sets the trade's timeframe.</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §05 LIVE TAPE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC coiled on its session VWAP</div>
+    </div>
+  </div>
+
+  <div class="skim">BTC is oscillating across its 00:00-UTC session VWAP near <strong>$59.6K</strong>, balancing in a tight $58.5K–$60.5K range beneath a $174M short-liquidation shelf at $60,860 — textbook indecision, not trend.</div>
+
+  <div class="tape">
+    <div class="tape-label">● Live Tape · BINANCE:BTCUSDT.P · 4H · 27 Jun 2026</div>
+    <h4>Balanced on VWAP, coiled under a liquidation shelf</h4>
+
+    <p>BTC trades <strong>$59,686</strong> (+0.66% on the day), chopping <em>across</em> its session VWAP rather than holding one side of it — the exact "price oscillating = indecision" read. The 24h range is tight: low <strong>$58,483</strong>, high <strong>$60,481</strong>. Above price sits a <strong>$174M short-liquidation cluster at $60,860</strong> (→ see today's <a href="market-briefing.html" style="color:#bef264;border-bottom-color:rgba(190,242,100,0.4)">Morning Edge</a>); the natural anchor below is the <strong>$58,189</strong> swing low.</p>
+
+    <p>With price draped over the mean and volume unremarkable ($40B/24h), there is no VWAP <em>trend</em> signal yet. This is band territory: the edge is at the ±2σ extremes and the liquidation shelf, not the middle of the range.</p>
+
+    <div class="nums">
+      <div style="overflow-x:auto">
+      <table>
+        <tr><td>BTC last</td><td>$59,686 &nbsp;(+0.66% 24h)</td></tr>
+        <tr><td>24h range</td><td>$58,483 — $60,481</td></tr>
+        <tr><td>Session VWAP</td><td>≈ $59,450 &nbsp;[est., session balance]</td></tr>
+        <tr><td>Short-liq shelf</td><td>$60,860 &nbsp;($174M, above price)</td></tr>
+        <tr><td>Anchor low</td><td>$58,189 &nbsp;(AVWAP anchor)</td></tr>
+        <tr><td>24h volume</td><td>$40.0B</td></tr>
+        <tr><td>ETH last</td><td>$1,569.74 &nbsp;(+0.91% 24h)</td></tr>
+        <tr><td>Snapshot</td><td>06:55 AEST · 20:55 UTC 26 Jun</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+
+    <div class="read">
+      <b>Read</b>
+      When price oscillates across VWAP instead of holding one side, the market is in balance and conviction is absent — the edge is at the band extremes, not the mean. The first clean reclaim or loss of VWAP on a volume expansion is the tell that one side has finally taken the session, and the $60,860 short shelf is the magnet if buyers win it.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §06 QUOTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">In Their Words</div>
+      <div class="section-sub">Auction theory · the AVWAP authority · the execution desk</div>
+    </div>
+  </div>
+
+  <div class="skim">Three lenses on the same line — the auction tenet that explains <em>why</em> VWAP matters, the modern anchored-VWAP authority, and the institutional desk that trades it for real.</div>
+
+  <div class="quote">
+    <p>"Markets exist to facilitate trade."</p>
+    <div class="attr"><b>J. Peter Steidlmayer</b> · founder of Market Profile, via Dalton, <em>Mind Over Markets</em> · 2013 · <a href="https://www.amazon.com/Mind-Over-Markets-Generated-Information/dp/1118531736">ref</a></div>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin:-2px 0 14px 4px">The auction's whole purpose is to find the price that moves the most volume — VWAP marks exactly where that happened.</p>
+
+  <div class="quote">
+    <p>"The AVWAP broadcasts the message of the market more clearly than any other technical tool I have studied."</p>
+    <div class="attr"><b>Brian Shannon, CMT</b> (@alphatrends) · <em>Maximum Trading Gains With Anchored VWAP</em> · 2023 · <a href="https://alphatrends.net/anchored-vwap/">alphatrends.net</a></div>
+  </div>
+
+  <div class="quote">
+    <p>"A VWAP schedule is only as good as its volume forecast."</p>
+    <div class="attr"><b>Talos Research</b> · institutional crypto execution desk · 2024 · <a href="https://www.talos.com/insights/vwap-or-twap-for-crypto-execution-a-market-impact-perspective">talos.com</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §07 COMMON TRAPS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where VWAP gets people chopped</div>
+    </div>
+  </div>
+
+  <div class="skim">The single biggest mistake: treating VWAP as a magic line in a balanced, low-volume tape — it only carries an edge when real volume is defending it.</div>
+
+  <div class="trap">
+    <div class="num"><em>1</em></div>
+    <div>
+      <h5>Trading VWAP in chop</h5>
+      <p>VWAP has an edge only when relative volume is high and price is trending off the line. In a low-volume, balanced range it is just the middle of the noise — buying every touch gets you chopped. Require a volume expansion before trusting a reclaim or loss.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num"><em>2</em></div>
+    <div>
+      <h5>Reading a stiff late-session line</h5>
+      <p>By late session the cumulative volume is enormous, so new prints barely move VWAP — a "rejection" near the close is half optical illusion. Weight late-day VWAP signals less; in crypto, respect the 00:00 UTC reset that re-sensitises the line.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num"><em>3</em></div>
+    <div>
+      <h5>Cherry-picking the anchor</h5>
+      <p>Anchored VWAP only works if the anchor is a real, objective event — a swing high/low, a CPI bar, a breakout. Shannon himself calls anchor choice "the most subjective part of our analysis." Anchor to events anyone can point to, not whatever makes the line "work" in hindsight.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="num"><em>4</em></div>
+    <div>
+      <h5>Confusing VWAP with a moving average</h5>
+      <p>Session VWAP resets; a 20-EMA does not. Dragging a single day's VWAP across multiple sessions produces garbage. For multi-day context use an anchored VWAP from a meaningful pivot, not a stretched intraday line.</p>
+    </div>
+  </div>
+  <div class="trap anti">
+    <div class="num"><em>5</em></div>
+    <div>
+      <h5>Overhyped: VWAP bands as a crystal ball</h5>
+      <p>The ±2σ/±3σ "statistical reversion" framing borrows the language of a normal distribution, but crypto returns are fat-tailed. A 3σ stretch inside a trending squeeze keeps going and stops out every mean-reversion fader. The bands map where price is <em>stretched</em>, not where it <em>must</em> turn — use them as a context filter, not a signal.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- §08 FURTHER READING -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Go Deeper</div>
+      <div class="section-sub">The canon and the execution view</div>
+    </div>
+  </div>
+
+  <div class="skim">Where to go deeper — the formula and history, the anchored-VWAP playbook, and how an institutional desk actually executes against the line.</div>
+
+  <div class="fr">
+    <div class="fr-item">
+      <div class="fr-type">Reference</div>
+      <div class="fr-body">
+        <a href="https://en.wikipedia.org/wiki/Volume-weighted_average_price">VWAP — formula, history &amp; benchmark use</a>
+        <span>The exact formula, the 1984 Abel Noser / Ford-pension origin, and how slippage grades broker execution.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Guide</div>
+      <div class="fr-body">
+        <a href="https://alphatrends.net/anchored-vwap/">Alphatrends — Master the Anchored VWAP Strategy</a>
+        <span>Brian Shannon, the AVWAP authority, on anchors, role reversal, and "innocent until proven guilty" trend reads.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Forensic</div>
+      <div class="fr-body">
+        <a href="https://www.talos.com/insights/vwap-or-twap-for-crypto-execution-a-market-impact-perspective">Talos — VWAP or TWAP for Crypto Execution</a>
+        <span>An institutional desk on market impact, volume forecasts, and why crypto's fragmented 24/7 liquidity bends VWAP.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Article</div>
+      <div class="fr-body">
+        <a href="https://www.tradingsim.com/blog/vwap-indicator-guide">TradingSim — VWAP Indicator Guide</a>
+        <span>Standard-deviation bands, the Value Zone, the institutional-reversion trade, and the most common VWAP mistakes.</span>
+      </div>
+    </div>
+    <div class="fr-item">
+      <div class="fr-type">Book</div>
+      <div class="fr-body">
+        <a href="https://www.amazon.com/Maximum-Trading-Gains-Anchored-VWAP/dp/B0BLZMMLLJ">Maximum Trading Gains With Anchored VWAP — Brian Shannon</a>
+        <span>The definitive AVWAP playbook for day, swing, and position traders (2023).</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="sources">
+    <b>Sources</b>
+    <a href="https://en.wikipedia.org/wiki/Volume-weighted_average_price">Wikipedia · VWAP</a>
+    <a href="https://alphatrends.net/anchored-vwap/">Alphatrends · Anchored VWAP</a>
+    <a href="https://www.talos.com/insights/vwap-or-twap-for-crypto-execution-a-market-impact-perspective">Talos · VWAP vs TWAP</a>
+    <a href="https://www.tradingsim.com/blog/vwap-indicator-guide">TradingSim · VWAP Guide</a>
+    <a href="https://www.amazon.com/Maximum-Trading-Gains-Anchored-VWAP/dp/B0BLZMMLLJ">Shannon · Maximum Trading Gains</a>
+    <a href="https://www.coingecko.com">CoinGecko · live BTC/ETH data</a>
+  </div>
+  <div>Alpha · Issue #61 · 27 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
