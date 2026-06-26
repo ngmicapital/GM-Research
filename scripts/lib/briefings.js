@@ -33,7 +33,7 @@ const TAG_PATTERNS = {
   // Rabbit hole: header-category first (new format: "History · Biography"), then further-card-pill (old format)
   'rabbit-hole':      /class="header-category">([^<]+)<\/div>|<span class="further-card-pill">([^<]+)<\/span>/g,
   'praxis-brief':     /\b(Stoic|Stoicism|Farnam|Manson|Philosophy|Strategy|CBT|Second Brain|Obsidian)\b/g,
-  'trading-concept':  /\b(Order Flow|Liquidations|CVD|Funding|Absorption|Wyckoff|FVG|Order Block|Liquidity|Open Interest|Spring|Upthrust|Accumulation|Distribution|Squeeze|Sweep|MSS|CHoCH|POC|Volume Profile|Delta|Gamma|GEX|Basis|MVRV|SOPR)\b/g,
+  'trading-concept':  /\b(Order Flow|Liquidations|CVD|Funding|Absorption|Wyckoff|FVG|Order Block|Liquidity|Open Interest|Spring|Upthrust|Accumulation|Distribution|Squeeze|Sweep|MSS|CHoCH|POC|Volume Profile|Delta|Gamma|GEX|Basis|MVRV|SOPR|FIFO|Queue Position|Microstructure|Market Maker|Order Priority|Time Priority|Spread|Slippage|HFT|Latency)\b/g,
 };
 
 const RH_SKIP_WORDS = new Set(['The','This','That','These','Those','When','What','Why','How','Who','Where','More','Less','Most','Just','Also','Only','Even','Very','Much','Many','Some','Other','Such','Each','Both','Then','They','With','From','Into','About','After','Before','During','Through','While','Which','Their','There']);
