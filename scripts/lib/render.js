@@ -15,7 +15,17 @@
 const { escapeHtml, stripHtml } = require('./text');
 
 const SCHEMAS = {
-  'rabbit-hole': { sections: 3, cardsMin: 4, cardsMax: 5, statsCount: 4, sourcesMin: 1 },
+  'rabbit-hole': {
+    statsCount: 4, cardsMin: 4, cardsMax: 5, sourcesMin: 3,
+    // Per-section paragraph floor — a cheaper model under-delivering depth (the
+    // Codex failure mode, and dc's "connections too shallow" note) aborts the
+    // render instead of publishing a thin page.
+    sections: [
+      { minParagraphs: 3 }, // §01 The Story
+      { minParagraphs: 3 }, // §02 The Mechanism
+      { minParagraphs: 4 }, // §03 The Connections — deepest section
+    ],
+  },
 };
 
 function fail(msg) { throw new Error(`render: ${msg}`); }
@@ -57,14 +67,17 @@ function validate(type, c) {
     fail('gm_meta.tags must be 1-3 tags');
   }
 
-  if (!Array.isArray(c.sections) || c.sections.length !== schema.sections) {
-    fail(`need exactly ${schema.sections} sections`);
+  if (!Array.isArray(c.sections) || c.sections.length !== schema.sections.length) {
+    fail(`need exactly ${schema.sections.length} sections`);
   }
   c.sections.forEach((sec, i) => {
     if (!nonEmptyStr(sec.number)) fail(`section ${i + 1} needs a number`);
     if (!nonEmptyStr(sec.title)) fail(`section ${i + 1} needs a title`);
     if (!Array.isArray(sec.blocks) || sec.blocks.length === 0) fail(`section ${i + 1} needs blocks`);
     sec.blocks.forEach((b, j) => validateBlock(b, i + 1, j + 1));
+    const paras = sec.blocks.filter(b => b && b.type === 'p').length;
+    const min = schema.sections[i].minParagraphs;
+    if (paras < min) fail(`section ${i + 1} is too shallow — needs at least ${min} paragraphs (has ${paras})`);
   });
 
   if (!Array.isArray(c.cards) || c.cards.length < schema.cardsMin || c.cards.length > schema.cardsMax) {
