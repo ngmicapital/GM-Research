@@ -51,6 +51,49 @@ const FRAGMENT_SCHEMAS = {
       { token: 'SECTION_8_BODY', minChars: 120 },
     ],
   },
+
+  'praxis-brief': {
+    stringTokens: ['DATE', 'OG_DESCRIPTION', 'TLDR'],
+    rawTokens: ['FOOTER_SOURCES'],
+    sections: [
+      { token: 'SECTION_1_BODY', minChars: 900 },  // §01 Key Ideas (3-4 cards)
+      { token: 'SECTION_2_BODY', minChars: 600 },  // §02 Strategy
+      { token: 'SECTION_3_BODY', minChars: 500 },  // §03 Tools
+      { token: 'SECTION_4_BODY', minChars: 350 },  // §04 On the Horizon
+    ],
+  },
+
+  'trading-concept': {
+    stringTokens: ['CONCEPT_NAME', 'OG_DESCRIPTION', 'DATE', 'ISSUE_NUMBER', 'READING_TIME',
+      'SECTION_TITLE_01', 'SECTION_TITLE_02', 'SECTION_TITLE_03', 'SECTION_TITLE_04',
+      'SECTION_TITLE_05', 'SECTION_TITLE_06', 'SECTION_TITLE_07', 'SECTION_TITLE_08',
+      'SECTION_SUB_01', 'SECTION_SUB_02', 'SECTION_SUB_03', 'SECTION_SUB_04',
+      'SECTION_SUB_05', 'SECTION_SUB_06', 'SECTION_SUB_07', 'SECTION_SUB_08'],
+    rawTokens: ['TLDR', 'SKIM_01', 'SKIM_02', 'SKIM_03', 'SKIM_04', 'SKIM_05', 'SKIM_06', 'SKIM_07', 'SKIM_08', 'FOOTER_SOURCES'],
+    sections: [
+      { token: 'SECTION_1_BODY', minChars: 600 },
+      { token: 'SECTION_2_BODY', minChars: 500 },
+      { token: 'SECTION_3_BODY', minChars: 900, requires: [/<svg[\s>]/i] },  // signature inline diagram is mandatory
+      { token: 'SECTION_4_BODY', minChars: 500 },
+      { token: 'SECTION_5_BODY', minChars: 600 },  // dark .tape card + live example
+      { token: 'SECTION_6_BODY', minChars: 250 },
+      { token: 'SECTION_7_BODY', minChars: 350 },
+      { token: 'SECTION_8_BODY', minChars: 200 },
+    ],
+  },
+
+  'biohacker-report': {
+    stringTokens: ['ISSUE_NUMBER', 'DATE', 'EDITION_LABEL', 'TLDR'],
+    rawTokens: ['TLDR_DETAIL', 'FOOTER_SOURCES'],
+    sections: [
+      { token: 'SECTION_0_BODY', minChars: 150 },  // §00 Wisdom — single quote (slimmed)
+      { token: 'SECTION_1_BODY', minChars: 400 },  // §01 Longevity science (depth anchor)
+      { token: 'SECTION_2_BODY', minChars: 300 },  // §02 Training
+      { token: 'SECTION_3_BODY', minChars: 300 },  // §03 Supplements & Nutrition
+      { token: 'SECTION_4_BODY', minChars: 200 },  // §04 Notable Reads
+      { token: 'SECTION_5_BODY', minChars: 200 },  // §05 Watchlist
+    ],
+  },
 };
 
 function fail(msg) { throw new Error(`render: ${msg}`); }
@@ -252,6 +295,11 @@ function renderSectionBriefing(type, template, content) {
     if (!nonEmptyStr(v)) fail(`missing section: ${s.token}`);
     if (v.length < s.minChars) {
       fail(`section ${s.token} too short — needs >=${s.minChars} chars (has ${v.length})`);
+    }
+    if (s.requires) {
+      for (const re of s.requires) {
+        if (!re.test(v)) fail(`section ${s.token} missing required content (${re})`);
+      }
     }
     repl[`{{${s.token}}}`] = v; // trusted inner HTML
   }

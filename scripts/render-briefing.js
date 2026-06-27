@@ -16,6 +16,9 @@ const { renderBriefing, renderSectionBriefing, SCHEMAS, FRAGMENT_SCHEMAS } = req
 const TEMPLATES = {
   'rabbit-hole': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-rabbit-hole', 'template.render.html'),
   'ai-briefing': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-ai-cortex', 'template.render.html'),
+  'praxis-brief': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-praxis', 'template.render.html'),
+  'trading-concept': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-alpha', 'trading-concept', 'template.render.html'),
+  'biohacker-report': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-biohacker', 'template.render.html'),
 };
 
 function main() {

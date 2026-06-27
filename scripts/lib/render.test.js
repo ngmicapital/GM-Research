@@ -24,6 +24,21 @@ const AI_TEMPLATE = fs.readFileSync(
   'utf8'
 );
 
+const PRAXIS_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-praxis', 'template.render.html'),
+  'utf8'
+);
+
+const TC_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-alpha', 'trading-concept', 'template.render.html'),
+  'utf8'
+);
+
+const BIO_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-biohacker', 'template.render.html'),
+  'utf8'
+);
+
 function validContent() {
   return {
     topic_title: 'The Smell Nobody Could <em>Name</em> Until 1964',
@@ -217,4 +232,72 @@ test('renderSectionBriefing throws on malformed gm_meta', () => {
   const c = validAi();
   delete c.gm_meta.headline;
   assert.throws(() => renderSectionBriefing('ai-briefing', AI_TEMPLATE, c), /headline/);
+});
+
+// ── praxis-brief + trading-concept (section-fragment, more token shapes) ──────
+
+function validPraxis() {
+  const sections = {};
+  for (let i = 1; i <= 4; i++) {
+    sections[`SECTION_${i}_BODY`] = '<div class="card"><h3 class="card-title">Idea</h3><p>' + 'insight '.repeat(160) + '</p></div>';
+  }
+  return {
+    tokens: { DATE: '27 June 2026', OG_DESCRIPTION: 'This week converges on internal leverage.', TLDR: 'The highest-leverage gains are internal.' },
+    gm_meta: { headline: 'The leverage is internal', preview: 'Manson, Housel and Clear converge on one move.', tags: ['Mind', 'Finance'] },
+    raw: { FOOTER_SOURCES: '<p class="footer-meta">Praxis · Sydney</p><ul><li><a href="https://collabfund.com">Housel</a></li></ul>' },
+    sections,
+  };
+}
+
+test('renderSectionBriefing renders praxis-brief with no leftover tokens', () => {
+  const html = renderSectionBriefing('praxis-brief', PRAXIS_TEMPLATE, validPraxis());
+  assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
+  assert.match(html, /The highest-leverage gains are internal/);
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
+});
+
+function validTradingConcept() {
+  const tokens = { CONCEPT_NAME: 'Order Flow', OG_DESCRIPTION: 'What order flow is and why it matters.', DATE: '27 June 2026', ISSUE_NUMBER: '40', READING_TIME: '6 min' };
+  const raw = { TLDR: 'Order flow is the tape of <em>aggression</em> — who is hitting whom.', FOOTER_SOURCES: '<p>Alpha · Issue 40 · Sydney</p>' };
+  for (let i = 1; i <= 8; i++) {
+    const n = String(i).padStart(2, '0');
+    tokens[`SECTION_TITLE_${n}`] = `Section ${n}`;
+    tokens[`SECTION_SUB_${n}`] = `Subtitle ${n}`;
+    raw[`SKIM_${n}`] = `<strong>Skim line ${i} with <em>accent</em>.</strong>`;
+  }
+  const sections = {};
+  for (let i = 1; i <= 8; i++) sections[`SECTION_${i}_BODY`] = '<p>' + 'tape '.repeat(200) + '</p>';
+  sections.SECTION_3_BODY = '<svg viewBox="0 0 800 420"><text x="10" y="20">CVD</text></svg><p>' + 'diagram '.repeat(150) + '</p>';
+  return { tokens, gm_meta: { headline: 'Order flow, decoded', preview: 'How to read aggression on the tape.', tags: ['Orderflow', 'Microstructure'] }, raw, sections };
+}
+
+test('renderSectionBriefing renders trading-concept incl. the inline SVG, keeping skim markup', () => {
+  const html = renderSectionBriefing('trading-concept', TC_TEMPLATE, validTradingConcept());
+  assert.match(html, /<svg/);
+  assert.match(html, /Skim line 1 with <em>accent<\/em>/); // SKIM tokens are raw, markup preserved
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
+});
+
+test('renderSectionBriefing aborts a trading-concept whose §03 has no inline SVG', () => {
+  const c = validTradingConcept();
+  c.sections.SECTION_3_BODY = '<p>' + 'no diagram here '.repeat(70) + '</p>'; // long, but no <svg>
+  assert.throws(() => renderSectionBriefing('trading-concept', TC_TEMPLATE, c), /svg/i);
+});
+
+function validBio() {
+  const sections = {};
+  for (let i = 0; i <= 5; i++) sections[`SECTION_${i}_BODY`] = '<p>' + 'evidence '.repeat(70) + '</p>';
+  return {
+    tokens: { ISSUE_NUMBER: 'BIO-120', DATE: '27 June 2026', EDITION_LABEL: 'Biohacker Report', TLDR: 'The strongest signal this cycle is metabolic flexibility.' },
+    gm_meta: { headline: 'Biohacker — the real signal this cycle', preview: 'Longevity, training and supplement evidence, rated and sourced.', tags: ['Longevity', 'Training'] },
+    raw: { TLDR_DETAIL: '<p>Three things to try this cycle.</p>', FOOTER_SOURCES: '<p>Biohacker · Sydney</p><ul><li><a href="https://x">x</a></li></ul>' },
+    sections,
+  };
+}
+
+test('renderSectionBriefing renders biohacker-report with 0-indexed sections', () => {
+  const html = renderSectionBriefing('biohacker-report', BIO_TEMPLATE, validBio());
+  assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
+  assert.match(html, /metabolic flexibility/);
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
 });
