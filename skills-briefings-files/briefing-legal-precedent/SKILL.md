@@ -109,8 +109,8 @@ Search the web for significant legal, regulatory, and policy news from the **pas
 - `crypto law firm alert Sidley Norton Rose Goodwin Latham [current month] [current year]`
 - `Perkins Coie Cooley K&L Gates Baker McKenzie crypto regulatory [current month] [current year]`
 - `Blockchain Association Coin Center crypto policy [current month] [current year]`
-- `AI governance regulation policy [current month] [current year]`
-- `White House AI executive order framework [current month] [current year]`
+- `AI regulation enforcement action lawsuit [current month] [current year]`
+- `AI legislation bill statute rulemaking [current month] [current year]`
 
 **Batch 3 — Industry & Infrastructure:**
 - `Coinbase Ripple Circle crypto regulation news [current month] [current year]`
@@ -120,7 +120,9 @@ Search the web for significant legal, regulatory, and policy news from the **pas
 - `crypto exchange enforcement Binance OKX [current month] [current year]`
 - `tokenization RWA real world assets regulation [current month] [current year]`
 
-**Batch 4 — Consultation Portals:**
+**Batch 4 — Consultation Portals (Mon / Thu only — carry forward on other days):**
+
+Check today's day of week (AEST). If today is **Monday or Thursday**, run the full live portal sweep:
 - `site:consult.treasury.gov.au crypto OR digital OR fintech`
 - `site:sec.gov crypto task force [current year]`
 - `site:fca.org.uk consultation crypto [current year]`
@@ -129,7 +131,13 @@ Search the web for significant legal, regulatory, and policy news from the **pas
 - `site:aph.gov.au committee inquiry digital asset crypto`
 - `"open consultation" OR "call for submissions" OR "comment period" crypto AI regulation [current month] [current year]`
 
-**Second pass:** Re-search any categories with zero results. For consultation portals, run a dedicated
+If today is **any other day**, skip the portal sweep and carry forward the CONSULTATIONS_BODY from the
+most recent prior `legal-brief.html` (grep `CONSULTATIONS_BODY` token area, or read the `<tbody>` rows
+from the Open Submissions section of the latest file). Add a note to the table header cell reading
+`*(last refreshed <date of most recent Mon or Thu sweep>)*` so readers know the data age. The
+COUNTDOWN_BODY and PIPELINE_BODY still refresh daily — only the portal consultation sweep is gated.
+
+**Second pass:** Re-search any categories with zero results. On portal-sweep days, run a dedicated
 second pass on each government site — submission deadlines change frequently.
 
 **Golden quote sourcing:** For each story, use WebFetch on the actual source URL (regulator press

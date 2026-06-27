@@ -19,10 +19,19 @@ with a NEW study / NEW mechanism / NEW practical protocol — flag it with `⚡ 
 `.story-title` (or in the analysis lead).
 
 ## Research
-Run the searches in `biohacker-report-SKILL.md` STEP 1 in parallel (longevity science, hypertrophy/recovery,
-supplement evidence, nutrition/metabolic health, HRV/recovery protocols, longevity biomarkers). For any
-study you cite, **WebFetch the abstract/summary URL** to confirm it is real and extract the actual finding
-(sample size, outcome measure, effect size). Never cite a study from memory.
+
+### §00 Wisdom source (ONE lookup only)
+Run a single Gmail search for the most recent James Clear 3-2-1 newsletter (`subject:"3-2-1:" from:james@jamesclear.com`). If Gmail MCP is unavailable, run one WebSearch instead (`"James Clear 3-2-1" latest`). Pick the single best line; ignore Brain Food / Daily Stoic / Tim Ferriss — Praxis covers that lane.
+
+### §01–§05 Research (run in parallel)
+- `longevity science study [month] [year]` — look for Attia, Huberman, Rhonda Patrick mentions
+- `resistance training hypertrophy protocol research [month] [year]`
+- `supplement evidence update [month] [year]` — avoid creatine/Zone2/sleep unless new mechanism
+- `nutrition metabolism metabolic health research [month] [year]`
+- `recovery HRV sleep quality biohacking [month] [year]` — new protocols, not generic advice
+- `longevity biomarker blood test [month] [year]`
+
+For any study you plan to cite, **WebFetch the abstract/summary URL** to confirm it is real and extract the actual finding (sample size, outcome measure, effect size). Limit to **2–3 abstract fetches** — the most important claims only. Never cite a study from memory.
 
 ## Section structure (fixed titles — the renderer owns them; you supply each body)
 - **§00 Wisdom** — **ONE short curated quote only.** Praxis now owns the ideas/quotes lane, so this is a

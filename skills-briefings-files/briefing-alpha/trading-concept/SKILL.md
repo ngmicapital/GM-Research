@@ -104,10 +104,9 @@ Collect material before drafting. Run fetches in parallel.
 - If sources disagree on a nuance, note it inline with [Sources differ]
 
 ### 1B. Pull pro explanations & quotes
-- Web search: `site:x.com "{concept}" thread`
 - Web search: `"{concept}" Wyckoff` (where relevant)
 - Known accounts: @KobeissiLetter, @credo__v, @layerggofficial, @Luckshuryy, @CredibleCrypto, @TheCryptoDog, @AltcoinPsycho, @Pentosh1, @SmartContracter, @RaoulGMI, @100trillionUSD, @trader_dante, @TraderSZ
-- Target 1–3 high-signal quotes (≤25 words each). Always attribute and link.
+- Target 1–3 high-signal quotes (≤25 words each). Always attribute and link. Classic voices (Wyckoff, Livermore, Dalton, Schwager, Steenbarger) sourced from authoritative books/articles are preferred; do NOT search X/Twitter for threads — those searches return low-signal or unreachable results.
 
 ### 1C. Find real examples on today's tape
 - Web search for BTC/ETH intraday moves in the last 24–48h
@@ -115,8 +114,8 @@ Collect material before drafting. Run fetches in parallel.
 - If no current fit, use the most recent historical example honestly: "No current example — last clear instance was BTC 2024-10 accumulation."
 
 ### 1D. Further reading
-- Target 3–5 links: 1 canonical thread, 1 video, 1 book chapter, 1 deeper technical source
-- Verify all links resolve
+- Target 3–5 links: 1 video, 1 book chapter, 1 deeper technical source, and up to 1 article (no X/Twitter threads)
+- WebFetch-verify the TOP 2 links only. Remaining links may be cited from known-canonical sources (Investopedia, CME Institute, Binance Academy, Bybit Learn, tradingview.com/support, Coinglass docs) without a live fetch — label them `[standard reference]` in your working notes. Drop any link that a live fetch proves dead.
 
 ### Source Failure Rule
 If unreachable: "Source unavailable: [name] — [reason]". Never fabricate.
@@ -321,7 +320,7 @@ Before declaring complete:
 - [ ] Live Tape references a **specific** real example (date, price, what happened)
 - [ ] One classic-source quote AND one current-trader quote
 - [ ] Common Traps includes an honest "overhyped" callout where warranted
-- [ ] All Further Reading URLs were actually fetched in Step 1 — no hallucinations
+- [ ] Further Reading: top 2 URLs WebFetch-verified this run; remaining links are known-canonical sources (no hallucinated URLs)
 - [ ] `.tldr-text` paragraph present for site-index extraction
 - [ ] `{{GM_META}}` replaced with a valid `gm-meta` JSON block (headline/preview/tags) consistent with the `.tldr-text`
 - [ ] Concept isn't a duplicate of anything in the last 30 days

@@ -27,10 +27,14 @@ State the pick before writing (SKILL.md §0C): `PICKED`, `Category`, `Why this o
 - Anchor the definition from 2–3 authoritative explainers (Investopedia, CME, Binance Academy, Bybit
   Learn, Coinglass docs, tradingview.com/support). If sources disagree, note it inline `[Sources differ]`.
 - Pull 1–3 high-signal pro quotes (≤25 words, attributed + linked) — mix one classic voice (Wyckoff,
-  Livermore, Dalton, Schwager, Steenbarger) and one current X trader.
+  Livermore, Dalton, Schwager, Steenbarger) and one current trader. Do NOT search X/Twitter for threads —
+  those searches return low-signal or unreachable results; source classic quotes from books/articles instead.
 - Find a **specific** real example on the last 24–48h BTC/ETH tape (date, price, what happened). If no
   current fit, use the most recent honest historical instance and say so.
-- Gather 3–5 further-reading links you actually fetched (thread / video / book chapter / technical source).
+- Gather 3–5 further-reading links (video / book chapter / article / technical source — no X/Twitter threads).
+  **WebFetch-verify the TOP 2 links only.** Remaining links may be cited from known-canonical sources
+  (Investopedia, CME Institute, Binance Academy, Bybit Learn, tradingview.com/support, Coinglass docs)
+  without a live fetch. Drop any link that a live fetch proves dead.
 - **Honesty rule:** if the concept is more hype than substance, say so in Common Traps. Tony respects it.
 - **Source-failure rule:** if a source is unreachable, write "Source unavailable: <name> — <reason>".
   Never fabricate a quote, a price, or a link.
@@ -54,8 +58,8 @@ Open the *concept* in §01 with a stated position, not a wiki definition.
   `.attr` (Name · Source · Year · Link). At least one classic + one current-trader quote.
 - §07 **Common Traps** — 3–5 `.trap` blocks (amber border); at least one honest "overhyped" callout uses
   the `.trap.anti` variant (neutral grey border).
-- §08 **Further Reading** — 3–5 `.fr-item` rows (type label + linked title + one-line description). Only
-  links actually fetched in research.
+- §08 **Further Reading** — 3–5 `.fr-item` rows (type label + linked title + one-line description). No
+  X/Twitter threads. Top 2 links WebFetch-verified; remaining links must be known-canonical sources.
 
 ### §03 — the inline SVG (hard requirement; renderer enforces a higher length floor here)
 At least one `<svg>` inside a `.svg-wrap`, e.g.:
@@ -160,7 +164,8 @@ Lime-yellow terminal palette. The classes the template ships:
 - Each section body is substantive — the renderer enforces a per-section length floor; **§03 has the
   highest floor** because it must carry the inline SVG. A thin §03 (no real SVG) fails the render.
 - §03 body contains at least one `<svg …>` element; §05 body is the `.tape` card and includes the
-  TradingView `<iframe>`; §06 has 2–4 attributed quotes; §08 has 3–5 `.fr-item` links.
+  TradingView `<iframe>`; §06 has 2–4 attributed quotes; §08 has 3–5 `.fr-item` links (no X/Twitter
+  threads; top 2 WebFetch-verified this run, remaining from known-canonical sources).
 - `gm_meta`: headline ≤90, preview ≤180, **real Unicode only** (no `&mdash;`/`&amp;`), tags 1–3; keep it
   consistent with `raw.TLDR` (same concept and thesis). `CONCEPT_NAME`/`SECTION_TITLE_*`/`SECTION_SUB_*`
   are rendered as **plain text** — no HTML in those fields (put markup in SKIM/body instead).

@@ -30,19 +30,34 @@ Collect ALL data before writing. MCP tools always work without a browser. If a t
 nothing, fall back to WebSearch/WebFetch and **flag that data point inline with `<span class="est-badge">EST</span>`**.
 Live MCP data gets `<span class="live-badge">LIVE</span>` as the first element of the section body.
 
+**FIELD-EXTRACTION RULE — mandatory for every MCP call below:**
+After each MCP response arrives, immediately extract ONLY the fields listed in its whitelist (below) into
+a compact named variable or inline note. **Do NOT carry the raw JSON response forward into context or
+notes.** Discard everything outside the whitelist before moving to the next call. This keeps working
+context lean so later writing steps have full capacity.
+
 **Crypto prices & global — CoinGecko MCP (ALWAYS FIRST)**
 ```
 mcp__coingecko__execute — coins.markets.get for: bitcoin, ethereum, solana, ripple, hyperliquid, dogecoin (vs_currency usd, include 1d/7d change, volume, market cap)
 mcp__coingecko__execute — global.get for BTC dominance, total market cap, 24h volume
 ```
+Whitelist — `coins.markets.get`: per coin keep only `id`, `current_price`, `price_change_percentage_24h`, `price_change_percentage_7d_in_currency`, `market_cap`, `total_volume`. Discard all other fields.
+Whitelist — `global.get`: keep only `btc_dominance`, `total_market_cap.usd`, `total_volume.usd`, `market_cap_change_percentage_24h_usd`. Discard all other fields.
+
 **Derivatives — TrueNorth MCP (PRIMARY for liquidation map + funding)**
 ```
 mcp__truenorth__derivatives_analysis — token: "bitcoin"
 mcp__truenorth__derivatives_analysis — token: "ethereum"
 ```
 Returns OI, funding rate (annualised + percentile), liquidation clusters (long/short, USD amount, distance %), imbalance ratio.
+Whitelist — per token keep only: `open_interest` (total USD), `funding_rate_annualized`, `funding_rate_percentile`, `long_liquidation_clusters` (top 3 only: price level + USD size + distance %), `short_liquidation_clusters` (top 3 only: price level + USD size + distance %), `long_short_imbalance_ratio`. Discard all remaining cluster entries and all other payload fields.
+
 **Market indices — TrueNorth MCP** → `mcp__truenorth__market_index_price — index: "all"` (SPX, NDX, DJI, VIX, TNX/10Y, DXY, FTSE, DAX, Nikkei, Hang Seng).
+Whitelist — per index keep only: index name/symbol, current level, `change_24h_pct` (24h % change). Discard all other fields.
+
 **Equity snapshots — TrueNorth MCP** → `mcp__truenorth__stock_price_snapshot` for NVDA, INTC, SPY, QQQ + session-relevant tickers (price, % chg, MAs).
+Whitelist — per ticker keep only: `symbol`, `price`, `change_pct` (% change), `ma_50`, `ma_200` (moving averages, used in §2 and §5). Discard all other fields.
+
 **Prediction markets — prediction-markets-mcp**
 ```
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "bitcoin"
@@ -50,7 +65,9 @@ mcp__prediction-markets-mcp__get-prediction-markets — keyword: "federal reserv
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "recession"
 mcp__prediction-markets-mcp__get-prediction-markets — keyword: "inflation"
 ```
+Whitelist — per market keep only: market title/question, `yes_probability` (as a %), expiry/close date. Discard all other fields (full order book, raw prices, metadata, etc.). Retain the top 8–10 markets by relevance across all four keyword calls combined.
 If Polymarket times out: flag the §6 table data `EST` and add `<span class="est-badge">Polymarket MCP Timeout</span>` in the §6 title token.
+
 **News, top-volume stocks, fear & greed, ASX/Gold/WTI — WebSearch + WebFetch (fallback/augment)**
 ```
 WebSearch — "crypto bitcoin news today <date> ETF flows whale" · "NVDA AI semiconductor news <date>" · current major macro story (Fed/CPI/Moody's) · "geopolitical risk market <date>" · "bitcoin fear greed index <date>" · "ASX 200 <date>" · "DXY gold WTI crude <date>"

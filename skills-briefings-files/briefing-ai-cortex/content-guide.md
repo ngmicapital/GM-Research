@@ -14,8 +14,15 @@ A story repeats only with a NEW development — prefix its `<h3>` with `<span cl
 
 ## Research
 Run the searches in `ai-briefing-SKILL.md` STEP 1 in parallel (model landscape, benchmarks, open-source,
-deals/regulation, workflow tools, research). WebFetch the primary source for any quote. **§03 is now
+workflow tools, research). WebFetch the primary source for any quote. **§03 is now
 "Decentralized AI"** (see below) — research what decentralized-AI projects are *doing*, not just prices.
+
+**§03 prices — single MCP call, no web searches for price data:**
+Pull all decentralized-AI token prices in ONE CoinGecko MCP call:
+`ids: "bittensor,akash-network,render-token,venice-token,io-net,grass,nous-research"` (use CoinGecko IDs; omit any that don't resolve). Do NOT run separate web searches to find prices — the MCP call is the sole price source. Use prices as a secondary data point inside the narrative; never lead with them.
+
+**§05 scope — AI product/model/corporate/deals only (no regulatory duplication):**
+The Legal Brief routine owns regulatory enforcement, legislation/statutes, case law, and formal rulemaking. For §05 search and write only: funding rounds, M&A, IPO pipeline, corporate strategy, and AI company/model business news. Skip searches and stories that are purely about AI governance policy, new regulations, or enforcement actions — those belong in the Legal Brief. Keep anything about what AI companies or models *did* commercially.
 
 ## Section structure (fixed titles, §03 changed)
 - §01 **Model Landscape** — what shipped, version numbers, what they mean
@@ -27,7 +34,8 @@ deals/regulation, workflow tools, research). WebFetch the primary source for any
   Use the dark `.crypto-section` components — a `.token-grid` of 3 `.token` cards is good when you have
   concrete figures, but the section is narrative-first.
 - §04 **Open-Source Pulse** — GitHub trending, new HuggingFace releases, community moves
-- §05 **Deals & Regulation** — funding, M&A, IPO pipeline, policy
+- §05 **Deals & Regulation** — funding, M&A, IPO pipeline, AI corporate/product strategy. Regulatory
+  enforcement, legislation, statutes, and formal rulemaking belong in the Legal Brief — exclude them here.
 - §06 **Workflow & Tools** — new tools, MCP servers, agent frameworks
 - §07 **Research Radar** — 1–3 papers worth tracking, one paragraph each
 - §08 **Watchlist** — 3–5 numbered `watchlist-item` rows: what to watch next 24h and why

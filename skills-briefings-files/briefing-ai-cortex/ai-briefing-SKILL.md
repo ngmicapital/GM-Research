@@ -53,17 +53,18 @@ Run these searches **in parallel**. Target the past 24 hours.
 - `AI benchmark LLM leaderboard [month] [year]`
 - `SWE-bench HumanEval MMLU results [date]`
 
-**AI × Crypto:**
-- WebSearch or CoinGecko MCP for TAO (Bittensor), AKT (Akash), RENDER prices + 24h/7d/30d %
-- `AI crypto token news TAO AKT RENDER [date]`
+**Decentralized AI (§03):**
+- Pull ALL token prices in ONE CoinGecko MCP call (ids: bittensor, akash-network, render-token, venice-token, io-net, grass, nous-research; vs_currencies: usd; include_24hr_change: true). Do NOT run separate web searches for prices — this single call is the sole price source.
+- `decentralized AI compute inference bittensor akash render venice io.net news [date]` (qualitative: what shipped/announced/proved)
 
 **Open-source:**
 - `GitHub trending AI models [date]`
 - `open source LLM release huggingface [date]`
 
-**Deals, regulation & corporate:**
+**Deals & corporate (§05 — no regulatory duplication):**
 - `AI company funding IPO acquisition [date]`
-- `AI regulation policy EU US [date]`
+- `AI company corporate strategy product announcement [date]`
+- Skip searches for AI governance policy, legislation, enforcement, or formal rulemaking — those belong in the Legal Brief routine.
 
 **Workflow & tools:**
 - `AI coding tool agent workflow update [date]`
@@ -93,7 +94,7 @@ so future runs have it. Either way, do NOT read a prior full briefing body for c
 
 1. **§01 — Model Landscape** — what shipped, what changed, what the version number actually means
 2. **§02 — Claude Ecosystem** — Claude model status, Claude Code/SDK updates, Anthropic corporate
-3. **§03 — AI × Crypto** — TAO, AKT, RENDER prices + position carry-forward from yesterday's issue
+3. **§03 — Decentralized AI** — what decentralized-AI projects shipped/announced/proved (Venice, Bittensor/TAO, Akash/AKT, Render, io.net, Grass, Prime Intellect, Nous); prices from the single CoinGecko MCP call as secondary data points
 4. **§04 — Open-Source Pulse** — GitHub trending, new HuggingFace releases, community moves
 5. **§05 — Deals & Regulation** — funding, M&A, IPO pipeline, policy/regulatory moves
 6. **§06 — Workflow & Tools** — new tools, MCP servers, agent frameworks, productivity wins
@@ -145,7 +146,7 @@ push. Do not run those steps here — just save the HTML file and confirm it exi
 
 - Repeating yesterday's stories without a new development
 - Sections with no stated position ("remains to be seen", "could potentially")
-- AI×Crypto section without actual prices pulled from CoinGecko or a search
+- Decentralized AI section without actual prices pulled from the single CoinGecko MCP call (never from a web search)
 - Generic model summaries without version numbers or benchmark scores
 - Fabricating quotes — always fetch the primary source or mark [paraphrased]
 - Reading a prior full briefing HTML for styling — use `template.html`
