@@ -141,6 +141,15 @@ function fail(msg) { throw new Error(`render: ${msg}`); }
 function nonEmptyStr(v) { return typeof v === 'string' && v.trim().length > 0; }
 function hasEntities(s) { return /&[a-zA-Z]+;|&#\d+;/.test(s); }
 
+// Every render template opens with an authoring-instruction comment
+// (`<!-- TEMPLATE for <type>. Filled deterministically by … -->`) that documents
+// the file for editors. It must never reach the published page — generate-index
+// treats a leaked "TEMPLATE for …" comment as a BLOCKING content defect. Strip it
+// from the leading edge of the template (tolerating a BOM) before token fill.
+function stripTemplateComment(tpl) {
+  return tpl.replace(/^﻿?\s*<!--\s*TEMPLATE for[\s\S]*?-->\s*/i, '');
+}
+
 // ── Validation ────────────────────────────────────────────────────────────────
 // All structural + field checks happen here, up front, before any rendering.
 
@@ -279,7 +288,7 @@ function renderBriefing(type, template, content) {
     repl[`{{SECTION_${i + 1}_BODY}}`]   = renderSectionBody(sec);
   });
 
-  let html = template;
+  let html = stripTemplateComment(template);
   for (const [token, value] of Object.entries(repl)) {
     html = html.split(token).join(value);
   }
@@ -363,7 +372,7 @@ function renderSectionBriefing(type, template, content) {
     repl[`{{${s.token}}}`] = v; // trusted inner HTML
   }
 
-  let html = template;
+  let html = stripTemplateComment(template);
   for (const [token, value] of Object.entries(repl)) {
     html = html.split(token).join(value);
   }
