@@ -1,0 +1,87 @@
+name: Daily Site Health Check
+
+# Runs the deterministic site health check (scripts/health-check.js) in CI — ZERO
+# Claude usage. This replaces the cloud "Daily Website Triage" routine, which kept
+# failing once the morning briefings drained the Claude usage budget. The script
+# is stdlib Node: it auto-fixes table/image issues, validates titles/desc/back-links/
+# tags, detects missing briefings, and runs the index/visualization generators.
+
+on:
+  schedule:
+    # 22:30 UTC ≈ 08:30 AEST (09:30 during Sydney DST) — after the morning
+    # briefings have published. Exact minute is not important; the check is
+    # time-tolerant and simply reports whatever is on disk.
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: health-check
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run health check (auto-fixes + report, runs generators)
+        run: node scripts/health-check.js
+
+      - name: Commit auto-fixes + health report (if anything changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          DAY=$(date -u +%Y-%m-%d)
+          git add briefings index.html visualizations.html
+          git add -f "health-reports/${DAY}.json" || true
+          if git diff --staged --quiet; then
+            echo "No changes from health check — nothing to commit."
+          else
+            git commit -m "chore: daily health check [${DAY}]"
+            for i in 1 2 3; do
+              git pull --rebase origin main \
+                && git push origin main \
+                && { echo "Pushed on attempt $i."; break; } \
+                || { echo "Push attempt $i failed, retrying..."; sleep 3; }
+            done
+          fi
+
+      - name: Summarise findings in the job log
+        if: always()
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          REPORT="health-reports/${DAY}.json"
+          [ -f "$REPORT" ] || { echo "No report written."; exit 0; }
+          {
+            echo "## Site health check (${DAY})"
+            echo "- ✅ passed: $(jq '.checks_passed|length' "$REPORT")"
+            echo "- 🔧 auto-fixed: $(jq '.auto_fixed|length' "$REPORT")"
+            echo "- 🤖 needs AI: $(jq '.needs_ai|length' "$REPORT")"
+            echo "- 👤 needs human: $(jq '.needs_human|length' "$REPORT")"
+            echo "- ❌ errors: $(jq '.errors|length' "$REPORT")"
+            if [ "$(jq '.needs_human|length' "$REPORT")" -gt 0 ]; then
+              echo "### Needs human"
+              jq -r '.needs_human[] | "- " + (.message // .type // tojson)' "$REPORT"
+            fi
+            if [ "$(jq '.errors|length' "$REPORT")" -gt 0 ]; then
+              echo "### Errors"
+              jq -r '.errors[] | "- " + .' "$REPORT"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail the run if a generator errored (real defect — pings notify-failure)
+        run: |
+          DAY=$(date -u +%Y-%m-%d)
+          REPORT="health-reports/${DAY}.json"
+          [ -f "$REPORT" ] || exit 0
+          ERRORS=$(jq '.errors|length' "$REPORT")
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "Health check recorded $ERRORS error(s) — see summary."
+            exit 1
+          fi
