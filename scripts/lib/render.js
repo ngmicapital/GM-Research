@@ -28,6 +28,31 @@ const SCHEMAS = {
   },
 };
 
+// Section-fragment briefings: the writer supplies each section's inner HTML; the
+// renderer locks the page chrome + gm-meta and enforces section presence + a
+// per-section length floor (depth). Used for the rich 8-section briefings where a
+// full per-block JSON schema would be heavy. minChars is a deliberate floor that
+// rejects a stunted section (the Codex failure mode) without over-constraining.
+const FRAGMENT_SCHEMAS = {
+  'ai-briefing': {
+    stringTokens: ['ISSUE_NUMBER', 'DATE', 'DAY_OF_WEEK',
+      'TOP_HEADLINE_1', 'TOP_HEADLINE_2', 'TOP_HEADLINE_3', 'TLDR',
+      'SECTION_1_TITLE', 'SECTION_2_TITLE', 'SECTION_3_TITLE', 'SECTION_4_TITLE',
+      'SECTION_5_TITLE', 'SECTION_6_TITLE', 'SECTION_7_TITLE', 'SECTION_8_TITLE'],
+    rawTokens: ['TLDR_DETAIL', 'FOOTER_SOURCES'],
+    sections: [
+      { token: 'SECTION_1_BODY', minChars: 300 },
+      { token: 'SECTION_2_BODY', minChars: 300 },
+      { token: 'SECTION_3_BODY', minChars: 200 },
+      { token: 'SECTION_4_BODY', minChars: 200 },
+      { token: 'SECTION_5_BODY', minChars: 200 },
+      { token: 'SECTION_6_BODY', minChars: 200 },
+      { token: 'SECTION_7_BODY', minChars: 150 },
+      { token: 'SECTION_8_BODY', minChars: 120 },
+    ],
+  },
+};
+
 function fail(msg) { throw new Error(`render: ${msg}`); }
 function nonEmptyStr(v) { return typeof v === 'string' && v.trim().length > 0; }
 function hasEntities(s) { return /&[a-zA-Z]+;|&#\d+;/.test(s); }
@@ -54,18 +79,7 @@ function validate(type, c) {
     }
   });
 
-  const m = c.gm_meta;
-  if (!m || typeof m !== 'object') fail('missing gm_meta');
-  if (!nonEmptyStr(m.headline)) fail('gm_meta.headline required');
-  if (m.headline.length > 90) fail('gm_meta.headline must be <=90 chars');
-  if (!nonEmptyStr(m.preview)) fail('gm_meta.preview required');
-  if (m.preview.length > 180) fail('gm_meta.preview must be <=180 chars');
-  if (hasEntities(m.headline) || hasEntities(m.preview)) {
-    fail('gm_meta headline/preview must use real Unicode, not HTML entities');
-  }
-  if (!Array.isArray(m.tags) || m.tags.length < 1 || m.tags.length > 3) {
-    fail('gm_meta.tags must be 1-3 tags');
-  }
+  validateGmMeta(c.gm_meta);
 
   if (!Array.isArray(c.sections) || c.sections.length !== schema.sections.length) {
     fail(`need exactly ${schema.sections.length} sections`);
@@ -165,7 +179,7 @@ function renderBriefing(type, template, content) {
     '{{HEADER_META_SUMMARY}}': escapeHtml(content.header_meta_summary),
     '{{TLDR}}': escapeHtml(content.tldr_text),
     '{{TLDR_LONG}}': content.tldr_long,
-    '{{GM_META}}': JSON.stringify(content.gm_meta).replace(/</g, '\\u003c'),
+    '{{GM_META}}': gmMetaJson(content.gm_meta),
     '{{CARDS}}': renderCards(content.cards),
     '{{SOURCES}}': renderSources(content.sources),
   };
@@ -192,4 +206,67 @@ function renderBriefing(type, template, content) {
   return html;
 }
 
-module.exports = { renderBriefing, validate, SCHEMAS };
+// ── gm-meta (shared by both renderers) ───────────────────────────────────────
+
+function validateGmMeta(m) {
+  if (!m || typeof m !== 'object') fail('missing gm_meta');
+  if (!nonEmptyStr(m.headline)) fail('gm_meta.headline required');
+  if (m.headline.length > 90) fail('gm_meta.headline must be <=90 chars');
+  if (!nonEmptyStr(m.preview)) fail('gm_meta.preview required');
+  if (m.preview.length > 180) fail('gm_meta.preview must be <=180 chars');
+  if (hasEntities(m.headline) || hasEntities(m.preview)) {
+    fail('gm_meta headline/preview must use real Unicode, not HTML entities');
+  }
+  if (!Array.isArray(m.tags) || m.tags.length < 1 || m.tags.length > 3) {
+    fail('gm_meta.tags must be 1-3 tags');
+  }
+}
+
+function gmMetaJson(m) {
+  // Escape "<" so a stray "</script>" inside a value can't break out of the block.
+  return JSON.stringify(m).replace(/</g, '\\u003c');
+}
+
+// ── Section-fragment renderer ─────────────────────────────────────────────────
+
+function renderSectionBriefing(type, template, content) {
+  const schema = FRAGMENT_SCHEMAS[type];
+  if (!schema) fail(`unknown section-fragment type "${type}"`);
+  if (!content || typeof content !== 'object') fail('content must be an object');
+  validateGmMeta(content.gm_meta);
+
+  const repl = { '{{GM_META}}': gmMetaJson(content.gm_meta) };
+
+  for (const t of schema.stringTokens) {
+    const v = content.tokens && content.tokens[t];
+    if (!nonEmptyStr(v)) fail(`missing token: ${t}`);
+    repl[`{{${t}}}`] = escapeHtml(String(v));
+  }
+  for (const t of schema.rawTokens) {
+    const v = content.raw && content.raw[t];
+    if (!nonEmptyStr(v)) fail(`missing fragment: ${t}`);
+    repl[`{{${t}}}`] = v; // trusted inner HTML
+  }
+  for (const s of schema.sections) {
+    const v = content.sections && content.sections[s.token];
+    if (!nonEmptyStr(v)) fail(`missing section: ${s.token}`);
+    if (v.length < s.minChars) {
+      fail(`section ${s.token} too short — needs >=${s.minChars} chars (has ${v.length})`);
+    }
+    repl[`{{${s.token}}}`] = v; // trusted inner HTML
+  }
+
+  let html = template;
+  for (const [token, value] of Object.entries(repl)) {
+    html = html.split(token).join(value);
+  }
+  const leftover = html.match(/\{\{[A-Z0-9_]+\}\}/g);
+  if (leftover) fail(`unfilled template tokens: ${[...new Set(leftover)].join(', ')}`);
+  return html;
+}
+
+module.exports = {
+  renderBriefing, renderSectionBriefing,
+  validate, validateGmMeta,
+  SCHEMAS, FRAGMENT_SCHEMAS,
+};

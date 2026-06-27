@@ -11,10 +11,11 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { renderBriefing } = require('./lib/render');
+const { renderBriefing, renderSectionBriefing, SCHEMAS, FRAGMENT_SCHEMAS } = require('./lib/render');
 
 const TEMPLATES = {
   'rabbit-hole': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-rabbit-hole', 'template.render.html'),
+  'ai-briefing': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-ai-cortex', 'template.render.html'),
 };
 
 function main() {
@@ -45,7 +46,9 @@ function main() {
 
   let html;
   try {
-    html = renderBriefing(type, template, content);
+    html = SCHEMAS[type]
+      ? renderBriefing(type, template, content)          // strict per-block contract (rabbit-hole)
+      : renderSectionBriefing(type, template, content);  // section-fragment contract (rich briefings)
   } catch (e) {
     console.error(`✗ ${e.message}`);
     process.exit(1);

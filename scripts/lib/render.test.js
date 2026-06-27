@@ -12,10 +12,15 @@ const assert   = require('node:assert');
 const fs       = require('fs');
 const path     = require('path');
 
-const { renderBriefing } = require('./render');
+const { renderBriefing, renderSectionBriefing } = require('./render');
 
 const TEMPLATE = fs.readFileSync(
   path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-rabbit-hole', 'template.render.html'),
+  'utf8'
+);
+
+const AI_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-ai-cortex', 'template.render.html'),
   'utf8'
 );
 
@@ -155,4 +160,61 @@ test('throws when a source is missing its url', () => {
   const c = validContent();
   delete c.sources[0].url;
   assert.throws(() => renderBriefing('rabbit-hole', TEMPLATE, c), /source/);
+});
+
+// ── Section-fragment renderer (ai-briefing and the other rich briefings) ──────
+// The writer supplies each section's inner HTML; the renderer locks the page
+// chrome + gm-meta and enforces section presence + a per-section length floor.
+
+function validAi() {
+  const tokens = {
+    ISSUE_NUMBER: '82', DATE: '27 June 2026', DAY_OF_WEEK: 'Saturday',
+    TOP_HEADLINE_1: 'Decentralized AI', TOP_HEADLINE_2: 'Open models', TOP_HEADLINE_3: 'Agents',
+    TLDR: 'The biggest move today is decentralized AI compute coming of age.',
+  };
+  for (let i = 1; i <= 8; i++) tokens[`SECTION_${i}_TITLE`] = `Section ${i} Title`;
+  const sections = {};
+  for (let i = 1; i <= 8; i++) {
+    sections[`SECTION_${i}_BODY`] =
+      '<p class="skim"><strong>One-sentence skim.</strong></p><p>' + 'analysis '.repeat(45) + '</p>';
+  }
+  return {
+    tokens,
+    gm_meta: {
+      headline: 'Decentralized AI compute is the day\'s real move',
+      preview: 'Venice/VVV, Bittensor and Akash all shipped — the spine of AI is decentralising.',
+      tags: ['AI', 'Decentralized AI'],
+    },
+    raw: {
+      TLDR_DETAIL: '<p>Two things to act on, three to monitor.</p>',
+      FOOTER_SOURCES: '<h4>Sources</h4><ul><li><a href="https://venice.ai">Venice</a></li></ul>',
+    },
+    sections,
+  };
+}
+
+test('renderSectionBriefing fills the ai-briefing chrome, gm-meta and all sections', () => {
+  const html = renderSectionBriefing('ai-briefing', AI_TEMPLATE, validAi());
+  assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
+  assert.match(html, /Issue 82/);
+  assert.match(html, /class="skim tldr-text">The biggest move today/);
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
+});
+
+test('renderSectionBriefing throws when a section body is missing', () => {
+  const c = validAi();
+  delete c.sections.SECTION_5_BODY;
+  assert.throws(() => renderSectionBriefing('ai-briefing', AI_TEMPLATE, c), /SECTION_5_BODY/);
+});
+
+test('renderSectionBriefing throws when a section is below the length floor', () => {
+  const c = validAi();
+  c.sections.SECTION_2_BODY = '<p>too short</p>';
+  assert.throws(() => renderSectionBriefing('ai-briefing', AI_TEMPLATE, c), /too short/);
+});
+
+test('renderSectionBriefing throws on malformed gm_meta', () => {
+  const c = validAi();
+  delete c.gm_meta.headline;
+  assert.throws(() => renderSectionBriefing('ai-briefing', AI_TEMPLATE, c), /headline/);
 });
