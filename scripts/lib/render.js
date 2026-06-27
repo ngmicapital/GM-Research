@@ -94,6 +94,47 @@ const FRAGMENT_SCHEMAS = {
       { token: 'SECTION_5_BODY', minChars: 200 },  // §05 Watchlist
     ],
   },
+
+  // Legal: repeating story cards live in ONE raw fragment (STORIES), so the floor
+  // + marker guard live on the rawToken, not on sections (which is empty here).
+  'legal-brief': {
+    stringTokens: ['DATE', 'DATE_LINE', 'OG_DESCRIPTION', 'STORY_COUNT', 'SOURCE_COUNT', 'PERIOD'],
+    rawTokens: [
+      'SIDEBAR_NAV',
+      { token: 'STORIES', minChars: 3500, requires: [/class="story-title"/] },  // >=4 real story cards
+      'BRIEF_NOTES_BODY',
+      { token: 'COUNTDOWN_BODY', minChars: 400 },
+      { token: 'PIPELINE_BODY', minChars: 400 },
+      { token: 'CONSULTATIONS_BODY', minChars: 350 },
+      { token: 'FOOTER_SOURCES', minChars: 150 },
+    ],
+    sections: [],
+  },
+
+  // Market: section titles carry emoji entities so they stay raw (escaping would
+  // double-encode); catalyst banner + delta strip are optional; the four
+  // table-bearing sections must actually contain a <table>.
+  'market-briefing': {
+    stringTokens: ['DATE', 'OG_DESCRIPTION', 'READING_TIME', 'CONVICTION'],
+    rawTokens: [
+      'CONVICTION_COLOR', 'TLDR_THESIS',
+      { token: 'CATALYST_BANNER', optional: true },
+      { token: 'DELTA_STRIP', optional: true },
+      'SECTION_1_TITLE', 'SECTION_2_TITLE', 'SECTION_3_TITLE', 'SECTION_4_TITLE',
+      'SECTION_5_TITLE', 'SECTION_6_TITLE', 'SECTION_7_TITLE', 'SECTION_8_TITLE',
+      'FOOTER_SOURCES',
+    ],
+    sections: [
+      { token: 'SECTION_1_BODY', minChars: 2200, requires: [/<table[\s>]/i] },  // §1 Macro
+      { token: 'SECTION_2_BODY', minChars: 2200, requires: [/<table[\s>]/i] },  // §2 Equities
+      { token: 'SECTION_3_BODY', minChars: 3000, requires: [/<table[\s>]/i] },  // §3 Crypto (depth anchor)
+      { token: 'SECTION_4_BODY', minChars: 1400 },                              // §4 Regulatory
+      { token: 'SECTION_5_BODY', minChars: 1800 },                              // §5 AI & Semis
+      { token: 'SECTION_6_BODY', minChars: 2200, requires: [/<table[\s>]/i] },  // §6 Prediction
+      { token: 'SECTION_7_BODY', minChars: 1800 },                              // §7 Geopolitical (~3 alerts)
+      { token: 'SECTION_8_BODY', minChars: 1200 },                              // §8 Watchlist
+    ],
+  },
 };
 
 function fail(msg) { throw new Error(`render: ${msg}`); }
@@ -285,9 +326,27 @@ function renderSectionBriefing(type, template, content) {
     if (!nonEmptyStr(v)) fail(`missing token: ${t}`);
     repl[`{{${t}}}`] = escapeHtml(String(v));
   }
-  for (const t of schema.rawTokens) {
+  for (const entry of schema.rawTokens) {
+    // A rawToken may be a bare string (required, non-empty) or an object with an
+    // optional length floor (minChars), marker guards (requires), or optional:true
+    // (a slot that renders empty when the writer omits it — e.g. a catalyst banner
+    // on a quiet day). This is how the big repeating fragments (legal STORIES, the
+    // tracker tables) get a depth floor even though they aren't fixed sections.
+    const spec = typeof entry === 'string' ? { token: entry } : entry;
+    const t = spec.token;
     const v = content.raw && content.raw[t];
-    if (!nonEmptyStr(v)) fail(`missing fragment: ${t}`);
+    if (!nonEmptyStr(v)) {
+      if (spec.optional) { repl[`{{${t}}}`] = ''; continue; }
+      fail(`missing fragment: ${t}`);
+    }
+    if (spec.minChars && v.length < spec.minChars) {
+      fail(`fragment ${t} too short — needs >=${spec.minChars} chars (has ${v.length})`);
+    }
+    if (spec.requires) {
+      for (const re of spec.requires) {
+        if (!re.test(v)) fail(`fragment ${t} missing required content (${re})`);
+      }
+    }
     repl[`{{${t}}}`] = v; // trusted inner HTML
   }
   for (const s of schema.sections) {

@@ -39,6 +39,16 @@ const BIO_TEMPLATE = fs.readFileSync(
   'utf8'
 );
 
+const LEGAL_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-legal-precedent', 'template.render.html'),
+  'utf8'
+);
+
+const MARKET_TEMPLATE = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'skills-briefings-files', 'briefing-morning-edge', 'template.render.html'),
+  'utf8'
+);
+
 function validContent() {
   return {
     topic_title: 'The Smell Nobody Could <em>Name</em> Until 1964',
@@ -300,4 +310,71 @@ test('renderSectionBriefing renders biohacker-report with 0-indexed sections', (
   assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
   assert.match(html, /metabolic flexibility/);
   assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
+});
+
+// legal-brief: repeating story cards live in one raw fragment (raw.STORIES), so the
+// rawToken needs its OWN length floor + marker guard (sections[] is empty here).
+
+function validLegal() {
+  const story = '<article class="story-card tier-high"><h2 class="story-title">A regulatory development with real substance</h2><div class="quote">"A verbatim official quote here."</div><p>' + 'practitioner analysis '.repeat(60) + '</p></article>';
+  return {
+    tokens: { DATE: '27 June 2026', DATE_LINE: 'Saturday, 27 June 2026', OG_DESCRIPTION: 'ASIC sharpens crypto licensing.', STORY_COUNT: '4', SOURCE_COUNT: '12', PERIOD: 'Past 24 Hours' },
+    gm_meta: { headline: 'ASIC turns crypto compliance into a deadline', preview: 'A 30 June licensing deadline and a High Court win sharpen the message.', tags: ['ASIC', 'Licensing'] },
+    raw: {
+      SIDEBAR_NAV: '<a href="#story-1">Story 1</a><a href="#story-2">Story 2</a>',
+      STORIES: story.repeat(4),
+      BRIEF_NOTES_BODY: '<p>A couple of lower-tier notes.</p>',
+      COUNTDOWN_BODY: '<tr><td>A named regulatory deadline</td><td>2026-07-30</td><td>33 days</td></tr>'.repeat(8),
+      PIPELINE_BODY: '<tr><td>CLARITY Act</td><td>US</td><td>Committee</td><td>Advanced</td></tr>'.repeat(8),
+      CONSULTATIONS_BODY: '<tr><td>Treasury consultation on digital assets</td><td>AU</td><td>OPEN</td></tr>'.repeat(8),
+      FOOTER_SOURCES: '<h4>Tier 1 — Regulators</h4><p>SEC, CFTC, FDIC, OCC, Federal Reserve, FinCEN, FCA, ESMA, ASIC, MAS</p><h4>Tier 5 — Media</h4><p>CoinDesk, The Block</p>',
+    },
+    sections: {},
+  };
+}
+
+test('renderSectionBriefing renders legal-brief (empty sections, raw STORIES blob)', () => {
+  const html = renderSectionBriefing('legal-brief', LEGAL_TEMPLATE, validLegal());
+  assert.match(html, /class="story-title"/);
+  assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'no unfilled tokens');
+});
+
+test('renderSectionBriefing enforces a length floor on the raw STORIES fragment', () => {
+  const c = validLegal();
+  c.raw.STORIES = '<article class="story-card"><h2 class="story-title">One thin story</h2></article>'; // valid markup but far too short
+  assert.throws(() => renderSectionBriefing('legal-brief', LEGAL_TEMPLATE, c), /STORIES.*short|too short/i);
+});
+
+test('renderSectionBriefing enforces the story-card marker on STORIES', () => {
+  const c = validLegal();
+  c.raw.STORIES = '<p>' + 'lots of words but no story cards '.repeat(150) + '</p>'; // long but no story-title
+  assert.throws(() => renderSectionBriefing('legal-brief', LEGAL_TEMPLATE, c), /STORIES/);
+});
+
+// market-briefing: section-fragment with table `requires` guards + OPTIONAL tokens
+// (catalyst banner / since-yesterday strip omitted on quiet days).
+
+function validMarket() {
+  const tokens = { DATE: '27 June 2026', OG_DESCRIPTION: 'Pre-market read.', READING_TIME: '8 min', CONVICTION: 'Medium' };
+  const raw = { CONVICTION_COLOR: '#f0a030', TLDR_THESIS: '<p>The dominant variable today is the Fed path.</p>', FOOTER_SOURCES: '<p>Sources: CoinGecko, TrueNorth, Yahoo</p>' };
+  for (let i = 1; i <= 8; i++) raw[`SECTION_${i}_TITLE`] = `&#127757; Section ${i}`;
+  // CATALYST_BANNER and DELTA_STRIP deliberately omitted — they are optional.
+  const sections = {};
+  for (let i = 1; i <= 8; i++) sections[`SECTION_${i}_BODY`] = '<p>' + 'macro analysis '.repeat(200) + '</p>';
+  for (const i of [1, 2, 3, 6]) sections[`SECTION_${i}_BODY`] = '<table><tr><td>SPX</td><td>5800</td></tr></table><p>' + 'analysis '.repeat(400) + '</p>';
+  return { tokens, gm_meta: { headline: 'Fed path is the dominant variable today', preview: 'Macro, crypto and prediction markets converge.', tags: ['Macro', 'Crypto'] }, raw, sections };
+}
+
+test('renderSectionBriefing renders market-briefing, omitting absent optional tokens', () => {
+  const html = renderSectionBriefing('market-briefing', MARKET_TEMPLATE, validMarket());
+  assert.match(html, /<script type="application\/json" id="gm-meta">\{/);
+  assert.match(html, /<table>/);
+  assert.strictEqual(html.match(/\{\{[A-Z0-9_]+\}\}/g), null, 'optional tokens fill empty, none left over');
+});
+
+test('renderSectionBriefing enforces the data-table requirement on market §3', () => {
+  const c = validMarket();
+  c.sections.SECTION_3_BODY = '<p>' + 'no data table here '.repeat(300) + '</p>'; // long but no <table>
+  assert.throws(() => renderSectionBriefing('market-briefing', MARKET_TEMPLATE, c), /table|SECTION_3/i);
 });

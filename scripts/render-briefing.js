@@ -19,6 +19,8 @@ const TEMPLATES = {
   'praxis-brief': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-praxis', 'template.render.html'),
   'trading-concept': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-alpha', 'trading-concept', 'template.render.html'),
   'biohacker-report': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-biohacker', 'template.render.html'),
+  'legal-brief': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-legal-precedent', 'template.render.html'),
+  'market-briefing': path.join(__dirname, '..', 'skills-briefings-files', 'briefing-morning-edge', 'template.render.html'),
 };
 
 function main() {
