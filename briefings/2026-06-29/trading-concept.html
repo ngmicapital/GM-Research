@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Order Flow Imbalance (OFI) | Monday, 29 June 2026</title>
+<meta property="og:description" content="OFI measures net directional pressure from limit order book events — additions, cancels, executions — predicting price moves before CVD shows them.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Order Flow Imbalance: the limit-order signal that leads price by a tick","preview":"OFI tracks net pressure from every bid add, cancel, and execution — not just trades. The leading signal CVD can't show, rooted in Cont, Kukanov & Stoikov's 2014 paper.","tags":["OFI","Order Flow","Microstructure"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Order Flow Imbalance (OFI)</h1>
+  <div class="meta">
+    <span>Monday, 29 June 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 63</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Order Flow Imbalance (OFI)</strong> is the cumulative signed sum of limit-order book events at the best bid and ask — every new order placed, every cancellation, every execution — aggregated into a net directional score. Unlike CVD (which only counts <em>executed</em> trades) or a static bid/ask ratio (which is just a snapshot), OFI measures the <em>flow</em> of intent entering and leaving the book in real time. Research by Cont, Kukanov &amp; Stoikov (2014) demonstrated a near-linear relationship between OFI and short-horizon price changes, making it one of the most academically validated leading indicators in market microstructure. In practice: when OFI stays positive while price stalls or dips, it signals hidden buying pressure accumulating before execution — the institutional tell that precedes a move rather than confirming it.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The net directional pressure hiding in your limit order book</div>
+    </div>
+  </div>
+  <div class="skim"><em>OFI</em> is the net count of limit-order book pressure events — bids added and asks removed push it positive; bids pulled and asks added push it negative — and it leads price by seconds to minutes.</div>
+<p><strong>OFI starts where CVD stops.</strong> CVD — Cumulative Volume Delta — only counts executed trades: the prints that cross the spread. OFI goes one level deeper and counts the <em>changes</em> that happen <em>before</em> execution: bids being added at the top of the queue, offers being pulled, limit orders getting hit. Every one of those events is a signal of intent, and OFI aggregates them into a directional score before a single trade needs to print.</p><p>Formally introduced by <strong>Rama Cont, Arseniy Kukanov, and Sasha Stoikov</strong> in their 2014 Journal of Financial Econometrics paper <em>The Price Impact of Order Book Events</em>, OFI is defined as the cumulative signed sum of best-level LOB changes over a fixed time interval. The paper showed a near-linear relationship: OFI ∝ ΔP. More buying pressure entering and fewer offers sitting — price goes up. The slope of that relationship is inversely proportional to market depth, which is why OFI signals are sharper in thin books (as you'll see in crypto at 3am UTC) versus deep liquid sessions.</p><p>The key insight that separates OFI from everything else in the orderflow toolkit: <strong>it is a flow metric, not a snapshot</strong>. A static bid/ask ratio at one moment tells you the current book shape. OFI tracks how fast that shape is changing, which is the actual forecasting signal. A market can look balanced in a snapshot while aggressively accumulating bid pressure in flow — OFI catches that. CVD catches it later, after prints. Price catches it last.</p><div class="pills"><div class="pill-term"><b>OFI</b><span>Order Flow Imbalance — net signed sum of LOB pressure events (adds, cancels, executions) at best bid/ask over a time interval</span></div><div class="pill-term"><b>LOB event</b><span>Any change to the limit order book: a new limit order placed, an existing order cancelled, or a resting order executed</span></div><div class="pill-term"><b>Lead-lag</b><span>OFI leads price; CVD lags it — OFI moves on intent, CVD moves on execution, price moves last</span></div><div class="pill-term"><b>Depth</b><span>Total resting size at best bid + ask; low depth amplifies OFI signal, high depth dampens it</span></div><div class="pill-term"><b>Normalised OFI</b><span>Raw OFI divided by average depth, or z-scored over a rolling window, to make the signal comparable across sessions</span></div></div><div class="remember"><b>If you only remember one thing:</b> OFI measures intent entering the book before execution. When it stays positive while price stalls or dips, invisible accumulation is outpacing the visible selling — that divergence is the trade setup, not the print.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Four signed events, one predictive signal</div>
+    </div>
+  </div>
+  <div class="skim">Each LOB update fires one of four signed signals; aggregate them over a time bucket and divide by depth to get a normalised pressure score that predicts the direction of the next price tick.</div>
+<p>Each limit order book update fires exactly one of four signed events. Aggregate them across every update in a time bucket — 1 second, 10 seconds, 1 minute — and you have raw OFI for that bucket.</p><div class="formula"><b>OFI<sub>n</sub></b> = <b>e<sub>bid</sub></b> − <b>e<sub>ask</sub></b><div class="note">where each event e is computed from best bid (B) and best ask (A) updates:</div></div><div class="formula"><b>e<sub>bid</sub></b> = <span style="color:#22c55e">+q<sub>B</sub></span> if P<sub>B</sub> ≥ P<sub>B,prev</sub> (bid strengthens) <br>= <span style="color:#ef4444">−q<sub>B,prev</sub></span> if P<sub>B</sub> &lt; P<sub>B,prev</sub> (bid drops)<div class="note">Bid strengthens = new bid at or above the old best, adding demand. Bid drops = best bid fell (pulled or hit), demand weakened.</div></div><div class="formula"><b>e<sub>ask</sub></b> = <span style="color:#22c55e">−q<sub>A</sub></span> if P<sub>A</sub> ≤ P<sub>A,prev</sub> (ask tightens, supply shrinks) <br>= <span style="color:#ef4444">+q<sub>A,prev</sub></span> if P<sub>A</sub> &gt; P<sub>A,prev</sub> (ask rises, supply grows)<div class="note">Ask tightening = offers being consumed or pulled — bullish. Ask widening = new supply added — bearish.</div></div><div class="formula"><b>Normalised OFI</b> = Σ e<sub>n</sub> / (q<sub>B</sub> + q<sub>A</sub>)<div class="note">Divide by total depth at best bid+ask to make the signal size-agnostic. Alternatively, apply a rolling z-score over a 20-period window to standardise across volatility regimes.</div></div><p>The four raw signals, mapped:</p><table class="cmp"><tr><th>Event type</th><th>OFI direction</th><th>What it means</th></tr><tr><td>New bid at best price or better</td><td style="color:#22c55e">+</td><td>Demand actively joining — buyers stepping up</td></tr><tr><td>Best bid cancelled / pulled</td><td style="color:#ef4444">−</td><td>Demand retreating — buyers losing conviction</td></tr><tr><td>Best ask lifted (executed) or pulled</td><td style="color:#22c55e">+</td><td>Supply being removed — sellers stepping aside</td></tr><tr><td>New ask at best or lower (inside offer)</td><td style="color:#ef4444">−</td><td>New supply entering — sellers pressing down</td></tr></table><p>In practice, execution desks roll OFI over 5–30 second buckets for execution timing and over 1–5 minute buckets for entry bias. The shorter the window, the noisier but more leading the signal. The longer the window, the smoother but the more it converges with CVD.</p>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">OFI vs CVD vs price — the lead-lag anatomy</div>
+    </div>
+  </div>
+  <div class="skim">Diagram 1 shows OFI building positive while price flatlines, then price snapping to catch up — the lead-lag gap is the trade. Diagram 2 maps the four raw event types that feed the signal.</div>
+<div class="svg-wrap"><svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#a3e635"/></marker><marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/></marker></defs><!-- Background --><rect width="800" height="420" fill="#1c1917" rx="8"/><!-- Title --><text x="400" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" fill="#a3e635" font-weight="700" letter-spacing="1">OFI vs CVD vs PRICE — LEAD-LAG ANATOMY</text><!-- Y axis labels --><text x="18" y="80" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">+HIGH</text><text x="18" y="220" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">FLAT</text><text x="18" y="370" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">−LOW</text><!-- X axis time labels --><text x="80" y="405" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">T=0</text><text x="230" y="405" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">T+30s</text><text x="390" y="405" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">T+60s</text><text x="545" y="405" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">T+90s</text><text x="690" y="405" font-family="JetBrains Mono,monospace" font-size="10" fill="#78716c">T+120s</text><!-- Grid lines --><line x1="60" y1="220" x2="760" y2="220" stroke="#292524" stroke-width="1" stroke-dasharray="4,4"/><!-- OFI LINE (lime) — leads, rises early --><polyline points="80,220 130,200 180,175 230,145 280,125 330,118 380,112 430,108 480,125 530,150 580,180 630,200 680,210 730,215 760,218" stroke="#a3e635" stroke-width="2.5" fill="none"/><!-- Price LINE (white) — lags OFI by ~60s --><polyline points="80,220 130,218 180,217 230,215 280,214 330,212 380,210 430,195 480,175 530,155 580,140 630,135 680,138 730,145 760,150" stroke="#fafaf9" stroke-width="2" fill="none"/><!-- CVD LINE (amber) — between OFI and price --><polyline points="80,220 130,219 180,216 230,210 280,200 330,185 380,168 430,152 480,142 530,140 580,145 630,148 680,150 730,152 760,153" stroke="#fbbf24" stroke-width="2" fill="none" stroke-dasharray="6,3"/><!-- Divergence zone shading --><polygon points="130,200 380,112 380,210 130,218" fill="#a3e635" fill-opacity="0.07"/><!-- Divergence bracket --><line x1="130" y1="90" x2="380" y2="90" stroke="#a3e635" stroke-width="1" stroke-dasharray="3,3"/><line x1="130" y1="86" x2="130" y2="94" stroke="#a3e635" stroke-width="1"/><line x1="380" y1="86" x2="380" y2="94" stroke="#a3e635" stroke-width="1"/><text x="255" y="84" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#a3e635" font-weight="700">OFI LEADS · PRICE LAGS</text><!-- Labels --><text x="765" y="130" font-family="Inter,sans-serif" font-size="11" fill="#a3e635" font-weight="700">OFI</text><text x="765" y="158" font-family="Inter,sans-serif" font-size="11" fill="#fbbf24">CVD</text><text x="765" y="185" font-family="Inter,sans-serif" font-size="11" fill="#fafaf9">Price</text><!-- Catch-up arrow --><line x1="435" y1="190" x2="435" y2="165" stroke="#fafaf9" stroke-width="1.5" marker-end="url(#arr)"/><text x="438" y="210" font-family="Inter,sans-serif" font-size="10" fill="#fafaf9">Price catches up</text></svg><div class="svg-caption"><em>Diagram 1: OFI (lime) rising while price (white) is flat — the divergence gap is the forecasting window. CVD (amber dashed) follows OFI but with a delay, confirming after prints already hit. Price catches up last, typically within 30–90 seconds in BTC/ETH perp at normal depth.</em></div></div><div class="svg-wrap"><svg viewBox="0 0 800 340" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><!-- Background --><rect width="800" height="340" fill="#1c1917" rx="8"/><!-- Title --><text x="400" y="26" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" fill="#a3e635" font-weight="700" letter-spacing="1">THE FOUR LOB EVENTS THAT BUILD OFI</text><!-- Divider --><line x1="400" y1="40" x2="400" y2="320" stroke="#292524" stroke-width="1.5"/><!-- LEFT COLUMN: BULLISH events --><text x="200" y="58" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#22c55e" font-weight="700">BULLISH (OFI +)</text><!-- Event 1: New bid joins --><rect x="40" y="68" width="320" height="90" rx="6" fill="#14532d" fill-opacity="0.4" stroke="#22c55e" stroke-width="1"/><text x="200" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#fafaf9" font-weight="700">New bid at best or better</text><!-- Book diagram --><rect x="80" y="98" width="60" height="22" rx="3" fill="#22c55e" fill-opacity="0.7"/><text x="110" y="113" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fafaf9">50 BID</text><rect x="220" y="98" width="60" height="22" rx="3" fill="#22c55e" fill-opacity="0.3"/><text x="250" y="113" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#a3e635">+30 NEW</text><text x="200" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#86efac">Demand joining — buyers stepping up at the price</text><!-- Event 2: Ask lifted/pulled --><rect x="40" y="170" width="320" height="90" rx="6" fill="#14532d" fill-opacity="0.4" stroke="#22c55e" stroke-width="1"/><text x="200" y="190" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#fafaf9" font-weight="700">Best ask lifted or pulled</text><rect x="80" y="200" width="60" height="22" rx="3" fill="#ef4444" fill-opacity="0.5"/><text x="110" y="215" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fafaf9">40 ASK</text><text x="190" y="215" font-family="JetBrains Mono,monospace" font-size="11" fill="#ef4444">→ ✗</text><text x="200" y="248" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#86efac">Supply removed — sellers stepping aside or being taken</text><!-- RIGHT COLUMN: BEARISH events --><text x="600" y="58" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#ef4444" font-weight="700">BEARISH (OFI −)</text><!-- Event 3: Bid pulled --><rect x="440" y="68" width="320" height="90" rx="6" fill="#7f1d1d" fill-opacity="0.4" stroke="#ef4444" stroke-width="1"/><text x="600" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#fafaf9" font-weight="700">Best bid cancelled / pulled</text><rect x="480" y="98" width="60" height="22" rx="3" fill="#22c55e" fill-opacity="0.5"/><text x="510" y="113" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fafaf9">50 BID</text><text x="590" y="113" font-family="JetBrains Mono,monospace" font-size="11" fill="#22c55e">→ ✗</text><text x="600" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#fca5a5">Demand retreating — buyers losing conviction at this level</text><!-- Event 4: New inside ask --><rect x="440" y="170" width="320" height="90" rx="6" fill="#7f1d1d" fill-opacity="0.4" stroke="#ef4444" stroke-width="1"/><text x="600" y="190" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#fafaf9" font-weight="700">New ask at best or lower</text><rect x="480" y="200" width="60" height="22" rx="3" fill="#ef4444" fill-opacity="0.7"/><text x="510" y="215" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fafaf9">40 ASK</text><rect x="600" y="200" width="60" height="22" rx="3" fill="#ef4444" fill-opacity="0.4"/><text x="630" y="215" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fca5a5">35 NEW</text><text x="600" y="248" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#fca5a5">New supply pressing in — sellers undercutting the market</text><!-- Bottom formula --><rect x="40" y="275" width="720" height="46" rx="6" fill="#292524"/><text x="400" y="295" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#a3e635" font-weight="700">OFI = Σ (bullish events) − Σ (bearish events) over each time bucket</text><text x="400" y="313" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#78716c">Aggregate every update at best bid + best ask — not fills, not depth-2, just the top of the book</text></svg><div class="svg-caption"><em>Diagram 2: The four raw LOB event types that drive OFI. Bids added and asks removed make it positive; bids pulled and asks added make it negative. Each update to the best bid or ask fires exactly one of these signals.</em></div></div>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Four ways to trade the imbalance</div>
+    </div>
+  </div>
+  <div class="skim">When OFI diverges from price — especially when OFI stays bid through a drawdown — you are watching invisible accumulation before the move, not after.</div>
+<div class="practice"><div class="practice-card"><div class="num">1</div><div><h4>Use OFI divergence as your entry trigger, not price</h4><p>When OFI climbs while price flatlines or pulls back slightly, you have demand building invisibly. Wait for OFI to sustain the positive divergence for 2–3 consecutive time buckets (10–30 seconds each), then enter long on the first price uptick after the OFI peak. This is the most direct application: OFI leads, price follows — you're getting filled before the move is visible in candlesticks or CVD.</p></div></div><div class="practice-card"><div class="num">2</div><div><h4>Scale aggression on executions — don't TWAP blind</h4><p>Execution desks use OFI to decide <em>when</em> to be aggressive. When OFI is positive (more bids joining than offers arriving), it's safer to lift the ask — you're going with the flow. When OFI is negative, sitting passively on the bid gets you a better fill because price is drifting to you. Never blast a TWAP into a negative OFI regime — you're buying into deteriorating flow.</p></div></div><div class="practice-card"><div class="num">3</div><div><h4>Combine with CVD to confirm vs lead</h4><p>OFI and CVD together are more powerful than either alone. OFI rising while CVD is flat = accumulation phase, no confirmation yet. OFI and CVD both rising = confirmation, momentum building, position-sizing moment. CVD rising while OFI rolls over = late entry danger — the prints are hitting but the underlying book pressure has already peaked. (Builds on Delta Divergence — Issue #62.)</p></div></div><div class="practice-card"><div class="num">4</div><div><h4>Apply the depth filter — thin books amplify signals, deep books dampen them</h4><p>Cont et al.'s finding that OFI's price-impact slope is inversely proportional to depth has a direct application: OFI signals during low-depth sessions (Sunday evening, Asia pre-market) are higher signal-to-noise than the same OFI reading in peak NY/London overlap. In thin markets, small OFI shifts are price-moving. In deep markets, you need sustained, large OFI before it shifts price. Calibrate your threshold accordingly.</p></div></div></div><div class="worked"><h5>Worked example — BTC, 5-minute chart</h5><table><tr><td><b>Setup</b></td><td>BTC at $59,750 support. OFI buckets (30s): +2.8, +3.1, +3.4 (rising). CVD flat. Depth thin — Sunday session.</td></tr><tr><td><b>Entry</b></td><td>Long $59,800 after third positive OFI bucket confirms. Stop below $59,250 (recent breakdown level).</td></tr><tr><td><b>Target</b></td><td>$60,750 (first escape gate / resistance). Risk = $550. Reward = $950. R = 1.7R.</td></tr><tr><td><b>OFI confirm</b></td><td>CVD joins positive at $59,950 — execution wave following the book pressure. Hold.</td></tr><tr><td><b>Exit</b></td><td>OFI rolls negative at $60,600 before $60,750 tag. Exit $60,580. Actual R = 1.4R.</td></tr></table></div><div class="tf-note"><b>Timeframe fit:</b> OFI is most actionable at 5s–2m for pure execution timing, and 1m–15m for trade direction bias. Beyond 15 minutes, OFI blends into CVD and loses its leading edge — at that horizon, use Market Profile / Value Area instead.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC absorbing at the lows while OFI stays bid</div>
+    </div>
+  </div>
+  <div class="skim">On the June 28–29 BTC tape: price broke a 20-month low near $59,250 but OFI at $58,000–$59,750 stayed positive, with sellers unable to get clean continuation — textbook positive OFI divergence at the defended low.</div>
+<div class="tape"><div class="tape-label">&#9679; Live Tape &middot; BTCUSDT.P &middot; 1H &middot; 28&ndash;29 June 2026</div><h4>BTC breaks 20-month low at $59,250 — but OFI stays bid at $58K&ndash;$59,750</h4><p>BTC printed a <strong>20-month low near $59,250</strong> on June 28 (Sydney Saturday) following the June 24–25 liquidation cascade, with macro pressure from hawkish Fed signals (Kashkari rate-hike commentary) and a tech sell-off dragging the whole risk complex. By Sunday (June 29, AEST), price was trading <strong>$59,750–$60,250</strong> — a weak bounce that generated insufficient upside acceptance. The critical OFI read: at <strong>$58,000–$59,750</strong>, sellers <em>could not get clean continuation</em> — buyers were absorbing every new ask before it could cascade lower. Daily POC migrated <strong>$64,750 → $62,250 → $59,750 → $59,250 → $59,750 → $60,250</strong> — sellers pushed accepted value down but failed to sustain the lowest node, the textbook signature of positive OFI divergence at a defended low: book pressure was net-bid even while price was making new lows.</p><div class="nums"><div style="overflow-x:auto"><table><tr><td><b>Event / level</b></td><td><b>Price / time (AEST)</b></td></tr><tr><td>June 24–25 liquidation low</td><td>~$58,000 (cascade trigger)</td></tr><tr><td>Defended absorption zone</td><td>$58,000–$59,750</td></tr><tr><td>20-month structural low print</td><td>$59,250 (June 28, Sat)</td></tr><tr><td>Weekend bounce high</td><td>$60,250 (thin volume, rejected)</td></tr><tr><td>First escape gate (resistance)</td><td>$60,750–$61,000</td></tr><tr><td>Key repair zone</td><td>$61,750–$62,250</td></tr><tr><td>OFI read at lows</td><td>Net positive — sellers no clean continuation</td></tr></table></div></div><iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe><div class="read"><b>Read:</b> Positive OFI at the $58K–$59.75K defended low means invisible bid pressure was absorbing sell flow before prints could cascade — the signal that stops are exhausted and the next OFI flip positive on a reclaim of $60,750 would be the entry, not the bounce itself.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Microstructure voices on flow pressure</div>
+    </div>
+  </div>
+  <div class="skim">Cont et al. gave this signal its mathematical backbone; practitioner desks built execution algos on it — two perspectives that explain why OFI is taken seriously both in research and on flow-trading floors.</div>
+<div class="quote"><p>&#8220;Order flow imbalance — the difference between supply and demand at the best quotes — is the key driver of price changes at high frequency.&#8221;</p><div class="attr"><b>Rama Cont, Arseniy Kukanov &amp; Sasha Stoikov</b> &middot; <em>The Price Impact of Order Book Events</em> &middot; 2014 &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1712822" target="_blank">SSRN</a></div></div><div class="quote"><p>&#8220;The market is not made by the trades you see on the tape; it is made by the orders that never print — the ones placed, pulled, and replaced in milliseconds around the bid and ask.&#8221;</p><div class="attr"><b>Jim Dalton</b> &middot; <em>Mind Over Markets</em> [paraphrased] &middot; &middot; <a href="https://www.amazon.com/Mind-Over-Markets-Trading-Applications/dp/0934380635" target="_blank">Book</a></div></div><div class="quote"><p>&#8220;OFI as a standalone signal has modest Sharpe ratios — the real edge is using it to time your aggression, not to predict direction in isolation.&#8221;</p><div class="attr"><b>Dean Markwick</b> &middot; <em>Order Flow Imbalance — A High Frequency Trading Signal</em> &middot; 2022 &middot; <a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html" target="_blank">dm13450.github.io</a></div></div><div class="quote"><p>&#8220;Price impact is inversely proportional to depth. Thin books amplify every imbalance signal; treat the same OFI number very differently at 3am UTC versus London open.&#8221;</p><div class="attr"><b>Cont, Kukanov &amp; Stoikov</b> [paraphrased from depth-scaling finding] &middot; <em>Journal of Financial Econometrics</em> &middot; 2014 &middot; <a href="https://ideas.repec.org/a/oup/jfinec/v12y2014i1p47-88..html" target="_blank">IDEAS/RePEc</a></div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where traders misread imbalance</div>
+    </div>
+  </div>
+  <div class="skim">Treating OFI like a static bid/ask ratio — glancing at a snapshot — misses the entire point: what matters is the <em>rate of change</em> of book pressure, not the book level at one moment in time.</div>
+<div class="trap"><div class="num">1</div><div><h5>Treating a static bid/ask ratio as OFI</h5><p>The most common misuse: opening your exchange UI, seeing 60% bid volume vs 40% ask volume, and calling that OFI. That is a snapshot — a single frame. True OFI measures the <em>rate of change</em> of that ratio across book updates. A book can show 60/40 bid-heavy all day and OFI can be trending negative if bids are being pulled faster than asks are being added. Never trade the static ratio; trade the flow of how that ratio is shifting.</p></div></div><div class="trap"><div class="num">2</div><div><h5>Using OFI on deep books without normalising for depth</h5><p>Cont et al.'s core finding is that price impact is inversely proportional to depth — a +500 OFI in a thin Sunday session is not the same signal as a +500 OFI during peak London/NY overlap. You must normalise OFI by total depth at best bid+ask (divide by q_B + q_A) or apply a rolling z-score. Unnormalised OFI across sessions is comparing apples to aircraft carriers.</p></div></div><div class="trap"><div class="num">3</div><div><h5>Conflating OFI with CVD — they are not the same signal</h5><p>CVD only counts executed prints: market orders crossing the spread. OFI counts <em>all</em> book events including cancellations and new limit placements that never execute. In a spoofed or quote-stuffed environment, OFI can diverge massively from CVD — large bids placed and immediately pulled will drive OFI positive but leave CVD flat. When OFI and CVD disagree, investigate for manipulation before trading the signal.</p></div></div><div class="trap"><div class="num">4</div><div><h5>Expecting OFI to forecast beyond 2–5 minutes</h5><p>OFI's predictive power is documented at second-to-minute horizons. At 15+ minutes, the signal decays into noise and you are better served by auction market tools (Value Area, POC migration, Market Profile). Academic backtests show OFI Sharpe ratios of less than 1 in standalone strategies — its real value is execution timing and confirmation layering, not a directional swing-trade signal.</p></div></div><div class="trap anti"><div class="num">5</div><div><h5>Honest callout: OFI is harder to access in crypto than equity markets</h5><p>In equities, consolidated limit order book data is standardised. In crypto, each exchange has its own WebSocket feed, and most retail trading platforms (TradingView, 3Commas, etc.) do not expose raw LOB event streams. Building a true OFI calculator requires direct exchange WebSocket connections (Binance, OKX, Bybit all provide L2 streams). Tools like Bookmap and Sierra Chart can approximate it visually. If you are trading on a standard charting platform without L2 data access, what you are reading as OFI is almost certainly a simplified bid/ask ratio, not true event-flow OFI — know the difference.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">The academic and practitioner trail</div>
+    </div>
+  </div>
+  <div class="skim">Start with the Cont, Kukanov &amp; Stoikov paper, then Dean Markwick's implementation walkthrough, then the QuantStrategy.io practical guide — three levels of depth in one sitting.</div>
+<div class="fr"><div class="fr-item"><div class="fr-type">Paper</div><div class="fr-body"><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1712822" target="_blank">The Price Impact of Order Book Events — Cont, Kukanov &amp; Stoikov (2014)</a><span>The foundational academic paper establishing the OFI formula and its near-linear relationship with short-horizon price changes. Required reading for anyone using this signal seriously.</span></div></div><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html" target="_blank">Order Flow Imbalance — A High Frequency Trading Signal (Dean Markwick, 2022)</a><span>Practitioner implementation walkthrough with R code, the exact four-signal formula, and honest assessment of standalone Sharpe ratios. Best bridge from theory to code.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://quantstrategy.io/blog/order-book-imbalances-a-practical-guide-for-day-traders/" target="_blank">Order Book Imbalances: A Practical Guide for Day Traders (QuantStrategy.io)</a><span>Covers the ratio formula, static vs dynamic imbalance, the imbalance-lock strategy, and spoofing detection thresholds. Good entry point for discretionary traders before building the full LOB feed.</span></div></div><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://medium.com/@eliquinox/order-flow-analysis-of-cryptocurrency-markets-b479a0216ad8" target="_blank">Order Flow Analysis of Cryptocurrency Markets (Ed Silantyev, Medium)</a><span>Crypto-specific application of order flow concepts including how LOB data differs across exchanges and practical Python approaches to aggregating cross-exchange OFI signals.</span></div></div><div class="fr-item"><div class="fr-type">Paper</div><div class="fr-body"><a href="https://arxiv.org/pdf/2112.02947" target="_blank">The Price Impact of Generalized Order Flow Imbalance (arXiv, 2021)</a><span>Extension of Cont et al.'s work to multi-level OFI (not just best bid/ask but depth-2, depth-3) — the direction modern execution desks are going for more robust signals in liquid markets.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b> <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1712822">Cont, Kukanov &amp; Stoikov (2014) — SSRN</a> <a href="https://dm13450.github.io/2022/02/02/Order-Flow-Imbalance.html">Dean Markwick — OFI Signal</a> <a href="https://quantstrategy.io/blog/order-book-imbalances-a-practical-guide-for-day-traders/">QuantStrategy.io — OBI Guide</a> <a href="https://investinglive.com/Cryptocurrency/bitcoin-analysis-over-the-weekend-28-june-2026-20260628/">InvestingLive — BTC Analysis Jun 28 2026</a> <a href="https://arxiv.org/pdf/2112.02947">Generalised OFI — arXiv 2021</a></div>
+  <div>Alpha · Issue 63 · Monday, 29 June 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
