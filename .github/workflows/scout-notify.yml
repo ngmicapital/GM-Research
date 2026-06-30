@@ -1,0 +1,133 @@
+name: Scout Digest → Telegram
+
+# Fires when a weekly content-scout commit lands on main.
+# Parses content-scout.html to extract Quick Picks and sends a
+# formatted summary to Telegram.
+#
+# Uses the same secrets as notify-failure.yml:
+#   TELEGRAM_BOT_TOKEN  (Settings → Secrets → Actions)
+#   TELEGRAM_CHAT_ID    (Settings → Secrets → Actions)
+# If not yet set, this workflow no-ops gracefully.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content-scout.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # Only run on scout commits (path filter already narrows it, but be explicit)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.head_commit.message, 'scout:')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Parse digest and build Telegram message
+        id: build_msg
+        run: |
+          node - <<'NODEJS'
+          const fs = require('fs');
+          const html = fs.readFileSync('content-scout.html', 'utf8');
+
+          // ── Date from <title> ──────────────────────────────────────────
+          const titleMatch = html.match(/<title>Content Scout[^<]*?(\d{1,2}\s+\w+\s+\d{4})<\/title>/);
+          const dateStr = titleMatch ? titleMatch[1] : 'this week';
+
+          // ── Stats bar ──────────────────────────────────────────────────
+          const statsRe = /<div class="stat-value">(\d+)<\/div>\s*<div class="stat-label">([^<]+)<\/div>/g;
+          const stats = {};
+          let m;
+          while ((m = statsRe.exec(html)) !== null) {
+            stats[m[2].trim().toLowerCase()] = m[1];
+          }
+          const total      = stats['new uploads']      || '?';
+          const cats       = stats['active categories'] || '?';
+          const channels   = stats['active channels']  || '?';
+          const discovery  = stats['discovery picks']  || '?';
+
+          // ── RSS notice ─────────────────────────────────────────────────
+          const rssBlocked = html.includes('YouTube RSS blocked') || html.includes('YouTube RSS unavailable');
+
+          // ── Quick Picks ────────────────────────────────────────────────
+          // Match each pick-item block
+          const pickBlockRe = /<div class="pick-item">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
+          const picks = [];
+          while ((m = pickBlockRe.exec(html)) !== null) {
+            const block = m[1];
+            const rankM   = block.match(/<div class="pick-rank">(\d+)<\/div>/);
+            const titleM  = block.match(/<a href="[^"]*">([^<]+)<\/a>/);
+            const chanM   = block.match(/<div class="pick-channel">([^<]+)<\/div>/);
+            const metaM   = block.match(/<div class="pick-meta">([^<]+)<\/div>/);
+            if (rankM && titleM) {
+              picks.push({
+                rank:    rankM[1],
+                title:   titleM[1].replace(/&amp;/g,'&').replace(/&rsquo;/g,"'").replace(/&mdash;/g,'—').replace(/&ndash;/g,'–').replace(/&ldquo;/g,'"').replace(/&rdquo;/g,'"').replace(/&#8217;/g,"'"),
+                channel: chanM  ? chanM[1].trim() : '',
+                meta:    metaM  ? metaM[1].replace(/<[^>]+>/g,'').replace(/&middot;/g,'·').replace(/&mdash;/g,'—').replace(/&amp;/g,'&').trim() : '',
+              });
+            }
+          }
+
+          // ── Compose message ────────────────────────────────────────────
+          let lines = [];
+          lines.push(`📡 *Content Scout — ${dateStr}*`);
+          lines.push(`${total} new items · ${cats} categories · ${channels} channels${rssBlocked ? ' · ⚠ RSS fallback' : ''}`);
+          lines.push('');
+          lines.push('⚡ *Quick Picks*');
+          lines.push('');
+          for (const p of picks.slice(0, 8)) {
+            // Escape Markdown special chars in title
+            const t = p.title.replace(/[_*[\]()~`>#+=|{}.!-]/g, c => '\\' + c);
+            const c = p.channel.replace(/[_*[\]()~`>#+=|{}.!-]/g, c => '\\' + c);
+            // Keep meta short: take text up to the em-dash or first sentence
+            let meta = p.meta.replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
+            // Truncate at 120 chars
+            if (meta.length > 120) meta = meta.slice(0, 117) + '…';
+            const me = meta.replace(/[_*[\]()~`>#+=|{}.!-]/g, c => '\\' + c);
+            lines.push(`*${p.rank}\\. ${t}* — ${c}`);
+            if (meta) lines.push(`   _${me}_`);
+            lines.push('');
+          }
+          lines.push(`[Full digest →](https://ngmicapital.github.io/GM-Research/content-scout.html)`);
+
+          const msg = lines.join('\n');
+
+          // Write to file so the shell step can read it without quoting issues
+          fs.writeFileSync('/tmp/tg_msg.txt', msg);
+          console.log('Message built, length:', msg.length);
+          NODEJS
+
+      - name: Send to Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT:  ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set — skipping."
+            echo "Add them under Settings → Secrets → Actions."
+            exit 0
+          fi
+          MSG=$(cat /tmp/tg_msg.txt)
+          HTTP=$(curl -sS -o /tmp/tg_resp.json -w "%{http_code}" \
+            -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            --data-binary "$(jq -n --arg chat "$CHAT" --arg text "$MSG" \
+              '{chat_id:$chat,text:$text,parse_mode:"MarkdownV2",disable_web_page_preview:false}')")
+          echo "HTTP $HTTP"
+          cat /tmp/tg_resp.json
+          if [ "$HTTP" != "200" ]; then
+            echo "Telegram send failed (HTTP $HTTP)."
+            exit 1
+          fi
+          echo "Telegram notification sent."
