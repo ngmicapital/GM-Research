@@ -22,7 +22,7 @@ const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { stripHtml } = require('./lib/text');
 const { BRIEFING_FILENAMES, TAG_PATTERNS, extractTags } = require('./lib/briefings');
-const { todayAEST } = require('./lib/dates');
+const { todayAEST, atNoonUTC } = require('./lib/dates');
 
 const ROOT            = path.join(__dirname, '..');
 const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
@@ -331,20 +331,24 @@ for (const dateDir of dateDirs) {
     'market-briefing',
     'legal-brief',
     'ai-briefing',
-    'rabbit-hole',
     'trading-concept',
   ];
 
   // Briefings on alternating schedules
   const EXPECTED_ODD_DAY  = ['praxis-brief'];    // odd day-of-month
   const EXPECTED_EVEN_DAY = ['biohacker-report']; // even day-of-month
+  // rabbit-hole's job is cron'd Mon–Fri, so weekend absence is schedule design,
+  // not a failure — expecting it daily produced false alarms every weekend.
+  const EXPECTED_WEEKDAYS = ['rabbit-hole'];
 
   const flagDirs = dateDirs.slice(-RECENT_DAYS);
 
   for (const d of flagDirs) {
     const dayOfMonth = parseInt(d.split('-')[2], 10);
+    const dow = atNoonUTC(d).getUTCDay(); // 0=Sun..6=Sat; date-only, TZ-safe
     const expected = [
       ...EXPECTED_DAILY,
+      ...(dow >= 1 && dow <= 5 ? EXPECTED_WEEKDAYS : []),
       ...(dayOfMonth % 2 !== 0 ? EXPECTED_ODD_DAY : EXPECTED_EVEN_DAY),
     ];
 

@@ -338,9 +338,10 @@ Run before committing — all must pass:
 
 ## Step 3: Publish
 
-**On Windows (local scheduled-task run):** do NOT push manually — the wrapper runs `generate-index.js`
-then `git push origin main` after this skill completes. Running both would double-publish. (Per the
-project `CLAUDE.md`, all automated/scheduled work lands on `main`.)
+**On Windows (local scheduled-task run):** do NOT push manually — the wrapper runs
+`node scripts/publish-briefing.js --type rabbit-hole --date <DATE>` (serialized, self-verifying)
+after this skill completes. Running both would double-publish. (Per the project `CLAUDE.md`,
+all automated/scheduled work lands on `main`.)
 
 **On cloud/Linux** (no wrapper), publish via the GitHub Contents API the same way the other briefing
 skills do: base64-encode the HTML, PUT it to `briefings/YYYY-MM-DD/rabbit-hole.html` on `main`, then

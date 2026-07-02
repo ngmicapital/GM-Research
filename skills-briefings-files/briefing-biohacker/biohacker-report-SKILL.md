@@ -114,8 +114,9 @@ Count existing files: `(ls briefings/*/biohacker-report.html).Count` → Issue #
 
 Save to: `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\biohacker-report.html`
 
-The wrapper handles `generate-index.js`, git commit, and push. Do not run those steps — just
-save the HTML and confirm it exists.
+The wrapper publishes via `node scripts/publish-briefing.js` (which runs `generate-index.js
+--strict`, serializes against concurrent briefing jobs, commits, pushes, and verifies the
+push landed). Do not run those steps or any raw git — just save the HTML and confirm it exists.
 
 ---
 

@@ -406,8 +406,9 @@ Minimum 4 stories. If fewer than 4 genuinely novel stories in past 24 hours, bac
 ## Step 3: Publish to GitHub Briefings Archive
 
 **On Windows (local scheduled-task run):** Do NOT run the script below — publishing is handled by
-the wrapper, which runs `generate-index.js` then `git push origin main` after this skill completes.
-Running both would double-publish (two commits, two deploys).
+the wrapper, which runs `node scripts/publish-briefing.js --type legal-brief --date <DATE>`
+(serialized, self-verifying — no raw git) after this skill completes. Running both would
+double-publish (two commits, two deploys).
 
 **On cloud/Linux only** (no wrapper git push available), run this Python script (stdlib only):
 

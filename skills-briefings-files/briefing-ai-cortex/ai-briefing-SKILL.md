@@ -137,8 +137,10 @@ Issue #N = that count + 1.
 
 Save to: `C:\Users\Tony\Documents\briefings-site\briefings\YYYY-MM-DD\ai-briefing.html`
 
-The wrapper (scheduled-task SKILL.md) handles: `node scripts/generate-index.js`, git commit, and
-push. Do not run those steps here — just save the HTML file and confirm it exists.
+The wrapper (scheduled-task SKILL.md) publishes via `node scripts/publish-briefing.js` (which
+runs `generate-index.js --strict`, serializes against concurrent briefing jobs, commits, pushes,
+and verifies the push landed). Do not run those steps or any raw git here — just save the HTML
+file and confirm it exists.
 
 ---
 

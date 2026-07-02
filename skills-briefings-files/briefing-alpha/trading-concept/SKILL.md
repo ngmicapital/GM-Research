@@ -261,7 +261,8 @@ Create the date folder if missing.
 ### 3B. Publish to GitHub
 
 **On Windows (local scheduled-task run):** Publishing is handled by the wrapper after this skill
-completes — do NOT run the script below. The wrapper runs `generate-index.js` then `git push origin main`.
+completes — do NOT run the script below. The wrapper runs `node scripts/publish-briefing.js
+--type trading-concept --date <DATE>` (serialized, self-verifying — no raw git).
 
 **On cloud/Linux only** (no wrapper git push available), set `GITHUB_TOKEN` and run:
 

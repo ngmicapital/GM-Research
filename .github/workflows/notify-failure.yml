@@ -53,8 +53,11 @@ jobs:
         run: |
           TODAY=$(TZ=Australia/Sydney date +%F)
           DIR="briefings/${TODAY}"
-          # Five types are expected daily; praxis(odd)/biohacker(even) alternate.
-          EXPECTED="market-briefing legal-brief ai-briefing rabbit-hole trading-concept"
+          # Four types are expected daily; rabbit-hole runs Mon-Fri (its cron),
+          # so weekend absence is by design; praxis(odd)/biohacker(even) alternate.
+          EXPECTED="market-briefing legal-brief ai-briefing trading-concept"
+          DOW=$(TZ=Australia/Sydney date +%u)
+          if [ "$DOW" -le 5 ]; then EXPECTED="$EXPECTED rabbit-hole"; fi
           DAY=$(TZ=Australia/Sydney date +%-d)
           if [ $((DAY % 2)) -eq 0 ]; then EXPECTED="$EXPECTED biohacker-report"; else EXPECTED="$EXPECTED praxis-brief"; fi
           MISSING=""

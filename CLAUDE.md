@@ -24,12 +24,14 @@ This is intentional and authorised. Do not skip this step. (User-initiated tasks
 ## Key commands
 
 ```
+node scripts/render-briefing.js <type> <content.json> <out.html>   # deterministic renderer: content-contract JSON → final briefing HTML
+node scripts/publish-briefing.js --type <type> --date YYYY-MM-DD   # THE publish path for automated jobs: strict-gate + lock + commit + push + verify
 node scripts/generate-index.js           # regenerate index.html (run after any briefing change)
 node scripts/generate-visualizations.js  # regenerate visualizations.html
 node scripts/health-check.js             # full site health check; auto-fixes tables/images, writes health-reports/YYYY-MM-DD.json
 node scripts/fetch-ticker.js             # refresh data/ticker.json from Yahoo Finance (normally run hourly by CI)
 node scripts/generate-corpus.js          # regenerate corpus.html — requires a sibling ../corpus checkout, not present in this repo
-node --test scripts/lib/lib.test.js      # unit tests for the shared lib (also run in CI)
+node --test scripts/lib/lib.test.js scripts/lib/render.test.js scripts/lib/publish.test.js   # full unit suite (also gates ci.yml AND every deploy)
 node scripts/generate-index.js --strict  # as above, but exit non-zero on extraction warnings (authoring pre-publish gate)
 ```
 
@@ -54,19 +56,24 @@ Three distinct check layers run after the build:
 ### Content pipeline
 
 ```
-skills-briefings-files/<type>/SKILL.md + template.html   (briefing authoring skills)
-        ↓ (Claude writes a new briefing)
+skills-briefings-files/<type>/content-guide.md            (authoring contract per type)
+        ↓ (a pinned-Sonnet writer produces structured JSON)
+skills-briefings-files/<type>/drafts/content-YYYY-MM-DD.json   (gitignored draft)
+        ↓ node scripts/render-briefing.js                 (deterministic render, zero AI — template.render.html + scripts/lib/render.js)
 briefings/YYYY-MM-DD/<slug>.html                          (one folder per day)
-        ↓ node scripts/generate-index.js                  (regex-extracts headline/preview/tags)
-index.html                                                (generated — never hand-edit)
-        ↓ push to main → .github/workflows/deploy.yml     (re-runs both generators, deploys Pages)
+        ↓ node scripts/publish-briefing.js                (strict gate + publish lock + commit + push + content-verify)
+        ↓ push to main → .github/workflows/deploy.yml     (tests + both generators, deploys Pages)
+index.html / feed.xml / sitemap.xml / visualizations.html (generated — never hand-edit)
 ```
 
-- **Seven briefing types**, fixed filenames: `market-briefing.html`, `legal-brief.html`, `ai-briefing.html`, `biohacker-report.html`, `rabbit-hole.html`, `praxis-brief.html`, `trading-concept.html`. Five are expected daily; `praxis-brief` runs odd days-of-month, `biohacker-report` even days (enforced by health-check's missing-briefing detection).
-- **Each type has an authoring skill** in `skills-briefings-files/<type>/` with a `SKILL.md` and a canonical `template.html`. The template is the styling source of truth — do not derive styling from prior briefing HTML.
+- **The deterministic renderer is the production authoring path for all 7 types** (since 2026-06-27): the model writes a smaller content-contract JSON; `scripts/render-briefing.js` + `scripts/lib/render.js` turn it into final styled HTML via each type's `template.render.html`, enforcing per-section depth floors (an under-delivering model aborts the render instead of publishing a stunted page). Its byte-stable output contract lives in `scripts/lib/render.test.js` (24 tests) — changes must keep those green or consciously update them. The legacy full-HTML skills remain as fallback only.
+- **Publishing goes through `scripts/publish-briefing.js` — automated jobs must never run raw `git add/commit/push` here.** Multiple scheduled briefing jobs share this one checkout; the publisher serializes them with an on-disk lock (`.git/gm-publish.lock`, stale-takeover), runs `generate-index.js --strict` + `generate-visualizations.js` after syncing, stages only the given content files plus the generated artifacts, auto-resolves rebase conflicts on generated artifacts only, and exits 0 only after verifying the file's blob hash on `origin/main`. Contract in `scripts/lib/publish.test.js`.
+- **Seven briefing types**, fixed filenames: `market-briefing.html`, `legal-brief.html`, `ai-briefing.html`, `biohacker-report.html`, `rabbit-hole.html`, `praxis-brief.html`, `trading-concept.html`. Four are expected daily; `rabbit-hole` runs Mon–Fri; `praxis-brief` runs odd days-of-month, `biohacker-report` even days (all enforced by health-check's missing-briefing detection; a 07:45 AEST scheduled recovery task regenerates misses).
+- **Skill folder ↔ type key ↔ filename mapping** (folder names do NOT match filenames — authoritative table is `TEMPLATES` in `scripts/render-briefing.js`): `briefing-morning-edge/`→`market-briefing`, `briefing-legal-precedent/`→`legal-brief`, `briefing-ai-cortex/`→`ai-briefing`, `briefing-alpha/trading-concept/`→`trading-concept`, `briefing-rabbit-hole/`→`rabbit-hole`, `briefing-praxis/`→`praxis-brief`, `briefing-biohacker/`→`biohacker-report`.
+- **Each type has an authoring skill** in `skills-briefings-files/<type>/` with a `content-guide.md` + `template.render.html` (renderer path) and a legacy `SKILL.md` + `template.html` (fallback). The render template is the styling source of truth — do not derive styling from prior briefing HTML.
 - **`index.html` and `visualizations.html` are generated artifacts.** Edit the generators in `scripts/`, never the output. The deploy workflow regenerates both on every push to main, so stale committed copies are harmless but warnings are not.
-- **Shared build library** in `scripts/lib/` is the single source of truth for cross-script logic: `text.js` (`escapeHtml`/`stripHtml`), `dates.js` (date formatters + AEST `today`), `briefings.js` (`BRIEFING_META`, `ORDER`, `BRIEFING_FILENAMES`, `TAG_PATTERNS`, `extractTags`). `generate-index.js`, `generate-visualizations.js` and `health-check.js` all import from it — **do not re-add per-script copies.** Covered by `scripts/lib/lib.test.js`.
-- **CI** (`.github/workflows/ci.yml`) runs on feature branches + PRs to main: syntax check, lib unit tests, run both generators, assert no markup artifacts. Direct-to-main briefing pushes are covered by `deploy.yml` instead.
+- **Shared build library** in `scripts/lib/` is the single source of truth for cross-script logic: `text.js` (`escapeHtml`/`stripHtml`), `dates.js` (date formatters + AEST `today`), `briefings.js` (`BRIEFING_META`, `ORDER`, `BRIEFING_FILENAMES`, `TAG_PATTERNS`, `extractTags`), `render.js` (deterministic renderer), `publish.js` (serialized publish flow). `generate-index.js`, `generate-visualizations.js` and `health-check.js` all import from it — **do not re-add per-script copies.** Covered by `lib.test.js` + `render.test.js` + `publish.test.js`.
+- **CI** (`.github/workflows/ci.yml`) runs on feature branches + PRs to main: syntax check, all three unit suites, run both generators, assert no markup artifacts. Direct-to-main pushes are gated by `deploy.yml`, which also runs all three suites before building — a failing test blocks the deploy and `notify-failure.yml` alerts Telegram.
 
 ### Headline/tag extraction (the fragile part)
 
