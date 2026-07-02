@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Praxis &mdash; 3 July 2026</title>
+  <meta property="og:description" content="Ethan Mollick's new essay, METR's own time-horizon data, and Anthropic's 400,000-session Claude Code study converge on one point: AI capability is compounding fast enough that workflows go obsolete mid-build, and the skill that survives is judgment, not technique." />
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+  <style>
+    :root {
+      --bg:       #FFFFFF;
+      --surface:  #F8F9FA;
+      --border:   #E5E7EB;
+      --accent:   #DC3545;
+      --text:     #111827;
+      --muted:    #6B7280;
+      --tag-bg:   #FEE2E2;
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0d0f14;
+      --surface:  #141720;
+      --border:   #1e2330;
+      --accent:   #DC3545;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --tag-bg:   #2a1515;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 0 0 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .theme-toggle:hover { opacity: 0.8; }
+
+    .header {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FEE2E2 50%, #FDF2F2 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 24px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .header {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2a0d0d 50%, #1a0808 100%);
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(220,53,69,0.15) 0%, transparent 65%),
+                  radial-gradient(ellipse at 20% 100%, rgba(220,53,69,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-family: 'Courier New', monospace;
+      position: relative;
+    }
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .tldr-text { display: none; }
+    .header-accent-bar {
+      width: 48px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 16px auto 0;
+      position: relative;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 0;
+    }
+
+    .section { margin-bottom: 48px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+    }
+    .section-number {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card-label {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+    .card p:last-child { margin-bottom: 0; }
+    .card strong { color: var(--text); font-weight: 600; }
+
+    .insight-block {
+      border-left: 3px solid var(--accent);
+      background: var(--tag-bg);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 12px 0;
+    }
+    [data-theme="dark"] .insight-block {
+      background: rgba(220,53,69,0.08);
+    }
+    .insight-block p {
+      font-size: 14px;
+      color: var(--text);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .takeaway-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+    .takeaway-list li {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .takeaway-list li:last-child { border-bottom: none; }
+    .takeaway-list li::before {
+      content: '\2192';
+      color: var(--accent);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .takeaway-list strong { color: var(--text); font-weight: 600; }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .tool-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .tool-body h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .tool-body p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .tool-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .horizon-item {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .horizon-item:last-child { border-bottom: none; }
+    .horizon-tag {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .horizon-tag.finance { background: #EFF6FF; color: #1D4ED8; }
+    .horizon-tag.work { background: #F0FDF4; color: #15803D; }
+    .horizon-tag.regulation { background: #FFF7ED; color: #C2410C; }
+    .horizon-tag.ai { background: #F5F3FF; color: #7C3AED; }
+    .horizon-tag.mind { background: #FDF4FF; color: #9333EA; }
+    .horizon-tag.culture { background: #ECFDF5; color: #059669; }
+    .horizon-tag.health { background: #FFF1F2; color: #BE123C; }
+    .horizon-tag.crypto { background: #FFFBEB; color: #B45309; }
+    [data-theme="dark"] .horizon-tag.finance { background: #1e2a4a; color: #93C5FD; }
+    [data-theme="dark"] .horizon-tag.work { background: #1a2e1a; color: #86EFAC; }
+    [data-theme="dark"] .horizon-tag.regulation { background: #2a1e0a; color: #FCD34D; }
+    [data-theme="dark"] .horizon-tag.ai { background: #1e1a2e; color: #C4B5FD; }
+    [data-theme="dark"] .horizon-tag.mind { background: #1e1225; color: #D8B4FE; }
+    [data-theme="dark"] .horizon-tag.culture { background: #0a1e18; color: #6EE7B7; }
+    [data-theme="dark"] .horizon-tag.health { background: #2a0a10; color: #FDA4AF; }
+    [data-theme="dark"] .horizon-tag.crypto { background: #2a1e05; color: #FDE68A; }
+    .horizon-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .horizon-item p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .standalone-quote {
+      border-left: 3px solid var(--border);
+      padding: 12px 20px;
+      margin: 16px 0;
+      font-style: italic;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .standalone-quote cite {
+      display: block;
+      font-style: normal;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .footer {
+      max-width: 800px;
+      margin: 48px auto 0;
+      padding: 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-meta {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .footer-sources {
+      margin-top: 8px;
+    }
+  </style>
+  <script type="application/json" id="gm-meta">{"headline":"The unit of AI progress is now the obsolete workflow, not the better tool","preview":"Mollick's new essay, METR's own benchmark data, and Anthropic's 400,000-session study converge: AI capability compounds fast enough that judgment, not technique, is what survives.","tags":["AI","Work","Judgment"]}</script>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">&#127769;</button>
+
+<div class="header">
+  <div class="header-label">Praxis &middot; Intelligence Briefing &middot; 3 July 2026</div>
+  <h1>Praxis</h1>
+  <div class="header-sub">Key Ideas &middot; Strategy &middot; Tools &middot; Horizon</div>
+  <p class="tldr-text" style="display:none">The unit of AI progress has quietly changed from a better tool to an obsolete workflow, and three independent sources this week are describing that same mechanism from different vantage points. Ethan Mollick's essay The Twilight of the Chatbots argues that AI capability is growing at a better-than-exponential rate, which means the plan your organisation wrote even six months ago already describes a system that no longer exists. METR's own Time Horizon 1.1 benchmark supplies the empirical spine: the length of task an AI model can complete autonomously has been doubling roughly every four to seven months since 2024, which is precisely why a workflow built around last quarter's model is not slightly behind, it is categorically wrong. Anthropic's study of 400,000 real Claude Code sessions supplies the third piece: when the model can already execute the technical steps, the thing that actually predicts success stops being coding skill and starts being domain expertise — knowing what's worth building and how to check the answer. Put together, these are not three separate observations about AI hype. They are the same curve, described from the institutional level, the measurement level, and the individual-skill level: when the tool's floor rises this fast, the differentiator moves upstream, from doing the work to judging the work.</p>
+  <div class="header-accent-bar"></div>
+</div>
+
+<div class="container">
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <span class="section-title">Key Ideas &amp; Insights</span>
+    </div>
+<div class="card"><div class="card-label">Essay &middot; Ethan Mollick &middot; &ldquo;The Twilight of the Chatbots&rdquo; &middot; One Useful Thing &middot; Jun 30, 2026</div><h3 class="card-title">Your AI plan from six months ago already describes a system that no longer exists</h3><p>Ethan Mollick's essay opens with a claim that sounds like hyperbole until you check the numbers behind it: AI capability is not just improving, it is improving &ldquo;at a better than exponential rate.&rdquo; The consequence he draws out is specific and uncomfortable for anyone running a team: <strong>&ldquo;If your organization wrote an AI plan any time before the winter of 2025, it described a system that could do a couple of hours of work with a fairly high error rate. A few months later, you can get sixteen hours or more of work from a single prompt.&rdquo;</strong> The plan didn't age badly. It described a different, weaker product.</p><p>Mollick's sharper diagnostic is about where the difficulty actually sits. It's not the AI's capability curve that is the problem &mdash; it's that the systems meant to absorb that curve move on human time. As he puts it, <strong>&ldquo;the instability is what happens when institutions that move at the speed of people (or worse, committees) try to track a capability curve that is very much not human in nature.&rdquo;</strong> Committees revise plans annually. The thing they're planning around revises itself every few months.</p><p>The essay's second move is about work itself, not institutions: <strong>&ldquo;work is increasingly about assigning work to agents, rather than working together with chatbots.&rdquo;</strong> That's a change in kind, not degree &mdash; interactive prompting assumes a human stays in the loop on every step; assigning work to an agent assumes the human checks the outcome, not the process. Mollick cites Epoch AI's benchmark of Claude Opus 4.7 rebuilding an entire software package autonomously in 14 hours for $251 in tokens &mdash; a job Epoch estimated would take a human engineer 2 to 17 weeks &mdash; as the concrete shape of what &ldquo;assigning work&rdquo; now means in practice.</p><div class="insight-block"><p>The failure mode Mollick is naming isn't being slow to adopt AI. It's building real infrastructure &mdash; workflows, policies, org charts &mdash; around a snapshot of capability that has already moved. The cost of that mistake compounds at the same rate the capability does.</p></div></div><div class="card"><div class="card-label">Research &middot; METR &middot; &ldquo;Time Horizon 1.1&rdquo; &middot; Jan 29, 2026</div><h3 class="card-title">The task length AI can finish alone is doubling every four to seven months &mdash; and that rate is itself accelerating</h3><p>Where Mollick's essay makes the claim in prose, METR's own benchmark supplies the number underneath it. METR measures a &ldquo;50%-task-completion time horizon&rdquo;: the length of task, measured in human-hours, that a model can complete autonomously with a 50% success rate. Under their updated methodology (version 1.1, tested across 228 tasks, 31 of them requiring 8+ human-hours), that horizon has been <strong>doubling roughly every 130.8 days since 2023, and every 88.6 days since 2024</strong> &mdash; consistent with the widely cited &ldquo;doubling every seven months, now closer to four&rdquo; figure that AI Digest's independent tracker (&ldquo;A new Moore's Law for AI agents&rdquo;) also reports, built on the same underlying data.</p><p>The named figures are the part worth sitting with: Claude Opus 4.5 scored a 320-minute time horizon under TH1.1, more than five times GPT-2's two-second horizon from the start of the series and well past Claude 3.7 Sonnet's 60-minute horizon from barely a year earlier in the same lineage. This is not a chart that argues by analogy. It is one company's models, benchmarked the same way, five hours apart on the same axis less than a year apart in time.</p><p>The projection this trend implies, per AI Digest's tracker, is 8-hour tasks by 2027 and 40-hour tasks by 2028 &mdash; assuming the current doubling rate holds, which METR's own report flags as an assumption, not a certainty, since the newer 88.6-day figure is itself already faster than the historical 196.5-day average.</p><div class="insight-block"><p>Mollick's essay says the plan you wrote is already wrong. METR's benchmark is the reason it's wrong on a predictable schedule &mdash; roughly every three months, the ceiling on what a model can finish unsupervised moves by a factor of two, not a percentage.</p></div></div><div class="card"><div class="card-label">Research &middot; Anthropic &middot; Claude Code usage study &middot; ~400,000 sessions, Oct 2025&ndash;Apr 2026</div><h3 class="card-title">When the model can already write the code, what predicts success stops being coding ability</h3><p>Anthropic's own analysis of roughly 400,000 Claude Code sessions from about 235,000 users supplies the piece Mollick's essay gestures at without the underlying data in hand: what happens to human skill once the technical execution is no longer the bottleneck. The headline finding is narrow and precise &mdash; software and math professionals hit a 34% verified success rate on coding tasks, other professions 29%, a five-point gap that is real but small. On partial success, the two groups were statistically identical at 88&ndash;89%.</p><p>The finding that matters is about what predicted the gap that did exist, and it wasn't professional background. Anthropic's own framing: <strong>&ldquo;the ability to steer Claude toward success comes more from command of a domain than from the ability to write code,&rdquo;</strong> and, more bluntly, <strong>&ldquo;it appears that coding agents are making a coding background less relevant to successful programming.&rdquo;</strong> The behavioural data backs this up directly &mdash; sessions rated expert-level generated 12 actions per prompt against 5 for novices, and novices abandoned a stuck task 19% of the time versus 5&ndash;7% for more experienced users. The differentiator was persistence and problem-framing, not syntax fluency.</p><p>This is the mechanism Mollick's institutional argument and METR's capability curve both imply but don't isolate: as the technical floor rises fast enough that the AI can already do the execution, the remaining human value concentrates entirely in knowing what's worth building, recognising when an output is wrong, and not giving up on a stuck problem &mdash; exactly the skills a coding bootcamp doesn't teach and a capability benchmark can't measure.</p><div class="insight-block"><p>This is the week's convergence stated plainly: Mollick names the institutional failure, METR measures the curve driving it, and Anthropic's own session data shows where human value actually migrates to once that curve clears the technical-execution bar. None of the three needed the other two to make their point &mdash; but together they describe one mechanism, not three separate trends.</p></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <span class="section-title">Strategy &amp; Practice</span>
+    </div>
+<div class="card"><div class="card-label">Practice &middot; drawn from Mollick and METR's time-horizon data</div><h3>Put an expiry date on every AI-dependent workflow you build</h3><p>If the capability underneath a workflow doubles every three to seven months, the workflow itself needs a planned review date, not an indefinite lifespan. Here's how to build that in this week.</p><ul class="takeaway-list"><li><strong>Date-stamp your current AI workflows.</strong> For anything you've built around a specific model's capability &mdash; a review step, a length limit, a human-checkpoint frequency &mdash; write down the month you built it and the model you built it around. That stamp is the thing that tells you when to re-examine it.</li><li><strong>Set a 90-day workflow review, not an annual one.</strong> Given METR's ~88-day recent doubling rate, a workflow untouched for a full year has likely been built around a capability level that's now 8-16x out of date. Calendar a recurring 90-day check specifically on AI-dependent processes, separate from your normal planning cycle.</li><li><strong>Ask what you'd delegate if the model could run twice as long unsupervised.</strong> Since the time horizon is the thing doubling, the practical test isn't &ldquo;is this AI good enough yet&rdquo; &mdash; it's &ldquo;what am I still checking step-by-step that I could check only at the end.&rdquo; Re-run that question every quarter, because the honest answer keeps changing.</li><li><strong>Separate the plan from the capability assumption inside it.</strong> When you write any AI-dependent plan, flag the specific capability assumption it depends on (e.g. &ldquo;assumes ~2hr autonomous task completion&rdquo;) as a labelled line, not buried prose. That's the line to check first when the plan seems to be underperforming.</li></ul><div class="insight-block"><p>Most planning treats the tool as a fixed input and the goal as the variable. Here the tool is the fastest-moving variable in the whole plan &mdash; treat it that way explicitly, or the plan quietly expires while you're still executing it.</p></div></div><div class="card"><div class="card-label">Practice &middot; drawn from Anthropic's Claude Code study</div><h3>Train the judgment layer, not the execution layer</h3><p>Anthropic's finding was that domain command, not technical skill, predicted success once the model could already execute. That has a direct implication for how you should be spending practice time this week, whether or not you write code for a living.</p><ul class="takeaway-list"><li><strong>Audit where you're still doing execution the model could already do.</strong> Pick one recurring task where you do the mechanical steps yourself. Try delegating the execution entirely and spend your time only on the framing (what to build) and the check (is this actually right). Note where your judgment was the actual bottleneck, not your typing speed.</li><li><strong>Practice the abandonment discipline in reverse.</strong> Anthropic's data showed novices quit stuck problems at 3&ndash;4x the rate of experts. When an AI-assisted attempt stalls, before abandoning it, ask what an expert in the domain (not in AI) would check next &mdash; a wrong assumption, a missing constraint, a misread requirement. That's the muscle the data says separates outcomes.</li><li><strong>Build one domain-specific verification checklist.</strong> For whatever you use AI agents for most, write a short list of the 3&ndash;4 things you personally check before trusting an output. This is the artefact of your domain expertise &mdash; the thing the model can't generate for you because it requires knowing what &ldquo;right&rdquo; looks like in your specific context.</li></ul></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <span class="section-title">Tools &amp; Resources</span>
+    </div>
+<div class="tool-card"><div class="tool-icon">📰</div><div class="tool-body"><span class="tool-tag">Podcast / Newsletter</span><h4>Ethan Mollick &mdash; &ldquo;The Twilight of the Chatbots&rdquo; (One Useful Thing, Jun 30, 2026)</h4><p>This issue's anchor. Mollick's clearest statement yet of why the shift from chatbot-assisted work to agent-delegated work is a change in kind, and why institutional planning cycles structurally cannot track a capability curve that revises itself every few months. oneusefulthing.org/p/the-twilight-of-the-chatbots</p></div></div><div class="tool-card"><div class="tool-icon">📊</div><div class="tool-body"><span class="tool-tag">Primary Source</span><h4>METR &mdash; &ldquo;Time Horizon 1.1&rdquo; (Jan 29, 2026)</h4><p>The empirical backbone of this issue. METR's updated benchmark measuring how long a task an AI model can complete autonomously with 50% reliability, tested across 228 tasks. The named model-by-model horizons (Claude Opus 4.5 at 320 minutes vs. Claude 3.7 Sonnet's 60 minutes roughly a year earlier) make the doubling claim concrete rather than abstract. metr.org/blog/2026-1-29-time-horizon-1-1/</p></div></div><div class="tool-card"><div class="tool-icon">📈</div><div class="tool-body"><span class="tool-tag">Reporting</span><h4>AI Digest &mdash; &ldquo;A New Moore's Law for AI Agents&rdquo;</h4><p>An independent, plain-language tracker of the same time-horizon data METR publishes, with clearer projections (8-hour tasks by 2027, 40-hour by 2028 on current trend) and an explicit statement of the R&sup2;=0.83 correlation between task length and success rate. Useful as the accessible companion to METR's own denser writeup. theaidigest.org/time-horizons</p></div></div><div class="tool-card"><div class="tool-icon">🔬</div><div class="tool-body"><span class="tool-tag">Primary Source</span><h4>Anthropic &mdash; Claude Code usage research (~400,000 sessions)</h4><p>Anthropic's own analysis of real usage, not a lab benchmark. The finding that domain expertise, not coding background, predicts success once the model can already execute is the piece that completes this week's thesis &mdash; it shows exactly where human value migrates to as the execution layer gets commoditised. anthropic.com/research/claude-code-expertise</p></div></div><div class="tool-card"><div class="tool-icon">🛠️</div><div class="tool-body"><span class="tool-tag">Concept</span><h4>The Workflow Expiry Date</h4><p>A practical framing this issue proposes: treat any process built around a specific AI model's capability as having a shelf life tied to the capability doubling rate (roughly 3&ndash;7 months per METR's data), not an indefinite lifespan. Label the capability assumption explicitly when you build the workflow, so you know what to re-check when it starts underperforming.</p></div></div><div class="tool-card"><div class="tool-icon">🧭</div><div class="tool-body"><span class="tool-tag">Framework</span><h4>Execution Layer vs. Judgment Layer</h4><p>A two-part lens for any AI-assisted task: the execution layer (can the model produce the output) and the judgment layer (do you know what output is actually correct, and what's worth producing at all). Anthropic's data suggests the execution layer is being commoditised fastest; the judgment layer is where practice time now pays off most. Useful for deciding what to keep doing by hand versus what to delegate entirely.</p></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <span class="section-title">On the Horizon</span>
+    </div>
+<div class="horizon-item"><span class="horizon-tag work">Work</span><h4>Annual AI strategy documents are becoming a structural liability, not a planning tool</h4><p>If METR's ~88-day doubling rate holds, a plan written for a January board meeting is already describing an obsolete capability level by the time it's reviewed at the next one. Expect a visible split this year between organisations that keep AI planning on a quarterly or faster cadence tied explicitly to capability benchmarks, and organisations still running it through the annual strategy cycle &mdash; with the gap between the two groups compounding at the same rate the underlying models do.</p></div><div class="horizon-item"><span class="horizon-tag ai">AI</span><h4>Hiring and training will need to test for judgment under ambiguity, not tool fluency</h4><p>Anthropic's finding that domain command beats coding background points toward a broader shift already visible in adjacent fields: as agents absorb execution, the interview and training question stops being &ldquo;can you do this task&rdquo; and becomes &ldquo;can you tell whether the task was done correctly, and did you frame it right in the first place.&rdquo; Expect assessment and onboarding design to lag this shift for a while, since most existing tests were built to measure exactly the skill that's being commoditised fastest.</p></div><div class="horizon-item"><span class="horizon-tag regulation">Regulation</span><h4>The committee-speed problem Mollick names is a direct argument for narrower, faster-cycling AI rules</h4><p>Mollick's observation that institutions moving at &ldquo;the speed of people, or worse, committees&rdquo; cannot track a non-human capability curve applies as much to regulators as to corporate planning departments. A rule calibrated to today's task-completion ceiling risks being either obsolete or accidentally over-broad within the multi-year window it typically takes to legislate. Expect continued pressure toward capability-triggered or sunset-clause regulatory design rather than fixed technical thresholds, precisely because the fixed thresholds keep expiring under the doubling curve.</p></div><div class="horizon-item"><span class="horizon-tag finance">Finance</span><h4>Due diligence on AI-dependent businesses needs a capability-assumption line item</h4><p>Any business whose moat depends on a specific AI capability ceiling &mdash; a task an agent can't yet do reliably, a workflow that still needs a human checkpoint &mdash; is underwriting against a curve that, per METR's own data, halves the relevant constraint every few months. Investors and operators evaluating these businesses should be pricing in a specific, dated capability assumption the same way they'd price in a patent expiry or a contract renewal &mdash; not treating &ldquo;AI can't do X yet&rdquo; as a durable structural advantage.</p></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-meta">
+    Praxis Intelligence Briefing &middot; 3 July 2026 &middot; Sydney<br>
+<em>This issue's focus: why compounding AI capability shifts the differentiator from technical execution to domain judgment — and why institutions and workflows go obsolete mid-build rather than gradually.</em><div class="footer-sources"><strong>Sources:</strong><br>Ethan Mollick — &ldquo;The Twilight of the Chatbots&rdquo;, One Useful Thing, Jun 30, 2026 — https://www.oneusefulthing.org/p/the-twilight-of-the-chatbots<br>METR — &ldquo;Time Horizon 1.1&rdquo;, Jan 29, 2026 — https://metr.org/blog/2026-1-29-time-horizon-1-1/<br>AI Digest — &ldquo;A new Moore's Law for AI agents&rdquo; (time-horizon doubling data) — https://theaidigest.org/time-horizons<br>Anthropic — Claude Code usage research (~400,000 sessions, ~235,000 users, Oct 2025&ndash;Apr 2026) — https://www.anthropic.com/research/claude-code-expertise<br>Epoch AI — MirrorCode benchmark result for Claude Opus 4.7 (14-hour autonomous rebuild), as cited in Mollick's essay</div>
+  </div>
+</div>
+
+<script>
+  function toggleTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('praxis-theme', next);
+    const btn = document.querySelector('.theme-toggle');
+    btn.innerHTML = next === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  }
+  (function() {
+    const saved = localStorage.getItem('praxis-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) btn.innerHTML = saved === 'dark' ? '&#9728;&#65039;' : '&#127769;';
+  })();
+</script>
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#DC3545;font-weight:600;"> &middot; Praxis</span></div>
+</body>
+</html>
