@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Bid-Ask Bounce | Friday, 3 July 2026</title>
+<meta property="og:description" content="Trade prices bounce between bid and ask even when nothing moves — fake momentum that hides your real fill cost. Roll (1984) turns it into a number.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Bid-Ask Bounce: the spread pretending to be price action","preview":"Trade prices bounce between bid and ask, faking negative autocorrelation. Roll+s 1984 model backs the effective spread out of that noise; crypto breaks his assumptions.","tags":["Microstructure","Spread","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Bid-Ask Bounce</h1>
+  <div class="meta">
+    <span>Friday, 3 July 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 67</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>Bid-ask bounce is the mechanical zig-zag in trade prices that happens purely because buyers pay the ask and sellers hit the bid</strong> — the mid hasn't moved, but the last-price tape looks like it's oscillating, and that fake oscillation shows up as negative serial correlation in returns even in a perfectly efficient market. Richard Roll's 1984 model exploits exactly that artifact: since the bounce alone should produce negative covariance between consecutive price changes, you can invert the math and back out an implied effective spread from nothing but a time series of trade prices — no order book snapshot required. The practical edge isn't running Roll's formula by hand; it's recognizing bounce-driven noise on your own execution and refusing to mistake a spread-crossing reversal for a real momentum signal, especially on thin books where every fill briefly looks like a trend change.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The spread disguised as price action</div>
+    </div>
+  </div>
+  <div class="skim">Bid-ask bounce is trade prices <em>mechanically</em> alternating between bid and ask as buyers and sellers take turns crossing the spread — with zero change in underlying value.</div>
+<p><strong>Bid-ask bounce is the price tape lying to you about movement.</strong> Every trade prints at either the bid or the ask — a market buy lifts the ask, a market sell hits the bid — and when order flow alternates sides even slightly, the last-traded price alternates with it. Nothing about the asset's actual value changed between those two prints; the mid-price could be dead flat. But if you're only looking at last-trade price (which is what most retail charts, and most naive momentum signals, are built on), you see a saw-tooth pattern that looks exactly like short-term volatility. It isn't. It's the spread, worn as a costume.</p><p>This matters because the bounce is not a curiosity — it's a measurable statistical artifact with a name and a formula. Richard Roll noticed in 1984 that in an efficient market, consecutive price <em>changes</em> should be uncorrelated (today's move tells you nothing about tomorrow's). But real trade-price series consistently show <strong>negative serial correlation</strong> instead — a price move up is disproportionately followed by a move down, and vice versa. Roll showed this negative correlation isn't a market inefficiency to trade on; it's the bounce, mechanically produced by the spread itself, and its magnitude is a direct, invertible function of the spread's size.</p><p>The trader-relevant consequence splits two ways. First, defensively: any strategy that reads last-trade-price reversals as a directional signal is at risk of just re-discovering the bid-ask bounce and calling it edge — this is a well-documented false-momentum trap, especially on illiquid pairs or during low-volume hours. Second, constructively: because the bounce encodes the spread, you can measure execution cost from a plain trade-price series alone, without ever seeing the order book — useful for backtesting historical fills where you only have trade prints, not L2 depth.</p><div class="pills"><div class="pill-term"><b>Bid-Ask Bounce</b><span>the mechanical alternation of trade prices between bid and ask as aggressor side switches</span></div><div class="pill-term"><b>Serial Covariance</b><span>the correlation between one price change and the next in sequence</span></div><div class="pill-term"><b>Effective Spread</b><span>the realized round-trip cost of crossing the spread, as opposed to the quoted spread</span></div><div class="pill-term"><b>Roll Estimator</b><span>Roll's 1984 formula that backs out spread from negative serial covariance of trade prices</span></div><div class="pill-term"><b>Adverse Selection</b><span>the risk a market maker takes that the next trade is from someone who knows something they don't</span></div></div><div class="remember"><b>Remember</b> If your signal is built on last-trade price reversals and it fires more often on wide-spread, thin-book pairs — you haven't found momentum, you've re-discovered the spread.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Turning a zig-zag into a spread estimate</div>
+    </div>
+  </div>
+  <div class="skim">Because the bounce alone creates negative correlation between consecutive price changes, Roll's 1984 model inverts that covariance to estimate the spread from trade prices alone, no book data needed.</div>
+<p>Roll's insight was elegant precisely because it needs so little data. You don't need the order book, you don't need trade direction tags, you don't even need to know the quoted spread — just a time series of transaction prices. Here's the mechanical chain:</p><p>1. A trade happens at the ask (a buyer crosses the spread). 2. The next trade, absent any real news, is more likely to happen at the bid (a seller crosses back) than to happen at the ask again — because the market maker who was just paid the spread on the buy side is now quoting to capture it again on a sell. 3. Repeat this over thousands of prints and consecutive price changes show up negatively correlated — a rise tends to be followed by a fall of similar magnitude, purely mechanically. 4. Since the size of that negative correlation is driven by the size of the spread (a wider spread means a bigger mechanical bounce), you can solve for the spread if you know the correlation.</p><div class="formula"><b>Effective Spread</b> = 2 × √(−Cov(ΔP<sub>t</sub>, ΔP<sub>t−1</sub>))<div class="note">where ΔP<sub>t</sub> is the price change from trade t−1 to trade t, and Cov is the serial covariance of consecutive price changes — the formula only produces a real number when that covariance is negative</div></div><p>That last clause is the model's most-cited limitation and the honest caveat every practitioner note repeats: Roll's estimator is <strong>undefined whenever the measured covariance comes out positive</strong> — you'd be taking the square root of a negative number. In real data (Roll's own 1984 sample and every replication since) this happens a meaningful fraction of the time, especially over short windows or trending regimes, because momentum, order clustering, and adverse selection dynamics all push covariance the other direction and can overwhelm the pure-bounce effect. The estimator is a clean idea with a well-known blind spot, not a black box you can trust blindly.</p><table class="cmp"><tr><th>Regime</th><th>What serial covariance shows</th><th>What it means</th></tr><tr><td>Range-bound, balanced flow</td><td>Negative — bounce dominates</td><td>Roll estimator works cleanly; spread is the main driver of the zig-zag</td></tr><tr><td>Strong trend / momentum</td><td>Positive or near-zero</td><td>Estimator breaks down [undefined]; informed flow and inventory effects override the mechanical bounce</td></tr><tr><td>Thin/illiquid book</td><td>Amplified negative (wide effective spread)</td><td>Bounce noise is large relative to true signal — highest risk of false momentum reads</td></tr></table><p>Crypto-specific research (see Further Reading) has since shown Roll's 1970s NYSE-equity assumption — that buy and sell probability at any given moment is roughly 50/50 — often doesn't hold on perpetual futures order books, where one side can dominate for extended stretches. The mechanism still exists; the clean 0.5/0.5 math underneath it doesn't always transfer.</p>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">SAME MID, ALTERNATING PRINTS</div>
+    </div>
+  </div>
+  <div class="skim">The diagram shows a flat mid-price with the last-trade tape sawing between bid and ask on every print — a spread walking sideways, not a market moving.</div>
+<div class="svg-wrap"><svg viewBox="0 0 800 440" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="800" height="440" fill="#faf8f5"/>
+<text x="20" y="28" font-family="JetBrains Mono, monospace" font-size="14" fill="#1c1917" font-weight="700">FLAT MID-PRICE, BOUNCING LAST-TRADE TAPE</text>
+<line x1="60" y1="380" x2="760" y2="380" stroke="#44403c" stroke-width="2"/>
+<line x1="60" y1="60" x2="60" y2="380" stroke="#44403c" stroke-width="2"/>
+<text x="15" y="175" font-family="JetBrains Mono" font-size="10" fill="#78716c">ASK</text>
+<text x="15" y="270" font-family="JetBrains Mono" font-size="10" fill="#78716c">BID</text>
+<line x1="60" y1="170" x2="760" y2="170" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 4"/>
+<line x1="60" y1="265" x2="760" y2="265" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5 4"/>
+<line x1="60" y1="217" x2="760" y2="217" stroke="#a3e635" stroke-width="2"/>
+<text x="765" y="170" font-family="JetBrains Mono" font-size="10" fill="#ef4444">Ask $61,420</text>
+<text x="765" y="265" font-family="JetBrains Mono" font-size="10" fill="#22c55e">Bid $61,400</text>
+<text x="765" y="213" font-family="JetBrains Mono" font-size="10" fill="#a3e635" font-weight="700">Mid $61,410 — flat</text>
+<polyline points="90,265 140,170 190,265 240,170 290,265 340,170 390,265 440,170 490,265 540,170 590,265 640,170 690,265 730,170" fill="none" stroke="#1c1917" stroke-width="2.5"/>
+<circle cx="90" cy="265" r="5" fill="#22c55e"/><circle cx="140" cy="170" r="5" fill="#ef4444"/><circle cx="190" cy="265" r="5" fill="#22c55e"/><circle cx="240" cy="170" r="5" fill="#ef4444"/><circle cx="290" cy="265" r="5" fill="#22c55e"/><circle cx="340" cy="170" r="5" fill="#ef4444"/><circle cx="390" cy="265" r="5" fill="#22c55e"/><circle cx="440" cy="170" r="5" fill="#ef4444"/><circle cx="490" cy="265" r="5" fill="#22c55e"/><circle cx="540" cy="170" r="5" fill="#ef4444"/><circle cx="590" cy="265" r="5" fill="#22c55e"/><circle cx="640" cy="170" r="5" fill="#ef4444"/><circle cx="690" cy="265" r="5" fill="#22c55e"/><circle cx="730" cy="170" r="5" fill="#ef4444"/>
+<text x="90" y="400" font-family="JetBrains Mono" font-size="9" fill="#78716c" text-anchor="middle">sell hits bid</text>
+<text x="140" y="415" font-family="JetBrains Mono" font-size="9" fill="#78716c" text-anchor="middle">buy lifts ask</text>
+<text x="440" y="415" font-family="JetBrains Mono" font-size="9" fill="#78716c" text-anchor="middle">...repeats, no trend...</text>
+<text x="690" y="400" font-family="JetBrains Mono" font-size="9" fill="#78716c" text-anchor="middle">sell hits bid</text>
+</svg><div class="svg-caption"><em>Fourteen consecutive trades sawing between $61,400 (bid) and $61,420 (ask) while the true mid-price never leaves $61,410. Every print looks like a $20 move; the actual price hasn't gone anywhere. This is the raw pattern Roll's covariance formula converts into a spread estimate.</em></div></div><p>Note the shape: it isn't random noise, it's a near-perfect alternation. That regularity is exactly what produces strong negative serial correlation — and exactly what a naive last-price momentum indicator would misread as a rapid chop-and-reverse market, when the reality is a market maker quietly earning the spread on both sides while price sits still.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading through the bounce, not with it</div>
+    </div>
+  </div>
+  <div class="skim">Never read your own recent fills as a momentum signal; a same-side print sequence at a stable spread is bounce, not conviction.</div>
+<div class="practice"><div class="practice-card"><div class="num">1</div><div><h4>Work off mid-price, not last-trade, for signal generation</h4><p>Any indicator built on last-trade price inherits the bounce as noise. Building signals off the quote midpoint (bid+ask)/2 removes the mechanical alternation entirely and leaves only real price movement.</p></div></div><div class="practice-card"><div class="num">2</div><div><h4>Use the bounce to sanity-check your own fill quality</h4><p>If your realized effective spread (via Roll's estimator or direct measurement) is consistently wider than the quoted spread you see on the book, you're paying more in adverse selection or slippage than the visible market suggests — a red flag on your execution venue or order type.</p></div></div><div class="practice-card"><div class="num">3</div><div><h4>Treat a positive-covariance regime as a trend warning, not a data error</h4><p>When Roll's formula goes undefined (positive serial covariance), that's not noise to discard — practitioner research reads it as a sign informed/directional flow has overwhelmed the mechanical bounce. That's often exactly when adverse selection risk for market makers, and slippage risk for you, spikes.</p></div></div><div class="practice-card"><div class="num">4</div><div><h4>Widen your read during thin hours</h4><p>Bounce amplitude scales with spread, and spread widens whenever depth thins — low-volume sessions, holidays, and off-peak hours all inflate the fake zig-zag. Don't apply the same last-price-reversal skepticism threshold at 3am Sydney that you'd apply during London/NY overlap.</p></div></div></div><div class="worked"><h5>Worked example — recognizing bounce vs. real reversal</h5><table><tr><td>Setup</td><td>BTC quoting a tight $61,395–$61,415 spread through the 3 July US holiday session; last-trade tape prints seven alternating $20 swings in four minutes with zero net movement</td></tr><tr><td>Naive read (wrong)</td><td>"Price is chopping violently, reduce size / flip bias every swing" — reacting to the last-trade sawtooth as if it were directional information</td></tr><tr><td>Bounce-aware read (correct)</td><td>Mid-price across the same four minutes: $61,404 → $61,406 → $61,405 — essentially flat. The "chop" was buyers and sellers alternately crossing a stable spread, not a market making decisions</td></tr><tr><td>Action</td><td>Hold existing bias; treat the last-price noise as expected market-making residue, not a signal to act on</td></tr></table></div><div class="tf-note"><b>Timeframe fit:</b> the bounce is a tick/trade-level phenomenon — relevant to execution algos, market-making, and any 1m-or-faster signal; largely irrelevant once you're reading 15m+ candles where real price movement dwarfs a few ticks of spread noise.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC'S $61K CHOP INTO THE JULY 4 LULL</div>
+    </div>
+  </div>
+  <div class="skim">BTC ground through repeated $61,000–$61,600 taps into the 3 July US holiday lull — thin, choppy prints where bounce noise dominates any real directional signal.</div>
+<div class="tape">
+<div class="tape-label">● Live Tape · BTCUSDT.P · 1H · 1–3 July 2026</div>
+<h4>BTC ground through repeated $61,000–$61,600 taps as US markets shut for July 4 — textbook low-conviction, bounce-dominated tape.</h4>
+<p>Per today's Morning Edge, BTC is holding <strong>$61K</strong> with US equity markets dark for Independence Day and a short-liquidation cluster sitting at <strong>$62,300 (~$165M)</strong> just above spot. Thin holiday liquidity is exactly the regime where bid-ask bounce dominates the tape: with fewer active participants crossing the spread, each individual print carries more weight in the last-trade series, and the mechanical alternation between bid-side and ask-side fills becomes proportionally larger relative to genuine directional movement. A trader watching only last-trade price through the 2–3 July session would have seen a chart that looks choppier and more "active" than the actual mid-price series — most of which was range-bound absorption rather than net progress in either direction (Sydney: 2 Jul evening into 3 Jul, US holiday desk coverage thin both sides of midnight UTC). The honest read is that this is not a high-information tape; it's a low-participation one, and Roll's underlying assumption — that bounce dominates when order flow is balanced and thin — describes this session close to textbook.</p>
+<div class="nums">
+<div style="overflow-x:auto">
+<table>
+<tr><td>Level / event</td><td>Value (price, time)</td></tr>
+<tr><td>Spot holding zone</td><td>~$61,000, 3 Jul (per today's Morning Edge)</td></tr>
+<tr><td>Short-liq cluster above</td><td>$62,300, ~$165M notional (~2% away)</td></tr>
+<tr><td>Liquidity regime</td><td>Thin — US cash equities closed for July 4 holiday</td></tr>
+<tr><td>ETH OI context (same session)</td><td>97th percentile — coiled, not yet resolved directionally</td></tr>
+<tr><td>Expected bounce effect</td><td>Amplified — thin book widens effective spread, inflating last-trade noise</td></tr>
+</table>
+</div>
+</div>
+<iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>
+<div class="read"><b>Read</b> A holiday-thin, range-bound BTC tape sitting under a nearby liq cluster is precisely the setup where last-trade "chop" overstates real volatility — the mid is more stable than the tape looks, and the eventual resolution (through $62,300 or back down) will come from real order flow, not from the bounce itself. → see Morning Edge (3 Jul), Bitcoin & Crypto Markets section.</div>
+</div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">From the 1984 paper to the crypto desk</div>
+    </div>
+  </div>
+  <div class="skim">One voice from the paper that named the mechanism, one from a modern crypto quant desk showing where Roll's 1970s equity assumptions break on-chain.</div>
+<div class="quote"><p>"Trading costs induce negative serial dependence in successive observed market price changes."</p><div class="attr"><b>Richard Roll</b> · A Simple Implicit Measure of the Effective Bid-Ask Spread, <em>Journal of Finance</em> · 1984 · <a href="https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf">bauer.uh.edu — full paper (PDF)</a></div></div><div class="quote"><p>[paraphrased] Whenever the calculated covariance turns positive, that's a strong sign of trending behavior — and elevated adverse selection risk for anyone quoting both sides.</p><div class="attr"><b>Crypto Chassis (Open Crypto Market Data Initiative)</b> · Bid-Ask Bounce · 2020s · <a href="https://medium.com/open-crypto-market-data-initiative/bid-ask-bounce-5e1874461d85">medium.com — Bid-Ask Bounce in Crypto Markets</a></div></div><div class="quote"><p>"The average man doesn't wish to be told that it is a bull or a bear market... the tape does not concern itself with causes."</p><div class="attr"><b>Jesse Livermore</b> (via Edwin Lefèvre) · <em>Reminiscences of a Stock Operator</em> · 1923 · <a href="https://en.wikipedia.org/wiki/Reminiscences_of_a_Stock_Operator">Wikipedia — book reference</a></div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where bounce-reading goes wrong</div>
+    </div>
+  </div>
+  <div class="skim">The single biggest mistake is treating last-trade-price reversals as a directional tell instead of the spread doing what spreads do.</div>
+<div class="trap"><div class="num">1</div><div><h5>Reading last-trade reversals as momentum signals</h5><p>A print at the ask followed by a print at the bid is the single most common pattern the bounce produces — and the single most common false "reversal" retail momentum tools fire on. Confirm against the mid-price before trusting a last-trade-only signal.</p></div></div><div class="trap"><div class="num">2</div><div><h5>Trusting Roll's estimator blindly across regimes</h5><p>The formula is undefined whenever measured serial covariance is positive — which happens routinely in trending or momentum-driven windows. Treat a Roll spread estimate as regime-dependent, not a universal constant for an instrument.</p></div></div><div class="trap"><div class="num">3</div><div><h5>Assuming crypto order books obey Roll's 1970s equity assumptions</h5><p>Roll's clean math leans on roughly balanced buy/sell probability at any moment — an assumption practitioner research shows frequently breaks on perpetual futures books, where one side can dominate for extended stretches. The mechanism (bounce exists) survives the transfer to crypto; the precise 50/50 math underneath often doesn't.</p></div></div><div class="trap"><div class="num">4</div><div><h5>Confusing bounce noise with real volatility in backtests</h5><p>Computing realized volatility from raw last-trade prices at high frequency will systematically overstate true volatility because it's partly measuring spread-crossing noise, not price discovery. Use mid-price or trade-classified series for anything volatility-sensitive at short horizons.</p></div></div><div class="trap anti"><div class="num">5</div><div><h5>[Overhyped] Treating Roll's estimator as a modern execution-quality tool</h5><p>Roll's 1984 model is elegant and historically important, but it's a 40-year-old estimator built for daily-close equity data with known large-variance problems — Roll's own paper reports the squared spread comes out negative (i.e. the model breaks) in roughly half of yearly samples. For actual execution-cost measurement today, direct effective-spread calculation from timestamped trade and quote data (which crypto exchanges expose) is more accurate and far more available than it was in 1984. Know the estimator for what it teaches about the bounce mechanism, not as your primary cost-measurement tool.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">The original paper and the crypto-native rebuttal</div>
+    </div>
+  </div>
+  <div class="skim">Roll's original 1984 paper, a practitioner walkthrough of the estimator's math, and a crypto-specific breakdown of where the model's assumptions fail.</div>
+<div class="fr"><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf">Roll (1984) — A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market</a><span>The original Journal of Finance paper that named the bounce and derived the estimator — verified this run.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.ba-odegaard.no/teach/notes/liquidity_estimators/roll_spread_estimator/roll_lectures.pdf">Ødegaard — The Roll Spread Estimator (lecture notes)</a><span>A clean, worked-through walkthrough of the derivation and its estimation-variance limitations — verified this run.</span></div></div><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://medium.com/open-crypto-market-data-initiative/bid-ask-bounce-5e1874461d85">Crypto Chassis — Bid-Ask Bounce in Crypto Markets</a><span>The crypto-specific breakdown of where Roll's equity-market assumptions hold and where perpetual futures books break them. [standard reference]</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.investopedia.com/terms/b/bid-askspread.asp">Investopedia — Bid-Ask Spread</a><span>Baseline definition of bid, ask, and spread mechanics for anyone wanting the plain-English foundation first. [standard reference]</span></div></div><div class="fr-item"><div class="fr-type">Book</div><div class="fr-body"><a href="https://en.wikipedia.org/wiki/Reminiscences_of_a_Stock_Operator">Lefèvre — Reminiscences of a Stock Operator (1923)</a><span>The original tape-reading text — a reminder that reading through market noise to real information predates any formal microstructure model. [standard reference]</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b><a href="https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf">Roll (1984) — A Simple Implicit Measure of the Effective Bid-Ask Spread</a> <a href="https://www.ba-odegaard.no/teach/notes/liquidity_estimators/roll_spread_estimator/roll_lectures.pdf">Ødegaard — The Roll Spread Estimator (lecture notes)</a> <a href="https://medium.com/open-crypto-market-data-initiative/bid-ask-bounce-5e1874461d85">Crypto Chassis — Bid-Ask Bounce in Crypto Markets</a> <a href="https://www.investopedia.com/terms/b/bid-askspread.asp">Investopedia — Bid-Ask Spread</a></div>
+  <div>Alpha · Issue 67 · Friday, 3 July 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
