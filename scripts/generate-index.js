@@ -697,6 +697,7 @@ a:focus-visible,.f-chip:focus-visible,.kw-pill:focus-visible,.f-clear:focus-visi
     <a href="index.html" class="mob-item active"><span class="mob-ic">&#x1F3E0;</span>Home</a>
     <a href="visualizations.html" class="mob-item"><span class="mob-ic">&#x1F4CA;</span>Visualizations</a>
     <a href="corpus.html" class="mob-item"><span class="mob-ic">&#x1F4DA;</span>Corpus</a>
+    <a href="content-scout.html" class="mob-item"><span class="mob-ic">&#x1F50E;</span>Scout</a>
     <div class="mob-divider"></div>
     <div class="mob-sec-lbl">Categories</div>
     <a href="index.html" class="mob-item" style="color:#22c55e"><span class="mob-ic">&#x1F4C8;</span>Morning Edge</a>
@@ -733,6 +734,7 @@ a:focus-visible,.f-chip:focus-visible,.kw-pill:focus-visible,.f-clear:focus-visi
       <a href="visualizations.html">~/visualisations</a>
       <a href="wyckoff.html">~/wyckoff</a>
       <a href="corpus.html">~/corpus</a>
+      <a href="content-scout.html">~/scout</a>
     </nav>
     <div class="topbar-meta">
       <span class="live-dot"></span>
@@ -1065,6 +1067,10 @@ function buildSitemapXml(briefingEntries, transcriptsByDate) {
   const newest = briefingEntries.length ? briefingEntries[0].date : '2026-01-01';
   urls.push({ loc: SITE_URL, lastmod: newest, priority: '1.0' });
   urls.push({ loc: `${SITE_URL}visualizations.html`, lastmod: newest, priority: '0.7' });
+  // Standalone pages — updated out-of-band, so lastmod uses the newest content date.
+  for (const page of ['wyckoff.html', 'corpus.html', 'content-scout.html', 'recipes/ultimate-chewy-brownies/index.html']) {
+    urls.push({ loc: `${SITE_URL}${page}`, lastmod: newest, priority: '0.5' });
+  }
   briefingEntries.forEach(e => {
     e.briefings.forEach(key => {
       urls.push({ loc: `${SITE_URL}briefings/${e.date}/${BRIEFING_META[key].filename}`, lastmod: e.date, priority: '0.8' });
@@ -1078,11 +1084,12 @@ function buildSitemapXml(briefingEntries, transcriptsByDate) {
     <lastmod>${u.lastmod}</lastmod>
     <priority>${u.priority}</priority>
   </url>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${body}
 </urlset>
 `;
+  return { xml, count: urls.length };
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -1115,8 +1122,9 @@ console.log(`index.html written — ${briefingEntries.length} date(s), ${bCount}
 fs.writeFileSync(FEED_FILE, buildFeedXml(briefingEntries, transcriptsByDate));
 console.log(`feed.xml written — ${Math.min(50, bCount + tCount)} item(s)`);
 
-fs.writeFileSync(SITEMAP_FILE, buildSitemapXml(briefingEntries, transcriptsByDate));
-console.log(`sitemap.xml written — ${2 + bCount + tCount} url(s)`);
+const sitemap = buildSitemapXml(briefingEntries, transcriptsByDate);
+fs.writeFileSync(SITEMAP_FILE, sitemap.xml);
+console.log(`sitemap.xml written — ${sitemap.count} url(s)`);
 
 // ─── Post-build UI validator ──────────────────────────────────────────────────
 // Checks every card extraction for common issues and warns loudly.
