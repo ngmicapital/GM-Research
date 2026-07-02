@@ -34,6 +34,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      # Briefings push straight to main and never pass through ci.yml, so the
+      # unit suites must also gate here or daily publishes run zero tests.
+      # ~350ms total; a failure blocks the deploy and notify-failure.yml alerts.
+      - name: Unit tests
+        run: node --test scripts/lib/lib.test.js scripts/lib/render.test.js scripts/lib/publish.test.js
       - run: node scripts/generate-index.js
       - run: node scripts/generate-visualizations.js
       - uses: actions/configure-pages@v5

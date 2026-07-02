@@ -22,6 +22,7 @@ const path = require('path');
 const { execSync, spawnSync } = require('child_process');
 const { stripHtml } = require('./lib/text');
 const { BRIEFING_FILENAMES, TAG_PATTERNS, extractTags } = require('./lib/briefings');
+const { todayAEST } = require('./lib/dates');
 
 const ROOT            = path.join(__dirname, '..');
 const BRIEFINGS_DIR   = path.join(ROOT, 'briefings');
@@ -30,7 +31,9 @@ const MANIFEST_FILE   = path.join(TRANSCRIPTS_DIR, 'manifest.json');
 const REPORTS_DIR     = path.join(ROOT, 'health-reports');
 const DEPLOY_YML      = path.join(ROOT, '.github', 'workflows', 'deploy.yml');
 
-const TODAY = new Date().toISOString().slice(0, 10);
+// AEST, not toISOString() (UTC) — a UTC date is one day behind until 10:00/11:00
+// AEST, which mis-named the daily report (e.g. 2026-07-01.json written on 07-02).
+const TODAY = todayAEST().iso;
 const REPORT_FILE = path.join(REPORTS_DIR, `${TODAY}.json`);
 
 // ─── Tag extraction + briefing metadata ──────────────────────────────────────
