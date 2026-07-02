@@ -415,6 +415,52 @@ try {
   error(`generate-visualizations.js failed: ${e.stderr ? e.stderr.toString() : e.message}`);
 }
 
+// ── 5. Stranded content (concurrency-race fallout) ───────────────────────────
+// Content that exists on disk but never reached origin/main is what a crashed
+// or racing publish leaves behind — the 2026-07-01 praxis brief was recovered
+// from exactly this state. Untracked/modified content files, or unpushed local
+// commits touching content, are flagged once they are >2h old (fresh ones are
+// normal mid-publish states). In CI's fresh checkout this is a structural no-op.
+console.log('Checking for stranded content...');
+{
+  const GRACE_MS = 2 * 60 * 60 * 1000;
+  const strandedFound = [];
+  const st = spawnSync('git', ['status', '--porcelain', '--', 'briefings/', 'transcripts/'], { cwd: ROOT, encoding: 'utf8' });
+  if (st.status !== 0) {
+    console.log('  (git status unavailable — skipping stranded-content check)');
+  } else {
+    const strays = (st.stdout || '').split('\n').map(l => l.trimEnd()).filter(Boolean)
+      .map(l => ({ state: l.slice(0, 2).trim(), file: l.slice(3).replace(/^"|"$/g, '') }))
+      .filter(s => /\.(html|json)$/.test(s.file))
+      .filter(s => {
+        try { return Date.now() - fs.statSync(path.join(ROOT, s.file)).mtimeMs > GRACE_MS; }
+        catch { return false; }
+      });
+    for (const s of strays) {
+      strandedFound.push(s.file);
+      needsHuman({
+        type: 'stranded-content', file: s.file,
+        message: `${s.file} is ${s.state === '??' ? 'untracked' : 'locally modified'} and >2h old — a publish likely failed; ship it via scripts/publish-briefing.js`,
+      });
+    }
+    // Content committed locally but never pushed (a session that died mid-publish).
+    const ahead = spawnSync('git', ['log', '--pretty=%h %ct', 'origin/main..HEAD', '--', 'briefings/', 'transcripts/'], { cwd: ROOT, encoding: 'utf8' });
+    if (ahead.status === 0) {
+      for (const line of (ahead.stdout || '').split('\n').filter(Boolean)) {
+        const [sha, epoch] = line.split(' ');
+        if (Date.now() - Number(epoch) * 1000 > GRACE_MS) {
+          strandedFound.push(sha);
+          needsHuman({
+            type: 'stranded-content', commit: sha,
+            message: `local commit ${sha} touches briefings/transcripts, is >2h old, and is not on origin/main — push it (git push origin main)`,
+          });
+        }
+      }
+    }
+    if (strandedFound.length === 0) pass('No stranded content — disk and local commits match origin/main');
+  }
+}
+
 // ── Write report ──────────────────────────────────────────────────────────────
 if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
 fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
