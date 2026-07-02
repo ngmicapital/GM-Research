@@ -14,6 +14,14 @@ voice and the "10/10 done" bar. You have authority to change architecture where 
 subject to the non-goals/guardrails in GOAL.md (don't break permalinks, keep zero-runtime-deps,
 never publish drafts/secrets, preserve the renderer's byte-stable contract, AEST + direct-to-main).
 
+READ WIDE — the package below is a PRIORITY MAP, not a whitelist (skill update 2026-07-02).
+It tells you where to START; it does not cap what you read. After it, personally read the raw
+history and the superseded material — the full `git log` (not just EVOLUTION.md's digest of it),
+`readiness/archive/` (the divergent codex variants), dead ends (`mockups/`, legacy-era briefing
+HTML, abandoned dirs) — and reconstruct the evolution and failure modes IN YOUR OWN WORDS before
+acting. EVOLUTION.md and failure-forensics.md are maps, not substitutes; prior sessions' wrong
+loops live in the raw material. Economize on writes, never on the breadth of reads.
+
 READ FIRST, IN THIS ORDER (these are the curated package — trust them, but verify per Task 0):
   1. readiness/CURRENT_STATE.md   (the only "read me first": what/where/what-not-to-trust)
   2. readiness/GOAL.md            (the mandate + 10/10 bar)
