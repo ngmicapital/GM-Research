@@ -159,6 +159,12 @@ Lime-yellow terminal palette. The classes the template ships:
 - **§08 reading:** `.fr` › `.fr-item` (`.fr-type` + `.fr-body` with `<a>` + `<span>`).
 
 ## Hard requirements (renderer REJECTS the page otherwise)
+- **Balanced HTML in every section body.** Each `SECTION_n_BODY` must have matched `<div>`/`</div>`
+  (and `<table>`/`<section>`) tags — a single stray `</div>` closes the page's content column early and
+  collapses the whole layout. The renderer now counts tags and ABORTS on any imbalance (naming the
+  section), so an unbalanced body fails the render. Common slip: a trailing `</div>` after the last
+  `.quote` in §06 — the quote blocks are self-contained (`.quote` › `<p>` + `.attr`), there is NO outer
+  wrapper to close.
 - Every `tokens.*` field present and non-empty; every `raw.*` (TLDR, SKIM_01–08, FOOTER_SOURCES) present;
   every `SECTION_n_BODY` present.
 - Each section body is substantive — the renderer enforces a per-section length floor; **§03 has the

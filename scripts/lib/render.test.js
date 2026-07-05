@@ -294,6 +294,14 @@ test('renderSectionBriefing aborts a trading-concept whose §03 has no inline SV
   assert.throws(() => renderSectionBriefing('trading-concept', TC_TEMPLATE, c), /svg/i);
 });
 
+test('renderSectionBriefing aborts a section body with an unbalanced <div> (the 2026-07-04 layout bug)', () => {
+  const c = validTradingConcept();
+  // A stray trailing </div> — exactly the fault that closed .content early and
+  // collapsed the 2026-07-01 / 2026-07-04 pages. Must abort, not render broken.
+  c.sections.SECTION_5_BODY = '<div class="tape"><p>' + 'live tape '.repeat(120) + '</p></div><div class="read">read</div></div>';
+  assert.throws(() => renderSectionBriefing('trading-concept', TC_TEMPLATE, c), /unbalanced <div>/);
+});
+
 function validBio() {
   const sections = {};
   for (let i = 0; i <= 5; i++) sections[`SECTION_${i}_BODY`] = '<p>' + 'evidence '.repeat(70) + '</p>';

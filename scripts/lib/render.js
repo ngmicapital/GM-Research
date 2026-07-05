@@ -141,6 +141,26 @@ function fail(msg) { throw new Error(`render: ${msg}`); }
 function nonEmptyStr(v) { return typeof v === 'string' && v.trim().length > 0; }
 function hasEntities(s) { return /&[a-zA-Z]+;|&#\d+;/.test(s); }
 
+// Structural container tags that MUST be balanced in every trusted HTML fragment.
+// A single stray </div> in a section body silently closes the page's .content
+// wrapper early and collapses the whole layout — the exact failure that broke the
+// 2026-07-01 and 2026-07-04 trading-concept pages (an authored fragment carried an
+// unbalanced <div>, which no check caught). We reject imbalance at render time so a
+// malformed fragment ABORTS instead of publishing a visibly-broken page. Scoped to
+// the layout-breaking containers (div/table/section) to avoid false positives on
+// optional/implicit tags (tbody, li). SVG content is unaffected — it carries no
+// div/table/section. The lookahead keeps <div> from matching <divider>.
+const BALANCED_TAGS = ['div', 'table', 'section'];
+function checkTagBalance(label, html) {
+  for (const tag of BALANCED_TAGS) {
+    const open = (html.match(new RegExp(`<${tag}(?=[\\s/>])`, 'gi')) || []).length;
+    const close = (html.match(new RegExp(`</${tag}\\s*>`, 'gi')) || []).length;
+    if (open !== close) {
+      fail(`${label} has unbalanced <${tag}> tags (${open} open vs ${close} close) — a stray tag corrupts the page layout by closing the content container early. Balance the HTML in ${label}.`);
+    }
+  }
+}
+
 // Every render template opens with an authoring-instruction comment
 // (`<!-- TEMPLATE for <type>. Filled deterministically by … -->`) that documents
 // the file for editors. It must never reach the published page — generate-index
@@ -356,6 +376,7 @@ function renderSectionBriefing(type, template, content) {
         if (!re.test(v)) fail(`fragment ${t} missing required content (${re})`);
       }
     }
+    checkTagBalance(`fragment ${t}`, v);
     repl[`{{${t}}}`] = v; // trusted inner HTML
   }
   for (const s of schema.sections) {
@@ -369,6 +390,7 @@ function renderSectionBriefing(type, template, content) {
         if (!re.test(v)) fail(`section ${s.token} missing required content (${re})`);
       }
     }
+    checkTagBalance(`section ${s.token}`, v);
     repl[`{{${s.token}}}`] = v; // trusted inner HTML
   }
 
@@ -378,6 +400,7 @@ function renderSectionBriefing(type, template, content) {
   }
   const leftover = html.match(/\{\{[A-Z0-9_]+\}\}/g);
   if (leftover) fail(`unfilled template tokens: ${[...new Set(leftover)].join(', ')}`);
+  checkTagBalance(`${type} assembled page`, html);  // catch template regressions too
   return html;
 }
 
