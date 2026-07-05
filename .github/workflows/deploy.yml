@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://ngmicapital.github.io/GM-Research/
     steps:
       - name: Debounce concurrent pushes
         run: sleep 30
@@ -45,5 +45,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+      # Pages source is "GitHub Actions" (build_type=workflow), so this is the SOLE
+      # deployer — the legacy "pages build and deployment" builder no longer races it.
+      # That race was the cause of the intermittent "Deployment failed, try again
+      # later". One automatic retry absorbs the residual GitHub-side transient flake.
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Retry Pages deploy once (absorbs transient "try again later")
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
