@@ -82,21 +82,39 @@ h2.section-title { font-family:'Fraunces',serif; font-size:1.35rem; font-weight:
 .echo-tag { display:inline-block; background:var(--accent-blue); color:#fff; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; margin-bottom:12px; }
 footer { margin-top:60px; padding-top:20px; border-top:1px solid var(--border); font-size:.8rem; color:var(--text-muted); text-align:center; }
 
-/* ── HORIZONTAL OVERFLOW FIX (2026-09-05) ──
-   .page-wrapper is display:flex and .main-content is flex:1; a flex child
-   defaults to min-width:auto and refuses to shrink below its widest child,
-   so these pages scrolled sideways on phones. */
+/* ── HORIZONTAL OVERFLOW FIX (2026-09-05, corrected) ──
+   Two defects, both measured on the live site at a 375px viewport:
+   (1) .page-wrapper is display:flex and .main-content is flex:1; a flex child
+       defaults to min-width:auto and will not shrink below its widest child.
+   (2) .main-content keeps its 260px desktop sidebar margin on mobile even
+       though .toc-sidebar is display:none there, leaving 115px of usable width
+       and pushing content off-screen. This was the dominant cause: the karpathy
+       transcript measured 721px of content in a 375px viewport.
+   Verified after this rule: body.scrollWidth == body.clientWidth == 375. */
 .main-content {
   min-width: 0;
   overflow-wrap: break-word;
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
   .main-content table {
     display: block;
-    max-width: 100%;
+    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  .main-content table > thead,
+  .main-content table > tbody {
+    display: table;
+    width: max-content;
+    min-width: 100%;
   }
 }
 </style>
