@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The GRANITE Act — Spark &amp; Cannon</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSCRIPT INTELLIGENCE — HTML TEMPLATE
+   Light mode default · Dark toggle · Floating TOC · Copy-to-clipboard
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  /* Light mode (default) */
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+
+/* ── RESET & BASE ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── READING PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--progress-bar);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+
+/* ── LAYOUT ── */
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 820px;
+  margin-left: 260px;
+  padding: 40px 24px 120px;
+}
+
+/* ── FLOATING TOC SIDEBAR (LEFT SIDE) ── */
+.toc-sidebar {
+  position: fixed;
+  top: 80px;
+  left: max(16px, calc((100vw - 1200px)/2));
+  width: 220px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--bg-toc);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.toc-sidebar ul {
+  list-style: none;
+}
+
+.toc-sidebar li {
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.toc-sidebar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+
+.toc-sidebar a:hover,
+.toc-sidebar a.active { color: var(--accent-gold); }
+
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+
+/* Mobile: hamburger toggle */
+.toc-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 64px;
+  z-index: 1001;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 16px;
+    width: 280px;
+    max-height: 70vh;
+  }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── HEADER / HERO ── */
+.hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mode-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.mode-badge.full { background: var(--accent-teal); color: #fff; }
+.mode-badge.quick { background: var(--accent-orange); color: #fff; }
+
+/* ── HEADINGS ── */
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--text-heading);
+  margin: 64px 0 8px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-heading);
+  margin: 36px 0 12px;
+  line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+
+h4 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--accent-teal);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── EXECUTIVE SUMMARY ── */
+.exec-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.exec-summary h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.exec-summary ul { list-style: none; }
+
+.exec-summary li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.exec-summary li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* ── BLOCKQUOTES ── */
+blockquote {
+  background: var(--bg-quote);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text);
+}
+
+/* ── TIMESTAMPS ── */
+.ts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--timestamp);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* ── ANALYTICAL ENHANCEMENT BLOCKS ── */
+.enhancement {
+  background: var(--bg-enhancement);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.enhancement.connection   { border-color: var(--accent-blue);   }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose);   }
+.enhancement.insight      { border-color: var(--accent-teal);   }
+.enhancement.thesis       { border-color: var(--accent-gold);   }
+.enhancement.consensus    { border-color: var(--accent-green);  }
+.enhancement.verified     { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-enhancement)); }
+
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.enhancement.connection   .enhancement-label { color: var(--accent-blue);   }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose);   }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal);   }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold);   }
+.enhancement.consensus    .enhancement-label { color: var(--accent-green);  }
+.enhancement.verified     .enhancement-label { color: var(--accent-green);  }
+
+/* ── ITEM CARDS (Phase 3) ── */
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.item-card h3 {
+  margin-top: 0;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.item-card .one-liner {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card h4 { margin-top: 16px; }
+
+/* ── PROTOCOL CHEAT SHEET ── */
+.protocol-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-teal);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.protocol-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--accent-teal);
+  color: #fff;
+}
+
+.copy-btn.copied {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #fff;
+}
+
+.protocol-box ul {
+  list-style: none;
+}
+
+.protocol-box li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.protocol-box li:last-child { border-bottom: none; }
+
+/* ── TABLES (Quick Actions) ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* ── ECHO DIVIDER ── */
+.echo-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin: 80px 0 60px;
+}
+
+.echo-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 40px;
+}
+
+/* ── REFERENCES ── */
+.references {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.references h4 {
+  color: var(--accent-gold);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+
+/* ── PRINT ── */
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+</style>
+</head>
+<body>
+
+<!-- Reading Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Dark/Light Toggle -->
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">🌙</span>
+  <span class="icon-dark">☀️</span>
+</button>
+
+<!-- TOC Hamburger (mobile) -->
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">
+  ☰
+</button>
+
+<!-- Floating TOC Sidebar -->
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#executive-summary">Executive Summary</a></li>
+    <li><a href="#opening-claim">🧱 The Opening Claim</a></li>
+    <li><a href="#structural-flaw">⚖️ The Structural Flaw</a></li>
+    <li><a href="#sovereign-immunity">🚢 Sovereign-Immunity Genealogy</a></li>
+    <li><a href="#compliance-statistic">📧 197 Notices, Four Refusals</a></li>
+    <li><a href="#live-cases">⚔️ The Two Live Cases</a></li>
+    <li><a href="#the-shield">🛡️ The Shield — § 4106(a)</a></li>
+    <li><a href="#the-sword">⚔️ The Sword — § 4106(b)</a></li>
+    <li><a href="#dropped-damages">💣 The Damages That Were Dropped</a></li>
+    <li><a href="#deterrence-by-cost">💰 Deterrence by Cost</a></li>
+    <li><a href="#method-not-bill">🗺️ A Method, Not a Bill</a></li>
+    <li><a href="#counterarguments">🎯 The Counterarguments</a></li>
+    <li><a href="#open-questions">❓ Open Questions</a></li>
+    <li><a href="#resources">📚 Resources &amp; References</a></li>
+</ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+<div class="hero">
+  <div class="hero-label">Spark &amp; Cannon — Deep Archival Transcript</div>
+  <h1>Two and a Half Pages Against the Extraterritorial Censor: Preston Byrne on the GRANITE Act, the Sovereign-Immunity Carve-Out, and Who Governs the American Internet</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Law of Code (Jacob Robinson) · Preston Byrne, Byrne &amp; Storm P.C.</div>
+    <div><span class="label">Domain</span> Law &amp; Regulation / Internet Speech</div>
+    <div><span class="label">Duration</span> ~22 min</div>
+    <div><span class="label">Date</span> Early September 2026</div>
+  </div>
+  <div><span class="label">Speakers</span></div>
+  <ul>
+    <li><strong>Preston Byrne</strong> — Managing partner, <strong>Byrne &amp; Storm, P.C.</strong> Counsel to 4chan Community Support LLC and other US platforms in the Ofcom disputes; author of the original October 2025 GRANITE Act blueprint. <strong>An advocate with live client interests in the outcome, not a neutral analyst.</strong></li>
+    <li><strong>Jacob Robinson</strong> — Host, <em>Law of Code</em>. Frames the episode as Byrne's first podcast since the federal bill was introduced.</li>
+  </ul>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<blockquote><strong>Two transcription notes, both load-bearing.</strong> (1) The auto-transcript renders the sponsor's name as <strong>"Representative Roy"</strong> at 13:04 and as <strong>"representative rallies"</strong> at 17:20. The verified record shows the sponsor is <strong>Rep. Michael A. Rulli (R–OH)</strong>; "rallies" is plainly a garble of "Rulli's", and "Roy" is the same garble at a different point. Every reference below is corrected to <strong>Rulli</strong>. (2) The acronym is garbled as "Grana" (10:29) and "Grassley's" (16:47) — both are <strong>GRANITE</strong>.</blockquote>
+<div class="exec-summary" id="executive-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>The bill is real, it is tiny, and it is now a live legislative object with a docket number.</strong> H.R. 10174, the <em>Guaranteeing Rights Against Novel International Tyranny and Extortion Act</em> (GRANITE Act), was introduced by <strong>Rep. Michael A. Rulli (R–OH)</strong> on <strong>27 August 2026</strong> and referred to the <strong>House Committee on the Judiciary</strong> the same day. The introduced text is a short-title section, one new <strong>28 U.S.C. § 4106</strong> with three subsections, and a single-line amendment to <strong>28 U.S.C. § 1605(a)</strong> — consistent with Byrne's "two and a half pages." <span class="ts">00:00 · 00:38</span></li>
+    <li><strong>The shield goes further than the SPEECH Act by design — because the censorship no longer arrives as a judgment.</strong> § 4106(a) blocks recognition of a foreign <em>judgment</em> <strong>and</strong> of a "fine, order, or demand issued by a foreign court or a foreign state" enforcing a foreign censorship law. Byrne's stated reason: foreign censorship regimes "don't usually operate through courts. They operate through administrative fiat and executive branch agencies," and purport to bind the moment an email lands. <span class="ts">11:01 · 11:33</span></li>
+    <li><strong>The sword is now declaratory-only, and that is a deliberate retreat from Byrne's own drafting.</strong> His February 2026 Wyoming blueprint carried what he calls "thermonuclear damages" — recovery pegged to the threatened fine. Rulli's federal bill drops damages entirely in favour of a declaration of unenforceability, plus a new FSIA exception. Byrne concedes the retreat is "probably a good idea." <span class="ts">12:30 · 13:24</span></li>
+    <li><strong>The empirical core of the argument is a compliance statistic, not a doctrinal one.</strong> Ofcom has issued <strong>197</strong> enforcement notices into the United States; Byrne says only <strong>four</strong> were publicly refused — a ~98% compliance rate obtained, on his account, purely by transmitting a threatening email. <span class="ts">06:15 · 11:34</span></li>
+    <li><strong>The doctrinal problem is a genuine asymmetry, and it is already being litigated on two fronts.</strong> Ofcom has asserted sovereign immunity in the D.D.C. against 4chan; Brazil has intervened to assert immunity for Justice Alexandre de Moraes in the Rumble/Trump Media suit. Because immunity is a <strong>subject-matter jurisdiction</strong> question raised on a <strong>Rule 12(b)(1)</strong> motion, success ends the case at the threshold. <span class="ts">08:42 · 09:57</span></li>
+    <li><strong>"GRANITE is not a single bill, it's a method."</strong> Wyoming HB 70 (2026) passed the state House 46–12 and died in the Senate; ALEC adopted a shield-only model in July 2026; New Hampshire is expected to file on the ALEC template for 2027; Byrne says he knows of three federal bills and hints at an unnamed "very relevant state for corporate formations." <span class="ts">17:13 · 19:38</span></li>
+    <li><strong>The strongest criticisms are not about whether the problem is real — they are about whether the sword works.</strong> R Street, ITIF and Tech Policy Press converge on the same doubt: the FSIA's discretionary-function logic, service under § 1608, and what a declaration <em>does</em> to a regulator with no US assets. Byrne's answer is deterrence-by-cost, not enforcement. <span class="ts">13:32 · 14:08</span></li>
+  </ul>
+</div>
+
+<h2 id="opening-claim"><span class="emoji">🧱</span> The Opening Claim: A 2.5-Page Bill That Byrne Says Redraws Internet Jurisdiction for Six Billion People</h2>
+<p class="section-subtitle">The Provision · What It Actually Does</p>
+
+<blockquote><em>"It's only two and a half pages long. It's a tiny little bill, but for a two and a half page bill, radically redraws the lines of internet regulation around the world."</em> — Byrne</blockquote>
+
+<p><strong>The Provision.</strong> Byrne opens on scale-versus-size. If Congress enacts H.R. 10174, he says, "it's going to change how five and a half to six billion internet users around the world can use American infrastructure and speak freely." <span class="ts">00:00 · 00:19</span></p>
+
+<p><strong>What It Actually Does.</strong> The introduced text is genuinely short. Section 1 is the short title. Section 2 inserts a new <strong>28 U.S.C. § 4106</strong> into chapter 181 of title 28 — the chapter Congress created in 2010 for the SPEECH Act — with subsection (a) (the non-recognition rule), (b) (the right of action), and (c) (definitions). It then amends <strong>28 U.S.C. § 1605(a)</strong> by adding a new paragraph <strong>(7)</strong> carrying an immunity exception for § 4106 actions. There is no findings section, no severability clause, and no rule of construction in the introduced text.</p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>Bill identity, sponsor, date and status confirmed against the primary source.</strong> <em>Guaranteeing Rights Against Novel International Tyranny and Extortion Act</em> ("GRANITE Act"), <strong>H.R. 10174</strong>, 119th Cong., 2d Sess. (introduced 27 Aug. 2026), sponsor <strong>Rep. Michael A. Rulli (R–OH)</strong>; long title: "To amend title 28, United States Code, to limit the enforcement of foreign censorship judgments, and for other purposes." Referred to the <strong>House Committee on the Judiciary</strong>, 27 Aug. 2026. Introduced-in-House text retrieved from <strong>GPO govinfo bulk data</strong>, <code>BILLS-119hr10174ih</code> (text file ~3.7 KB). The "two and a half pages" characterisation is consistent with a three-section bill of that size. ⚠️ <strong>Sponsor correction:</strong> the transcript's "Representative Roy" is a mis-transcription of <strong>Rulli</strong>.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The bill's brevity is the argument. Byrne is not proposing a regulatory scheme; he is proposing a <strong>rule of decision</strong> — a single sentence a district judge can apply on a motion, plus one sentence removing the jurisdictional escape hatch. That is why the same text can be lifted into a state code (ALEC) or a federal title with almost no editing, and it is the mechanical reason "GRANITE is a method, not a bill" is a defensible claim rather than a slogan. <span class="ts">19:26</span>
+</div>
+
+<h2 id="structural-flaw"><span class="emoji">⚖️</span> The Structural Flaw: First Amendment Doctrine Assumes the Censor Is Domestic</h2>
+<p class="section-subtitle">Doctrinal Context</p>
+
+<blockquote><em>"The American government is limited in terms of the kind of content and speech that it can regulate by virtue of the First Amendment… you go to a court to vindicate those rights and the court has the power to restrain the United States."</em> — Byrne</blockquote>
+
+<p><strong>Doctrinal Context.</strong> Byrne's framing is architectural rather than substantive. The First Amendment's enforcement model presupposes a defendant the court can bind: the United States, a state, an agency. The remedy is an injunction against a sovereign that is <em>subject to</em> the court. <span class="ts">01:55 · 02:16</span></p>
+
+<p><strong>The problem the architecture never anticipated.</strong> "The internet is a global system and foreign governments are currently using the internet to transmit threats into the United States in order to control how the internet is used in the United States." <span class="ts">02:18 · 02:30</span> His characterisation of the foreign position: EU member states, the United Kingdom and Australia have "gotten into the habit of saying that just because a web server is visible in their country — even if that web server is wholly and exclusively based and operated in the United States — that web server must obey some foreign edict." <span class="ts">02:33 · 02:54</span></p>
+
+<p><strong>The design brief he set himself.</strong> "How can you design a system within American domestic law which allows Americans using purely American domestic levers to deter these foreign censorship threats from entering the United States." He says this is the distillation of ten years watching foreign censors operate against Americans. <span class="ts">02:56 · 03:18</span></p>
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  Byrne's framing → <strong>the SPEECH Act's own origin story.</strong> Congress faced the identical structural problem in 2010 with "libel tourism": a foreign judgment, valid where rendered, aimed at speech the First Amendment protects, with no domestic defendant to enjoin. The answer then was not to reach the foreign court but to make its output inert at the US border. GRANITE is that same move applied one procedural step earlier — to the <em>demand</em> rather than the <em>judgment</em>. <span class="ts">10:41</span>
+</div>
+<div class="enhancement consensus">
+  <span class="enhancement-label">🌐 Consensus Check</span>
+  The underlying phenomenon is not contested across the aisle. The House Judiciary Committee majority's July 2025 report on the EU Digital Services Act made substantially the same extraterritorial-pressure argument about EU enforcement against US platforms. What <em>is</em> contested is whether the answer is legislation stripping immunity, a diplomatic/trade response, or a federal complaints process.
+</div>
+
+<h2 id="sovereign-immunity"><span class="emoji">🚢</span> From the Schooner Exchange to the Email Inbox: The Sovereign-Immunity Genealogy</h2>
+<p class="section-subtitle">Doctrinal Context · Counterarguments</p>
+
+<blockquote><em>"There are ancient dignities of the sovereign… under our system traditionally sovereigns don't try to regulate other sovereigns."</em> — Byrne</blockquote>
+
+<p><strong>Doctrinal Context.</strong> Byrne's history runs: <strong>The Schooner Exchange</strong> (early 1800s) → the <strong>revenue rule</strong> → the <strong>FSIA</strong> (1970s) → terrorism carve-outs (<strong>JASTA</strong>) → the internet. <span class="ts">03:39 · 07:50</span></p>
+
+<p>His account of the <em>Schooner Exchange</em> facts: a French warship docked in Philadelphia Harbor to escape bad weather, "some bailiffs attempted to attach that warship for the payment of debts," and the Supreme Court invoked the ancient dignities of the sovereign. <span class="ts">03:47 · 04:07</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ⚠️ <strong>Right case, right doctrine, wrong procedural posture.</strong> <em>The Schooner Exchange v. McFaddon</em>, 11 U.S. (7 Cranch) 116 (1812) (Marshall, C.J.). The <em>Exchange</em> was an <strong>American-owned</strong> schooner seized on the high seas by the French navy and converted into an armed public vessel; when she put into Philadelphia, the <strong>original American owners, McFaddon and Greetham, libelled her claiming ownership</strong> — a title claim by the dispossessed owners, not bailiffs attaching for debt. Marshall held the vessel exempt from US jurisdiction by the implied consent of the sovereign, and the case is conventionally described as the first definitive statement of foreign state immunity in Anglo-American law. Byrne's doctrinal point survives intact; the facts as narrated do not.
+</div>
+
+<p>On the revenue rule: "there's a rule called the revenue rule which says that courts don't sit in judgment over other sovereigns or collect their taxes which dates back to 1712… it predates the existence of the United States and it's an English rule." <span class="ts">04:11 · 04:24</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ⚠️ <strong>Substance correct; the 1712 date is not the standard attribution.</strong> The rule against enforcement of foreign revenue laws is English in origin and does predate the United States. The earliest reported case usually cited is <em><strong>Attorney General v. Lutwydge</strong></em> <strong>(1729)</strong> (refusal to enforce a bond for Scottish tobacco duties); the canonical statement is Lord Mansfield C.J. in <em><strong>Holman v. Johnson</strong></em> <strong>(1775)</strong> — "no country ever takes notice of the revenue laws of another" — repeated in <em>Planche v. Fletcher</em> (1779). No 1712 case is standardly identified as the rule's source. Treat "1712" as <strong>unverified</strong>.
+</div>
+
+<p><strong>The exceptions Byrne enumerates.</strong> Immunity is lost, he says, where the sovereign submits to jurisdiction; commits a tort "wholly and exclusively committed in the United States"; enters a commercial contract in the United States; or employs an American citizen in the United States. <span class="ts">04:40 · 05:10</span> Regulatory and police actions taken abroad remain immune — he offers the Saudi Arabia detention cases as the paradigm. <span class="ts">05:12 · 05:32</span></p>
+<div class="enhancement consensus">
+  <span class="enhancement-label">🌐 Consensus Check</span>
+  This is an accurate lay summary of the FSIA's architecture (28 U.S.C. §§ 1602–1611), which since 1976 has been the <em>sole</em> basis for jurisdiction over a foreign state in US courts. Byrne's list maps onto the § 1605(a) exceptions — waiver, commercial activity, and the domestic non-commercial tort exception — and his "regulatory and police actions abroad stay immune" line reflects the discretionary-function carve-out inside the tort exception. That carve-out is precisely where critics say GRANITE's sword runs aground.
+</div>
+
+<p><strong>The precedent for surgery.</strong> Byrne's point is that Congress has re-cut this doctrine before: the FSIA itself in the 1970s, then terrorism carve-outs — "JASTA and rules like that." <span class="ts">07:34 · 07:50</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>The precedent is real and correctly characterised.</strong> Foreign Sovereign Immunities Act of <strong>1976</strong>, Pub. L. 94-583. The state-sponsor-of-terrorism exception was added at <strong>28 U.S.C. § 1605(a)(7)</strong> by AEDPA in 1996, then <strong>repealed and relocated to § 1605A</strong> by the FY2008 NDAA, Pub. L. 110-181, § 1083. The <strong>Justice Against Sponsors of Terrorism Act (JASTA, 2016)</strong> — enacted over President Obama's veto — added <strong>§ 1605B</strong>, extending the terrorism exception beyond designated state sponsors.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight — a drafting detail worth an academic's attention</span>
+  H.R. 10174 places its new exception at <strong>§ 1605(a)(7)</strong> — the paragraph number vacated when the 2008 NDAA moved the terrorism exception to § 1605A. The bill therefore <em>reoccupies a repealed slot</em> rather than appending a new one. That is tidy codification, but it means the new speech exception inherits § 1605(a)'s framing (and § 1606's damages limitations for § 1605 claims) rather than § 1605A's bespoke remedial regime — a structural choice that matters if damages are ever added back by amendment.
+</div>
+
+<h2 id="compliance-statistic"><span class="emoji">📧</span> The Compliance Statistic: 197 Notices, Four Refusals, and Why the Email Is the Weapon</h2>
+<p class="section-subtitle">The Provision · Open Questions</p>
+
+<blockquote><em>"Every demand that I've seen from a foreign regulator… has literally arrived in someone American's home. My home. And also the homes of my clients."</em> — Byrne</blockquote>
+
+<p><strong>The Provision.</strong> This is the empirical spine of the bill, and Byrne states it as first-hand knowledge rather than documentary evidence: "I know this not because there's a document which says it, because I represent all the clients who did it." <span class="ts">06:25 · 06:29</span></p>
+
+<p><strong>The numbers as given on air.</strong> Ofcom — "which is the UK's censor" — has sent "at least 197 demands into the United States in the last 18 months," of which "only four were refused in a public fashion." He converts that to "a 98% compliance rate that Ofcom has gotten simply by threatening American citizens in the free exercise of their constitutional rights." <span class="ts">06:15 · 06:37</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>The 197 figure is corroborated and is Ofcom's own number; the four-refusals figure is Byrne's count.</strong> Ofcom has confirmed issuing <strong>197 section 100 information notices to US businesses</strong>, reported as of 26 February 2026 and covering roughly February 2025 onward — all transmitted <strong>by email</strong>, without recourse to the UK–US Mutual Legal Assistance Treaty. The "only four publicly refused" figure and the derived ~98% compliance rate are <strong>Byrne's own count</strong>, not an Ofcom disclosure, and he says so on air. ⚠️ The 18-month window in the transcript is looser than the reported February-2025-to-early-2026 span.
+</div>
+
+<p><strong>The mechanism of harm.</strong> The effect of receiving these threats at home, Byrne argues, "is to chill American speech. It causes fear, it causes anxiety, and it causes in a lot of cases companies that receive these to change their behavior." The endpoint is systemic: "that changes the information environment in the United States to start to look like the information environment in the foreign country." <span class="ts">06:03 · 07:04</span></p>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The 197/4 statistic does more work than any doctrinal argument in the episode — and it is doing <em>design</em> work, not just rhetorical work. If censorship is achieved at the <strong>notice</strong> stage rather than the <strong>judgment</strong> stage, then a statute that only blocks judgments (the SPEECH Act) never reaches 98% of the conduct. That single empirical claim is the entire justification for extending § 4106(a) from "judgment" to "fine, order, or demand." Falsify the statistic and the case for the extension weakens sharply. <span class="ts">11:34 · 11:53</span>
+</div>
+<div class="enhancement thesis">
+  <span class="enhancement-label">🧵 Running Thesis</span>
+  <em>Censorship is now transmitted, not adjudicated.</em> Status: <strong>developing.</strong> Byrne states it as observed practice across a decade of client work; the 197-notices-by-email disclosure is strong corroboration for the UK specifically. It is not yet established for the EU (whose DSA enforcement proceeds through formal Commission proceedings and fines) or for Brazil (where the orders issue from a judge). The thesis may be more UK-shaped than the bill's universal drafting assumes.
+</div>
+
+<h2 id="live-cases"><span class="emoji">⚔️</span> The Two Live Cases: Ofcom in the D.D.C. and Brazil in the Middle District of Florida</h2>
+<p class="section-subtitle">Doctrinal Context · Open Questions</p>
+
+<blockquote><em>"On the one hand, the foreign government is saying foreign law applies in the United States, and on the other hand they say… 'we're immune.' Which is a completely lawless situation."</em> — Byrne</blockquote>
+
+<p><strong>Doctrinal Context.</strong> Byrne is explicitly constrained here: "I'm somewhat limited in what I can say because I'm counsel in the case and it's live litigation." <span class="ts">08:42 · 08:50</span></p>
+
+<p><strong>The 4chan case.</strong> The argument, as he states it, is that "Ofcom is coming to the United States and charging American companies fees, and that that's commercial activity and thus fits within one of the existing jurisdictional exceptions." He says the matter is fully briefed and awaiting a ruling from <strong>Judge Contreras in the D.D.C.</strong> <span class="ts">08:50 · 09:06</span></p>
+
+<p><strong>The Brazil case.</strong> Trump Media &amp; Technology Group and Rumble sued <strong>Justice Alexandre de Moraes</strong> over censorship orders; Brazil intervened and asserted immunity. <span class="ts">09:07 · 09:30</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>Both cases exist and both feature the immunity defence as described.</strong> <em>4chan Community Support LLC v. Ofcom</em> was filed in the <strong>U.S. District Court for the District of Columbia</strong> in August 2025 after Ofcom served notices under threat of fines; Ofcom responded by invoking the <strong>Foreign Sovereign Immunities Act</strong>, and plaintiffs' opposition argues Ofcom's fee-charging is <strong>commercial activity</strong> within an existing § 1605(a) exception. Separately, Ofcom fined 4chan (reported figures of £450,000 and, on a further decision, £520,000) and has sought US assistance to collect. ⚠️ <strong>Unverified:</strong> the specific assignment to Judge Rudolph Contreras and the "fully briefed, awaiting ruling" posture are <strong>Byrne's statements as counsel</strong>. <em>Trump Media &amp; Technology Group Corp. v. De Moraes</em>, No. <strong>8:25-cv-00411 (M.D. Fla.)</strong> (filed 19 Feb. 2025); <strong>Brazil intervened</strong> and moved to dismiss on the ground that Moraes acted judicially and is immune; <strong>Judge Mary Scriven</strong> permitted the intervention.
+</div>
+
+<p><strong>Why immunity is the whole ballgame.</strong> Byrne is precise on this, and it is the most doctrinally important thirty seconds of the episode: "when you raise sovereign immunity, it's a jurisdictional question — a <strong>subject matter jurisdiction</strong> question. So it's a <strong>Rule 12(b)(1) motion</strong>. Boom, let's kick this thing out. It's a threshold issue. <strong>If they succeed on sovereign immunity, the case ends.</strong>" <span class="ts">09:41 · 09:57</span></p>
+<div class="enhancement tension">
+  <span class="enhancement-label">⚡ Tension</span>
+  At <span class="ts">08:50</span> Byrne says Ofcom's fee-charging already "fits within one of the existing jurisdictional exceptions" — i.e. current law may suffice. At <span class="ts">07:29</span> and <span class="ts">12:16</span> he argues a <em>new</em> statutory carve-out is necessary because the existing doctrines block the claim. Both can be true, but the episode never reconciles them — and the answer matters, because if the commercial-activity exception wins in the D.D.C., the sword provision's marginal value shrinks considerably.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight — the asymmetric-cost problem is the real argument</span>
+  Byrne's point at <span class="ts">09:58</span> is economic, not doctrinal: because immunity kills the case at the threshold, the <em>expected</em> value of suing a foreign censor is near zero, so rational American companies do not sue — while the foreign regulator, whose "program is politically very valuable," will happily fight "the odd case here and there." GRANITE's function is to invert that expected-value calculation. That is a deterrence argument, and it should be evaluated as one.
+</div>
+
+<h2 id="the-shield"><span class="emoji">🛡️</span> The Shield — § 4106(a): Non-Recognition Extended From Judgments to Demands</h2>
+<p class="section-subtitle">The Provision · What It Actually Does · Open Questions</p>
+
+<blockquote><em>"It confirms that foreign judgments are not enforceable in the United States. But the other thing it does, which is slightly different from the Speech Act, is that it confirms that fines, orders, or demands are also not enforceable."</em> — Byrne</blockquote>
+
+<p><strong>The Provision.</strong> Byrne's stated lineage is the SPEECH Act: "a law passed — if you're in Congress and you're watching this — by both houses by voice vote and signed into law by President Obama. <strong>This should not be a partisan issue.</strong>" <span class="ts">10:41 · 10:59</span></p>
+
+<p><strong>What It Actually Does.</strong> The introduced text of § 4106(a) reads: <em>"Notwithstanding any other provision of Federal or State law, a domestic court shall not recognize or enforce a foreign judgment, or a fine, order, or demand issued by a foreign court or a foreign state, enforcing a foreign censorship law."</em></p>
+
+<p>The definitional subsection, § 4106(c), defines a "foreign censorship law" by a <strong>two-limb test</strong>: a law of a foreign state that <strong>(A)</strong> has the primary purpose or substantial effect of restricting or penalising expression, expressive conduct or expressive association; targets expression based on content, viewpoint or speaker identity; or compels disclosure that would reasonably chill expression — <strong>and (B)</strong> "would conflict with the protections of the First Amendment of the United States Constitution if recognized in the United States." "Foreign state" is defined by cross-reference to <strong>28 U.S.C. § 1603</strong>.</p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>SPEECH Act lineage confirmed, with one nuance.</strong> <em>Securing the Protection of our Enduring and Established Constitutional Heritage Act</em> (SPEECH Act), Pub. L. 111-223, signed <strong>10 August 2010</strong>, codified at <strong>28 U.S.C. §§ 4101–4105</strong>; substantive non-recognition rule at <strong>§ 4102</strong>. Legislative history: House passed by <strong>voice vote</strong> (15 June 2009), Senate by <strong>unanimous consent</strong> with amendment (19 July 2010), House agreed to the Senate amendment by <strong>voice vote</strong> (27 July 2010). ⚠️ Byrne's "passed by both houses by voice vote" is right for the House and functionally right for the Senate (unanimous consent, not a recorded vote). The bipartisan point stands. H.R. 10174 inserts § 4106 into <strong>the same chapter 181</strong> — a deliberate structural placement.
+</div>
+
+<p><strong>Why the extension.</strong> "Foreign censorship regimes don't usually operate through courts. They operate through administrative fiat and executive branch agencies. And the executive branch agencies are purporting that those demands are binding at the moment that they are served, and they purport to serve those things by email, which of course doesn't work in the United States." <span class="ts">11:14 · 11:33</span> The purpose, expressly, is deterrence at the transmission stage: "it's the transmission of the notice which is creating the censorship." <span class="ts">11:48 · 11:53</span></p>
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus — but on the <em>sound</em> half of the bill</span>
+  On the shield, Byrne is closer to consensus than he lets on. Even the bill's sharpest published critics accept it. R Street's Spence Purnell (4 Mar. 2026) treats non-recognition as constitutionally sound; Tech Policy Press's Matthew Allaire (3 Mar. 2026) notes the defensive provisions "rest on established state authority similar to the 2010 SPEECH Act." The genuine dispute is entirely about the sword. That asymmetry is worth carrying into any reading of the debate: <em>nobody serious is arguing that US courts should enforce foreign censorship fines.</em>
+</div>
+<div class="enhancement tension">
+  <span class="enhancement-label">⚡ Tension — a definitional one the episode does not surface</span>
+  § 4106(c)(1)(A) sweeps in any foreign law whose "substantial effect" is to restrict expression or that "compels disclosure that would reasonably chill expression." Read alone, that reaches far beyond Ofcom: privacy and data-protection regimes, hate-speech codes, defamation statutes, even transparency mandates. Limb (B) is the intended brake — it must also "conflict with the protections of the First Amendment… if recognized in the United States." Whether limb (B) is a meaningful constraint or an invitation to litigate the entire foreign regulatory canon through a First Amendment lens is, for an academic reader, the most consequential open question in the drafting.
+</div>
+
+<h2 id="the-sword"><span class="emoji">⚔️</span> The Sword — § 4106(b) and the New § 1605(a)(7): Declaratory Relief, Not Damages</h2>
+<p class="section-subtitle">What It Actually Does · Open Questions</p>
+
+<blockquote><em>"You can drag them into an American court and ask an Article 3 judge for a declaration that the foreign censorship order, demand, fine, etc. is void."</em> — Byrne</blockquote>
+
+<p><strong>What It Actually Does.</strong> Section 4106(b), as introduced: <em>"A United States person against whom a foreign judgment described in subsection (a) is entered, or upon whom a judgment, fine, order, or demand described in subsection (a) is served or purportedly served, may bring an action in an appropriate district court of the United States seeking declaratory relief that such judgment, fine, order, or demand is unenforceable under subsection (a)."</em></p>
+
+<p>Two drafting features deserve emphasis. First, <strong>"or purportedly served"</strong> — the email problem written into the standing trigger: an American who receives a defectively served demand still gets a cause of action. Second, the remedy is <strong>declaratory only</strong>. There is no damages provision, no fee-shifting provision, and no injunctive remedy in the introduced text. The FSIA amendment is a single line adding <strong>§ 1605(a)(7)</strong>, removing immunity for actions "under section 4106."</p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>Operative text confirmed from the introduced bill.</strong> § 4106(b) quoted above verbatim from the GPO <code>BILLS-119hr10174ih</code> text; the FSIA amendment adds a new <strong>28 U.S.C. § 1605(a)(7)</strong> cross-referencing § 4106. The introduced text contains <strong>no definition of "domestic court" or "United States person"</strong> — both are left to background law (chapter 181 already defines "domestic court" for SPEECH Act purposes at § 4101, the likely operative source, though the bill does not say so expressly). ⚠️ That silence is a real drafting gap: "United States person" is undefined anywhere in chapter 181.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The declaratory-only design does something clever with the FSIA. The FSIA distinguishes <strong>jurisdictional</strong> immunity (§§ 1604–1607) from <strong>execution</strong> immunity over property (§§ 1609–1611). A money judgment against Ofcom would immediately collide with execution immunity and the practical absence of attachable US assets. A <strong>declaration</strong> never needs to be executed — its work is done the moment it issues. Byrne's retreat from damages is therefore not just diplomatic caution; it routes around the FSIA's hardest wall.
+</div>
+
+<h2 id="dropped-damages"><span class="emoji">💣</span> The Damages That Were Dropped: "Thermonuclear" vs. Declaratory-Only</h2>
+<p class="section-subtitle">The Provision · Counterarguments</p>
+
+<blockquote><em>"In the original proposal that we proposed back in February… we proposed sort of a turbo damages language. I called it thermonuclear damages language, where the damages that you could retrieve would be equal to the amount of the threatened fine."</em> — Byrne</blockquote>
+
+<p><strong>The Provision (as originally drafted).</strong> Byrne's worked example: "If they threatened Facebook with a 10% global revenue fine, Facebook could go after them for a $16 billion judgment." He owns the maximalism — "that is like the extreme version and I'm kind of an extreme guy sometimes" — while maintaining it was "an appropriate remedy." <span class="ts">12:30 · 13:00</span></p>
+
+<p><strong>Counterarguments (his own).</strong> Byrne then argues <em>against himself</em>, which is the most credible passage in the episode. Rulli dropped the damages, "and I don't think it's all bad… actually it's probably a good idea, because if you have damages, you have to do more extensive surgery on foreign sovereign immunity doctrine and it's far more radical in terms of the types of changes that you'll have to American law, and as a consequence it could create diplomatic headaches, it could have unforeseen consequences." <span class="ts">13:02 · 13:24</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>The dropped damages language is real, but the specific figures belong to different drafts.</strong> <strong>Wyoming HB 70 (2026)</strong>, sponsored by <strong>Rep. Daniel Singh (R–Cheyenne)</strong>, paired a shield with a private right of action and statutory damages reported as <strong>$1 million per violation or 10% of the defendant's annual US-related revenue, whichever is greater</strong> (also reported as "at least $1 million or the maximum threatened fine"). Byrne's <strong>October 2025 federal blueprint</strong> was separately reported as carrying <strong>$10 million per violating act</strong> plus an express immunity waiver. <strong>H.R. 10174 as introduced contains none of these</strong> — declaratory relief only. ⚠️ Byrne's on-air paraphrase matches the <em>threatened-fine</em> limb of the Wyoming formulation, not the flat statutory figure.
+</div>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>The $16 billion arithmetic checks out, and the 10% figure is the UK cap, not the EU one.</strong> The <strong>Online Safety Act 2023</strong> empowers Ofcom to fine the <strong>greater of £18 million or 10% of qualifying worldwide revenue</strong>. Ten per cent of Meta's most recent full-year global revenue lands in the <strong>$16 billion+</strong> range, so the worked example is arithmetically sound. For contrast, the <strong>EU Digital Services Act</strong> caps fines at <strong>6% of global annual turnover</strong> (Art. 74) — the Commission's headline enforcement to date includes a <strong>€120 million</strong> fine against X. ⚠️ The OSA cap applies to the regulated service's qualifying worldwide revenue, so the entity-level arithmetic is illustrative rather than exact.
+</div>
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus</span>
+  Byrne's <em>original</em> damages design is the part of GRANITE that published analysts reject most firmly — and here the criticism is unusually well-aimed. <strong>R Street</strong> warned that a statutory-damages framework of $1m-per-violation-or-10%-of-revenue "would create excessive incentives for speculative litigation disconnected from actual harm," drawing an explicit analogy to Illinois's <strong>Biometric Information Privacy Act</strong> litigation industry. That is a serious structural objection from a free-market, generally speech-protective institution — not from a censorship advocate. Byrne's on-air concession that dropping damages was "probably a good idea" is, in effect, a partial agreement with his critics.
+</div>
+<div class="enhancement tension">
+  <span class="enhancement-label">⚡ Tension</span>
+  Byrne calls the damages version "an appropriate remedy" at <span class="ts">12:58</span> and, ninety seconds later, calls its removal "probably a good idea" at <span class="ts">13:08</span>. The reconciliation he offers is instrumental — damages require deeper FSIA surgery and invite diplomatic blowback — but it leaves unresolved whether he thinks the maximalist version was <em>right and unachievable</em> or <em>wrong</em>. For anyone modelling how this bill mutates in markup, that distinction determines whether damages come back as an amendment.
+</div>
+
+<h2 id="deterrence-by-cost"><span class="emoji">💰</span> Deterrence by Cost: The FOIA, the Hamsters, and the Economics of Censorship Enforcement</h2>
+<p class="section-subtitle">The Provision · Counterarguments</p>
+
+<blockquote><em>"What they got in response was zero compliance, one federal lawsuit, and four pictures of hamsters that took me exactly 30 minutes to produce."</em> — Byrne</blockquote>
+
+<p><strong>The Provision.</strong> If the remedy is only a declaration, what is it <em>for</em>? Byrne gives three answers. <span class="ts">13:32 · 14:08</span></p>
+<ol>
+  <li><strong>Reputational.</strong> "Foreign censors really don't like it when you drag them in front of an American judge and you characterize their conduct as censorship, because it makes them look bad politically at home."</li>
+  <li><strong>Financial.</strong> "There are associated costs and expenses with that… I would imagine it's certainly higher than zero."</li>
+  <li><strong>Ex ante behavioural.</strong> "Every time they send the email, they know: okay, well, if we send this, the answer might be a lawsuit in an American court. So it attaches a cost to their actions which wasn't present before."</li>
+</ol>
+
+<p><strong>The evidence he offers.</strong> A FOIA request by a free speech activist (transcript: "Daniel Lou") asked Ofcom how much time it spent on the 4chan enforcement action. Byrne's account: Ofcom disclosed <strong>0.9 to 2.6 full-time equivalents over nine months</strong>, "described in a way that made it seem very small." His extrapolation: <strong>2,000–2,800 hours</strong>, which "on law firm rates would be $2.8 million or $3 million." Against that: zero compliance, one federal lawsuit, and the hamster-bedding response. <span class="ts">14:09 · 15:05</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ⚠️ <strong>Partially verified — the FOI request exists; the figures could not be independently confirmed in this pass.</strong> Ofcom's published FOI log records a request titled <strong>"Resources and costs — enforcement action against 4chan," closed 17 April 2026</strong>. The specific <strong>0.9–2.6 FTE over nine months</strong> disclosure and the <strong>2,000–2,800 hour / ~$2.8–3m</strong> extrapolation are <strong>Byrne's on-air account and his own arithmetic</strong>; the underlying response document was not retrieved. The requester's name is rendered "Daniel Lou" by the auto-transcript and is <strong>unverified</strong>. Note that the cost conversion applies <strong>US law-firm billing rates to UK regulator staff time</strong>, which materially overstates Ofcom's actual expenditure — the correct comparator is Ofcom's internal cost base. Treat the dollar figure as <strong>rhetorical, not accounting</strong>.
+</div>
+<div class="enhancement analog">
+  <span class="enhancement-label">📜 Analog</span>
+  Byrne reaches for a Far Side cartoon — "how Mother Nature says do not touch": a cat arching its back, a puffer fish inflating, and a man in a trench coat holding a bazooka. <span class="ts">15:35 · 16:04</span> It is a warning-coloration argument: the goal is not to fight every case but to look sufficiently costly that no notice is sent. This is the same logic as a liability rule that is never litigated because it is priced into behaviour — the measure of success is the <em>absence</em> of cases, which is also why the bill will be hard to evaluate empirically after enactment.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight — and the carve-out that keeps the bill narrow</span>
+  Byrne draws an explicit line: "If you want cooperation from the United States, kindly use the regular channels — the <strong>MLAT</strong> channel, diplomatic channels, coordination between law enforcement agencies — to do legitimate things in the United States that are properly the subject of dual jurisdiction cooperation, namely serious crime which satisfies the <strong>dual criminality</strong> principle… <strong>that is unaffected by this. This is just about speech.</strong>" <span class="ts">16:18 · 16:46</span> That is the bill's best defence against the "you are dismantling mutual legal assistance" objection, and it is worth checking against the text: because § 4106(c) requires limb (B) — actual First Amendment conflict — a genuine criminal-cooperation request should fall outside the definition. The carve-out is doctrinal, not express.
+</div>
+
+<h2 id="method-not-bill"><span class="emoji">🗺️</span> "GRANITE Is Not a Single Bill, It's a Method": The Multi-Vehicle Strategy</h2>
+<p class="section-subtitle">The Provision · Doctrinal Context</p>
+
+<blockquote><em>"What we've done is we've stumbled upon a template that most American legislators think can work."</em> — Byrne</blockquote>
+
+<p><strong>On the federal track:</strong> "I know of three, including Representative [Rulli]'s. I'm not going to say what the other ones are." He also reports being "told there might be some movement in the US Senate," noting <strong>Senator Eric Schmitt</strong> has said publicly he plans to introduce a shield bill "at some point. He hasn't done so yet." <span class="ts">17:15 · 19:26</span></p>
+
+<p><strong>On Wyoming:</strong> the 2026 attempt carried damages language, "but of course there's sovereign immunity, which is a federal issue… federal supremacy is a question." It cleared the House <strong>46 to 12</strong>, "which is not close," then "stalled in the Senate because it was a very, very short budget session." The 2027 return is <strong>shield-only</strong>, because "basically all of the questions that came up at state level were about federal supremacy… are we interfering with the federal Foreign Sovereign Immunities Act? Are there commerce clause issues, are there foreign relations issues?" <span class="ts">17:28 · 18:32</span></p>
+
+<p><strong>On the model-bill machine:</strong> New Hampshire's Rep. <strong>Calvin Beaulier</strong> (transcript: "Calvin Billiard") is expected to file on the <strong>ALEC</strong> template. Byrne on ALEC: "they write model bills which have a very strange habit of getting enacted in dozens of states after it becomes a model bill." The <strong>ALEC GRANITE Act is shield-only</strong>. <span class="ts">18:32 · 19:03</span></p>
+
+<p><strong>The unnamed state:</strong> "There's another bill in a very relevant state for corporate formations that I'm not going to mention, that I've seen in draft. So you can read between the lines." <span class="ts">19:04 · 19:12</span> <em>(He does not name it; neither does this document.)</em> <strong>And the coalition:</strong> "NetChoice has come out in favor of GRANITE. They did so just this morning." <span class="ts">19:38 · 19:42</span></p>
+<div class="enhancement verified">
+  <span class="enhancement-label">🔍 Source Verified</span>
+  ✅ <strong>The multi-vehicle account holds up on the record.</strong> <strong>Wyoming HB 70 (2026)</strong>, sponsored by Rep. Daniel Singh, <strong>passed the Wyoming House 46–12 on 23 February 2026</strong> and stalled in the Senate during the short budget session; it was tabled with a signal toward interim study. <strong>ALEC adopted the shield-only model — "GRANITE Act — Foreign Censorship Shield" (Defensive Provisions) — as national model policy on 24 July 2026.</strong> A <strong>New Hampshire</strong> bill following the ALEC template was reported as due for filing in early September 2026 for the 2027 session, with <strong>Rep. Calvin Beaulier</strong> named as intended sponsor. <strong>NetChoice, ITIF and R Street</strong> have all engaged publicly in support; the <strong>Free Speech Union of Australia</strong> has also endorsed it. ⚠️ <strong>Unverified:</strong> the claim of "three" federal bills, and a <strong>Senator Eric Schmitt</strong> shield bill — no introduced Schmitt bill was located, consistent with Byrne's own "he hasn't done so yet."
+</div>
+<div class="enhancement connection">
+  <span class="enhancement-label">🔗 Connection</span>
+  ALEC's model-bill machinery → <strong>the SPEECH Act's own diffusion pattern.</strong> Before Congress acted in 2010, several states had already passed "libel terrorism" / free-speech-protection acts (New York's 2008 statute being the best known), and that state-level accumulation is part of what made federal action politically easy. Byrne is running the identical play: state shields build the record and the constituency; the federal bill supplies the sovereign-immunity surgery only Congress can perform. Whether that historical rhyme holds is the single best predictor of GRANITE's odds.
+</div>
+<div class="enhancement insight">
+  <span class="enhancement-label">💡 Key Insight</span>
+  The <strong>shield/sword split maps exactly onto the federalism constraint</strong>, which is why the strategy is coherent rather than scattershot. Non-recognition of foreign judgments is classic state judicial power (states did it for libel tourism before Congress did). Stripping foreign sovereign immunity is exclusively federal — the FSIA occupies the field. So states get shields, Congress gets the sword. Byrne arrives at this by trial and error in Wyoming; both R Street and Tech Policy Press reached the same conclusion analytically.
+</div>
+
+<h2 id="counterarguments"><span class="emoji">🎯</span> The Counterarguments: What the Published Criticism Actually Says</h2>
+<p class="section-subtitle">Counterarguments — the episode is a single-advocate interview with no adversarial questioning</p>
+
+<p><strong>1. The FSIA discretionary-function problem — the sword may be dead on arrival.</strong> R Street's Spence Purnell (4 Mar. 2026): when "a foreign sovereign raises FSIA immunity in response to a GRANITE Act lawsuit, the case is almost certainly dead on arrival." Tech Policy Press's Matthew Allaire (3 Mar. 2026) makes the sharper doctrinal version: foreign regulatory enforcement sits within the <strong>discretionary function exception</strong>, and Wyoming's findings that censorship enforcement "falls outside any discretionary function exception" are "unlikely to carry weight in federal court." <em>Note the partial answer H.R. 10174 supplies: a federal statute adding § 1605(a)(7) is exactly the instrument that can override that default — which is why both writers said the fix had to be federal. The federal bill is, in this narrow sense, their prescription.</em></p>
+
+<p><strong>2. The international-organisations gap.</strong> Allaire flags that the <strong>European Commission</strong> is immune under the <strong>International Organizations Immunities Act</strong>, not the FSIA — so an FSIA-only carve-out reaches Ofcom and Brazil but not the EU's own enforcement arm, "precisely where the political stakes are highest." H.R. 10174 amends § 1605(a) only; on its face this gap survives.</p>
+
+<p><strong>3. Litigation-mill risk (aimed at the damages version).</strong> R Street's BIPA analogy: statutory damages disconnected from actual harm generate speculative litigation. Mooted by the federal bill's declaratory-only remedy — but live again if damages are restored in markup.</p>
+
+<p><strong>4. Comity and retaliation.</strong> Reporting on the bill records the diplomatic objection: that stripping immunity invites reciprocal treatment of US agencies abroad, exposes American companies to harsher foreign treatment, and strains cooperation on cybersecurity, AI governance and digital markets. This is the classic <strong>JASTA critique</strong> recycled — and JASTA is the closest precedent, so it is the most instructive one.</p>
+
+<p><strong>5. The "what does a declaration actually do" problem.</strong> ITIF's Tanya Nagrath (30 June 2026) notes the analysis does not evaluate whether declaratory judgments meaningfully constrain foreign regulators operating beyond US jurisdiction. Byrne's deterrence-by-cost answer <span class="ts">13:32 · 14:08</span> is a hypothesis about regulator behaviour, offered without data.</p>
+
+<p><strong>6. The institutional-design alternative.</strong> R Street's counter-proposal is not "do nothing": it is a <strong>federal complaints process</strong> in which a designated agency evaluates foreign-censorship complaints and brings actions on Americans' behalf, "leveraging the government's unique authority and diplomatic weight" rather than dispersing the fight across private plaintiffs. That is a genuine fork in the road and is not mentioned in the episode.</p>
+<div class="enhancement against">
+  <span class="enhancement-label">🎯 Against Consensus — the fair summary</span>
+  Byrne's position (censorship-by-transmission is the dominant mode, and only a private cause of action with an immunity carve-out will deter it) is <strong>ahead of, not against</strong>, the analytic consensus on the <em>diagnosis</em>; the think-tank commentary broadly accepts the problem. Where he is genuinely out on a limb is the <em>remedy</em>: that private declaratory litigation against foreign regulators will change their conduct. No published analyst has yet endorsed that causal claim on evidence, and Byrne's own supporting datum — the Ofcom FOI cost estimate — is his own extrapolation at US law-firm rates.
+</div>
+
+<h2 id="open-questions"><span class="emoji">❓</span> Open Questions a Legal Reader Should Carry Out of This Episode</h2>
+<ol>
+  <li><strong>Does limb (B) of § 4106(c) actually constrain limb (A)?</strong> If a foreign law need only have the "substantial effect" of restricting expression <em>and</em> conflict with the First Amendment "if recognized" here, how much of the EU/UK regulatory canon qualifies — and who decides, on what record?</li>
+  <li><strong>Who is a "United States person"?</strong> The introduced text does not define it, and chapter 181 does not supply one. Standing for a US-incorporated subsidiary of a foreign parent, or a foreign-owned platform hosted on US infrastructure, is unresolved on the face of the bill.</li>
+  <li><strong>How is a foreign state served in a § 4106(b) action?</strong> § 1608 service requirements still apply. A statute designed around defective <em>inbound</em> service says nothing about <em>outbound</em> service on the sovereign it targets.</li>
+  <li><strong>Does a § 4106 declaration bind anyone useful?</strong> Against a regulator with no US assets, the declaration's value lies entirely in its collateral effects. Is that a judicially cognisable injury-and-redressability story under Article III?</li>
+  <li><strong>Does the reoccupation of § 1605(a)(7) carry consequences?</strong> Placement inside § 1605 rather than a standalone section (as JASTA did with § 1605B) subjects any future remedy to § 1606's damages limitations. Deliberate, or incidental?</li>
+  <li><strong>What happens if the D.D.C. rules for 4chan on the commercial-activity exception before Judiciary marks up the bill?</strong> A win on existing law strengthens the "we don't need new legislation" position; a loss strengthens Byrne's.</li>
+</ol>
+
+<div class="protocol-box">
+  <div class="protocol-box-header">
+    <span class="protocol-box-title">📋 Reading &amp; Docket-Tracking Cheat Sheet</span>
+    <button class="copy-btn" onclick="copyProtocol(this)">Copy</button>
+  </div>
+  <ul>
+    <li><strong>Read first — the bill itself (genuinely ~2.5 pages):</strong> H.R. 10174, 119th Cong. (2d Sess.), introduced text via GPO govinfo, <code>BILLS-119hr10174ih</code> — <a href="https://www.govinfo.gov/app/details/BILLS-119hr10174ih">govinfo.gov/app/details/BILLS-119hr10174ih</a></li>
+    <li><strong>Read second — the statutory neighbourhood:</strong> 28 U.S.C. §§ 4101–4105 (SPEECH Act) and §§ 1602–1611 (FSIA), especially § 1605(a) and § 1603's definitions</li>
+    <li><strong>Read third — the closest precedent for the surgery:</strong> JASTA (2016), 28 U.S.C. § 1605B, and the FY2008 NDAA § 1083 relocation of § 1605(a)(7) to § 1605A</li>
+    <li><strong>Read the criticism, not just the advocacy:</strong> Purnell, R Street (4 Mar. 2026); Allaire, Tech Policy Press (3 Mar. 2026); Nagrath, ITIF (30 June 2026)</li>
+    <li><strong>Track the committee:</strong> House Judiciary — H.R. 10174 referred 27 Aug. 2026. Watch for subcommittee referral, a hearing, or a cosponsor run</li>
+    <li><strong>Track the docket that could moot half the argument:</strong> <em>4chan Community Support LLC v. Ofcom</em> (D.D.C.) — the FSIA commercial-activity ruling</li>
+    <li><strong>Track the parallel docket:</strong> <em>Trump Media &amp; Technology Group Corp. v. De Moraes</em>, No. 8:25-cv-00411 (M.D. Fla.), Judge Scriven — Brazil's immunity motion</li>
+    <li><strong>Track the states:</strong> Wyoming 2027 (shield-only return of HB 70); New Hampshire 2027 (ALEC template, Rep. Beaulier); ALEC model policy adopted 24 July 2026</li>
+    <li><strong>Track the Senate:</strong> Sen. Eric Schmitt has signalled a shield bill; none introduced as at this recording</li>
+    <li><strong>Comparators to hold in mind:</strong> UK Online Safety Act 2023 (fine cap: greater of £18m or 10% of qualifying worldwide revenue); EU DSA Art. 74 (cap: 6% of global annual turnover)</li>
+    <li><strong>Primary-source habit for this area:</strong> govinfo bulk data (<code>BILLS-119hr____ih.xml</code>) returns introduced text when congress.gov is blocked or slow</li>
+  </ul>
+</div>
+
+<h2 id="resources"><span class="emoji">📚</span> Resources &amp; References</h2>
+<div class="references">
+  <h4>Bills &amp; Model Legislation</h4>
+  <ul>
+    <li><strong>H.R. 10174</strong>, <em>Guaranteeing Rights Against Novel International Tyranny and Extortion Act</em> ("GRANITE Act"), 119th Cong., 2d Sess. — sponsor Rep. Michael A. Rulli (R–OH); introduced and referred to House Judiciary, <strong>27 August 2026</strong>. Text: <a href="https://www.govinfo.gov/app/details/BILLS-119hr10174ih">GPO govinfo, BILLS-119hr10174ih</a></li>
+    <li><strong>Wyoming HB 70 (2026 Budget Session)</strong> — GRANITE Act (shield + sword + statutory damages); sponsor Rep. Daniel Singh; passed House <strong>46–12</strong> on 23 Feb. 2026; died in the Senate. <a href="https://www.wyoleg.gov/2026/Introduced/HB0070.pdf">Text</a></li>
+    <li><strong>ALEC Model Policy</strong>, <em>GRANITE Act — Foreign Censorship Shield (Defensive Provisions)</em>, adopted <strong>24 July 2026</strong> — <a href="https://alec.org/model-policy/guaranteeing-rights-against-novel-international-tyranny-and-extortion-defensive-provisions-granite-act-foreign-censorship-shield/">alec.org</a></li>
+  </ul>
+
+  <h4>Statutes</h4>
+  <ul>
+    <li><strong>SPEECH Act</strong>, Pub. L. 111-223 (10 Aug. 2010), <strong>28 U.S.C. §§ 4101–4105</strong> (non-recognition rule at § 4102)</li>
+    <li><strong>Foreign Sovereign Immunities Act of 1976</strong>, Pub. L. 94-583, <strong>28 U.S.C. §§ 1602–1611</strong> (definitions § 1603; general exceptions § 1605; execution immunity §§ 1609–1611)</li>
+    <li><strong>28 U.S.C. § 1605A</strong> (terrorism exception, relocated from § 1605(a)(7) by FY2008 NDAA, Pub. L. 110-181, § 1083)</li>
+    <li><strong>JASTA</strong>, Pub. L. 114-222 (2016), <strong>28 U.S.C. § 1605B</strong></li>
+    <li><strong>Online Safety Act 2023</strong> (UK) — s. 100 information notices; penalty cap at the greater of £18m or 10% of qualifying worldwide revenue</li>
+    <li><strong>Regulation (EU) 2022/2065</strong> (Digital Services Act) — Art. 74 penalty cap of 6% of global annual turnover</li>
+  </ul>
+
+  <h4>Cases</h4>
+  <ul>
+    <li><em><strong>The Schooner Exchange v. McFaddon</strong></em>, 11 U.S. (7 Cranch) 116 (1812) — Marshall, C.J.; foundational statement of foreign state immunity</li>
+    <li><em><strong>Holman v. Johnson</strong></em> (1775) 1 Cowp. 341 (Mansfield C.J.); <em><strong>Attorney General v. Lutwydge</strong></em> (1729) — origins of the revenue rule</li>
+    <li><em><strong>Matal v. Tam</strong></em>, 582 U.S. 218 (2017) — Lanham Act disparagement clause struck down as viewpoint discrimination; Ron Coleman was counsel for Simon Tam. ⚠️ Byrne calls it "a big First Amendment precedent on hate speech"; it is a <strong>trademark-registration</strong> case, widely cited for the proposition that there is no hate-speech exception to the First Amendment</li>
+    <li><em><strong>4chan Community Support LLC v. Ofcom</strong></em> (D.D.C., filed Aug. 2025) — FSIA immunity asserted by Ofcom; commercial-activity exception argued by plaintiffs</li>
+    <li><em><strong>Trump Media &amp; Technology Group Corp. v. De Moraes</strong></em>, No. 8:25-cv-00411 (M.D. Fla., filed 19 Feb. 2025) — Brazil intervened asserting immunity; Judge Mary Scriven</li>
+  </ul>
+
+  <h4>Commentary — Advocacy</h4>
+  <ul>
+    <li>Preston Byrne, "The GRANITE Act: How Congress Can Strike Back Against Foreign Censors" (18 Oct. 2025) — the original blueprint</li>
+    <li>Preston Byrne, "America Strikes Back Against Foreign Censors With The Rulli GRANITE Act, HR 10174" (28 Aug. 2026)</li>
+    <li>Preston Byrne, "The Ofcom Files" series (from 16 Oct. 2025)</li>
+    <li>Meagan O'Rourke, <em>Reason</em> (1 Sept. 2026) — contemporaneous coverage of the federal bill</li>
+  </ul>
+
+  <h4>Commentary — Critical / Analytical</h4>
+  <ul>
+    <li>Spence Purnell, "What Congress Can Learn From the GRANITE Act," R Street Institute (4 Mar. 2026) — FSIA "dead on arrival" objection; BIPA litigation-mill analogy; federal complaints-process alternative</li>
+    <li>Matthew Allaire, "Wyoming's GRANITE Act Hints at Global Speech Battle to Come," Tech Policy Press (3 Mar. 2026) — discretionary-function exception; International Organizations Immunities Act gap; federalism limits</li>
+    <li>Tanya Nagrath, ITIF (30 June 2026) — shield/sword analysis and the unevaluated efficacy of declaratory relief</li>
+    <li>House Judiciary Committee majority staff report on the EU Digital Services Act (25 July 2025)</li>
+  </ul>
+
+  <h4>People &amp; Organisations</h4>
+  <ul>
+    <li><strong>Preston Byrne</strong> — managing partner, Byrne &amp; Storm, P.C.; counsel to 4chan Community Support LLC and other US platforms in Ofcom matters; drafter of the original GRANITE blueprint</li>
+    <li><strong>Ron Coleman</strong> — co-counsel; counsel in <em>Matal v. Tam</em>; Coleman Law Firm, P.C. (previously a partner at Dhillon Law Group)</li>
+    <li><strong>Rep. Michael A. Rulli (R–OH)</strong> — sponsor, H.R. 10174 · <strong>Rep. Daniel Singh (R–Cheyenne, WY)</strong> — sponsor, Wyoming HB 70 · <strong>Rep. Calvin Beaulier (NH)</strong> — expected sponsor, NH 2027 shield bill · <strong>Sen. Eric Schmitt (R–MO)</strong> — has signalled a Senate shield bill</li>
+    <li><strong>Ofcom</strong> — UK communications regulator; enforcement authority under the Online Safety Act 2023</li>
+    <li><strong>NetChoice · ITIF · R Street Institute · ALEC · Free Speech Union of Australia</strong> — organisations engaged on GRANITE</li>
+  </ul>
+
+  <h4>Dates &amp; Events</h4>
+  <ul>
+    <li><strong>19 Feb. 2025</strong> — Rumble/TMTG file against Justice de Moraes (M.D. Fla.)</li>
+    <li><strong>Aug. 2025</strong> — 4chan and others file against Ofcom in the D.D.C.</li>
+    <li><strong>18 Oct. 2025</strong> — Byrne publishes the original GRANITE Act proposal</li>
+    <li><strong>5 Feb. 2026</strong> — Wyoming HB 70 introduced · <strong>23 Feb. 2026</strong> — passes the state House 46–12; later stalls in the Senate</li>
+    <li><strong>26 Feb. 2026</strong> — the date as of which Ofcom's 197 s.100 notices to US businesses were confirmed</li>
+    <li><strong>17 Apr. 2026</strong> — Ofcom FOI response "Resources and costs — enforcement action against 4chan" closed</li>
+    <li><strong>24 July 2026</strong> — ALEC adopts the shield-only GRANITE model policy</li>
+    <li><strong>27 Aug. 2026</strong> — <strong>H.R. 10174 introduced and referred to House Judiciary</strong></li>
+    <li><strong>Early Sept. 2026</strong> — this interview; NetChoice endorsement announced "just this morning"; New Hampshire filing expected</li>
+    <li><strong>2027 sessions</strong> — Wyoming shield-only return; New Hampshire ALEC-template bill</li>
+  </ul>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── Dark Mode Toggle ──
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+
+// Restore saved preference
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+// ── Reading Progress Bar ──
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+
+// ── TOC Sidebar: Active Section Tracking ──
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+
+  if (headings.length === 0 || tocLinks.length === 0) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+
+// ── TOC Hamburger Toggle (Mobile) ──
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+
+// Close TOC on link click (mobile)
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+
+// ── Smooth Scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ── Copy Protocol to Clipboard ──
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>

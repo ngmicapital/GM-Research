@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The GRANITE Act — Echo Briefing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSCRIPT INTELLIGENCE — HTML TEMPLATE
+   Light mode default · Dark toggle · Floating TOC · Copy-to-clipboard
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  /* Light mode (default) */
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+
+/* ── RESET & BASE ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── READING PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--progress-bar);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+
+/* ── LAYOUT ── */
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 820px;
+  margin-left: 260px;
+  padding: 40px 24px 120px;
+}
+
+/* ── FLOATING TOC SIDEBAR (LEFT SIDE) ── */
+.toc-sidebar {
+  position: fixed;
+  top: 80px;
+  left: max(16px, calc((100vw - 1200px)/2));
+  width: 220px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--bg-toc);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.toc-sidebar ul {
+  list-style: none;
+}
+
+.toc-sidebar li {
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.toc-sidebar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+
+.toc-sidebar a:hover,
+.toc-sidebar a.active { color: var(--accent-gold); }
+
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+
+/* Mobile: hamburger toggle */
+.toc-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 64px;
+  z-index: 1001;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 16px;
+    width: 280px;
+    max-height: 70vh;
+  }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── HEADER / HERO ── */
+.hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mode-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.mode-badge.full { background: var(--accent-teal); color: #fff; }
+.mode-badge.quick { background: var(--accent-orange); color: #fff; }
+
+/* ── HEADINGS ── */
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--text-heading);
+  margin: 64px 0 8px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-heading);
+  margin: 36px 0 12px;
+  line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+
+h4 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--accent-teal);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── EXECUTIVE SUMMARY ── */
+.exec-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.exec-summary h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.exec-summary ul { list-style: none; }
+
+.exec-summary li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.exec-summary li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* ── BLOCKQUOTES ── */
+blockquote {
+  background: var(--bg-quote);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text);
+}
+
+/* ── TIMESTAMPS ── */
+.ts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--timestamp);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* ── ANALYTICAL ENHANCEMENT BLOCKS ── */
+.enhancement {
+  background: var(--bg-enhancement);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.enhancement.connection   { border-color: var(--accent-blue);   }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose);   }
+.enhancement.insight      { border-color: var(--accent-teal);   }
+.enhancement.thesis       { border-color: var(--accent-gold);   }
+.enhancement.consensus    { border-color: var(--accent-green);  }
+.enhancement.verified     { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-enhancement)); }
+
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.enhancement.connection   .enhancement-label { color: var(--accent-blue);   }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose);   }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal);   }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold);   }
+.enhancement.consensus    .enhancement-label { color: var(--accent-green);  }
+.enhancement.verified     .enhancement-label { color: var(--accent-green);  }
+
+/* ── ITEM CARDS (Phase 3) ── */
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.item-card h3 {
+  margin-top: 0;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.item-card .one-liner {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card h4 { margin-top: 16px; }
+
+/* ── PROTOCOL CHEAT SHEET ── */
+.protocol-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-teal);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.protocol-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--accent-teal);
+  color: #fff;
+}
+
+.copy-btn.copied {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #fff;
+}
+
+.protocol-box ul {
+  list-style: none;
+}
+
+.protocol-box li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.protocol-box li:last-child { border-bottom: none; }
+
+/* ── TABLES (Quick Actions) ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* ── ECHO DIVIDER ── */
+.echo-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin: 80px 0 60px;
+}
+
+.echo-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 40px;
+}
+
+/* ── REFERENCES ── */
+.references {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.references h4 {
+  color: var(--accent-gold);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+
+/* ── PRINT ── */
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+</style>
+</head>
+<body>
+
+<!-- Reading Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Dark/Light Toggle -->
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">🌙</span>
+  <span class="icon-dark">☀️</span>
+</button>
+
+<!-- TOC Hamburger (mobile) -->
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">
+  ☰
+</button>
+
+<!-- Floating TOC Sidebar -->
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li><a href="#bottom-line">⚡ The Bottom Line</a></li>
+    <li><a href="#key-claims">🔑 Key Claims (Ranked)</a></li>
+    <li><a href="#quick-actions">⚡ Quick Actions</a></li>
+    <li><a href="#best-quotes">💬 Best Quotes</a></li>
+    <li><a href="#echo-references">📎 References</a></li>
+</ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+<div class="hero">
+  <div class="hero-label">Echo — Decision-Ready Briefing</div>
+  <h1>The GRANITE Act: A Shield, a Declaratory Sword, and a One-Line Cut Into the FSIA</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Law of Code (Jacob Robinson) · Preston Byrne, Byrne &amp; Storm P.C.</div>
+    <div><span class="label">Domain</span> Law &amp; Regulation / Internet Speech</div>
+    <div><span class="label">Reliability</span> Mixed — bill identity, sponsor, text and status verified against the introduced text (H.R. 10174, GPO govinfo); the guest is counsel to the affected platforms and drafter of the blueprint, so his doctrinal and predictive claims are advocacy; two historical characterisations fail checking</div>
+    <div><span class="label">Content Type</span> Single-guest advocacy interview</div>
+  </div>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+<h2 id="bottom-line"><span class="emoji">⚡</span> The Bottom Line</h2>
+<ul>
+  <li><strong>The bill exists and is exactly as small as claimed.</strong> H.R. 10174 (GRANITE Act), sponsored by <strong>Rep. Michael A. Rulli (R–OH)</strong>, introduced and referred to House Judiciary <strong>27 August 2026</strong>: one new 28 U.S.C. § 4106 (three subsections) plus a one-line § 1605(a)(7). <em>The transcript's "Representative Roy" is a mis-transcription of Rulli.</em></li>
+  <li><strong>The shield's innovation is reaching demands, not just judgments.</strong> § 4106(a) bars US courts from recognising a foreign judgment <strong>or</strong> a "fine, order, or demand" enforcing a foreign censorship law — because, on Byrne's evidence, the censorship happens when the email arrives, not when a court rules.</li>
+  <li><strong>The sword has been disarmed relative to Byrne's own draft, and he agrees.</strong> Wyoming's version carried statutory damages; the federal bill offers <strong>declaratory relief only</strong>. Byrne calls the removal "probably a good idea" — damages need deeper FSIA surgery and invite "diplomatic headaches."</li>
+  <li><strong>The published criticism does not dispute the problem; it disputes the remedy.</strong> R Street, ITIF and Tech Policy Press accept the shield and doubt whether a declaration changes a foreign regulator's behaviour.</li>
+</ul>
+
+<h2 id="key-claims"><span class="emoji">🔑</span> Key Claims (Ranked)</h2>
+
+<p><strong>1. Ofcom obtained a ~98% compliance rate from American companies by email alone.</strong><br>
+↳ <em>Evidence:</em> <strong>197</strong> s.100 notices into the US (Ofcom's own confirmed figure, as at 26 Feb. 2026, all by email, bypassing the UK–US MLAT); Byrne counts <strong>four</strong> public refusals.<br>
+↳ <em>Caveat / consensus:</em> the 197 is documented and Ofcom's own; the four-refusals denominator is <strong>Byrne's count as counsel</strong>.</p>
+
+<p><strong>2. Sovereign immunity is a threshold kill-switch, which is why the case never gets litigated.</strong><br>
+↳ <em>Evidence:</em> immunity is subject-matter jurisdiction, raised on a Rule 12(b)(1) motion — "if they succeed on sovereign immunity, the case ends." Ofcom asserted FSIA immunity in the D.D.C.; Brazil intervened asserting immunity for Justice de Moraes (M.D. Fla.).<br>
+↳ <em>Consensus:</em> Aligned — settled FSIA doctrine.</p>
+
+<p><strong>3. The federal bill is the fix the critics themselves prescribed.</strong><br>
+↳ <em>Evidence:</em> R Street (4 Mar. 2026) and Tech Policy Press (3 Mar. 2026) both argued the Wyoming sword failed on federal supremacy and the FSIA discretionary-function exception, and only Congress could authorise the carve-out. H.R. 10174 does that.<br>
+↳ <em>Caveat:</em> the <strong>European Commission</strong> is immune under the International Organizations Immunities Act, not the FSIA — so a § 1605(a) amendment misses DSA enforcement.<br>
+↳ <em>Consensus:</em> Emerging — shield accepted, sword untested.</p>
+
+<p><strong>4. GRANITE is a template, not a bill.</strong><br>
+↳ <em>Evidence:</em> Wyoming HB 70 passed the state House <strong>46–12</strong> (23 Feb. 2026) then died in the short budget session; <strong>ALEC adopted a shield-only model on 24 July 2026</strong>; New Hampshire (Rep. Beaulier) is expected to file on it for 2027; NetChoice endorsed the day of recording.<br>
+↳ <em>Caveat:</em> Byrne's "three" federal bills and a forthcoming Sen. Eric Schmitt bill are <strong>unverified</strong> — no Schmitt bill exists.</p>
+
+<p><strong>5. Two historical set-pieces do not check out as narrated.</strong><br>
+↳ <em>The Schooner Exchange v. McFaddon</em>, 11 U.S. (7 Cranch) 116 (1812) was an <strong>ownership libel by the dispossessed American owners</strong>, not bailiffs attaching a warship for debts — the holding stands, the facts do not.<br>
+↳ The revenue rule's "1712" origin is <strong>unverified</strong>; the standard citations are <em>Attorney General v. Lutwydge</em> (1729) and <em>Holman v. Johnson</em> (1775).</p>
+
+<p><strong>6. The deterrence theory rests on a cost estimate the guest built himself.</strong><br>
+↳ <em>Evidence:</em> an Ofcom FOI response ("Resources and costs — enforcement action against 4chan," closed 17 Apr. 2026) reportedly disclosed 0.9–2.6 FTE over nine months; Byrne extrapolates 2,000–2,800 hours, ~$2.8m.<br>
+↳ <em>Caveat:</em> applies <strong>US law-firm rates to UK regulator time</strong> — rhetoric, not accounting.</p>
+
+<h2 id="quick-actions"><span class="emoji">⚡</span> Quick Actions</h2>
+<table>
+  <thead>
+    <tr><th>Action</th><th>Spec</th><th>When / Frequency</th><th>Key Detail</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Read the primary text</td><td>GPO govinfo <code>BILLS-119hr10174ih</code> (~15 min)</td><td>Before citing the bill</td><td>§ 4106(a) shield · § 4106(b) declaratory action · new § 1605(a)(7); <strong>no findings, no severability</strong></td></tr>
+    <tr><td>Track the committee</td><td>House Judiciary, H.R. 10174 (referred 27 Aug. 2026)</td><td>Monthly; escalate on a hearing notice</td><td>Watch for a cosponsor run and damages language returning in markup</td></tr>
+    <tr><td>Track the case that could moot the sword</td><td><em>4chan v. Ofcom</em> (D.D.C.)</td><td>Weekly in the ruling window</td><td>The FSIA <strong>commercial-activity</strong> ruling — a plaintiff win cuts the bill's value</td></tr>
+    <tr><td>Track the parallel immunity fight</td><td><em>TMTG v. De Moraes</em>, 8:25-cv-00411 (M.D. Fla.), Judge Scriven</td><td>On any docket entry re Brazil's motion</td><td>Tests whether a foreign <em>judge's</em> orders are immune when aimed at the US</td></tr>
+    <tr><td>Read the opposition</td><td>Purnell (R Street, 4 Mar.); Allaire (Tech Policy Press, 3 Mar.); Nagrath (ITIF, 30 June)</td><td>Once, before writing</td><td>Three objections: discretionary-function, IOIA gap, declaratory efficacy</td></tr>
+    <tr><td>Pin the state calendar</td><td>Wyoming 2027 (shield-only HB 70); New Hampshire 2027 (ALEC template)</td><td>Each session opening</td><td>ALEC model adopted 24 July 2026 — the diffusion vector</td></tr>
+    <tr><td>Hold the comparators</td><td>UK OSA 2023: greater of £18m or 10% qualifying worldwide revenue · EU DSA Art. 74: 6% turnover</td><td>On any "10% fine" figure</td><td>Byrne's $16bn Facebook example is the <strong>UK</strong> cap, not the EU one</td></tr>
+  </tbody>
+</table>
+
+<h2 id="best-quotes"><span class="emoji">💬</span> Best Quotes</h2>
+<blockquote><em>"It's only two and a half pages long… but for a two and a half page bill, radically redraws the lines of internet regulation around the world."</em> <span class="ts">00:00</span> — The introduced text bears out the size.</blockquote>
+<blockquote><em>"When you raise sovereign immunity… it's a subject matter jurisdiction question. So it's a Rule 12(b)(1) motion… If they succeed on sovereign immunity, the case ends."</em> <span class="ts">09:41</span> — The doctrinal centre of the episode.</blockquote>
+<blockquote><em>"GRANITE is not a single bill. It's a method."</em> <span class="ts">19:29</span> — State shields, federal sword, ALEC as the diffusion engine.</blockquote>
+
+<h2 id="echo-references"><span class="emoji">📎</span> References</h2>
+<div class="references">
+<ul>
+  <li><strong>H.R. 10174</strong>, GRANITE Act, 119th Cong. (27 Aug. 2026, Rep. Rulli; H. Judiciary) — <a href="https://www.govinfo.gov/app/details/BILLS-119hr10174ih">govinfo.gov/app/details/BILLS-119hr10174ih</a></li>
+  <li><strong>28 U.S.C. §§ 4101–4105</strong> (SPEECH Act, Pub. L. 111-223) · <strong>§§ 1602–1611</strong> (FSIA, Pub. L. 94-583) · <strong>§ 1605A</strong> (Pub. L. 110-181 § 1083) · <strong>§ 1605B</strong> (JASTA, Pub. L. 114-222)</li>
+  <li><strong>Wyoming HB 70 (2026)</strong> — <a href="https://www.wyoleg.gov/2026/Introduced/HB0070.pdf">wyoleg.gov/2026/Introduced/HB0070.pdf</a> · <strong>ALEC GRANITE Act (Foreign Censorship Shield)</strong>, 24 July 2026</li>
+  <li><em>The Schooner Exchange v. McFaddon</em>, 11 U.S. (7 Cranch) 116 (1812) · <em>Matal v. Tam</em>, 582 U.S. 218 (2017) · <em>4chan v. Ofcom</em> (D.D.C. 2025) · <em>TMTG v. De Moraes</em>, 8:25-cv-00411 (M.D. Fla.)</li>
+  <li><strong>UK Online Safety Act 2023</strong>, s. 100 · <strong>Reg. (EU) 2022/2065 (DSA)</strong>, Art. 74</li>
+  <li>Purnell, R Street (4 Mar. 2026) · Allaire, Tech Policy Press (3 Mar. 2026) · Nagrath, ITIF (30 June 2026) · O'Rourke, <em>Reason</em> (1 Sept. 2026) · Byrne, prestonbyrne.com (2025–26)</li>
+</ul>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── Dark Mode Toggle ──
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+
+// Restore saved preference
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+// ── Reading Progress Bar ──
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+
+// ── TOC Sidebar: Active Section Tracking ──
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+
+  if (headings.length === 0 || tocLinks.length === 0) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+
+// ── TOC Hamburger Toggle (Mobile) ──
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+
+// Close TOC on link click (mobile)
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+
+// ── Smooth Scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ── Copy Protocol to Clipboard ──
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
