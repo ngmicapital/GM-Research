@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Should peer-to-peer crypto transactions be regulated differently online vs. in-person?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSCRIPT INTELLIGENCE — HTML TEMPLATE
+   Light mode default · Dark toggle · Floating TOC · Copy-to-clipboard
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── CSS CUSTOM PROPERTIES ── */
+:root {
+  /* Light mode (default) */
+  --bg:             #faf8f4;
+  --bg-card:        #ffffff;
+  --bg-quote:       #f5f0e8;
+  --bg-enhancement: #f8f5f0;
+  --bg-toc:         #ffffff;
+  --border:         #e0dbd2;
+  --border-accent:  #d4cfc5;
+  --text:           #3a3632;
+  --text-muted:     #8a8279;
+  --text-heading:   #1a1714;
+  --accent-gold:    #b8860b;
+  --accent-blue:    #2563eb;
+  --accent-teal:    #0d7377;
+  --accent-rose:    #be3a4a;
+  --accent-purple:  #7c3aed;
+  --accent-orange:  #c2590a;
+  --accent-green:   #16794a;
+  --timestamp:      #8a7a6a;
+  --link:           #2563eb;
+  --shadow:         rgba(0,0,0,0.06);
+  --progress-bar:   #b8860b;
+}
+
+html.dark {
+  --bg:             #0c0f14;
+  --bg-card:        #13171e;
+  --bg-quote:       #181d27;
+  --bg-enhancement: #1a1520;
+  --bg-toc:         #13171e;
+  --border:         #2a2f3a;
+  --border-accent:  #3d4555;
+  --text:           #c8cdd8;
+  --text-muted:     #7a8194;
+  --text-heading:   #e8ecf4;
+  --accent-gold:    #d4a853;
+  --accent-blue:    #5b8def;
+  --accent-teal:    #4ec9b0;
+  --accent-rose:    #d4727a;
+  --accent-purple:  #a78bfa;
+  --accent-orange:  #e8915a;
+  --accent-green:   #4ade80;
+  --timestamp:      #6b7a99;
+  --link:           #5b8def;
+  --shadow:         rgba(0,0,0,0.3);
+  --progress-bar:   #d4a853;
+}
+
+/* ── RESET & BASE ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── READING PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--progress-bar);
+  z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* ── DARK MODE TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.theme-toggle:hover { border-color: var(--accent-gold); }
+.theme-toggle .icon-light { display: inline; }
+.theme-toggle .icon-dark  { display: none; }
+html.dark .theme-toggle .icon-light { display: none; }
+html.dark .theme-toggle .icon-dark  { display: inline; }
+
+/* ── LAYOUT ── */
+.page-wrapper {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 820px;
+  margin-left: 260px;
+  padding: 40px 24px 120px;
+}
+
+/* ── FLOATING TOC SIDEBAR (LEFT SIDE) ── */
+.toc-sidebar {
+  position: fixed;
+  top: 80px;
+  left: max(16px, calc((100vw - 1200px)/2));
+  width: 220px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--bg-toc);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+  z-index: 100;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.toc-sidebar-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+}
+
+.toc-sidebar ul {
+  list-style: none;
+}
+
+.toc-sidebar li {
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.toc-sidebar a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+
+.toc-sidebar a:hover,
+.toc-sidebar a.active { color: var(--accent-gold); }
+
+.toc-sidebar .toc-h3 { padding-left: 12px; font-size: 12px; }
+
+/* Mobile: hamburger toggle */
+.toc-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 64px;
+  z-index: 1001;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 16px;
+    width: 280px;
+    max-height: 70vh;
+  }
+  .toc-sidebar.open { display: block; }
+  .toc-hamburger { display: flex; }
+  .main-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── HEADER / HERO ── */
+.hero {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.5vw, 42px);
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.meta-grid .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mode-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.mode-badge.full { background: var(--accent-teal); color: #fff; }
+.mode-badge.quick { background: var(--accent-orange); color: #fff; }
+
+/* ── HEADINGS ── */
+h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--text-heading);
+  margin: 64px 0 8px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  scroll-margin-top: 24px;
+}
+
+h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text-heading);
+  margin: 36px 0 12px;
+  line-height: 1.35;
+  scroll-margin-top: 24px;
+}
+
+h4 {
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--accent-teal);
+  margin: 24px 0 8px;
+}
+
+p { margin-bottom: 14px; }
+strong { color: var(--text-heading); font-weight: 600; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── EXECUTIVE SUMMARY ── */
+.exec-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.exec-summary h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.exec-summary ul { list-style: none; }
+
+.exec-summary li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.exec-summary li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* ── BLOCKQUOTES ── */
+blockquote {
+  background: var(--bg-quote);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: var(--text);
+}
+
+/* ── TIMESTAMPS ── */
+.ts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--timestamp);
+  background: var(--bg-card);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* ── ANALYTICAL ENHANCEMENT BLOCKS ── */
+.enhancement {
+  background: var(--bg-enhancement);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.enhancement.connection   { border-color: var(--accent-blue);   }
+.enhancement.analog       { border-color: var(--accent-orange); }
+.enhancement.tension      { border-color: var(--accent-purple); }
+.enhancement.against      { border-color: var(--accent-rose);   }
+.enhancement.insight      { border-color: var(--accent-teal);   }
+.enhancement.thesis       { border-color: var(--accent-gold);   }
+.enhancement.consensus    { border-color: var(--accent-green);  }
+.enhancement.verified     { border-color: var(--accent-green); background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-enhancement)); }
+
+.enhancement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.enhancement.connection   .enhancement-label { color: var(--accent-blue);   }
+.enhancement.analog       .enhancement-label { color: var(--accent-orange); }
+.enhancement.tension      .enhancement-label { color: var(--accent-purple); }
+.enhancement.against      .enhancement-label { color: var(--accent-rose);   }
+.enhancement.insight      .enhancement-label { color: var(--accent-teal);   }
+.enhancement.thesis       .enhancement-label { color: var(--accent-gold);   }
+.enhancement.consensus    .enhancement-label { color: var(--accent-green);  }
+.enhancement.verified     .enhancement-label { color: var(--accent-green);  }
+
+/* ── ITEM CARDS (Phase 3) ── */
+.item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.item-card h3 {
+  margin-top: 0;
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.item-card .one-liner {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card h4 { margin-top: 16px; }
+
+/* ── PROTOCOL CHEAT SHEET ── */
+.protocol-box {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-teal);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  position: relative;
+}
+
+.protocol-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.protocol-box-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+}
+
+.copy-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--accent-teal);
+  color: #fff;
+}
+
+.copy-btn.copied {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #fff;
+}
+
+.protocol-box ul {
+  list-style: none;
+}
+
+.protocol-box li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.protocol-box li:last-child { border-bottom: none; }
+
+/* ── TABLES (Quick Actions) ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* ── ECHO DIVIDER ── */
+.echo-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin: 80px 0 60px;
+}
+
+.echo-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  margin-bottom: 40px;
+}
+
+/* ── REFERENCES ── */
+.references {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.references h4 {
+  color: var(--accent-gold);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.references ul { list-style: none; }
+.references li { padding: 4px 0; }
+
+/* ── PRINT ── */
+@media print {
+  .theme-toggle, .toc-sidebar, .toc-hamburger, #progress-bar, .copy-btn { display: none !important; }
+  body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+  .main-content { max-width: 100%; padding: 0; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 18pt; break-after: avoid; }
+  .exec-summary, .item-card, .protocol-box, .enhancement { break-inside: avoid; }
+  blockquote { border-left-color: #999; }
+  a { color: #1a1a1a; text-decoration: underline; }
+  .echo-divider { background: #999; }
+}
+
+.hero .label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-gold); display:block; }
+</style>
+</head>
+<body>
+
+
+<div id="progress-bar"></div>
+
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <span class="icon-light">🌙</span>
+  <span class="icon-dark">☀️</span>
+</button>
+
+
+<button class="toc-hamburger" onclick="toggleTocSidebar()" aria-label="Toggle table of contents">
+  ☰
+</button>
+
+
+<nav class="toc-sidebar" id="toc-sidebar">
+  <div class="toc-sidebar-title">Contents</div>
+  <ul>
+    <li class="toc-h3"><a href="#the-bottom-line">The Bottom Line</a></li><li class="toc-h3"><a href="#key-claims-ranked">Key Claims (Ranked)</a></li><li class="toc-h3"><a href="#what-to-watch">What To Watch</a></li><li class="toc-h3"><a href="#best-quotes">Best Quotes</a></li><li class="toc-h3"><a href="#references">References</a></li><li><a href="#the-hypothetical-is-the-argument-the-law-already-permits-an-">The Hypothetical Is the Argument: The Law Already Permits an Unintermediated Securities Trade</a></li><li><a href="#the-privacy-argument-underneath-the-securities-argument">The Privacy Argument Underneath the Securities Argument</a></li><li><a href="#where-defi-does-touch-securities-law-exchange-broker-and-the">Where DeFi Does Touch Securities Law: Exchange, Broker, and the Control Test</a></li><li><a href="#the-lobster-gangs-of-maine-self-regulation-as-a-serious-alte">The Lobster Gangs of Maine: Self-Regulation as a Serious Alternative</a></li><li><a href="#the-paperwork-crisis-why-the-intermediated-market-exists-and">The Paperwork Crisis: Why the Intermediated Market Exists, and Why It Was Meant to Be Temporary</a></li><li><a href="#the-risks-that-are-genuinely-new-and-why-existing-law-may-al">The Risks That Are Genuinely New — and Why Existing Law May Already Reach Them</a></li><li><a href="#what-she-wanted-from-market-structure-legislation-and-what-a">What She Wanted From Market Structure Legislation — and What Actually Happened</a></li><li><a href="#phase-3-specific-item-breakdown">Phase 3: Specific Item Breakdown</a></li><li class="toc-h3"><a href="#exchange-act-3a1-and-rule-3b-16-the-definition-that-decides-">🟣 Exchange Act § 3(a)(1) and Rule 3b-16 — The Definition That Decides DeFi's Status</a></li><li class="toc-h3"><a href="#van-loon-v-department-of-the-treasury-capability-is-not-auth">🟣 Van Loon v. Department of the Treasury — Capability Is Not Authority</a></li><li><a href="#phase-5-resources-references">Phase 5: Resources &amp; References</a></li>
+    
+    
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+<main class="main-content">
+
+<div class="hero">
+  <h1>Should peer-to-peer crypto transactions be regulated differently online vs. in-person?</h1>
+  <div class="meta-grid">
+    <div><span class="label">Source</span> Law of Code · 2025-04-29 · 38 min</div>
+    <div><span class="label">Domain</span> Law, Policy &amp; Financial Regulation</div>
+    <div><span class="label">Duration</span> 38 min</div>
+    <div><span class="label">Date</span> 2025-04-29</div>
+  </div>
+  <div><span class="label">Speakers</span></div>
+  <ul><li><strong>TuongVy Le</strong> — Former General Counsel, Anchorage Digital; former Partner and Head of Regulatory and Policy, Bain Capital Crypto; former Deputy General Counsel and Compliance Officer, Worldcoin. Spent nearly six years at the SEC as Senior Counsel in the Division of Enforcement and Chief Counsel of the Office of Legislative and Intergovernmental Affairs.</li><li><strong>Jacob Robinson</strong> — Host, Law of Code</li></ul>
+  <span class="mode-badge full">Full Mode</span>
+</div>
+
+
+<div class="exec-summary" id="executive-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><strong>The argument rests on a fact most people get wrong: handing someone a paper stock certificate for cash is already a lawful, unregistered, unsurveilled securities transaction.</strong> Nothing in the federal securities laws requires a buyer to use a broker. Le's question is why the identical economic transaction should become regulated purely because it now runs through a smart contract. <span class="ts">02:18</span></li><li><strong>Technology neutrality, as she states it, is narrower and sharper than the slogan.</strong> If the same economic activity is permissible physically, new technology facilitating it should not <em>by itself</em> trigger additional regulatory burdens. The work is done by "by itself" — she is not arguing DeFi is beyond reach. <span class="ts">03:43</span></li><li><strong>It is a privacy argument as much as a securities argument.</strong> Le connects it to the third-party doctrine, which strips Fourth Amendment protection from information voluntarily shared with intermediaries — a doctrine that expanded enormously as nearly every online action came to route through one. Decentralised systems are, on her framing, a structural antidote. <span class="ts">03:55–04:46</span></li><li><strong>Where DeFi genuinely touches securities law is the exchange and broker definitions, and her proposed test is control, not scale.</strong> Code that merely enables communication or execution differs in kind from an intermediary with discretion over assets. Scale and automation alone, she says, should not be enough. <span class="ts">06:45–07:31</span></li><li><strong>The best-supported claim is historical: today's intermediated market was designed as a stopgap.</strong> The late-1960s paperwork crisis broke a certificate-and-ledger settlement system, and the fix — immobilisation at the DTC, netting through the NSCC, a national market system mandated in 1975 — layered in intermediaries that contemporaneous SEC and congressional deliberations treated as a necessary evil pending better technology. <span class="ts">18:42–19:31</span></li><li><strong>Her prediction about the legislation was substantially right.</strong> She expected the next bill to start from first principles rather than from how an asset was acquired, and thought DeFi might be "saved for another day." The CLARITY drafting that followed did the first, and DeFi has remained the least settled piece throughout. <span class="ts">28:55–32:37</span></li>
+  </ul>
+</div>
+
+
+<p><strong>Dating note.</strong> Recorded in late April 2025 and written up as of that date. Paul Atkins had been sworn in as SEC Chair days earlier, the Crypto Task Force was three months old, the GENIUS and STABLE stablecoin bills were live but unpassed, and market structure legislation was still a "summer" expectation rather than a bill with a number. Where the law has since answered a question the speakers leave open, that is flagged in a Consensus Check rather than folded silently into their analysis. The sponsor segment has been excluded.</p><h2 id="the-hypothetical-is-the-argument-the-law-already-permits-an-"><span class="emoji">🪪</span> The Hypothetical Is the Argument: The Law Already Permits an Unintermediated Securities Trade</h2>
+<p>Robinson opens on the scenario Le's article begins with, and it lands because almost nobody knows it is true.</p>
+<blockquote>"It's perfectly legal for me to say, hand you a paper stock certificate, and you hand me a lot of cash. That's just a peer-to-peer transaction in the analog world and it's totally legal." <span class="ts">02:18</span></blockquote>
+<p>Le's explanation for why people miss this is precise: almost all securities trading now happens through brokers, so people infer a requirement that does not exist. Nothing in the federal securities laws says that to purchase a security you may only do so through a regulated intermediary <span class="ts">01:59–02:18</span>.</p>
+<p>The question follows directly. Send that person a tokenised version of the same stock via smart contract — no broker, no clearing house, just automated software facilitating the trade. Functionally nothing has changed. Does the regulatory answer change, and should it, if the securities laws are meant to be technology neutral <span class="ts">02:41–03:05</span>?</p>
+<div class="enhancement verified"><span class="enhancement-label">🔍 Source Verified</span>✅ Le made this argument publicly four days earlier, in a Fortune op-ed of 25 April 2025. Her formulation there is that regulation "should focus on <em>function</em>, not <em>form</em>," and that "if the same economic activity is permissible in the physical world, then the use of new tools to facilitate that activity should not, by itself, trigger additional regulatory burdens." She closes on a distinction worth keeping: that new technology making it <em>possible</em> to regulate private activity does not make it <em>appropriate</em>. The episode is an extended oral version of that piece.</div>
+<p>She states the principle in the episode in almost identical terms:</p>
+<blockquote>"If the same economic activity is permissible in the physical world, then the use of new technology to facilitate that same activity should not by itself suddenly trigger additional regulatory burdens." <span class="ts">03:43</span></blockquote>
+<p>And the deeper version, which is the one with teeth:</p>
+<blockquote>"Just because new technology enables the government to regulate something doesn't mean that they retain the same justification or legal authority to do so." <span class="ts">03:30</span></blockquote>
+<div class="enhancement insight"><span class="enhancement-label">💡 Key Insight</span>That sentence separates two things regulatory debates usually fuse — <em>capability</em> and <em>authority</em>. The intermediated market made securities activity legible to regulators as a side effect of its plumbing, not as a deliberate grant of power: every broker, transfer agent and clearing house is a reporting point that exists because the 1970s settlement fix put it there. Le's claim is that losing that visibility when the architecture changes is not a gap to be plugged but a return to the statutory baseline. <span class="ts">03:38</span></div>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>The title's online-versus-in-person question has the opposite answer in a neighbouring body of law this episode never touches. FinCEN's consolidated guidance of 9 May 2019 (FIN-2019-G001) treats a peer-to-peer exchanger of convertible virtual currency as a money transmitter "regardless of the regularity or formality of such transactions or the location from which the person is operating" — so in-person cash-for-Bitcoin and an online order book are identical once you are in the business of exchanging for profit, with only a narrow exception for infrequent, non-profit activity. The criminal hook is 18 U.S.C. § 1960, which since the Patriot Act amendments requires no proof the defendant knew registration was required, and which has produced a steady line of convictions of individual sellers sourcing counterparties through LocalBitcoins and of unlicensed cash-to-crypto kiosk operators. The honest answer to the title is therefore jurisdiction-dependent: under the securities laws both trades sit outside the perimeter; under the Bank Secrecy Act both sit inside it.</div><h2 id="the-privacy-argument-underneath-the-securities-argument"><span class="emoji">🔒</span> The Privacy Argument Underneath the Securities Argument</h2>
+<p>Le extends the point beyond securities law, and this is where the episode is most original.</p>
+<p>The <strong>third party doctrine</strong> holds that you lose your reasonable expectation of privacy in information voluntarily shared with third parties — banks, telephone companies, cell providers <span class="ts">03:57–04:12</span>. Le's observation is that the doctrine's practical scope "exploded in the digital age" as people's lives moved online and nearly all online activity came to involve regulated intermediaries <span class="ts">04:14–04:24</span>. Courts have been struggling ever since to reconcile it with modern privacy expectations and Fourth Amendment protection.</p>
+<blockquote>"Decentralized systems are sort of potentially an antidote to that." <span class="ts">04:41</span></blockquote>
+<p>She then lands the connection: DeFi challenges the paradigm that financial activity between private parties at scale must always be routed through a gatekeeper. "That's not true anymore with this technology" <span class="ts">04:47–04:58</span>.</p>
+<div class="enhancement connection"><span class="enhancement-label">🔗 Connection</span>Third-party doctrine → market structure design. Le's move is to show these are the same problem seen from two angles. The doctrine's reach is a function of how many intermediaries stand between a person and their activity; market structure regulation determines how many intermediaries there are. A decision about clearing and settlement architecture is therefore, downstream and unintentionally, a decision about the constitutional privacy floor. <span class="ts">04:26</span></div><h2 id="where-defi-does-touch-securities-law-exchange-broker-and-the"><span class="emoji">🧭</span> Where DeFi Does Touch Securities Law: Exchange, Broker, and the Control Test</h2>
+<p>Le is careful not to overclaim, and Robinson presses her — noting that not all DeFi activity is beyond the reach of securities law, and that the industry itself splits on where the line sits <span class="ts">05:24–05:52</span>.</p>
+<p>Her answer starts with the statutory hooks. Facilitating securities transactions can make you an <strong>exchange</strong> under § 3(a)(1) of the Securities Exchange Act; engaging in the business of effecting securities transactions for others can make you a <strong>broker</strong> <span class="ts">06:05–06:25</span>. She notes that the SEC under former Chair Gary Gensler tried to extend the exchange definition to communication protocols <span class="ts">06:13–06:19</span>.</p>
+<div class="enhancement verified"><span class="enhancement-label">🔍 Source Verified</span>✅ The reference is to the SEC's proposal of 26 January 2022 to amend Exchange Act Rule 3b-16, which gives operational content to the statutory "exchange" definition in § 3(a)(1). It would have added "communication protocols" as a method by which a system brings together buyers and sellers, capturing systems that use non-firm trading interest rather than firm orders. Running past 600 pages with an initial 30-day comment period, it drew immediate objection that it could sweep in DeFi protocols; the Commission reopened comment on 5 May 2023 with supplemental material addressing distributed ledger and decentralised finance systems specifically. It was never adopted.</div>
+<p>Le's proposed test is functional and turns on control:</p>
+<blockquote>"Does the protocol have control or governance or discretion over the trades that are happening on the platform?" <span class="ts">06:47</span></blockquote>
+<p>Code that merely enables communication or execution is, on her account, different in kind from a centralised intermediary with control or discretion over assets or funds <span class="ts">06:53–07:04</span>. Her analogy is deliberately mundane: a truly decentralised protocol is no different from a Bloomberg messaging app, or a spreadsheet that helps over-the-counter desks manage order flow <span class="ts">07:06–07:14</span>.</p>
+<blockquote>"There really is a difference between infrastructure that aggregates liquidity and makes markets like NASDAQ and on the other hand autonomous software that lets users transact peer-to-peer." <span class="ts">07:16</span></blockquote>
+<p>She also insists on a spectrum rather than a category — automated market makers, peer-matching protocols, smart-contract escrow and atomic swaps function differently and should not be collapsed <span class="ts">06:33–06:43</span> — then states the limiting principle: scale and automation alone should not be enough to trigger regulation <span class="ts">07:27–07:33</span>.</p>
+<p>What makes the section credible is that she concedes the other side's motivation:</p>
+<blockquote>"Part of the fear here is that DeFi has the potential to replace key components of the existing financial system without centralized intermediaries to register, examine or sue." <span class="ts">07:45</span></blockquote>
+<p>And she extends it to incumbents, citing the banking sector's pushback on yield-bearing stablecoins, where holders take the risk of holding the instrument but the issuer is forbidden from passing through the yield it earns on reserves <span class="ts">07:59–08:27</span>.</p>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>Recorded while the stablecoin bills were pending, that prediction was borne out. The GENIUS Act, enacted July 2025, bars permitted payment stablecoin issuers from paying holders any interest or yield solely in connection with holding, using or retaining the stablecoin. The debate then migrated exactly where Le's framing implies — to whether the same prohibition binds the exchanges that distribute stablecoins, which became one of the hardest-fought provisions in the market structure negotiations that followed. <span class="ts">08:27</span></div><h2 id="the-lobster-gangs-of-maine-self-regulation-as-a-serious-alte"><span class="emoji">🦞</span> The Lobster Gangs of Maine: Self-Regulation as a Serious Alternative</h2>
+<p>Asked how DeFi could be governed at all if it sits outside securities law, Le gives the episode's most distinctive answer, beginning by naming the assumption she wants to dislodge.</p>
+<blockquote>"This is a very American thing, right? This idea that like if we want something to be secure or orderly or fair, it has to be regulated by the government." <span class="ts">09:08</span></blockquote>
+<p>She credits the instinct — US financial regulators are, she says, among the best in the world — before arguing that industry-led codes of conduct, compliance frameworks and self-certification regimes can also deliver security, transparency and consumer protection <span class="ts">09:19–09:45</span>.</p>
+<p>Then the book. She asks Robinson whether he took property law, and describes a text about Maine lobster fishermen who developed informal rules to police the waters they fish <span class="ts">09:47–10:14</span>.</p>
+<blockquote>"You can actually have a very effective system that's not based on formal laws, but that's just based on like social norms and industry customs that people enforce because it's in their best interest as a collective group to do so." <span class="ts">10:15</span></blockquote>
+<div class="enhancement verified"><span class="enhancement-label">🔍 Source Verified</span>✅ The book is <em>The Lobster Gangs of Maine</em> by James M. Acheson (University Press of New England, 1988), a standard assignment in property and natural-resources courses. Acheson documents how harbour-based "gangs" allocate fishing territory through unwritten rules about who may set traps and where, enforced by graduated informal sanctions — verbal warnings, then trap-cutting, with gossip and ostracism doing much of the work. The fishery is now among the more sustainably managed in the world, and the case is a canonical counterexample to the tragedy of the commons, closely associated with Elinor Ostrom's work on common-pool resource governance. Le's recollection of the argument is accurate even though the title did not come to her.</div>
+<p>She gives two mechanisms. The first is market discipline: a DEX that defrauds users will not exist in a year; a centralised exchange hacked every other week faces the same fate <span class="ts">10:43–10:54</span>. The second is industry standards, and she names an example — a February report from INATBA, the International Association for Trusted Blockchain Applications, calling for real-time reporting of liquidity, collateral and risk exposure in DeFi protocols, smart contract security standards and audits, and sanctions and AML compliance at centralised on- and off-ramps <span class="ts">11:09–11:43</span>.</p>
+<p>Robinson supplies the closing analogy: the legal profession itself. Law societies in Canada, the American Bar Association and state bars are self-governing regimes with entry conditions and enforceable conduct rules — proof, as he puts it, that the model works <span class="ts">12:03–12:42</span>.</p>
+<div class="enhancement analog"><span class="enhancement-label">📜 Analog</span>Le's two mechanisms map onto genuinely different regulatory traditions. Market discipline is <em>ex post</em> — bad actors punished by capital flight. Enforceable professional standards are <em>ex ante</em> — you cannot practise without meeting conditions. The lobster gangs run both. Robinson's bar-association example matters because it shows the <em>ex ante</em> half is not utopian; it is how a licensed profession has worked for a century, under court supervision rather than agency rulemaking. The open question the episode leaves is what supplies that backstop for a protocol with no members. <span class="ts">12:42</span></div><h2 id="the-paperwork-crisis-why-the-intermediated-market-exists-and"><span class="emoji">🏛️</span> The Paperwork Crisis: Why the Intermediated Market Exists, and Why It Was Meant to Be Temporary</h2>
+<p>This is the best-documented material in the episode and the part with the most explanatory power.</p>
+<p>Le's starting complaint is that traditional market structure is poorly understood even by capital markets professionals. Ask what the life cycle of a securities transaction is, why each intermediary is subject to a distinct body of regulation, or why you cannot buy a share of Apple directly from the New York Stock Exchange — most people cannot answer <span class="ts">14:58–15:28</span>. Her point is instrumental:</p>
+<blockquote>"How we design crypto market structure regulations, how can we design those if we don't understand traditional market structure regulation and the policy objectives behind them?" <span class="ts">15:30</span></blockquote>
+<p>Her working definition of market structure is usefully compact:</p>
+<blockquote>"How is a trade issued, how is it custodied, and how is it traded? And what is the infrastructure and the different processes involved in all of that?" <span class="ts">14:02</span></blockquote>
+<p>The history: US stock markets boomed in the 1960s, with New York Stock Exchange daily trading volumes quadrupling between 1960 and 1968, while trades were still manually recorded and settled with physical certificates, trade tickets and ledger books. Back offices collapsed. Certificates were lost and misplaced; firms shut for weeks to clear backlogs; the system broke down <span class="ts">17:03–17:43</span>.</p>
+<div class="enhancement verified"><span class="enhancement-label">🔍 Source Verified</span>✅ The details are, if anything, worse than the episode suggests. A single securities transaction could require roughly 33 separate documents. The New York Stock Exchange shortened trading hours and closed on Wednesdays to let back offices catch up. Around 160 NYSE member firms went out of business, and by the end of 1970 close to one-sixth of the industry had been forced to merge, liquidate or go public — so Robinson's "over a hundred" is conservative. The episode's account of the fix is accurate: the Depository Trust Company to hold certificates in immobilised bulk form so trades could settle by book entry; the National Securities Clearing Corporation, now part of the DTCC, to net trades and reduce counterparty risk; and the Securities Acts Amendments of 1975, signed 4 June 1975, directing the SEC to facilitate a national market system.</div>
+<p>The claim Le draws from the archival record carries the episode:</p>
+<blockquote>"The system we have now was always meant to be a temporary solution, right? Like no one wanted this. It was actually just seen as a necessary evil until the technology existed to create something better." <span class="ts">19:13</span></blockquote>
+<p>She and her co-authors went back through the congressional and SEC deliberations of the period to check this <span class="ts">19:00–19:13</span> — the right methodology for the claim, and why it deserves more weight than the usual version of this argument.</p>
+<blockquote>"Critics like to say that crypto is a solution in search of a problem, but actually it's a solution to a decades-old problem." <span class="ts">19:52</span></blockquote>
+<div class="enhancement insight"><span class="enhancement-label">💡 Key Insight</span>The rhetorical power of this framing is that it reverses the burden of proof. The standard debate asks crypto to justify replacing a working system. Le's history asks the intermediated system to justify its own persistence, given that its designers described it as a stopgap for a technological limitation that no longer exists. Whether the archival record fully supports "no one wanted this" is a question for the underlying paper rather than the podcast — but the 1970s fix was unambiguously a response to a physical-certificate bottleneck, and that bottleneck is gone. <span class="ts">19:31</span></div>
+<p>Le extends the point to concrete design. Crypto trading does not require clearing or delayed settlement. It does not necessarily require brokers or third-party custodians — on a centralised exchange you trade directly on the platform's order book, so mandating a broker inserts an intermediary that is not otherwise needed, introducing principal-agent risk and forcing customers to trust two third parties instead of one. It does not require transfer agents, because the ledger records ownership accurately without them <span class="ts">21:33–22:33</span>.</p>
+<div class="enhancement connection"><span class="enhancement-label">🔗 Connection</span>This is the sharpest practical consequence of the history. If each traditional intermediary exists to solve a specific risk, importing it into a system where that risk has been engineered away does not preserve investor protection — it manufactures a new one. Requiring a broker alongside an exchange does not halve custody risk; it doubles the number of parties who can lose your assets. <span class="ts">22:10</span></div><h2 id="the-risks-that-are-genuinely-new-and-why-existing-law-may-al"><span class="emoji">⚠️</span> The Risks That Are Genuinely New — and Why Existing Law May Already Reach Them</h2>
+<p>Le is direct that crypto carries risks the traditional regime never addressed, and that lawmakers should take them seriously in any market structure bill <span class="ts">23:04–23:21</span>.</p>
+<p>She names four:</p>
+<ul><li><strong>Irreversibility.</strong> Send someone Bitcoin and it is gone unless they choose to send it back. Traditional securities have both intermediaries who can intervene and a settlement delay that creates a correction window <span class="ts">23:23–23:55</span>.</li><li><strong>Key loss.</strong> Lose your private keys and you lose your assets, with no recovery path — unlike the password reset most people rely on <span class="ts">23:57–24:20</span>.</li><li><strong>Hard forks.</strong> If a protocol forks, do you receive the assets on the forked chain? Le says the question lacks a clear answer, particularly for custodians and centralised platforms <span class="ts">25:26–25:47</span>.</li><li><strong>Consensus attacks.</strong> What happens to your ownership in the event of a 51% attack <span class="ts">25:47–25:56</span>?</li></ul>
+<p>She illustrates key loss with the story of a man in the UK who threw away a hard drive holding a very large Bitcoin balance and has spent years fighting a city for permission to search a landfill, adding that she believes they finally allowed him to <span class="ts">24:20–24:57</span>.</p>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>The case is James Howells, who mined 8,000 BTC in 2009 and whose hard drive was discarded in 2013 into the Docksway landfill run by Newport City Council in Wales. He was not granted access. On 9 January 2025, roughly three months before this recording, the High Court dismissed his claim as having no realistic prospect of success: under the Control of Pollution Act 1974, objects deposited into council-managed waste become the authority's property, so Howells had lost both access and ownership. The example still makes Le's point about irreversibility — arguably more forcefully, since the legal system also declined to undo it.</div>
+<p>Robinson then makes the most useful analytical contribution of the episode. These are novel to the crypto industry but not to the world. Trade a physical asset for cash and you cannot click undo either; you go to court. The same is available for a DeFi transaction — a court can order a token returned, exactly as in traditional markets <span class="ts">26:09–26:50</span>.</p>
+<p>Le takes the point further than Robinson does:</p>
+<blockquote>"A lot of the fraud and misconduct that happens in the crypto markets — it's possible that we don't need like a dedicated brand new securities regulatory regime for that." <span class="ts">26:56</span></blockquote>
+<p>Common law fraud statutes already provide remedies and recourse to people who are defrauded <span class="ts">27:14–27:26</span>. And she gives the doctrinal example where a court enforced exactly that limit:</p>
+<blockquote>"You can sanction people or property, but you can't sanction a smart contract, which they found to be neither." <span class="ts">27:47</span></blockquote>
+<div class="enhancement verified"><span class="enhancement-label">🔍 Source Verified</span>✅ The case is <em>Van Loon v. Department of the Treasury</em>, No. 23-50669 (5th Cir., 26 November 2024). OFAC had designated Tornado Cash in August 2022 over laundering of proceeds for the North Korea-linked Lazarus Group. The Fifth Circuit held the immutable smart contracts were not "property" under the International Emergency Economic Powers Act, because property must be capable of being owned and these contracts cannot be owned, controlled or altered by anyone, including their creators. OFAC had exceeded its authority. Treasury delisted Tornado Cash in March 2025, the month before this recording. Le's summary of the holding is accurate.</div>
+<div class="enhancement insight"><span class="enhancement-label">💡 Key Insight</span><em>Van Loon</em> does more work in Le's argument than it first appears. It is a live judicial holding that the availability of a technical chokepoint does not by itself create authority to seize it — the same capability-versus-authority distinction she draws at the top of the episode, decided by a court rather than asserted as policy. <span class="ts">27:52</span></div><h2 id="what-she-wanted-from-market-structure-legislation-and-what-a"><span class="emoji">🧱</span> What She Wanted From Market Structure Legislation — and What Actually Happened</h2>
+<p>Le's critique of the first generation of bills is specific:</p>
+<blockquote>"One of the things that I struggled with the most with the first versions of legislation like FIT21 is that it created kind of like bifurcated and fragmented markets that I think would have proved really difficult to enforce and very unworkable in practice." <span class="ts">28:37</span></blockquote>
+<p>The culprit, on her reading, was hinging classification on how a digital asset was acquired and whether it was issuer-affiliated — mechanics that produced a split market where the same token could carry different status depending on its provenance <span class="ts">29:03–29:18</span>.</p>
+<p>Her prescription is to start from first principles: identify the risks being addressed — information asymmetries between issuer and purchaser, market manipulation — and design around those rather than around the nature of the asset <span class="ts">29:18–29:45</span>.</p>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>The drafting went the way she predicted. The House CLARITY Act, passed in July 2025 and the base text for the Senate work that followed, moved classification away from acquisition provenance towards the characteristics of the system and the ongoing role of the people behind it. The Senate Banking version of 2026 went further, organising around whether a team's continuing efforts create information asymmetry — Le's first named risk, almost verbatim. Her second prediction held too: the DeFi title has been the most contested and most deferrable throughout. What she got wrong is the timeline — market structure legislation was still not law more than a year later. <span class="ts">32:37</span></div>
+<p>Robinson raises a scenario Le rejects firmly: a world where new intermediaries grow up between DeFi and consumers, with protocol front-ends becoming the compliance chokepoint <span class="ts">29:46–30:38</span>. His case for it is genuinely human — the forgot-password button, the ability to unsend an email.</p>
+<blockquote>"I think what's important here is we want to preserve that optionality." <span class="ts">30:54</span></blockquote>
+<p>Her position is that both options should exist and neither should be mandatory. If you do not trust yourself with private keys, use a centralised exchange and it should offer the protections you want. People who value the self-sovereignty of self-custody should keep that route <span class="ts">30:57–31:26</span>. What follows is education, not restriction.</p>
+<div class="enhancement against"><span class="enhancement-label">🎯 Against Consensus</span>The prevailing regulatory instinct in 2025 was that if DeFi cannot be regulated directly, regulate its front-ends — the approach visible in the IRS DeFi broker rulemaking and in several international frameworks. Le argues the impulse should be actively resisted, not because front-end regulation is unworkable but because it eliminates the option that gives the technology its point. Regulated front-ends are fine; they must not be the only door. <span class="ts">30:45</span></div>
+<p>Asked whether she was surprised by how fast the agency's posture changed with the administration, Le says she was disturbed by the same thing and had published an op-ed that week about it:</p>
+<blockquote>"What I called for in the op-ed was we actually need to make fostering innovation like a formal part of the SEC's mission." <span class="ts">33:40</span></blockquote>
+<p>Her proposal is a statutory amendment: alongside capital formation, investor protection and market integrity, add the promotion of innovation and an obligation to modernise — so an agency cannot swing from hostile to enthusiastic overnight <span class="ts">33:44–34:22</span>.</p>
+<div class="enhancement consensus"><span class="enhancement-label">🌐 Consensus Check</span>The op-ed is "5 Ways the SEC Can Embrace Innovation," CoinDesk, 21 April 2025. The SEC's familiar three-part mission — protecting investors, maintaining fair, orderly and efficient markets, facilitating capital formation — is the Commission's longstanding self-description drawn from the objectives of the 1933 and 1934 Acts rather than a single codified mandate. Adding a fourth limb therefore requires deliberate drafting, which is an obstacle to the proposal rather than an objection to its logic. <span class="ts">34:22</span></div>
+<p>Her closing forecast is the most practically useful in the episode: the Crypto Task Force is getting a head start on work Congress will ask for anyway — what a token issuer must disclose, where the securities-commodities line falls, what the agency has jurisdiction over <span class="ts">34:58–35:52</span>. Legislation, she notes, is only the beginning:</p>
+<blockquote>"It's then going to be up to the SEC, the CFTC, maybe other agencies to actually implement that legislation. And that's really where the rubber meets the road and the details are going to matter." <span class="ts">35:10</span></blockquote>
+<div class="enhancement thesis"><span class="enhancement-label">🧵 Running Thesis</span>Le's consistent position across every topic is that the question is <em>what risk is being addressed</em>, never <em>what is this thing</em>. Applied to P2P transactions it yields technology neutrality; to DeFi, a control-and-discretion test; to market structure, first-principles design; to the SEC itself, a mission amendment. It is the same move each time, and it is the move the eventual legislation made. Status: confirmed by the direction of drafting, unresolved on the merits.</div>
+
+
+
+<h2 id="phase-3-specific-item-breakdown">Phase 3: Specific Item Breakdown</h2>
+<div class="item-card">
+<h3 id="exchange-act-3a1-and-rule-3b-16-the-definition-that-decides-">🟣 Exchange Act § 3(a)(1) and Rule 3b-16 — The Definition That Decides DeFi's Status</h3>
+<div class="one-liner">The statutory "exchange" definition, given operational content by a rule the SEC tried and failed to expand to cover communication protocols.</div>
+<p><strong>What It Covers:</strong> Section 3(a)(1) defines an exchange as a marketplace bringing together buyers and sellers of securities; Rule 3b-16 supplies the functional criteria. The January 2022 proposal would have added "communication protocols" as a qualifying method. Never adopted.</p>
+<p><strong>Why It Matters:</strong> This is the provision that would have decided whether an automated market maker is an exchange. Le's alternative test — control, governance or discretion over the trades — asks whether anyone is in a position to be examined and sued, rather than whether the software matches buyers to sellers. Since matching is what all trading software does, the gap between the two tests is roughly the difference between regulating DeFi and not.</p>
+</div>
+<div class="item-card">
+<h3 id="van-loon-v-department-of-the-treasury-capability-is-not-auth">🟣 <em>Van Loon v. Department of the Treasury</em> — Capability Is Not Authority</h3>
+<div class="one-liner">The Fifth Circuit's holding that immutable smart contracts are not "property" and therefore cannot be sanctioned under IEEPA.</div>
+<p><strong>What It Covers:</strong> Decided 26 November 2024 on appeal from the Tornado Cash designations. Property must be capable of being owned; immutable contracts deployed without counterparties and alterable by nobody, including their authors, are not. OFAC had exceeded its statutory authority. Treasury delisted Tornado Cash in March 2025.</p>
+<p><strong>Why It Matters:</strong> It is the strongest judicial authority for what Le argues from policy: technical ability to reach something does not confer legal authority over it. It also marks the limit she accepts — the court left intact the power to sanction people and prosecute conduct, and declined only to treat autonomous code as a sanctionable entity.</p>
+</div>
+
+
+
+
+
+
+
+<h2 id="phase-5-resources-references">Phase 5: Resources &amp; References</h2>
+<p><strong>Laws, Rules &amp; Cases</strong></p>
+<ul><li>Securities Exchange Act of 1934 § 3(a)(1) (exchange) and § 3(a)(4) (broker); Exchange Act Rule 3b-16, and the proposed amendments of 26 January 2022, reopened for comment 5 May 2023 with supplemental information on DeFi; never adopted.</li><li>Securities Acts Amendments of 1975, signed 4 June 1975 — national market system and centralised clearing.</li><li><em>Van Loon v. Department of the Treasury</em>, No. 23-50669 (5th Cir. 26 Nov. 2024) — immutable smart contracts are not IEEPA "property."</li><li><em>Howells v. Newport City Council</em> [2025] EWHC 22 (Ch), 9 January 2025 — claim dismissed; Control of Pollution Act 1974.</li><li>FinCEN guidance FIN-2019-G001 (9 May 2019) — peer-to-peer convertible virtual currency exchangers as money transmitters; 18 U.S.C. § 1960.</li><li>GENIUS Act § 4(a)(11) — prohibition on payment stablecoin issuers paying interest or yield (enacted after this recording).</li><li>Financial Innovation and Technology for the 21st Century Act (FIT21), H.R. 4763 — the bill Le critiques as producing bifurcated markets.</li></ul>
+<p><strong>Websites &amp; Tools</strong></p>
+<ul><li>TuongVy Le, "The SEC needs to take a hands-off approach to peer-to-peer transactions," Fortune, 25 April 2025 — the article the episode is built around.</li><li>TuongVy Le, "5 Ways the SEC Can Embrace Innovation," CoinDesk, 21 April 2025 — the op-ed on amending the SEC's mission.</li><li>INATBA (International Association for Trusted Blockchain Applications) — Finance Working Group report on DeFi self-regulation, February 2025.</li><li>James M. Acheson, <em>The Lobster Gangs of Maine</em> (University Press of New England, 1988).</li><li>SEC Crypto Task Force — launched January 2025 under Commissioner Hester Peirce.</li></ul>
+<p><strong>People &amp; Organisations</strong></p>
+<ul><li>TuongVy Le — former GC, Anchorage Digital; former Partner and Head of Regulatory and Policy, Bain Capital Crypto; former Deputy GC, Worldcoin; nearly six years at the SEC.</li><li>Jacob Robinson — host, Law of Code.</li><li>Paul Atkins — SEC Chair, sworn in shortly before this recording; Gary Gensler — former Chair, author of the Rule 3b-16 expansion proposal.</li><li>Depository Trust Company and National Securities Clearing Corporation, now within the DTCC.</li><li>Quadriga — the Canadian exchange collapse Robinson cites as prompting Canadian regulators to set platform benchmarks.</li></ul>
+<p><strong>Sources Consulted</strong></p>
+<ul><li>Fortune and CoinDesk op-eds by TuongVy Le (April 2025); Anchorage Digital and Bain Capital Crypto announcements confirming her roles.</li><li>SEC Historical Society archival material on the paperwork crisis; AEI analysis of the 1975 national market system directive.</li><li>Jones Day, Morgan Lewis and Vinson &amp; Elkins analyses of the Rule 3b-16 proposal and of <em>Van Loon</em>; the Fifth Circuit opinion itself.</li><li>National Archives caselaw record and Hausfeld commentary on <em>Howells v. Newport City Council</em>.</li><li>FinCEN FIN-2019-G001 and Department of Justice releases on § 1960 prosecutions of peer-to-peer virtual currency exchangers.</li><li>INATBA Finance Working Group publications on DeFi self-regulation.</li></ul>
+
+</main>
+</div>
+
+<script>
+// ── Dark Mode Toggle ──
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+}
+
+// Restore saved preference
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.classList.add('dark');
+})();
+
+// ── Reading Progress Bar ──
+window.addEventListener('scroll', function() {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('progress-bar').style.width = scrolled + '%';
+});
+
+// ── TOC Sidebar: Active Section Tracking ──
+(function() {
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const tocLinks = document.querySelectorAll('.toc-sidebar a');
+
+  if (headings.length === 0 || tocLinks.length === 0) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  headings.forEach(h => observer.observe(h));
+})();
+
+// ── TOC Hamburger Toggle (Mobile) ──
+function toggleTocSidebar() {
+  document.getElementById('toc-sidebar').classList.toggle('open');
+}
+
+// Close TOC on link click (mobile)
+document.querySelectorAll('.toc-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('toc-sidebar').classList.remove('open');
+  });
+});
+
+// ── Smooth Scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ── Copy Protocol to Clipboard ──
+function copyProtocol(btn) {
+  const box = btn.closest('.protocol-box');
+  const items = box.querySelectorAll('li');
+  const text = Array.from(items).map(li => '• ' + li.textContent.trim()).join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
