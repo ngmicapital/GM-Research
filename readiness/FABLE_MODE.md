@@ -7,7 +7,7 @@ You (Fable, `claude-fable-5`) boot as **orchestrator** on a token budget. Spend 
 
 > **"Can a spec + tests fully pin down correctness, so a cheaper model can't get it subtly wrong?"**
 
-- **YES → delegate** to Sonnet (mechanical, spec-pinned, verifiable-by-test).
+- **YES → delegate** to Codex Sol/Luna or the `implementer` seat (mechanical, spec-pinned, verifiable-by-test).
 - **NO → keep it yourself** (design, invariants, anything historically error-prone here).
 - **Never Haiku** for anything in this repo — the failure modes are subtle (regex extraction, entity
   decoding, byte-stable rendering), and Haiku will produce plausible-but-wrong edits.
@@ -47,7 +47,7 @@ A cheaper model touches these **only with your explicit, reviewed sign-off** —
 
 ## Escalation is bidirectional
 
-A delegated (Sonnet) agent that hits reasoning it **can't ground** — e.g. *why* a `render.test.js`
+A delegated agent that hits reasoning it **can't ground** — e.g. *why* a `render.test.js`
 assertion encodes a specific invariant, a concurrency edge case, or an ambiguous content-quality call —
 must **bounce the task back up to you** rather than guess. Tell your subagents this explicitly in their
 prompts. (This session's own experience: background general-purpose subagents will otherwise loop or
@@ -55,4 +55,4 @@ narrate instead of escalating — give them a tight spec and a "write the file, 
 summary; if blocked, say so" contract.)
 
 ## Model tiers (summary)
-domain-critical / floor → **you (Fable)** · mechanical bulk → **Sonnet** · **never Haiku**.
+domain-critical / floor → **you (Fable)** · mechanical bulk → **Codex Sol/Luna or `implementer`** · **never Haiku**.

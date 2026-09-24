@@ -35,7 +35,7 @@ Then CLAUDE.md for repo conventions (note: CLAUDE.md predates the deterministic 
 does not mention it — TRUTH_TABLE/MODULE_MAP are more current on that).
 
 DELEGATION: you own the boundary. Default hard/domain-critical/error-prone work to yourself;
-delegate mechanical, test-pinned work to Sonnet (never Haiku). Enforce the FLOOR in FABLE_MODE.md:
+delegate mechanical, test-pinned work to Codex Sol/Luna or the `implementer` seat. Enforce the FLOOR in FABLE_MODE.md:
 generate-index.js, render.js/render-briefing.js, scripts/lib/*, the workflows, and the concurrency
 handling are yours unless you explicitly sign off. Give every subagent a tight spec + a
 "write the file, return a 5-line summary, escalate if blocked" contract (background general-purpose

@@ -57,7 +57,7 @@ Three distinct check layers run after the build:
 
 ```
 skills-briefings-files/<type>/content-guide.md            (authoring contract per type)
-        ↓ (a pinned-Sonnet writer produces structured JSON)
+        ↓ (a pinned Opus 5.5 writer produces structured JSON)
 skills-briefings-files/<type>/drafts/content-YYYY-MM-DD.json   (gitignored draft)
         ↓ node scripts/render-briefing.js                 (deterministic render, zero AI — template.render.html + scripts/lib/render.js)
 briefings/YYYY-MM-DD/<slug>.html                          (one folder per day)
