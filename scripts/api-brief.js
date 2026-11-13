@@ -215,6 +215,9 @@ async function main() {
   let res;
   for (let turn = 0; turn < 6; turn++) {
     const params = { model, max_tokens: 32000, system, tools, messages };
+    // Effort controls hidden thinking, billed as output (~65% of output at Sonnet's default "high").
+    const effort = opt('--effort', null);
+    if (effort) params.output_config = { effort };
     const resumeId = turn === 0 ? opt('--resume-batch', null) : null;
     res = batch ? await runBatch(key, params, `${type}-${sydneyDate}-t${turn}`, resumeId) : await post(key, params);
     tally.calls++; addUsage(tally, res.usage || {});
@@ -224,7 +227,8 @@ async function main() {
   }
   const secs = Math.round((Date.now() - t0) / 1000);
   const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
-  const stamp = `${type}-${sydneyDate}-${model}${batch ? '-batch' : ''}`;
+  const effortTag = opt('--effort', null);
+  const stamp = `${type}-${sydneyDate}-${model}${batch ? '-batch' : ''}${effortTag ? `-${effortTag}` : ''}`;
   fs.writeFileSync(path.join(outDir, `${stamp}.raw.txt`), text);
   const report = { type, model, batch, date: sydneyDate, seconds: secs, stop_reason: res.stop_reason, usage: tally, ...cost(tally, model, batch) };
 
