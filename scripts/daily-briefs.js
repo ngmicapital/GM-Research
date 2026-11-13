@@ -51,9 +51,17 @@ function main() {
   for (const type of types) {
     const filename = BRIEFING_FILENAMES[type];
     if (!filename) { results.push({ type, status: 'unknown type' }); continue; }
-    const w = run(['scripts/api-brief.js', type, '--max-searches', '6', '--out', outDir]);
-    let rep = {};
-    try { rep = JSON.parse(w.stdout.slice(w.stdout.indexOf('{'))); } catch { /* keep {} */ }
+    // Haiku occasionally ends a run with no usable JSON (legal, 13 Nov: $0.005,
+    // "Unexpected end of JSON input"); one fresh retry costs ~$0.08.
+    let w; let rep = {}; let spent = 0;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      w = run(['scripts/api-brief.js', type, '--max-searches', '6', '--out', outDir]);
+      rep = {};
+      try { rep = JSON.parse(w.stdout.slice(w.stdout.indexOf('{'))); } catch { /* keep {} */ }
+      spent += rep.total_usd || 0;
+      if (w.ok && rep.files && rep.files.html) break;
+    }
+    rep.total_usd = +spent.toFixed(4);
     if (!w.ok || !rep.files || !rep.files.html) {
       results.push({ type, status: 'write failed', cost: rep.total_usd, detail: (rep.render || rep.error || w.out.slice(-400)) });
       continue;
