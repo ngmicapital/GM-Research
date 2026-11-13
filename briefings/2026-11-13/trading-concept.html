@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Footprint Charts | Friday, 13 November 2026</title>
+<meta property="og:description" content="Footprint charts split every candle into bid and ask volume at each price it traded. Read who was aggressive inside the bar, not just the OHLC.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Footprint Charts: the candle opened up to show who was aggressive at each price","preview":"Footprint charts split every candle into bid and ask volume at each price, so you can see who hit and who lifted. Read through the 13 Nov BTC flush.","tags":["orderflow","footprint","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Footprint Charts</h1>
+  <div class="meta">
+    <span>Friday, 13 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 7</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A footprint chart opens each candle and prints the bid volume against the ask volume at every price the bar traded through, so you see who was aggressive at each level instead of only the open, high, low and close. The practical takeaway: look for stacked imbalances and the point of control inside a bar, and only trust a single lopsided row once price confirms it. It builds on CVD from the 1 July Kyle’s Lambda issue, and the 12–13 November BTC flush is a live test of why the inside of the bar matters more than the wick.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The candle opened up to show who paid up at each price</div>
+    </div>
+  </div>
+  <div class="skim">A footprint chart breaks each candle into one row per traded price, showing the volume that hit the bid against the volume that lifted the ask.</div>
+<p>A footprint chart is a candlestick with the inside exposed. Each bar is broken into rows, one per price it traded through, and every row carries two numbers: volume that executed at the bid (aggressive sellers hitting resting buyers) and volume that executed at the ask (aggressive buyers lifting resting sellers). My position: the candle tells you where price went, while the footprint tells you whether the move was pushed through with size or simply stepped into thin liquidity. That distinction is why it earns a place on a Wyckoff desk, even though it is only the trade tape arranged by price.</p><p>Three derived numbers sit on top of the raw cells. <strong>Delta</strong> is ask volume minus bid volume at a row, or summed across the bar. The <strong>point of control (POC)</strong> is the row with the highest total volume, which marks where the auction did most of its business inside that bar. <strong>Imbalances</strong> flag rows where one side outweighs the other by a set ratio, and they are compared diagonally: the ask at one price against the bid one tick below it, because that is the pairing an aggressive market buy actually consumes.</p><p>The footprint is the same data as CVD and volume profile, cut at a finer grain. CVD sums delta across time, a volume profile sums volume across price over a session, and the footprint keeps both dimensions inside a single bar. It is a microscope rather than a new signal. It builds on CVD from the 1 July Kyle’s Lambda issue: if you have already worked through why signed volume matters, this page is about where inside the bar that signed volume happened.</p><div class='pills'><div class='pill-term'><b>Bid volume</b><span>Contracts sold into resting bids: the aggressive seller footprint.</span></div><div class='pill-term'><b>Ask volume</b><span>Contracts bought into resting offers: the aggressive buyer footprint.</span></div><div class='pill-term'><b>Cell delta</b><span>Ask minus bid at one row: net aggression at that level.</span></div><div class='pill-term'><b>POC</b><span>Highest total-volume row in the bar: the bar’s fairest-price marker.</span></div><div class='pill-term'><b>Imbalance</b><span>Ask at one row against bid one tick lower, past a set ratio.</span></div></div><div class='remember'><b>Remember</b> A footprint does not tell you who is right. It tells you which side was paying up at each price, and whether that payment moved price or got absorbed.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From tagged prints to imbalance stacks and the POC</div>
+    </div>
+  </div>
+  <div class="skim">Each print is tagged as buyer- or seller-initiated, binned by price, and read as imbalances, stacks and a point of control inside the bar.</div>
+<p>The mechanic runs on the trade tape, not the resting book. Each print is tagged by the venue as buyer-initiated (it lifted the offer) or seller-initiated (it hit the bid). The chart then bins those prints by price inside the bar. The signal lives in how aggression is distributed across rows, and the bar totals alone hide that.</p><p><b>1. Tag every print.</b> The venue marks the aggressor side. Keep one feed for the whole read, because aggressor tagging and volume differ between venues and cross-venue totals will not reconcile.</p><p><b>2. Bin by price.</b> Each tick the bar traded through gets a row holding its bid total and ask total.</p><p><b>3. Compare diagonally.</b> An aggressive buyer lifting the offer at one row is consuming liquidity that sits one tick above the bid that was being hit below it. So an imbalance is the ask at one row set against the bid one tick lower.</p><p><b>4. Find the POC and the stacks.</b> Three or more consecutive rows where one side wins by a wide ratio are a stack, and a stack shows sustained initiative. A single lopsided row is noise until price confirms it on the next bar.</p><p><b>5. Read the close against the delta.</b> A bar that closes near its high on negative delta, or near its low on positive delta, is a divergence worth flagging.</p><div class='formula'><b>Cell delta</b> = Ask<sub>p</sub> − Bid<sub>p</sub><br><b>Bar delta</b> = Σ<sub>p</sub> (Ask<sub>p</sub> − Bid<sub>p</sub>)<br><b>POC</b> = argmax<sub>p</sub> (Ask<sub>p</sub> + Bid<sub>p</sub>)<br><b>Diagonal imbalance</b> = Ask<sub>p</sub> ÷ Bid<sub>p−1 tick</sub>, flagged at 3:1 or more across a stack<div class='note'>Bid and ask are traded volume by aggressor side at each row inside one bar. The 3:1 threshold is a common convention, not a standard. Calibrate it per market and timeframe.</div></div>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">ONE BAR, ROW BY ROW: BID VERSUS ASK</div>
+    </div>
+  </div>
+  <div class="skim">One bar with bid and ask volume per row, showing a sell-heavy body, a point of control, and an ask-heavy row at the low that is a candidate absorption read.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><text x='20' y='28' font-family='JetBrains Mono, monospace' font-size='13' fill='#1c1917'>One 5m footprint bar · illustrative volumes</text><text x='20' y='50' font-family='JetBrains Mono, monospace' font-size='11' fill='#78716c'>PRICE</text><text x='400' y='50' text-anchor='middle' font-family='Inter, sans-serif' font-size='11' fill='#44403c'>◂ bid: sell aggression   |   ask: buy aggression ▸</text><text x='600' y='50' font-family='JetBrains Mono, monospace' font-size='11' fill='#78716c'>bid × ask</text><line x1='400' y1='56' x2='400' y2='346' stroke='#1c1917' stroke-width='1'/><rect x='366' y='60' width='34' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='60' width='10' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='79' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>70,100</text><text x='600' y='79' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>40 × 12</text><rect x='344' y='96' width='55' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='96' width='15' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='115' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>70,000</text><text x='600' y='115' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>65 × 18</text><rect x='300' y='132' width='100' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='132' width='19' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='151' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,900</text><text x='600' y='151' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>118 × 22</text><rect x='227' y='168' width='173' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='168' width='26' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='187' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,800</text><text x='600' y='187' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>204 × 31</text><rect x='202' y='204' width='198' height='30' fill='#ef4444' fill-opacity='0.85'/><rect x='400' y='204' width='34' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='223' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,700</text><text x='600' y='223' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>233 × 40  POC</text><rect x='196' y='201' width='400' height='36' fill='none' stroke='#fbbf24' stroke-width='2' stroke-dasharray='6 4'/><rect x='238' y='240' width='161' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='240' width='31' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='259' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,600</text><text x='600' y='259' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>190 × 36</text><rect x='318' y='276' width='82' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='276' width='64' height='30' fill='#22c55e' fill-opacity='0.8'/><text x='20' y='295' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,500</text><text x='600' y='295' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>96 × 75</text><rect x='352' y='312' width='48' height='30' fill='#ef4444' fill-opacity='0.75'/><rect x='400' y='312' width='179' height='30' fill='#22c55e' fill-opacity='0.9'/><text x='20' y='331' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>69,400</text><text x='600' y='331' font-family='JetBrains Mono, monospace' font-size='12' fill='#44403c'>57 × 210</text><text x='20' y='366' font-family='Inter, sans-serif' font-size='12' fill='#1c1917'>Row 69,400: 210 asks against 57 bids means buyers lifting offers into the flush.</text><text x='20' y='384' font-family='Inter, sans-serif' font-size='12' fill='#44403c'>Candidate absorption only if the next bar stalls below 69,400 [Unconfirmed].</text><text x='20' y='404' font-family='JetBrains Mono, monospace' font-size='11' fill='#78716c'>Dashed box: POC (highest total volume, 233 + 40). Schematic, not live data.</text></svg><div class='svg-caption'><em>One 5-minute bar drawn row by row. Red bars are volume that hit the bid, green bars are volume that lifted the ask. Numbers are illustrative, chosen to show a sell-heavy body with a POC at 69,700 and an ask-heavy row at the low.</em></div></div><p>Read the diagram top to bottom. The body is dominated by red bid volume from 70,100 down to 69,600, which is the sell aggression stacking. The POC sits at 69,700, where the most total volume traded. The row that matters most is the bottom one: 210 ask volume against 57 bid volume means buyers were paying up into the low of the bar. Whether that is absorption or just a bounce depends on the bar that follows, so the diagram is a question, not an answer.</p><table class='cmp'><tr><th>Display</th><th>What it shows</th><th>Best used for</th></tr><tr><td>Bid × Ask split</td><td>Both aggressor totals per row</td><td>Imbalances and stacked initiative</td></tr><tr><td>Delta footprint</td><td>Ask minus bid per row only</td><td>Quick read of net aggression by level</td></tr><tr><td>Volume footprint</td><td>Total traded per row, no side split</td><td>High-volume nodes and the POC</td></tr></table>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">STACKS, POC AND ABSORPTION AT THE EXTREMES</div>
+    </div>
+  </div>
+  <div class="skim">Trust stacked imbalances that price confirms on the next bar, never a single lopsided cell.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Read the stack, not the cell</h4><p>Require three or more consecutive rows with a clear ratio on the same side before you call initiative. One lopsided row is often a single large print, while a stack shows sustained aggression across the bar.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Ask whether price leaves the POC</h4><p>Price that moves away from the POC through thin rows is leaving liquidity behind. Price that keeps returning to a POC and holding there is accepting a new fair value, which changes how you read the next push.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Test absorption at the extremes</h4><p>Heavy ask volume at a session low, with price failing to extend lower on the following bar, is the candidate absorption read. Wait for that confirmation, because the same heavy row in a cascade can be the start of the next leg.</p></div></div></div><div class='worked'><h5>Worked example · illustrative, not a recommendation</h5><table><tr><td>Setup</td><td>The $70,000 retest fails, and the bar shows bid stacks from 69,900 down to 69,600</td></tr><tr><td>Entry</td><td>Short at $69,800 on the next bar’s failed bid-side retest</td></tr><tr><td>Stop</td><td>$70,400, above the failed retest and the 70,000 row</td></tr><tr><td>Target</td><td>$67,800, below the 13 Nov intraday low of $68,943</td></tr><tr><td>R math</td><td>Risk $600, reward $2,000, so 3.3R if filled and the target is reached</td></tr></table></div><div class='tf-note'><b>Timeframe fit:</b> 1m–5m for cell reading and imbalance stacks; 1H–4H to decide whether the bar’s delta matters at all.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">THE 12–13 NOV BTC FLUSH THROUGH $72K, $70K AND $69K</div>
+    </div>
+  </div>
+  <div class="skim">The 12–13 November BTC flush through $72,000, $70,000 and $69,000, with liquidation totals far heavier on the long side.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT.P · 1H · 12–13 Nov 2026</div><h4>BTC flushed through $72,000, $70,000 and $69,000 in one session, and the liquidations were almost all long.</h4><p>Bitcoin broke <strong>$72,000</strong> on Thursday 12 November, then gave up <strong>$70,000</strong> in a four-hour window that carried roughly <strong>$622M</strong> of liquidations. It printed an intraday low of <strong>$68,943</strong>, and the 24-hour tally later passed <strong>$1.4B</strong> with longs far outweighing shorts. I could not retrieve print-level footprint data for this session, so any bar-level read is <strong>[Analyst Opinion]</strong> built from the price and liquidation sequence. [Sources differ] on liquidation totals, which range from about $650M to $1.4B depending on the snapshot window.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>Level / event</td><td>Value (price, time)</td></tr><tr><td>Break below $72,000 (Bitstamp)</td><td>12 Nov 14:36 UTC · 13 Nov 01:36 AEDT</td></tr><tr><td>Break below $70,000, $622M liquidated in four hours</td><td>12 Nov 03:46 UTC · 13 Nov 14:46 AEDT</td></tr><tr><td>Below $69,000, 24h liquidations above $1.4B (longs $1.26B, shorts $155M)</td><td>13 Nov 04:52 UTC · 13 Nov 15:52 AEDT</td></tr><tr><td>Live snapshot: BTC $68,552 (−6.8% 24h), ETH $1,919 (−6.2% 24h)</td><td>13 Nov 05:52 UTC · 16:52 AEDT</td></tr><tr><td>Fear and Greed index</td><td>20, Extreme Fear</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> The flush is long-side forced selling into the bids, so the footprint of the move should be bid-dominated on the way down. The first ask-heavy stack at a new low is the row to watch for absorption.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">THE AUCTION FRAME AND THE DIAGONAL READ</div>
+    </div>
+  </div>
+  <div class="skim">James Dalton supplies the auction frame that makes the POC meaningful, and practitioner guides supply the diagonal cell read.</div>
+<div class='quote'><p>“…a unique charting tool that enables traders to observe the two-way auction process that drives all market movement…”</p><div class='attr'><b>James Dalton</b> · Mind Over Markets (1990) · <a href='https://www.jumpstarttrading.com/order-flow-trading/'>quoted via JumpStart Trading</a></div></div><div class='quote'><p>“Compare the ask at each price against the bid one tick below it, because that is how aggression consumes liquidity.”</p><div class='attr'><b>Footprint Lab</b> · “How to Read Footprint Charts” guide · undated · <a href='https://footprint-lab.com/guides/footprint-charts/'>link</a></div></div><p>Dalton supplies the auction frame that gives the POC its meaning: the point where the auction did the most business. The second line is the working cell read used by practitioners, and the author is unnamed. I could not verify a named current-trader quote to the sourcing standard this run, so the modern voice here is the guide itself rather than a trader.</p>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">ONE ROW IS NOT A SIGNAL</div>
+    </div>
+  </div>
+  <div class="skim">Treating forced selling as absorption: heavy bid volume in a liquidation cascade is aggression, not defence.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Trading a single lopsided row</h5><p>One cell with a 4:1 ratio is often one large print. Require a stack of rows and price confirmation on the next bar before you act on it.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Calling forced selling absorption</h5><p>In a liquidation cascade the bid side fills with market sells, so heavy bid volume is aggression, not defence. Absorption needs price to stop extending while volume keeps arriving.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Mixing feeds across venues</h5><p>Aggressor tags and volumes differ between exchanges, so a footprint from one venue will not match another. Pick one feed, name it, and compare only within it.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Tuning thresholds to hindsight</h5><p>A 3:1 imbalance rule chosen after the fact will always look right on the chart you tuned it to. Set the threshold before the session and log whether it worked.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: the footprint as a secret tool</h5><p>The bid and ask split is an inference from exchange aggressor flags, not a direct view of intent, and it is built from the same tape that CVD already summarises. For most swing decisions a CVD line beside a clean candle read carries most of the same weight. The footprint earns its place when you need to see where inside one bar the fight happened.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">WHERE TO GO DEEPER</div>
+    </div>
+  </div>
+  <div class="skim">Start with the auction-market intro, then the footprint cell-reading guides, then the exchange help pages on chart types.</div>
+<p>The top two links were retrieved by search this run and not fetched in full; the remaining links are standard references.</p><div class='fr'><div class='fr-item'><div class='fr-type'>Article</div><div class='fr-body'><a href='https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile'>Intro to auction market theory and market profile</a><span>The Dalton-era auction frame behind the POC, with a plain walk-through of value area.</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://footprint-lab.com/guides/footprint-charts/'>How to Read Footprint Charts: A Cell-by-Cell Guide</a><span>The diagonal cell read and the sell-times-buy anatomy used in this issue.</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://orderflowlabs.com/blogs/theblog/footprint-chart-guide'>Footprint Charts Explained: Reading Delta, Bid/Ask, and Absorption</a><span>Delta and absorption read against the bid and ask per row, with the candlestick comparison.</span></div></div><div class='fr-item'><div class='fr-type'>Standard reference</div><div class='fr-body'><a href='https://www.tradingview.com/support/'>TradingView support</a><span>Platform help for chart types and the order-flow tools used in the live tape widget.</span></div></div><div class='fr-item'><div class='fr-type'>Standard reference</div><div class='fr-body'><a href='https://academy.binance.com/'>Binance Academy</a><span>Derivatives and liquidation basics, for the liquidation context in the tape section.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class='sources'><b>Sources</b><a href='https://www.topstep.com/blog/intro-to-auction-market-theory-and-market-profile'>Topstep: auction market theory intro</a> <a href='https://footprint-lab.com/guides/footprint-charts/'>Footprint Lab: footprint guide</a> <a href='https://orderflowlabs.com/blogs/theblog/footprint-chart-guide'>OrderFlow Labs: footprint guide</a> <a href='https://www.jumpstarttrading.com/order-flow-trading/'>JumpStart Trading: order flow guide</a> <a href='https://news.bitcoin.com/market-updates/bitcoin-price-breaks-below-72k-656m-liquidation-bloodbath/'>Bitcoin.com: 12 Nov tape</a> <a href='https://cryptobriefing.com/bitcoin-below-70000-liquidations-622m/'>Crypto Briefing: 12 Nov $70K break</a> <a href='https://www.tokenpost.com/news/investing/56327'>TokenPost: 12 Nov liquidations</a> <a href='https://www.kucoin.com/news/flash/bitcoin-and-ethereum-fall-to-3-month-lows-amid-727m-liquidation-wave'>KuCoin News: 3-month lows</a> <a href='https://www.coingecko.com/'>CoinGecko: live snapshot 13 Nov 05:52 UTC</a></div>
+  <div>Alpha · Issue 7 · Friday, 13 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
