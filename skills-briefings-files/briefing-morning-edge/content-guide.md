@@ -189,7 +189,7 @@ Each `<li>`: bold title + level/event, then one specific actionable sentence.
   <iframe src="https://www.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE%3ABTCUSDT&locale=en&dateRange=1M&colorTheme=light&isTransparent=false&autosize=true" title="BTCUSDT" loading="lazy"></iframe>
 </div>
 ```
-Symbols: SPX `FOREXCOM%3ASPXUSD` · US10Y `TVC%3AUS10Y` · DXY `TVC%3ADXY` · WTI `TVC%3AUSOIL` · BTC `BINANCE%3ABTCUSDT` · ETH `BINANCE%3AETHUSDT`. Use the URL-encoded `%3A` for the colon. Keep `loading="lazy"`.
+Symbols: SPX `FOREXCOM%3ASPXUSD` · US10Y `FRED%3ADGS10` (daily data: use `dateRange=12M` for this one only) · DXY `CAPITALCOM%3ADXY` · WTI `TVC%3AUSOIL` · BTC `BINANCE%3ABTCUSDT` · ETH `BINANCE%3AETHUSDT`. Use the URL-encoded `%3A` for the colon. Keep `loading="lazy"`.
 
 ---
 
@@ -207,3 +207,5 @@ Symbols: SPX `FOREXCOM%3ASPXUSD` · US10Y `TVC%3AUS10Y` · DXY `TVC%3ADXY` · WT
   estimated or from a fallback, badge it `EST`; never invent prices, odds, or liquidation levels.
 
 Validate the JSON (no trailing commas, escaped quotes), then return only the file path.
+
+> **Embed-blocked symbols (checked 2026-11-13):** TradingView's free widget shows "Permission denied" for `TVC:US10Y`, `TVC:DXY`, `TVC:TNX` and `CBOT:ZN1!`. Never use them. `FRED:DGS10` fails on intraday ranges ("Unsupported interval"), so give it `dateRange=12M`.

@@ -261,6 +261,19 @@ ${cur}` }],
     report.repair = repair;
     report.total_usd = +(report.total_usd + repair.usd).toFixed(4);
   }
+  // TradingView's free embed shows "Permission denied" for these (checked 2026-11-13).
+  const BLOCKED = [
+    [/symbol=TVC%3AUS10Y([^"]*?)&dateRange=[^&"]+/g, 'symbol=FRED%3ADGS10$1&dateRange=12M'],
+    [/symbol=TVC%3ATNX([^"]*?)&dateRange=[^&"]+/g, 'symbol=FRED%3ADGS10$1&dateRange=12M'],
+    [/symbol=TVC%3ADXY/g, 'symbol=CAPITALCOM%3ADXY'],
+  ];
+  let swapped = 0;
+  for (const k of Object.keys(content.sections || {})) {
+    for (const [re, rep] of BLOCKED) {
+      content.sections[k] = content.sections[k].replace(re, (...m) => { swapped++; return m[0].replace(new RegExp(re.source), rep); });
+    }
+  }
+  if (swapped) report.widget_symbol_swaps = swapped;
   const jsonPath = path.join(outDir, `${stamp}.json`);
   const htmlPath = path.join(outDir, `${stamp}.html`);
   fs.writeFileSync(jsonPath, JSON.stringify(content, null, 2));
