@@ -1,0 +1,58 @@
+name: Daily Briefs (API)
+
+# Writes today's briefings with Claude Haiku 5.5 through the Claude API, paid
+# from the Max-plan API credit (not Claude Code), then publishes each through
+# scripts/publish-briefing.js and triggers the Pages deploy.
+#
+# Secret: ANTHROPIC_API_KEY (key from dc's Individual Org, the credit-linked org).
+# A failed run emails the repo owner (GitHub's default for scheduled runs).
+
+on:
+  schedule:
+    - cron: '0 19 * * *'   # 19:00 UTC = 06:00 Sydney in summer (AEDT), 05:00 in winter
+  workflow_dispatch:
+    inputs:
+      types:
+        description: 'Comma-separated types (blank = today''s schedule)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: daily-briefs
+  cancel-in-progress: false
+
+jobs:
+  briefs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Git identity + ticker branch
+        run: |
+          git config user.name "gm-briefs-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin ticker-data:refs/remotes/origin/ticker-data || true
+      - name: Write and publish
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TYPES: ${{ inputs.types }}
+        run: |
+          if [ -n "$TYPES" ]; then
+            node scripts/daily-briefs.js --types "$TYPES"
+          else
+            node scripts/daily-briefs.js
+          fi
+      - name: Trigger Pages deploy
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main

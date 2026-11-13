@@ -25,12 +25,14 @@ const { SCHEMAS, FRAGMENT_SCHEMAS } = require('./lib/render');
 
 // Section depth floors, straight from the renderer, so the prompt and the gate agree.
 function floorSpecs(type) {
-  const sch = FRAGMENT_SCHEMAS[type] || SCHEMAS[type];
+  // Only fragment schemas carry {token, minChars}; rabbit-hole's card schema
+  // (SCHEMAS) has paragraph floors that the renderer checks itself.
+  const sch = FRAGMENT_SCHEMAS[type];
   const s = (sch && sch.sections) || [];
-  if (!s.length) throw new Error(`no section floors found for ${type} in render.js`);
-  return s;
+  return s; // rabbit-hole uses a card schema with no section floors
 }
 function floorsText(type) {
+  if (!floorSpecs(type).length) return 'none for this type; follow the guide schema exactly';
   return floorSpecs(type).map((x) => `${x.token} >= ${x.minChars} chars${x.requires ? ' and must contain a <table>' : ''}`).join('; ');
 }
 function shortSections(type, content) {
@@ -49,9 +51,17 @@ const PRICES = {
 };
 const SEARCH_PRICE = 10 / 1000; // $ per web search
 
+// type key -> skill folder (authoritative mapping: TEMPLATES in render-briefing.js)
 const TYPES = {
   'market-briefing': 'briefing-morning-edge',
+  'legal-brief': 'briefing-legal-precedent',
+  'ai-briefing': 'briefing-ai-cortex',
+  'trading-concept': 'briefing-alpha/trading-concept',
+  'rabbit-hole': 'briefing-rabbit-hole',
+  'praxis-brief': 'briefing-praxis',
+  'biohacker-report': 'briefing-biohacker',
 };
+const MARKET_DATA_TYPES = new Set(['market-briefing', 'trading-concept']);
 
 function loadKey() {
   if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY.trim();
@@ -178,7 +188,7 @@ async function main() {
   const type = args[0];
   if (!TYPES[type]) { console.error(`Usage: api-brief.js <${Object.keys(TYPES).join('|')}> [--model m] [--out dir]`); process.exit(2); }
   const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
-  const model = opt('--model', 'claude-sonnet-5-5');
+  const model = opt('--model', 'claude-haiku-5-5'); // dc chose Haiku 2026-11-13
   const outDir = path.resolve(opt('--out', path.join(os.tmpdir(), 'gm-api-brief')));
   const maxSearches = +opt('--max-searches', 12);
   if (!PRICES[model]) throw new Error(`no price for ${model}`);
@@ -190,19 +200,19 @@ async function main() {
   const guide = fs.readFileSync(path.join(dir, 'content-guide.md'), 'utf8');
   const sydneyDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney' }).format(new Date());
   const coverage = sh('node', ['scripts/recent-coverage.js', type]);
-  const live = await liveData();
+  const live = MARKET_DATA_TYPES.has(type) ? await liveData() : null;
 
   const system = [
     { type: 'text', text: `${guide}\n\n---\n\n# Voice and section spec (SKILL.md)\n\n${skill}` },
     { type: 'text', cache_control: { type: 'ephemeral' }, text:
 `# API-run overrides (these win over the guide where they conflict)
 - You are running through the Claude API, not Claude Code. MCP tools (CoinGecko, TrueNorth, Polymarket MCP, etc.), shell commands and file access are NOT available.
-- The user message already contains: the Sydney date, the recent-coverage output, and a live-data block fetched by script seconds ago. Treat that block as LIVE (live-badge). Use web_search / web_fetch for everything else (equities, derivatives, regulatory, AI & semis, prediction markets, geopolitics), and badge anything you could not confirm as EST per the guide.
+- The user message already contains: the Sydney date, the recent-coverage output and, for market types only, a live-data block fetched by script seconds ago. Treat that block as LIVE (live-badge). Use web_search / web_fetch for everything else (equities, derivatives, regulatory, AI & semis, prediction markets, geopolitics), and badge anything you could not confirm as EST per the guide.
 - Be economical: at most ${maxSearches} web searches. Prefer one search that covers several facts.
-- Do NOT write files or run the renderer. Your FINAL message must be ONLY the content JSON object (no prose before or after; a single \`\`\`json fence is acceptable). It must have exactly the top-level keys tokens, gm_meta, raw, sections used by the renderer, with every section body meeting the guide's depth floors.
+- Do NOT write files or run the renderer. Your FINAL message must be ONLY the content JSON object (no prose before or after; a single \`\`\`json fence is acceptable). ${FRAGMENT_SCHEMAS[type] ? 'It must have exactly the top-level keys tokens, gm_meta, raw, sections used by the renderer, with every section body meeting the guide depth floors.' : 'It must follow the JSON schema in the content guide above EXACTLY (its own field names, e.g. topic_title, stats, cards, sources); do not use a tokens/raw/sections layout. sections must have EXACTLY 3 entries (Story, Mechanism, Connections); "further down the hole" items go in cards, never in a 4th section.'}
 - Hard depth floors enforced by the renderer (HTML characters, markup included). A page that misses any is rejected, so aim about 25% above each: ${floorsText(type)}.` },
   ];
-  const user = `Today's date (Australia/Sydney): ${sydneyDate}\n\n## recent-coverage output\n${coverage}\nNote: if the newest issue is weeks old, the delta strip should say this is the first issue since that date and compare against current levels instead of "yesterday".\n\n## Live data block (fetched by script, treat as LIVE)\n\`\`\`json\n${JSON.stringify(live, null, 1)}\n\`\`\`\n\nWrite today's ${type} content JSON.`;
+  const user = `Today's date (Australia/Sydney): ${sydneyDate}\n\n## recent-coverage output\n${coverage}\nNote: if the newest issue is weeks old, the delta strip should say this is the first issue since that date and compare against current levels instead of "yesterday".${live ? `\n\n## Live data block (fetched by script, treat as LIVE)\n\`\`\`json\n${JSON.stringify(live, null, 1)}\n\`\`\`` : ''}\n\nWrite today's ${type} content JSON.`;
 
   const tools = [
     { type: 'web_search_20260209', name: 'web_search', max_uses: maxSearches },
@@ -214,7 +224,8 @@ async function main() {
   const batch = args.includes('--batch');
   let res;
   for (let turn = 0; turn < 6; turn++) {
-    const params = { model, max_tokens: 32000, system, tools, messages };
+    // 64k: legal-brief hit a 32k cap (thinking counts toward max_tokens).
+    const params = { model, max_tokens: 64000, system, tools, messages };
     // Effort controls hidden thinking, billed as output (~65% of output at Sonnet's default "high").
     const effort = opt('--effort', null);
     if (effort) params.output_config = { effort };
@@ -222,8 +233,17 @@ async function main() {
     res = batch ? await runBatch(key, params, `${type}-${sydneyDate}-t${turn}`, resumeId) : await post(key, params);
     tally.calls++; addUsage(tally, res.usage || {});
     console.error(`[api-brief] call ${tally.calls}: stop=${res.stop_reason} out=${res.usage && res.usage.output_tokens}`);
-    if (res.stop_reason !== 'pause_turn') break;
-    messages.push({ role: 'assistant', content: res.content });
+    if (res.stop_reason === 'pause_turn') {
+      messages.push({ role: 'assistant', content: res.content });
+    } else if (res.stop_reason === 'tool_use') {
+      // The guides name MCP tools that don't exist here; the model sometimes calls
+      // one anyway (biohacker, 13 Nov). Answer with an error and let it carry on.
+      messages.push({ role: 'assistant', content: res.content });
+      messages.push({ role: 'user', content: res.content.filter((b) => b.type === 'tool_use').map((b) => ({
+        type: 'tool_result', tool_use_id: b.id, is_error: true,
+        content: `Tool "${b.name}" is not available in this API run. Use web_search / web_fetch, or proceed and badge the data EST. Then return ONLY the content JSON.`,
+      })) });
+    } else break;
   }
   const secs = Math.round((Date.now() - t0) / 1000);
   const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
@@ -235,6 +255,11 @@ async function main() {
   let content;
   try { content = extractJson(text); }
   catch (e) { report.error = `content JSON parse failed: ${e.message}`; console.log(JSON.stringify(report, null, 2)); process.exit(1); }
+  // Card-schema types: drop empty trailing sections the model sometimes adds
+  // (rabbit-hole, 13 Nov: an empty "Section 04").
+  if (Array.isArray(content.sections)) {
+    content.sections = content.sections.filter((s) => !(s && Array.isArray(s.blocks) && s.blocks.length === 0));
+  }
   // Repair pass: expand only the sections under their floor, with a small
   // standard (non-batch) call each, instead of regenerating the whole brief.
   const repair = { calls: 0, input: 0, output: 0, sections: [] };
@@ -269,6 +294,7 @@ ${cur}` }],
   ];
   let swapped = 0;
   for (const k of Object.keys(content.sections || {})) {
+    if (typeof content.sections[k] !== 'string') continue; // rabbit-hole: card objects
     for (const [re, rep] of BLOCKED) {
       content.sections[k] = content.sections[k].replace(re, (...m) => { swapped++; return m[0].replace(new RegExp(re.source), rep); });
     }
