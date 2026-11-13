@@ -302,13 +302,38 @@ ${cur}` }],
   if (swapped) report.widget_symbol_swaps = swapped;
   const jsonPath = path.join(outDir, `${stamp}.json`);
   const htmlPath = path.join(outDir, `${stamp}.html`);
-  fs.writeFileSync(jsonPath, JSON.stringify(content, null, 2));
-  try {
-    execFileSync('node', ['scripts/render-briefing.js', type, jsonPath, htmlPath], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-    report.render = 'ok';
-  } catch (e) {
-    report.render = `FAILED: ${(e.stderr || e.message).toString().trim().slice(0, 1500)}`;
+  // Render; on a validator rejection, send the exact error back to the model
+  // for a minimal correction (e.g. gm_meta.headline > 90 chars), up to 2 tries.
+  const fixups = [];
+  for (let attempt = 0; ; attempt++) {
+    fs.writeFileSync(jsonPath, JSON.stringify(content, null, 2));
+    try {
+      execFileSync('node', ['scripts/render-briefing.js', type, jsonPath, htmlPath], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+      report.render = 'ok';
+      break;
+    } catch (e) {
+      const err = (e.stderr || e.message).toString().trim().slice(0, 1500);
+      report.render = `FAILED: ${err}`;
+      if (attempt >= 2) break;
+      try {
+        const r = await post(key, {
+          model, max_tokens: 64000,
+          messages: [{ role: 'user', content:
+`The page renderer rejected this ${type} content JSON with:\n${err}\n\nReturn the corrected FULL JSON object only (no prose). Change only what the error requires (e.g. shorten an over-long field, add a missing field, fix a count); keep everything else byte-identical.\n\n${JSON.stringify(content)}` }],
+        });
+        const t = r.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+        content = extractJson(t);
+        const p = PRICES[model];
+        const usd = (r.usage.input_tokens * p.in + r.usage.output_tokens * p.out) / 1e6;
+        fixups.push({ error: err.split('\n')[0].slice(0, 160), usd: +usd.toFixed(4) });
+        report.total_usd = +(report.total_usd + usd).toFixed(4);
+      } catch (fe) {
+        fixups.push({ error: `fix-up failed: ${fe.message.slice(0, 160)}` });
+        break;
+      }
+    }
   }
+  if (fixups.length) report.fixups = fixups;
   report.files = { json: jsonPath, html: fs.existsSync(htmlPath) ? htmlPath : null };
   fs.writeFileSync(path.join(outDir, `${stamp}.report.json`), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));

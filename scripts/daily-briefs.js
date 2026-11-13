@@ -35,7 +35,8 @@ function dueTypes({ day, weekday }) {
 
 function run(args) {
   const r = spawnSync('node', args, { cwd: ROOT, encoding: 'utf8', timeout: 25 * 60 * 1000 });
-  return { ok: r.status === 0, out: `${r.stdout || ''}${r.stderr || ''}` };
+  // stdout carries api-brief's JSON report; stderr is progress chatter.
+  return { ok: r.status === 0, stdout: r.stdout || '', out: `${r.stdout || ''}${r.stderr || ''}` };
 }
 
 function main() {
@@ -51,8 +52,8 @@ function main() {
     const filename = BRIEFING_FILENAMES[type];
     if (!filename) { results.push({ type, status: 'unknown type' }); continue; }
     const w = run(['scripts/api-brief.js', type, '--max-searches', '6', '--out', outDir]);
-    const m = w.out.match(/\{[\s\S]*\}\s*$/);
-    let rep = {}; try { rep = m ? JSON.parse(m[0]) : {}; } catch { /* keep {} */ }
+    let rep = {};
+    try { rep = JSON.parse(w.stdout.slice(w.stdout.indexOf('{'))); } catch { /* keep {} */ }
     if (!w.ok || !rep.files || !rep.files.html) {
       results.push({ type, status: 'write failed', cost: rep.total_usd, detail: (rep.render || rep.error || w.out.slice(-400)) });
       continue;
