@@ -21,6 +21,25 @@ const https = require('https');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+const { SCHEMAS, FRAGMENT_SCHEMAS } = require('./lib/render');
+
+// Section depth floors, straight from the renderer, so the prompt and the gate agree.
+function floorSpecs(type) {
+  const sch = FRAGMENT_SCHEMAS[type] || SCHEMAS[type];
+  const s = (sch && sch.sections) || [];
+  if (!s.length) throw new Error(`no section floors found for ${type} in render.js`);
+  return s;
+}
+function floorsText(type) {
+  return floorSpecs(type).map((x) => `${x.token} >= ${x.minChars} chars${x.requires ? ' and must contain a <table>' : ''}`).join('; ');
+}
+function shortSections(type, content) {
+  const s = floorSpecs(type);
+  return s.filter((x) => {
+    const v = (content.sections || {})[x.token] || '';
+    return (x.minChars && v.length < x.minChars) || (x.requires || []).some((re) => !re.test(v));
+  });
+}
 
 // USD per million tokens (platform.claude.com pricing, read 2026-11-13).
 const PRICES = {
@@ -78,27 +97,61 @@ async function liveData() {
   return { fetched_at_utc: new Date().toISOString(), coingecko_markets: coins, coingecko_global: g, fear_greed: f, ticker_json: ticker };
 }
 
-function post(key, body) {
-  const data = JSON.stringify(body);
+// raw=true returns the body text (batch results are JSONL, not JSON).
+function api(key, method, urlPath, body, raw = false) {
+  const data = body ? JSON.stringify(body) : null;
+  const u = new URL(urlPath, 'https://api.anthropic.com');
   return new Promise((resolve, reject) => {
-    const req = https.request({
-      host: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-      headers: {
-        'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json',
-        'content-length': Buffer.byteLength(data),
-      },
-    }, (res) => {
+    const headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01' };
+    if (data) { headers['content-type'] = 'application/json'; headers['content-length'] = Buffer.byteLength(data); }
+    const req = https.request({ host: u.host, path: u.pathname + u.search, method, headers }, (res) => {
       let b = ''; res.on('data', (d) => (b += d));
       res.on('end', () => {
-        let j; try { j = JSON.parse(b); } catch { return reject(new Error(`HTTP ${res.statusCode}: ${b.slice(0, 500)}`)); }
-        if (res.statusCode >= 400) return reject(new Error(`HTTP ${res.statusCode}: ${JSON.stringify(j.error || j).slice(0, 800)}`));
-        resolve(j);
+        if (res.statusCode >= 400) return reject(new Error(`HTTP ${res.statusCode}: ${b.slice(0, 800)}`));
+        if (raw) return resolve(b);
+        try { resolve(JSON.parse(b)); } catch { reject(new Error(`HTTP ${res.statusCode}: ${b.slice(0, 500)}`)); }
       });
     });
     req.setTimeout(20 * 60 * 1000, () => req.destroy(new Error('timeout after 20 min')));
     req.on('error', reject);
-    req.end(data);
+    req.end(data || undefined);
   });
+}
+const post = (key, body) => api(key, 'POST', '/v1/messages', body);
+
+// Message Batches API: 50% off tokens; results within 24 h (usually minutes).
+// Read-only GETs retry through transient network errors (DNS blips, resets).
+async function apiGet(key, urlPath, raw = false) {
+  for (let i = 0; ; i++) {
+    try { return await api(key, 'GET', urlPath, null, raw); }
+    catch (e) {
+      if (i >= 20 || /HTTP 4\d\d/.test(e.message)) throw e;
+      console.error(`[api-brief] GET retry ${i + 1}: ${e.message.split('\n')[0]}`);
+      await new Promise((r) => setTimeout(r, 15000));
+    }
+  }
+}
+
+// resumeId: poll an already-submitted batch instead of paying for a new one.
+async function runBatch(key, params, customId, resumeId) {
+  let id = resumeId;
+  if (!id) {
+    const b = await api(key, 'POST', '/v1/messages/batches', { requests: [{ custom_id: customId, params }] });
+    id = b.id;
+    console.error(`[api-brief] batch ${id} submitted (resume with --resume-batch ${id})`);
+  }
+  let s = await apiGet(key, `/v1/messages/batches/${id}`);
+  const deadline = Date.now() + 24 * 3600 * 1000;
+  while (s.processing_status !== 'ended') {
+    if (Date.now() > deadline) throw new Error(`batch ${id} not ended after 24 h`);
+    await new Promise((r) => setTimeout(r, 30000));
+    s = await apiGet(key, `/v1/messages/batches/${id}`);
+    console.error(`[api-brief] batch ${id}: ${s.processing_status} ${JSON.stringify(s.request_counts)}`);
+  }
+  const lines = (await apiGet(key, s.results_url, true)).split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  const r = resumeId ? lines[0] : lines.find((l) => l.custom_id === customId);
+  if (!r || r.result.type !== 'succeeded') throw new Error(`batch result: ${JSON.stringify(r && r.result).slice(0, 800)}`);
+  return r.result.message;
 }
 
 function addUsage(t, u) {
@@ -108,9 +161,9 @@ function addUsage(t, u) {
   t.fetches += (u.server_tool_use && u.server_tool_use.web_fetch_requests) || 0;
 }
 
-function cost(t, model) {
+function cost(t, model, batch = false) {
   const p = PRICES[model];
-  const tok = (t.input * p.in + t.output * p.out + t.cacheWrite * p.cw5m + t.cacheRead * p.cr) / 1e6;
+  const tok = (batch ? 0.5 : 1) * (t.input * p.in + t.output * p.out + t.cacheWrite * p.cw5m + t.cacheRead * p.cr) / 1e6;
   return { tokens_usd: +tok.toFixed(4), search_usd: +(t.searches * SEARCH_PRICE).toFixed(4), total_usd: +(tok + t.searches * SEARCH_PRICE).toFixed(4) };
 }
 
@@ -146,7 +199,8 @@ async function main() {
 - You are running through the Claude API, not Claude Code. MCP tools (CoinGecko, TrueNorth, Polymarket MCP, etc.), shell commands and file access are NOT available.
 - The user message already contains: the Sydney date, the recent-coverage output, and a live-data block fetched by script seconds ago. Treat that block as LIVE (live-badge). Use web_search / web_fetch for everything else (equities, derivatives, regulatory, AI & semis, prediction markets, geopolitics), and badge anything you could not confirm as EST per the guide.
 - Be economical: at most ${maxSearches} web searches. Prefer one search that covers several facts.
-- Do NOT write files or run the renderer. Your FINAL message must be ONLY the content JSON object (no prose before or after; a single \`\`\`json fence is acceptable). It must have exactly the top-level keys tokens, gm_meta, raw, sections used by the renderer, with every section body meeting the guide's depth floors.` },
+- Do NOT write files or run the renderer. Your FINAL message must be ONLY the content JSON object (no prose before or after; a single \`\`\`json fence is acceptable). It must have exactly the top-level keys tokens, gm_meta, raw, sections used by the renderer, with every section body meeting the guide's depth floors.
+- Hard depth floors enforced by the renderer (HTML characters, markup included). A page that misses any is rejected, so aim about 25% above each: ${floorsText(type)}.` },
   ];
   const user = `Today's date (Australia/Sydney): ${sydneyDate}\n\n## recent-coverage output\n${coverage}\nNote: if the newest issue is weeks old, the delta strip should say this is the first issue since that date and compare against current levels instead of "yesterday".\n\n## Live data block (fetched by script, treat as LIVE)\n\`\`\`json\n${JSON.stringify(live, null, 1)}\n\`\`\`\n\nWrite today's ${type} content JSON.`;
 
@@ -157,9 +211,12 @@ async function main() {
   const messages = [{ role: 'user', content: user }];
   const tally = { input: 0, output: 0, cacheWrite: 0, cacheRead: 0, searches: 0, fetches: 0, calls: 0 };
   const t0 = Date.now();
+  const batch = args.includes('--batch');
   let res;
   for (let turn = 0; turn < 6; turn++) {
-    res = await post(key, { model, max_tokens: 32000, system, tools, messages });
+    const params = { model, max_tokens: 32000, system, tools, messages };
+    const resumeId = turn === 0 ? opt('--resume-batch', null) : null;
+    res = batch ? await runBatch(key, params, `${type}-${sydneyDate}-t${turn}`, resumeId) : await post(key, params);
     tally.calls++; addUsage(tally, res.usage || {});
     console.error(`[api-brief] call ${tally.calls}: stop=${res.stop_reason} out=${res.usage && res.usage.output_tokens}`);
     if (res.stop_reason !== 'pause_turn') break;
@@ -167,13 +224,39 @@ async function main() {
   }
   const secs = Math.round((Date.now() - t0) / 1000);
   const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
-  const stamp = `${type}-${sydneyDate}-${model}`;
+  const stamp = `${type}-${sydneyDate}-${model}${batch ? '-batch' : ''}`;
   fs.writeFileSync(path.join(outDir, `${stamp}.raw.txt`), text);
-  const report = { type, model, date: sydneyDate, seconds: secs, stop_reason: res.stop_reason, usage: tally, ...cost(tally, model) };
+  const report = { type, model, batch, date: sydneyDate, seconds: secs, stop_reason: res.stop_reason, usage: tally, ...cost(tally, model, batch) };
 
   let content;
   try { content = extractJson(text); }
   catch (e) { report.error = `content JSON parse failed: ${e.message}`; console.log(JSON.stringify(report, null, 2)); process.exit(1); }
+  // Repair pass: expand only the sections under their floor, with a small
+  // standard (non-batch) call each, instead of regenerating the whole brief.
+  const repair = { calls: 0, input: 0, output: 0, sections: [] };
+  for (const sec of shortSections(type, content)) {
+    const cur = content.sections[sec.token] || '';
+    const r = await post(key, {
+      model, max_tokens: 4000,
+      messages: [{ role: 'user', content:
+`This is one section body (HTML) of today's ${type}. It is ${cur.length} characters; the renderer requires at least ${sec.minChars}${sec.requires ? ' and a <table>' : ''}. Expand it to about ${Math.round(sec.minChars * 1.3)} characters of real substance in the same voice, keeping all existing facts, numbers, badges and HTML classes. Add no new facts that are not already in the section or the TL;DR below. Return ONLY the HTML.
+
+TL;DR context: ${content.raw && content.raw.TLDR_THESIS}
+
+SECTION HTML:
+${cur}` }],
+    });
+    const html = r.content.filter((b) => b.type === 'text').map((b) => b.text).join('').replace(/^```(?:html)?\s*|```\s*$/g, '').trim();
+    content.sections[sec.token] = html;
+    repair.calls++; repair.input += r.usage.input_tokens; repair.output += r.usage.output_tokens;
+    repair.sections.push(`${sec.token} ${cur.length}->${html.length}`);
+  }
+  if (repair.calls) {
+    const p = PRICES[model];
+    repair.usd = +((repair.input * p.in + repair.output * p.out) / 1e6).toFixed(4);
+    report.repair = repair;
+    report.total_usd = +(report.total_usd + repair.usd).toFixed(4);
+  }
   const jsonPath = path.join(outDir, `${stamp}.json`);
   const htmlPath = path.join(outDir, `${stamp}.html`);
   fs.writeFileSync(jsonPath, JSON.stringify(content, null, 2));
