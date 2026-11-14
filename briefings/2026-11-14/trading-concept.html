@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Sweep Orders | Saturday, 14 November 2026</title>
+<meta property="og:description" content="A sweep is one market order that eats several price levels at once. Judge it by what the book does afterwards, not the candle.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Sweep Orders: one market order that eats several price levels at once","preview":"A sweep consumes resting size across levels in one burst. Compare its size with the first level and watch the refill before trading the reaction.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Sweep Orders</h1>
+  <div class="meta">
+    <span>Saturday, 14 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue TBC</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A sweep order is a market order large enough to consume every resting level it reaches, so price jumps several ticks in one burst. It matters because the candle only shows the outcome, while the book shows whether the aggressor used up size or met a refill. <strong>Practical takeaway:</strong> compare the sweep's size with the resting size at the first level, and wait for the refill or the failed refill before you trade the reaction.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">One order, several price levels, one burst of urgency</div>
+    </div>
+  </div>
+  <div class="skim">A sweep is a marketable order that clears several price levels in one push, so it shows urgency rather than direction.</div>
+<p>A sweep is a marketable order that will not wait. It takes every resting share at the best price, steps to the next price level, takes that too, and keeps going until it is filled or the book runs out of size you are willing to pay for. The defining feature is not direction. The order consumes liquidity faster than the book can refill it, so the printed price jumps several ticks in one burst.</p><p>Position first: most of what traders call a breakout or a flush on crypto perps is a sweep in disguise. Read it as a statement about urgency. Someone with a deadline crossed the spread through size, and the market had to find a new clearing price to absorb it. The sweep tells you the aggressor accepted slippage, which is more informative than the candle that results.</p><p>In crypto the mechanic shows up in two forms. One is a discretionary trader hitting market orders into thin size. The other is forced liquidation orders from exchanges closing levered longs or shorts. Both print as one-sided aggressive volume that walks the book. Telling them apart matters, because a stop run and a liquidation cascade look identical on the candle but say different things about who is still left to sell. This builds on <b>Footprint Charts</b> (issue dated 13 Nov 2026), which showed aggressive volume by price; this issue covers the event that produces it.</p><div class="pills"><div class="pill-term"><b>Sweep</b><span>A marketable order that consumes several price levels in one burst.</span></div><div class="pill-term"><b>Resting liquidity</b><span>Limit orders waiting on the book at each price.</span></div><div class="pill-term"><b>Slippage</b><span>The gap between the best quoted price and your average fill.</span></div><div class="pill-term"><b>Stop run</b><span>A sweep triggered when stop orders convert into market orders.</span></div></div><div class="remember"><b>Remember</b> If you only remember one thing: a sweep is evidence of urgency, not direction. Read what it did to the book afterwards.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From the best ask to the next level, and the average fill</div>
+    </div>
+  </div>
+  <div class="skim">It walks the ask or bid ladder level by level, and the weighted average of those fills sets your slippage.</div>
+<p>The mechanic runs in three steps. First, a market buy or sell arrives with no price limit, so it accepts the best posted offer. Second, that offer is smaller than the order, so the matching engine walks to the next level and takes size there, then the next. Third, the last fill becomes the new reference and the book refreshes around it. Your read comes from comparing the order's size with the size resting at the first two or three levels.</p><p>Two properties decide whether a sweep moves price or only prints. The first is how much size sits at each level. The second is whether that size gets replenished. A thick level that is taken and refilled within seconds absorbs the sweep. A thin level that is taken and left empty lets the next print run several ticks.</p><div class="formula"><b>Average fill</b> = Σ(qty<sub>i</sub> × price<sub>i</sub>) / Σ qty<sub>i</sub><div class="note">Sum across every level the sweep consumed. qty<sub>i</sub> is the size taken at price<sub>i</sub>.</div></div><div class="formula"><b>Sweep slippage</b> = Average fill − best quoted price<div class="note">For a buy, positive slippage means the aggressor paid up the ladder. Measure it in dollars or ticks on the same pair, not in percent.</div></div><p>Worked logic: if 40 BTC sits at the best ask and the order wants 90 BTC, the first 40 fill at the top price and the rest fill at higher levels. The gap between the weighted average and the top price is your slippage. The larger that gap relative to the spread, the more the sweep consumed real liquidity instead of nibbling at the edge.</p><table class="cmp"><tr><td><b>Plain market order</b></td><td><b>Sweep (multi-level)</b></td></tr><tr><td>Fills at the top of book, or a little beyond</td><td>Walks several levels in one burst</td></tr><tr><td>Small slippage on liquid pairs</td><td>Slippage scales with order size and book thinness</td></tr><tr><td>Rarely moves the candle on its own</td><td>Often prints the wick or the break</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Ask ladder before and after a 90 BTC market buy</div>
+    </div>
+  </div>
+  <div class="skim">The ladder shows a 90 BTC market buy taking three full levels and most of a fourth, with the next levels left empty.</div>
+<div class="svg-wrap"><svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="50" width="360" height="320" fill="#ffffff" stroke="#e7e5e4"/><rect x="410" y="50" width="360" height="320" fill="#ffffff" stroke="#e7e5e4"/><text x="46" y="42" font-size="13" fill="#1c1917" font-family="Inter, sans-serif">BEFORE · ask side (illustrative)</text><text x="426" y="42" font-size="13" fill="#1c1917" font-family="Inter, sans-serif">AFTER · 90 BTC market buy</text><text x="40" y="94" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,350</text><text x="40" y="144" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,300</text><text x="40" y="194" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,250</text><text x="40" y="244" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,200</text><text x="40" y="294" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,150</text><text x="40" y="344" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,100</text><rect x="120" y="76" width="90" height="26" fill="#a3e635"/><text x="218" y="94" font-size="12" fill="#1c1917">30</text><rect x="120" y="126" width="60" height="26" fill="#a3e635"/><text x="188" y="144" font-size="12" fill="#1c1917">20</text><rect x="120" y="176" width="9" height="26" fill="#ef4444"/><rect x="129" y="176" width="9" height="26" fill="#a3e635"/><text x="146" y="194" font-size="12" fill="#1c1917">6 (3 hit)</text><rect x="120" y="226" width="36" height="26" fill="#ef4444"/><text x="164" y="244" font-size="12" fill="#1c1917">12</text><rect x="120" y="276" width="105" height="26" fill="#ef4444"/><text x="233" y="294" font-size="12" fill="#1c1917">35</text><rect x="120" y="326" width="120" height="26" fill="#ef4444"/><text x="248" y="344" font-size="12" fill="#1c1917">40</text><text x="426" y="94" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,350</text><text x="426" y="144" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,300</text><text x="426" y="194" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,250</text><text x="426" y="244" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,200</text><text x="426" y="294" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,150</text><text x="426" y="344" font-size="12" fill="#44403c" font-family="JetBrains Mono, monospace">68,100</text><rect x="500" y="76" width="90" height="26" fill="#a3e635"/><text x="598" y="94" font-size="12" fill="#1c1917">30</text><rect x="500" y="126" width="60" height="26" fill="#a3e635"/><text x="568" y="144" font-size="12" fill="#1c1917">20</text><rect x="500" y="176" width="9" height="26" fill="#a3e635"/><text x="518" y="194" font-size="12" fill="#1c1917">3 left</text><rect x="500" y="226" width="36" height="26" fill="none" stroke="#78716c" stroke-dasharray="4 3"/><text x="544" y="244" font-size="12" fill="#78716c">0</text><rect x="500" y="276" width="105" height="26" fill="none" stroke="#78716c" stroke-dasharray="4 3"/><text x="613" y="294" font-size="12" fill="#78716c">0</text><rect x="500" y="326" width="120" height="26" fill="none" stroke="#78716c" stroke-dasharray="4 3"/><text x="628" y="344" font-size="12" fill="#78716c">0</text><text x="40" y="392" font-size="12" fill="#1c1917" font-family="JetBrains Mono, monospace">avg fill 68,137.78 · best ask 68,100</text><text x="426" y="392" font-size="12" fill="#1c1917" font-family="JetBrains Mono, monospace">slippage ≈ $38 · 3 BTC left at 68,250</text></svg><div class="svg-caption"><em>Illustrative ask ladder, not a real print. Red marks size consumed by a 90 BTC market buy; dashed boxes are levels fully cleared. Note that the sweep walks upward from the best ask and leaves the top two levels intact.</em></div></div><p>The table below reads the same ladder row by row. Notice that the sweep does not care about the price on the chart. It cares about the cumulative size between the best ask and the level where its order runs out.</p><table class="cmp"><tr><td><b>Level</b></td><td><b>Resting before</b></td><td><b>Taken</b></td><td><b>Left after</b></td></tr><tr><td>68,100 (best ask)</td><td>40</td><td>40</td><td>0</td></tr><tr><td>68,150</td><td>35</td><td>35</td><td>0</td></tr><tr><td>68,200</td><td>12</td><td>12</td><td>0</td></tr><tr><td>68,250</td><td>6</td><td>3</td><td>3</td></tr></table><p>The three levels cleared completely hold 87 BTC, so the remaining 3 BTC has to reach into the 68,250 level. The weighted average fill works out to about 68,137.78, which is roughly $38 above the best ask. That number is the cost of urgency. On a deeper book the same 90 BTC would have spread across more levels with less slippage, which is why size against depth is the comparison that matters.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Read the refill, not the wick</div>
+    </div>
+  </div>
+  <div class="skim">Size the sweep against the first level's resting depth, then wait for the refill before you act.</div>
+<div class="practice"><div class="practice-card"><div class="num">1</div><div><h4>Size the sweep against the first level</h4><p>Compare the aggressive size with the resting size at the top two or three levels. A sweep that is a small fraction of the first level is usually noise, while one several times larger than that level will move the book.</p></div></div><div class="practice-card"><div class="num">2</div><div><h4>Watch what refills</h4><p>A level that gets cleared and then refilled within seconds has absorbed the sweep. A level that stays empty while the next print runs several ticks has genuinely lost liquidity. Confirm the difference on the tape before you act on it.</p></div></div><div class="practice-card"><div class="num">3</div><div><h4>Separate stop runs from liquidation cascades</h4><p>A discretionary stop run often reverses once the stops are filled. A forced liquidation cascade keeps going until the levered positions are cleared. Check open interest and the size of the flush after the print to see which one you are looking at.</p></div></div><div class="practice-card"><div class="num">4</div><div><h4>Trade the aftermath, not the print</h4><p>Entering on the sweep candle means paying the slippage you were trying to measure. Wait for the first retest of the swept level and let the reaction define the stop.</p></div></div></div><div class="worked"><h5>Worked example (hypothetical, not a call)</h5><table><tr><td>Setup</td><td>Downside sweep clears the 67,650 area and prints a low near 67,555 (the level reported on 13 Nov)</td></tr><tr><td>Entry</td><td>Long limit at 67,700 on a retest that holds the swept zone as support</td></tr><tr><td>Stop</td><td>67,450, below the sweep low, invalidating the refill thesis</td></tr><tr><td>Target</td><td>68,350, the first level where prior resting size was visible</td></tr><tr><td>R math</td><td>Risk 250 per BTC. Reward 650 per BTC. Ratio 2.6R</td></tr></table></div><div class="tf-note"><b>Timeframe fit:</b> read the sweep itself on 1 to 5 minute tape or a footprint, confirm the reaction on the 1 hour, and only then frame bias on the 4 hour.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC below $70k on forced long selling, 13 to 14 Nov</div>
+    </div>
+  </div>
+  <div class="skim">BTC lost $70,000 on 13 Nov in a liquidation-heavy flush; the tape shows forced sellers walking the book toward the $67.5k to $68k pocket.</div>
+<div class="tape"><div class="tape-label">● Live Tape · BTCUSDT.P · 1H · 13 Nov 2026 to 14 Nov 00:22 UTC</div><h4>BTC lost $70,000 on forced long selling and printed a low near $67.5k.</h4><p>Reports on Friday 13 Nov put <strong>BTC below $70,000</strong> for the first time since 19 August, extending a slide from about $81,000 the previous week. At <strong>04:15 UTC</strong> (15:15 Sydney) CoinGecko data had BTC at about $68,663, down 6.8% over 24 hours. By <strong>07:30 UTC</strong> (17:30 Sydney) it was near $69,000. At <strong>10:52 UTC</strong> (21:52 Sydney) one source logged $69,224 with a 24-hour low of $67,921. Liquidation totals ran from about $1.2bn to $1.6bn across sources, with roughly 89 to 90% of them on longs. [Sources differ] on the exact low and the liquidation total. Snapshot at <strong>00:22 UTC 14 Nov</strong> (11:22 Sydney): BTC $68,262, down 4.2% over 24 hours and 10.0% over seven days. ETH $1,932, down 4.1% over 24 hours. Fear and Greed readings in the feed were 13 and 20, both Extreme Fear.</p><div class="nums"><div style="overflow-x:auto"><table><tr><td>Level / event</td><td>Value (price, time)</td></tr><tr><td>Prior breakdown</td><td>Below $72,000 on Thursday 12 Nov</td></tr><tr><td>Psychological level lost</td><td>$70,000, first print below since 19 Aug</td></tr><tr><td>Intraday low</td><td>$67,555 to $67,922 [Sources differ]</td></tr><tr><td>Liquidations, 24h</td><td>About $1.2bn to $1.6bn, roughly 89 to 90% longs [Sources differ]</td></tr><tr><td>Hour of heaviest flush</td><td>About $500m liquidated in the single hour BTC slipped under $70k</td></tr><tr><td>10:52 UTC 13 Nov</td><td>$69,224, 24h low $67,921</td></tr><tr><td>00:22 UTC 14 Nov</td><td>$68,262, down 4.2% over 24h</td></tr></table></div></div><iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe><div class="read"><b>Read</b> Forced long selling walked the book toward the $67.5k to $68k pocket, so the next sweep question is whether resting bids refill that zone or whether it clears into thinner liquidity. [Analyst Opinion]</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">A classic voice and a platform educator</div>
+    </div>
+  </div>
+  <div class="skim">Livermore's patience point and a platform educator's sweep definition frame the concept from two different eras of tape reading.</div>
+<div class="quote"><p>“The big money is not in the buying or the selling, but in the waiting.”</p><div class="attr"><b>Jesse Livermore</b> · Reminiscences of a Stock Operator · 1923 · Source unavailable: live fetch of the text not run this session</div></div><div class="quote"><p>“[paraphrased] A sweep is aggressive flow that clears several price levels in a single push and leaves a streak of same-coloured volume behind.”</p><div class="attr"><b>Grizzly Parrott</b> · Bookmap sweeps and stop runs tutorial · undated · <a href="https://grizzlyparrottrading.com/platforms-tutorials/bookmap-sweeps-and-stop-runs.html">link</a></div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Calling every fast candle a sweep</div>
+    </div>
+  </div>
+  <div class="skim">Treating every fast wick as a sweep, and entering on the print, which pays the slippage you were trying to measure.</div>
+<div class="trap"><div class="num">1</div><div><h5>Calling every fast candle a sweep</h5><p>A quick wick is not a sweep until the book shows size consumed across levels. Fix it by checking the depth ladder or footprint for the aggressive volume before you label the move.</p></div></div><div class="trap"><div class="num">2</div><div><h5>Ignoring the size of the first level</h5><p>Without the resting size at the top levels you cannot tell whether a sweep is absorbed or breaks the level. Fix it by logging the first two levels before the print, not after.</p></div></div><div class="trap"><div class="num">3</div><div><h5>Merging stop runs with liquidation cascades</h5><p>They look the same on the candle but unwind differently. Fix it by checking open interest and whether the flush is still producing size after the first hour.</p></div></div><div class="trap"><div class="num">4</div><div><h5>Chasing the print</h5><p>Entering on the sweep candle pays the slippage that defined the move. Fix it by waiting for the retest of the swept level, and size the stop beyond the sweep extreme.</p></div></div><div class="trap anti"><div class="num">!</div><div><h5>Overhyped: the 'smart money sweep' label</h5><p>Options-flow sites sell 'sweep' tags as proof of directional conviction. In practice a sweep tag mostly describes how an order was routed across exchanges to fill fast, not what the buyer intended. Treat it as a fill-method label and check the price reaction before you read anything into it.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Glossary, tutorial, help article, and two standard references</div>
+    </div>
+  </div>
+  <div class="skim">The Bookmap glossary, the Bookmap sweeps tutorial, and the Wall St. Jesus sweep-versus-block article are the quickest routes in.</div>
+<div class="fr"><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://bookmap.com/blog/essential-trading-glossary-terms-used-in-bookmap-a-comprehensive-guide">Bookmap glossary: book sweep</a><span>Short definition of a book sweep and why it makes fills slip. Not live-fetched this run.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://grizzlyparrottrading.com/platforms-tutorials/bookmap-sweeps-and-stop-runs.html">Bookmap sweeps and stop runs</a><span>How sweeps and stop runs look on a depth-and-flow display, with continuation versus reversal checks.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://help.wallstjesus.com/en/articles/4571127-what-is-the-difference-between-a-sweep-and-a-block">Wall St. Jesus: sweep vs block</a><span>Distinguishes an aggressive multi-exchange sweep from a negotiated block trade.</span></div></div><div class="fr-item"><div class="fr-type">Reference</div><div class="fr-body"><a href="https://www.investopedia.com/terms/m/marketorder.asp">Investopedia: market order</a><span>[standard reference, not live-fetched] Baseline on how market orders accept the best available price.</span></div></div><div class="fr-item"><div class="fr-type">Reference</div><div class="fr-body"><a href="https://academy.binance.com/en/glossary/order-book">Binance Academy: order book</a><span>[standard reference, not live-fetched] Background on bid and ask levels and how the book is matched.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b><a href="https://bookmap.com/blog/essential-trading-glossary-terms-used-in-bookmap-a-comprehensive-guide">Bookmap glossary: book sweep</a> <a href="https://grizzlyparrottrading.com/platforms-tutorials/bookmap-sweeps-and-stop-runs.html">Grizzly Parrott: sweeps and stop runs</a> <a href="https://help.wallstjesus.com/en/articles/4571127-what-is-the-difference-between-a-sweep-and-a-block">Wall St. Jesus: sweep vs block</a> <a href="https://www.kucoin.com/news/flash/bitcoin-falls-below-70-000-amid-869-89m-in-long-liquidations">KuCoin news: BTC below $70k, 13 Nov</a> <a href="https://www.cryptotimes.io/2026/11/13/bitcoin-price-crashes-below-69k-as-crypto-liquidations-top-1-41-billion/">The Crypto Times: BTC below $69k, 13 Nov</a> <a href="https://cryptoticker.io/en/bitcoin-price-below-70000-liquidations-extreme-fear/">CryptoTicker: BTC below $70k, 13 Nov</a></div>
+  <div>Alpha · Issue TBC · Saturday, 14 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
