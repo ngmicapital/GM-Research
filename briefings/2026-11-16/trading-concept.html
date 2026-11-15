@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Spoofing &amp; Iceberg Orders | Monday, 16 November 2026</title>
+<meta property="og:description" content="Spoofs are fake size pulled before it fills; icebergs are real size shown in slices. Judge every resting order by what it does when price touches it.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Spoofing & Iceberg Orders: fake size pulled, real size hidden","preview":"A spoof is size placed to be cancelled; an iceberg is real size shown in slices. Judge any resting order by what it does when price touches it.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Spoofing &amp; Iceberg Orders</h1>
+  <div class="meta">
+    <span>Monday, 16 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue TBD</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Spoofing and icebergs are the two ways the visible order book misleads you, and they point in opposite directions: a spoof is size that never meant to trade, while an iceberg is size that always does, just shown in slices. This issue builds on the 15 November Absorption issue, which covered size holding against aggression; today asks whether that size was real in the first place. Practical takeaway: judge any large resting order by what it does when price touches it. A level that refills under aggression is real, and a level that vanishes on approach never was.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Two ways the visible book misleads</div>
+    </div>
+  </div>
+  <div class="skim">A <em>spoof</em> is large resting size placed to be cancelled before it trades, while an <em>iceberg</em> is real size shown in small visible slices.</div>
+<p>Spoofing and icebergs are the two ways the visible order book misleads, and they mislead in opposite directions. My position: the book is a claim about intent, not a record of it. A spoof displays size that was never meant to trade, placed to bend your behaviour and then pulled as price closes in. An iceberg hides size that fully intends to trade, showing only a small slice and refilling it as each slice is consumed. Both leave the same footprint on a single snapshot, which is why reading either one in isolation is dangerous.</p><p>The distinction is legal as well as mechanical. Spoofing means placing orders with no intention to execute, and it is illegal manipulation on regulated venues. An iceberg is a standard order type that conceals displayed size. Crypto venues are more lightly regulated, so spoof-style behaviour is a constant background presence on centralised books, and any large resting order there deserves provisional status until the tape confirms it. This is the natural follow-on to the 15 November Absorption issue (Absorption builds on size holding against aggression; today asks whether that size was real to begin with).</p><div class='pills'><div class='pill-term'><b>Spoof</b><span>Large resting size placed to be cancelled before it fills.</span></div><div class='pill-term'><b>Iceberg</b><span>A parent order with a small visible slice that refills.</span></div><div class='pill-term'><b>Layering</b><span>Stacked orders on one side to fake directional pressure.</span></div><div class='pill-term'><b>Visible size</b><span>What the book displays, which is not the same as what will trade.</span></div></div><div class='remember'><b>Remember</b> If you only remember one thing: a level that refills when hit is real, and a level that vanishes as price approaches never was.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Refill ratio and pull rate</div>
+    </div>
+  </div>
+  <div class="skim">The book gives you one snapshot, so the signal comes from comparing how displayed size behaves against executed volume at the same price.</div>
+<p>The mechanism is a three-step test run on the same price level. First, measure how long a displayed order has sat and how its size changes as price approaches. Second, compare that displayed size with the volume actually executed at the level on the tape. Third, classify the level: absorbing aggression (real and possibly hidden) or evaporating before contact (fake).</p><div class='formula'><b>Refill ratio</b> = executed volume at price ÷ displayed size at price, over the same window<div class='note'>A ratio well above 1 with the level still standing points to hidden size. A ratio near zero with the displayed size pulled before contact points to an order that was never meant to fill.</div></div><div class='formula'><b>Pull rate</b> = size cancelled within 2 ticks of the level ÷ total size posted there<div class='note'>A high pull rate on large, round-number orders is the spoof signature. Round numbers are a heuristic, not proof, so weight the pull rate above the number itself.</div></div><table class='cmp'><tr><td>Feature</td><td>Spoof</td><td>Iceberg</td></tr><tr><td>Intent to fill</td><td>None</td><td>Full, executed slice by slice</td></tr><tr><td>Displayed size near price</td><td>Pulled before contact</td><td>Refilled at the same price</td></tr><tr><td>Tape signature</td><td>Little or no execution</td><td>Repeated fills of the same chunk size</td></tr><tr><td>Legal status on regulated venues</td><td>Illegal manipulation</td><td>Standard order type</td></tr></table><p>The practical problem is that the two look identical on the book for one snapshot. Only the sequence over time separates them. That is why a single screenshot of a wall tells you almost nothing, and why the refill test has to run across several minutes of prints.</p>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Pulled wall versus refilling slice</div>
+    </div>
+  </div>
+  <div class="skim">A pulled ask wall that never traded sits beside a bid level that refills after each slice is hit, showing how the two patterns diverge.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='800' height='420' fill='#faf8f5'/><line x1='400' y1='20' x2='400' y2='400' stroke='#e7e5e4' stroke-width='2'/><text x='30' y='38' font-size='16' fill='#1c1917'>A. Spoof: wall pulled on approach</text><text x='30' y='58' font-size='12' fill='#78716c'>Ask side, 50 BTC displayed, price rising toward it</text><rect x='60' y='90' width='240' height='40' fill='none' stroke='#ef4444' stroke-width='2' stroke-dasharray='6 4'/><text x='72' y='115' font-size='13' fill='#ef4444'>50 BTC ask (displayed)</text><text x='60' y='156' font-size='12' fill='#ef4444'>pulled within 2 ticks, 0 executed</text><polyline points='60,330 150,270 230,200 280,170' fill='none' stroke='#fbbf24' stroke-width='3'/><polygon points='288,166 276,162 280,176' fill='#fbbf24'/><text x='60' y='360' font-size='12' fill='#44403c'>Price path (illustrative)</text><text x='60' y='382' font-size='12' fill='#44403c'>The wall never met price. It was never real size.</text><text x='430' y='38' font-size='16' fill='#1c1917'>B. Iceberg: slice refills at the bid</text><text x='430' y='58' font-size='12' fill='#78716c'>Bid side, 2 BTC visible per slice, 50 BTC parent</text><line x1='550' y1='120' x2='550' y2='232' stroke='#ef4444' stroke-width='3'/><polygon points='544,230 556,230 550,242' fill='#ef4444'/><text x='562' y='180' font-size='12' fill='#ef4444'>market sells hit the slice</text><rect x='450' y='250' width='200' height='36' fill='#a3e635'/><text x='462' y='273' font-size='13' fill='#1c1917'>2 BTC shown, refill #1</text><rect x='450' y='296' width='200' height='36' fill='none' stroke='#22c55e' stroke-width='2' stroke-dasharray='6 4'/><text x='462' y='319' font-size='13' fill='#22c55e'>2 BTC shown, refill #2</text><text x='450' y='354' font-size='12' fill='#44403c'>Same price, same chunk size, after each fill</text><text x='450' y='374' font-size='12' fill='#44403c'>Depth never depletes as expected</text><text x='450' y='396' font-size='12' fill='#78716c'>Illustrative schematic, not a recorded book</text></svg><div class='svg-caption'><em>Left: a displayed wall that disappears before any fill, which is the spoof pattern. Right: a visible slice that keeps refilling at one price as aggressive sells arrive, which is the iceberg pattern.</em></div></div><p>Read the two panels as a test, not a verdict. On the left, the size never met price, so the level never existed as support or resistance. On the right, the level is doing work: each refill is absorbing aggression. Price behaviour at the level is what separates them, and the table below turns that into observations you can log while watching the tape.</p><table class='cmp'><tr><td>Observation</td><td>Spoof reading</td><td>Iceberg reading</td></tr><tr><td>Size at level, over time</td><td>Appears, then vanishes near price</td><td>Refills to the same chunk after each fill</td></tr><tr><td>Executed volume at level</td><td>Near zero before the cancel</td><td>Steady, repeated prints</td></tr><tr><td>Price response at level</td><td>Price moves through once the wall is gone</td><td>Price stalls while aggression is absorbed</td></tr><tr><td>Practical action</td><td>Ignore the wall, watch the pull</td><td>Respect the level, size risk to the visible slice</td></tr></table><p>Some guides use a rough rule of thumb: a large order that has sat for only a few minutes and disappears on approach is suspect. Treat that as a starting heuristic for attention, not a standard the venue enforces.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Three tests for a disputed level</div>
+    </div>
+  </div>
+  <div class="skim">A level earns trust only when price tests it and it holds, so treat every large resting order as provisional until the tape confirms it.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Test the wall before you trust it</h4><p>Note the size and the time it first appeared. A bid or offer that survives several minutes of trading and then fills is usually real, while one that appears and vanishes near price is a candidate spoof.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Count refills, not displayed size</h4><p>Watch one price for repeat prints of the same chunk. Refilling at a single level under aggressive selling is the iceberg signature, and it matters far more than the number printed on the screen.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Let price confirm the book</h4><p>A level counts only after price tests it and holds or breaks. The book is the hypothesis and the tape is the evidence, so do not react to walls that price has not reached yet.</p></div></div></div><div class='worked'><h5>Worked example (illustrative, not a trade call)</h5><table><tr><td>Setup</td><td>Long on a bid zone near 64,800 after refills confirmed under selling</td></tr><tr><td>Entry</td><td>64,800</td></tr><tr><td>Stop</td><td>64,380, below the refilled zone: 420 risk per BTC</td></tr><tr><td>Target</td><td>66,000: 1,200 reward per BTC</td></tr><tr><td>R math</td><td>1,200 ÷ 420 ≈ 2.9R</td></tr><tr><td>Invalidation</td><td>Refill pattern stops and the bid is pulled on a retest</td></tr></table></div><div class='tf-note'><b>Timeframe fit:</b> read the book on 1–5m for the refill and pull test, confirm the level on 15m–1h structure, and take bias from the 4H.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Weekend flush, Sunday reclaim, no confirmed event</div>
+    </div>
+  </div>
+  <div class="skim">Bitcoin's weekend flush toward 62,000 and reclaim above 65,000 on 15 November, with no order-level evidence of spoofing or icebergs confirmed.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT.P · 4H · 15–16 NOV 2026</div><h4>Weekend flush toward 62,000, reclaim above 65,000, no confirmed order-level event.</h4><p>A steep weekend selloff sent <strong>BTC toward 62,000</strong>, the lowest level since July, with <strong>ETF outflows and leveraged liquidations</strong> cited in coverage. Price then reclaimed <strong>65,000</strong>. I could not retrieve order-level depth or cancel data for that window, so no spoof or iceberg is confirmed on this tape. The question for this card is whether bids near 62–63k refilled under selling or simply disappeared.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>Level / event</td><td>Value (price, time)</td></tr><tr><td>Weekend selloff low (reported)</td><td>≈62,086, Sunday 15 Nov, exact minute not verified</td></tr><tr><td>Daily bar open (UTC)</td><td>64,119.78, 15 Nov</td></tr><tr><td>Daily bar high / low (UTC)</td><td>65,889.23 / 62,093.52, 15 Nov</td></tr><tr><td>Rebound level (reported)</td><td>≈64,695, Sunday 15 Nov</td></tr><tr><td>Snapshot (script fetch)</td><td>65,076, +2.05% 24h, −11.92% 7d, 15 Nov 23:26 UTC (16 Nov 10:26 Sydney)</td></tr><tr><td>Sentiment</td><td>Fear &amp; Greed 10 then 13, both Extreme Fear</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> The flush-and-reclaim shape is consistent with demand absorbing supply near the low, but only the refill pattern on the book could confirm it, and that order-level data was not available in this run.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Classic framing and a research voice</div>
+    </div>
+  </div>
+  <div class="skim">Livermore's tape-reading idea frames the question, and a research paper shows icebergs can match larger market orders than their visible size suggests.</div>
+<div class='quote'><p>“[paraphrased] The tape shows what size is doing, not what it says it intends to do.”</p><div class='attr'><b>Jesse Livermore</b> (as written by Edwin Lefèvre) · Reminiscences of a Stock Operator · 1923 · [standard reference]</div></div><div class='quote'><p>“A trader acting in this way is sometimes deemed to be constructing a synthetic iceberg order.”</p><div class='attr'><b>Gould et al.</b> · Limit Order Books · 2010 · <a href='https://arxiv.org/pdf/1012.0349'>arXiv 1012.0349</a></div></div><div class='quote'><p>Source unavailable: current-trader quote. No verifiable verbatim post was retrieved this run, and X threads were not searched per the brief.</p><div class='attr'><b>Current-trader voice</b> · not sourced this issue</div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where book-reading goes wrong</div>
+    </div>
+  </div>
+  <div class="skim">Calling every big wall a spoof, or every refill a whale, which turns a probability tool into a story.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Reading any large wall as real size</h5><p>Most displayed walls far from price are provisional. Wait for contact, then judge whether the level refills or gets pulled.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Calling every iceberg a whale</h5><p>Icebergs are a standard execution tool used by many participants. Repeated refills tell you someone is working size at a level, not who that someone is.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Trading the pull itself</h5><p>A vanishing wall is a reason to re-check the level, not a standalone entry. Price can still reverse without the wall, and the pull may simply be a routine cancel.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Ignoring cross-venue differences</h5><p>Thinner venues show more fake-looking behaviour. A level that appears on one book but not in aggregated depth is weak evidence and should be treated as such.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: whale-wall reading as a standalone edge</h5><p>Much online content presents spoof detection as a repeatable edge. The research literature notes that detecting spoofing in live markets is very hard and that scientific coverage of the topic is thin. Use book-reading as a filter for where to look, not as a signal you can trade on its own.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Papers, a primer, and a canonical reference</div>
+    </div>
+  </div>
+  <div class="skim">The Gould et al. limit order book paper, the 2025 spoofability paper, the CoW DAO iceberg primer, and the Investopedia spoofing entry.</div>
+<div class='fr'><div class='fr-item'><div class='fr-type'>Paper</div><div class='fr-body'><a href='https://arxiv.org/pdf/1012.0349'>Limit Order Books (Gould et al.)</a><span>The hidden and iceberg order section explains how synthetic icebergs match larger market orders than their visible size suggests.</span></div></div><div class='fr-item'><div class='fr-type'>Paper</div><div class='fr-body'><a href='https://arxiv.org/pdf/2504.15908'>Learning the Spoofability of Limit Order Books</a><span>Defines spoofing, layering and vacuuming, and explains why live detection is difficult.</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://cow.fi/learn/what-you-need-to-know-about-crypto-iceberg-orders-in-2026'>What you need to know about crypto iceberg orders in 2026</a><span>A practical primer on visible versus hidden size and why iceberg orders are used.</span></div></div><div class='fr-item'><div class='fr-type'>Reference</div><div class='fr-body'><a href='https://www.investopedia.com/terms/s/spoofing.asp'>Investopedia: Spoofing [standard reference, not live-fetched]</a><span>The canonical definition of spoofing and its legal status on regulated venues.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class='sources'><b>Sources</b><a href='https://arxiv.org/pdf/1012.0349'>Gould et al., Limit Order Books (arXiv 1012.0349)</a> <a href='https://arxiv.org/pdf/2504.15908'>Learning the Spoofability of Limit Order Books (arXiv 2504.15908)</a> <a href='https://cow.fi/learn/what-you-need-to-know-about-crypto-iceberg-orders-in-2026'>CoW DAO: crypto iceberg orders in 2026</a> <a href='https://www.investopedia.com/terms/s/spoofing.asp'>Investopedia: Spoofing [standard reference, not live-fetched]</a> <a href='https://cryptonews.net/news/bitcoin/33755811/'>CryptoNews: BTC on 15 Nov 2026</a> <a href='https://aktualita.co/en/money/bitcoin-price-today-november-15-2026-btc-rebounds-65000'>Aktualita: BTC rebound 15 Nov 2026</a> <a href='https://finance.yahoo.com/quote/BTC-USD/history/'>Yahoo Finance: BTC-USD history</a> CoinGecko live block (script fetch, 15 Nov 2026 23:26 UTC)</div>
+  <div>Alpha · Issue TBD · Monday, 16 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
