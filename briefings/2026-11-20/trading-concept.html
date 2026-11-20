@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Cumulative Volume Delta (CVD) | Friday, 20 November 2026</title>
+<meta property="og:description" content="CVD is the running tally of aggressive buying minus aggressive selling. Read it against price and it shows where the flow disagrees with the move.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"CVD: running tally of aggressive buying minus selling, and where it disagrees with price","preview":"Cumulative Volume Delta adds up market-order aggression bar by bar. Its real edge is divergence: when price makes a new extreme and the flow fails to confirm it.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Cumulative Volume Delta (CVD)</h1>
+  <div class="meta">
+    <span>Friday, 20 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 58</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Cumulative Volume Delta (CVD) is the running total of aggressive buying minus aggressive selling, built from trades that cross the spread, and it matters because it shows which side was paying up to move price. The practical takeaway: read the slope of CVD against the swing structure of price, not its absolute value. When price makes a new high or low that CVD fails to confirm, you have a warning that the move is running on passive flow or fading aggression. Treat that warning as context and wait for a level and a trigger before acting. On the current tape, BTC is down about 13% over seven days with Fear and Greed in the 10 to 12 range, so the question is whether sellers are still the aggressors or are running out of fuel.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The running tally of who was paying up</div>
+    </div>
+  </div>
+  <div class="skim">CVD is the running total of aggressive buy volume minus aggressive sell volume, plotted as a single line that shows which side has been crossing the spread.</div>
+<p>Cumulative Volume Delta is the running total of aggressive buying minus aggressive selling. Every market order that lifts the offer counts as buying, every market order that hits the bid counts as selling, and the net of each bar is added to a line that never resets inside the window you choose. The line is the position of the aggressors. Price tells you where the market ended up; CVD tells you which side had to cross the spread to get it there.</p><p>The reason it earns a place on the chart is that volume alone is blind to direction. Two hours can print identical total volume and opposite CVD: one where buyers lift offers all session, one where sellers keep hitting bids into a flat tape. CVD separates those cases because it only counts orders that took liquidity. Passive limit fills never move it, which is both its strength and its blind spot, and the reason it is strongest when read next to what price is doing.</p><p>For a trader who already reads the tape, CVD is not an oscillator to be traded in isolation. It is a test of whether the flow agrees with the move. This builds on Passive vs Aggressive Flow (19 Nov 2026 issue), because the aggressive-versus-passive split is the raw material CVD accumulates. If that split is unclear, go back to that issue first.</p><div class='pills'><div class='pill-term'><b>Delta</b><span>Aggressive buy volume minus aggressive sell volume for one bar or period.</span></div><div class='pill-term'><b>CVD</b><span>The running total of delta across the chosen window, usually anchored to a session or a fixed start.</span></div><div class='pill-term'><b>Aggressor</b><span>The side that crossed the spread with a market order and paid to fill.</span></div><div class='pill-term'><b>Divergence</b><span>Price making a new extreme while CVD fails to confirm it.</span></div><div class='pill-term'><b>Anchor</b><span>The start point you choose for the running sum; change it and the line changes shape.</span></div></div><div class='remember'><b>Remember</b> If you only remember one thing: CVD tells you who was paying up to move price, so read it as a test of the move rather than a signal in its own right.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From each bar's delta to one running line</div>
+    </div>
+  </div>
+  <div class="skim">Each bar's delta is added to the previous total, so the line only moves when a market order takes liquidity, and limit fills leave it untouched.</div>
+<p>The mechanic runs in three steps, and each one matters for how you read the output.</p><p><b>Step 1, classify each trade.</b> Exchanges stream every execution with a price, a size and an aggressor side. A trade that prints at the ask was initiated by a buyer lifting offers. A trade that prints at the bid was initiated by a seller hitting bids. Limit orders resting on the book are not classified until they are hit.</p><p><b>Step 2, net each bar.</b> For each candle or time slice, total the buy-initiated volume and subtract the sell-initiated volume. A positive bar means buyers dominated the window; a negative bar means sellers did. A single bar is noisy, which is why the next step exists.</p><p><b>Step 3, accumulate.</b> Add each bar's delta to the previous CVD value. The line rises while buyers keep dominating and falls while sellers do. Its slope is the information. Its absolute level depends entirely on where you started the sum, so two traders with different anchors will see different numbers and the same shape.</p><div class='formula'><b>Delta</b><sub>n</sub> = Buy-initiated volume<sub>n</sub> − Sell-initiated volume<sub>n</sub><br><b>CVD</b><sub>n</sub> = CVD<sub>n−1</sub> + Delta<sub>n</sub><div class='note'>Anchor CVD<sub>0</sub> at a session open or a fixed start. Read the slope and divergence against price, never the raw number.</div></div><p>Because only aggressive orders count, a rising price on falling CVD means the advance is being filled by passive liquidity rather than by people paying the spread. That is the mechanical basis of divergence, and it is also why CVD cannot tell you about the passive side directly; you infer it from price not responding.</p><table class='cmp'><tr><td><b>Variant</b></td><td><b>What it sums</b></td><td><b>Use it for</b></td></tr><tr><td>Bar delta</td><td>One bar's buy minus sell volume</td><td>Spotting a single aggressive burst or a one-candle absorption attempt</td></tr><tr><td>Session CVD</td><td>Running sum from the session open</td><td>Intraday trend confirmation and divergence on the 15m to 4H range</td></tr><tr><td>Rolling CVD</td><td>Running sum over a fixed lookback</td><td>Avoiding a stale anchor on multi-day swings</td></tr><tr><td>Venue CVD</td><td>Same sum on one exchange only</td><td>Checking whether a squeeze is local to one venue or broad</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">PRICE HIGHER HIGH, CVD LOWER HIGH</div>
+    </div>
+  </div>
+  <div class="skim">Price makes a higher high while the CVD line makes a lower high, shaded as the divergence zone where aggression is fading under a rising price.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='800' height='420' fill='#faf8f5'/><text x='40' y='24' font-family='JetBrains Mono, monospace' font-size='13' fill='#44403c'>PRICE (illustrative)</text><rect x='40' y='32' width='720' height='168' fill='none' stroke='#e7e5e4'/><rect x='600' y='32' width='140' height='168' fill='#fbbf24' opacity='0.22'/><polyline points='60,170 120,150 180,160 240,120 300,135 360,95 420,115 480,80 540,100 600,60 660,75 720,40' fill='none' stroke='#1c1917' stroke-width='2.5'/><circle cx='600' cy='60' r='4' fill='#1c1917'/><circle cx='720' cy='40' r='5' fill='#ef4444'/><text x='640' y='30' font-family='Inter, sans-serif' font-size='12' fill='#1c1917'>higher high</text><text x='40' y='228' font-family='JetBrains Mono, monospace' font-size='13' fill='#44403c'>CVD (running sum, illustrative)</text><rect x='40' y='236' width='720' height='160' fill='none' stroke='#e7e5e4'/><rect x='600' y='236' width='140' height='160' fill='#fbbf24' opacity='0.22'/><line x1='40' y1='316' x2='760' y2='316' stroke='#78716c' stroke-dasharray='4,4'/><text x='44' y='312' font-family='JetBrains Mono, monospace' font-size='11' fill='#78716c'>zero line</text><polyline points='60,350 120,334 180,344 240,300 300,310 360,280 420,296 480,262 540,280 600,250 660,266 720,262' fill='none' stroke='#22c55e' stroke-width='2.5'/><circle cx='600' cy='250' r='4' fill='#22c55e'/><circle cx='720' cy='262' r='5' fill='#ef4444'/><text x='612' y='246' font-family='Inter, sans-serif' font-size='12' fill='#1c1917'>prior high</text><text x='640' y='288' font-family='Inter, sans-serif' font-size='12' fill='#1c1917'>lower high</text><text x='600' y='412' font-family='Inter, sans-serif' font-size='12' fill='#78350f'>divergence zone</text><text x='380' y='412' font-family='Inter, sans-serif' font-size='12' fill='#44403c'>price up, aggressive buying fading</text></svg><div class='svg-caption'><em>Illustrative schematic, not a live chart. Price makes a higher high at the right edge while the CVD line makes a lower high under it. The shaded zone is the divergence: the advance is being filled by passive liquidity, so it is a warning that needs a level and a trigger.</em></div></div><p>The schematic is the whole idea in one frame. Read the two panels together. Matching highs on both lines confirm the move, because aggressive buyers are still paying for every step. The moment the price line steps up and the CVD line steps down, you are looking at a move that has stopped being paid for by the people who used to pay for it.</p><table class='cmp'><tr><td><b>Price</b></td><td><b>CVD</b></td><td><b>Read</b></td></tr><tr><td>Higher high</td><td>Higher high</td><td>Confirmed. Aggressive buyers are funding the move.</td></tr><tr><td>Higher high</td><td>Lower high</td><td>Bearish divergence. The rally is running on fading aggression.</td></tr><tr><td>Lower low</td><td>Higher low</td><td>Bullish divergence. Selling pressure is losing force.</td></tr><tr><td>Flat</td><td>Falling steadily</td><td>Sellers hitting bids while price holds. Check the passive side for absorption.</td></tr></table>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">THREE WAYS TO USE THE LINE</div>
+    </div>
+  </div>
+  <div class="skim">Divergence is a warning, not a trigger: only act on CVD disagreement when it sits at a level you already had marked and price shows a reaction.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Trust the disagreement, not the direction</h4><p>CVD rarely tells you where price goes next. Its value is in the moments when price and the flow stop agreeing at a level that already matters to you. Start with the level, then ask whether the flow confirms it when price gets there.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Anchor the line on purpose</h4><p>A session-anchored CVD resets when the day changes, which can hide a multi-day distribution. Use a fixed lookback for swings and a session anchor for intraday work, and never compare two charts with different anchors as if they were the same line.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Cross-check the venue before you trust the slope</h4><p>A CVD divergence on one exchange can be a local dislocation rather than a market-wide shift. Before acting, check whether the same shape appears on at least one other large venue, and note any gap in the window.</p></div></div></div><div class='worked'><h5>Worked example (illustrative, not a signal)</h5><table><tr><td>Level</td><td>Entry at 62,000 on a rejection with bearish divergence confirmed on the 4H</td></tr><tr><td>Stop</td><td>61,200, above the swing high that the divergence is built on</td></tr><tr><td>Risk per unit</td><td>800</td></tr><tr><td>Target</td><td>63,600, the prior range high</td></tr><tr><td>Reward per unit</td><td>1,600, which is 2R</td></tr></table></div><div class='tf-note'><b>Timeframe fit:</b> Use the 15m to 1H for the execution read on CVD and divergence, and the 4H for bias. A divergence on the 1-minute is usually noise unless it sits on a level you already marked.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC SEVEN-DAY SLIDE INTO EXTREME FEAR</div>
+    </div>
+  </div>
+  <div class="skim">BTC sits near 62,300 after a 13% weekly fall into extreme fear, the kind of tape where CVD shows whether sellers are still hitting bids or have stopped.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT.P · 4H · 20 NOV 2026 (Sydney)</div><h4>BTC sits near 62,300 after a seven-day slide of about 13%, with the fear gauge in extreme territory.</h4><p>At the 01:12 UTC snapshot, which is 12:12 Sydney time on Friday 20 November, <strong>BTC traded at 62,303</strong> with a 24-hour move of <strong>-1.24%</strong> and a seven-day move of <strong>-13.12%</strong>. ETH sat at <strong>1,762.14</strong> with a similar weekly drawdown. The move follows a risk-off session in US equities on 19 November, when the S&amp;P 500 proxy in the ticker fell <strong>5.39%</strong> and the VIX jumped <strong>44.8%</strong> to 27.95. I did not pull a CVD series for this window, so every flow reading below is <strong>[Unconfirmed]</strong> until you check it on your own chart.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>BTC price (20 Nov, 01:12 UTC)</td><td>62,303, 24h -1.24%, 7d -13.12%</td></tr><tr><td>ETH price (20 Nov, 01:12 UTC)</td><td>1,762.14, 24h -1.24%, 7d -13.09%</td></tr><tr><td>Total crypto market cap</td><td>24h -4.12%, BTC dominance 57.97%</td></tr><tr><td>Fear and Greed (latest two prints)</td><td>12 and 10, both Extreme Fear</td></tr><tr><td>Risk backdrop (19 Nov, US session)</td><td>S&amp;P 500 proxy -5.39%, gold -4.82%, VIX 27.95 (+44.8%), DXY 103.89</td></tr><tr><td>CVD read on BTC 4H</td><td>[Unconfirmed], check whether CVD made a lower low with price at 62,000 or held</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> A 13% weekly drop into extreme fear is the setup where CVD shows whether the aggressive sellers are still in control or whether the selling has started to leave the book unanswered.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">THE CLASSIC VOICE AND THE PLATFORM VOICE</div>
+    </div>
+  </div>
+  <div class="skim">Jesse Livermore's point that the market is never wrong frames CVD well, and Coinglass's plain line on what CVD reveals is the working definition.</div>
+<div class='quote'><p>“The market is never wrong, but opinions frequently are.”</p><div class='attr'><b>Jesse Livermore</b> · Reminiscences of a Stock Operator (Edwin Lefèvre), 1923 · wording varies by edition · <a href='https://wyandanchlibrary.com/read/livermore-reminiscences'>source page</a></div></div><div class='quote'><p>“Price shows the result, CVD shows who did the pushing.”</p><div class='attr'><b>Coinglass</b> · BTC CVD indicator page (platform voice, not a trader) · current · <a href='https://www.coinglass.com/cvd/BTC'>coinglass.com/cvd/BTC</a></div></div><p>[Unconfirmed] No verified current-trader quote was retrieved in this run, so the second voice is the platform's own explainer. Livermore's line is the classic frame: the tape is the evidence, and your reading of it is the thing that can be wrong.</p>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">THE LINE SEES ONLY THE IMPATIENT SIDE</div>
+    </div>
+  </div>
+  <div class="skim">Treating CVD as a standalone buy or sell signal, or reading the absolute number instead of the slope and the divergence against price.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Treating divergence as a trade</h5><p>A CVD divergence is a warning that the move is losing its funding, not an entry. Wait for a level, a rejection and a trigger, and let the flow be the confirmation rather than the reason.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Reading the absolute number</h5><p>The CVD value depends on the anchor you chose, so the raw level means nothing across charts. Read the slope and whether the line made a higher or lower high against price.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Forgetting the impatient side only</h5><p>CVD sees the aggressors and nothing else. A flat price on falling CVD can mean sellers are being absorbed, or it can mean the passive side has simply not been tested yet. Check the book and the reaction before deciding which.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Trusting one venue</h5><p>Exchange CVD can diverge from the others for a full session before price catches up. Cross-check at least one other large venue before you call a divergence market-wide.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: the divergence-only system</h5><p>Vendor content often sells CVD divergence as a standalone edge. The honest read is that it is a useful context tool with no published, independent evidence of a standalone edge in the material I reviewed. If a course promises a win rate from divergence alone, treat that as marketing.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">WHERE TO GO DEEPER</div>
+    </div>
+  </div>
+  <div class="skim">The ATAS and Bookmap guides cover the mechanics, and Lefèvre's 1923 book is the classic reference for reading the tape itself.</div>
+<div class='fr'><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://atas.net/blog/cvd-pro/'>ATAS · Cumulative Volume Delta complete guide</a><span>Covers the formula, the divergence patterns and a BTC example. Search-retrieved, not live-fetched this run.</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://mmt.gg/learn/cvd-cumulative-volume-delta/'>MMT Learn · What is CVD</a><span>Short primer on how aggressive buying and selling accumulate and how to read the line. Search-retrieved, not live-fetched this run.</span></div></div><div class='fr-item'><div class='fr-type'>Article</div><div class='fr-body'><a href='https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy'>Bookmap · Cumulative Volume Delta trading strategy</a><span>Explains CVD as a net order flow measure and how it sits next to volume profile. Search-retrieved, not live-fetched this run.</span></div></div><div class='fr-item'><div class='fr-type'>Book</div><div class='fr-body'><a href='https://wyandanchlibrary.com/read/livermore-reminiscences'>Lefèvre · Reminiscences of a Stock Operator (1923)</a><span>The classic source for reading the tape and for the market-is-never-wrong principle. Standard reference.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class='sources'><b>Sources</b><a href='https://atas.net/blog/cvd-pro/'>ATAS · CVD complete guide</a> <a href='https://mmt.gg/learn/cvd-cumulative-volume-delta/'>MMT Learn · What is CVD</a> <a href='https://www.coinglass.com/cvd/BTC'>Coinglass · BTC CVD indicator</a> <a href='https://bookmap.com/blog/how-cumulative-volume-delta-transform-your-trading-strategy'>Bookmap · CVD trading strategy</a> <a href='https://wyandanchlibrary.com/read/livermore-reminiscences'>Reminiscences of a Stock Operator (summary page)</a></div>
+  <div>Alpha · Issue 58 · Friday, 20 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
