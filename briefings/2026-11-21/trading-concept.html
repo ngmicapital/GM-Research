@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Liquidity Voids | Saturday, 21 November 2026</title>
+<meta property="og:description" content="Liquidity voids: price skips levels where the book holds almost no resting size. Why BTC's slide through $60K ran thin, and how to test a revisit.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Liquidity Voids: when the book is empty, price skips levels and comes back","preview":"A liquidity void is a price zone with almost no resting size, so orders jump through it. Why BTC's slide below $60K ran through thin levels, and how to test a revisit.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Liquidity Voids</h1>
+  <div class="meta">
+    <span>Saturday, 21 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 62</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text"><strong>A liquidity void is a stretch of price where the order book holds almost no resting size, so an aggressive order skips levels instead of trading through them.</strong> It matters because the zone it leaves behind is often revisited, and whether it fills, slices through or rejects tells you who is still in control. Builds on Orderbook Depth and Spread (Issue of 18 Nov 2026): that issue covered how a tight quote can sit on a thin book, and this one covers what happens when an order crosses it. Practical takeaway: when BTC broke $62K and then $60K on 20 November, read where the bids were thin before you read direction, and treat any return into the thin band as a test you have to prove with depth, not a shape you can trade on its own.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">An absence of size, not a candle shape</div>
+    </div>
+  </div>
+  <div class="skim">A liquidity void is a price range the book left almost empty, so aggressive orders skip it rather than trade through it.</div>
+<p>A liquidity void is a stretch of price that the order book left almost empty. When an aggressive order arrives, it does not trade through a ladder of bids and offers at every level, because the levels in the gap carry too little size to slow it. The price jumps. My position is that most chart talk about voids confuses the shape left on the chart with the thing that caused it. The shape is often a fair value gap. The cause, when it is real, is thin depth at the moment of the move.</p><p>Mechanically a void is an absence, not a pattern. It usually appears as a displacement candle with little overlap against its neighbours, but the candle alone cannot prove the book was empty. You need the depth ladder or the trade-by-trade tape to show that the prices in between had almost no resting size. Without that check you are only looking at a fast move, and a fast move with heavy volume is a different thing that the market has already accepted.</p><p>Why it matters to a Wyckoff reader: a void is evidence that one side stopped competing at those prices. Business that was never done in that range tends to remain unfinished, so price often comes back to the zone. Whether it fills, slices straight through, or rejects is the information, and that answer depends on what the tape does when price returns, not on the candle that created the gap.</p><p><em>Builds on Orderbook Depth and Spread (Issue of 18 Nov 2026): that issue covered why a tight quote can sit on a thin book. This issue is what the thin book does once an order crosses it.</em></p><div class='pills'><div class='pill-term'><b>Void</b><span>A price range traded with very little resting size, so the market skipped it.</span></div><div class='pill-term'><b>Displacement</b><span>A fast, one-directional move that leaves a range behind with little overlap.</span></div><div class='pill-term'><b>Thin book</b><span>Low resting depth at the levels price crosses on the way.</span></div><div class='pill-term'><b>Fair value gap</b><span>A three-candle chart pattern that can form on normal volume.</span></div></div><div class='remember'><b>Remember</b> If you only remember one thing: a void is an absence of size, so prove the absence in the book or the tape before you treat a candle as a void.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How a market order walks an empty ladder</div>
+    </div>
+  </div>
+  <div class="skim">A market order larger than the resting size at each level walks the ladder and leaves the skipped levels untraded.</div>
+<p>The mechanic runs in four steps. First, a market order larger than the resting size at the best price takes out that level. Second, the next level holds less size than what remains of the order, so it is taken too. Third, if the levels beyond are also thin, price keeps moving until it reaches resting size big enough to absorb the rest. Fourth, the range that was crossed is left with little or no trade on it, and that unfinished range is the void.</p><div class='formula'><b>Void span</b> = P_end minus P_start, where the cumulative resting size between P_start and P_end is below the aggressive order size<div class='note'>Read this from the depth ladder, not from the candle. A two-tick span on a deep book means nothing. The same span on a thin book is a void.</div></div><p>Thin depth has two sources, and they look the same until the first order lands. One is the session itself, where overnight or news-thin trading leaves the ladder sparse. The other is market makers pulling quotes ahead of an event, which makes a normal-looking book suddenly empty. In both cases the chart shows a fast move and the book shows nothing special until it is hit.</p><table class='cmp'><tr><td>Trait</td><td>Liquidity void</td></tr><tr><td>Cause</td><td>Thin resting size at the levels that were crossed</td></tr><tr><td>Evidence</td><td>Depth ladder or trade-by-trade tape, not the candle alone</td></tr><tr><td>Chart look</td><td>Displacement candle with little overlap against its neighbours</td></tr><tr><td>Typical follow-through</td><td>Return into the zone, then fill, slice through, or reject</td></tr></table><p>The useful question is not whether a gap exists but whether the market could have traded there at all. If you cannot answer that from depth, you have a fast move with an unknown cause, and you should size it as one.</p>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Bid ladder with a thin band</div>
+    </div>
+  </div>
+  <div class="skim">The diagram shows a bid ladder with a thin band between 61,500 and 60,500 that a market sell passes straight through.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='800' height='420' fill='#faf8f5'/><text x='20' y='24' font-size='14' fill='#1c1917'>Bid and ask ladder (schematic)</text><rect x='60' y='165' width='680' height='50' fill='#fbbf24' fill-opacity='0.18' stroke='#fbbf24' stroke-dasharray='4 3'/><text x='250' y='192' font-size='12' fill='#78350f'>VOID: no resting bids between 61.5K and 60.5K</text><line x1='400' y1='30' x2='400' y2='370' stroke='#e7e5e4' stroke-width='1'/><text x='24' y='44' font-size='12' fill='#78716c'>64,000</text><text x='24' y='94' font-size='12' fill='#78716c'>63,000</text><text x='24' y='144' font-size='12' fill='#78716c'>62,000</text><text x='24' y='194' font-size='12' fill='#78716c'>61,000</text><text x='24' y='244' font-size='12' fill='#78716c'>60,000</text><text x='24' y='294' font-size='12' fill='#78716c'>59,000</text><text x='24' y='344' font-size='12' fill='#78716c'>58,000</text><rect x='400' y='34' width='30' height='12' fill='#ef4444' fill-opacity='0.8'/><rect x='400' y='59' width='140' height='12' fill='#ef4444' fill-opacity='0.8'/><rect x='400' y='84' width='90' height='12' fill='#ef4444' fill-opacity='0.8'/><rect x='400' y='109' width='50' height='12' fill='#ef4444' fill-opacity='0.8'/><rect x='340' y='134' width='60' height='12' fill='#22c55e' fill-opacity='0.85'/><rect x='310' y='234' width='90' height='12' fill='#22c55e' fill-opacity='0.85'/><rect x='280' y='284' width='120' height='12' fill='#22c55e' fill-opacity='0.85'/><rect x='230' y='334' width='170' height='12' fill='#22c55e' fill-opacity='0.85'/><line x1='610' y1='50' x2='330' y2='268' stroke='#a3e635' stroke-width='3'/><polygon points='330,268 322,252 342,256' fill='#a3e635'/><text x='520' y='70' font-size='12' fill='#1c1917'>Market sell, 40 BTC</text><text x='420' y='160' font-size='11' fill='#44403c'>asks above price</text><text x='230' y='368' font-size='11' fill='#22c55e'>resting bids (green)</text><text x='560' y='368' font-size='11' fill='#ef4444'>resting asks (red)</text></svg><div class='svg-caption'><em>Schematic, not measured book data, and bar widths are not to scale. Resting bids thin out between 61,500 and 60,500, so a market sell walks past the gap and the amber band is the untraded zone that price often revisits.</em></div></div><table><tr><td>Level (illustrative)</td><td>Resting bid size</td><td>Read</td></tr><tr><td>62,000</td><td>0.9 BTC</td><td>Thin shelf, first touch</td></tr><tr><td>61,500 to 60,500</td><td>none shown</td><td>Void: a market order skips this band</td></tr><tr><td>60,000</td><td>2.4 BTC</td><td>First real wall</td></tr><tr><td>59,000</td><td>3.1 BTC</td><td>Next shelf of bids</td></tr><tr><td>58,000</td><td>4.2 BTC</td><td>Deep bid zone near the cycle low</td></tr></table><p>Read the diagram from the top. Price first meets a thin shelf, then a band with no bids, then a wall at 60,000. A sell that lands in the band does not stop until it meets size, so the move looks like a drop through air. When the wall is consumed, the next shelf decides how far the move runs.</p><p>The chart is a teaching device. The sizes are illustrative and no depth feed was verified for this issue, so the band is a hypothesis to test in your own tool, not a level I am asserting exists.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Four checks before you call a void</div>
+    </div>
+  </div>
+  <div class="skim">Prove the absence in the depth or the tape before you call a candle a void, and treat any revisit as a test.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Prove the absence first</h4><p>Pull the depth at the levels the candle crossed, not the chart alone. If the book shows normal size there, the move was a fast one and not a void.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Check for pulled quotes</h4><p>Ask whether the thin book is a session effect or a quote pull ahead of news. A pull can look like a void for a few seconds, so re-check the ladder after the first prints.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Expect a return, not a guarantee</h4><p>Voids attract price, but they can also be slid through on the next pass. Wait for the reaction on return before you commit size to the zone.</p></div></div><div class='practice-card'><div class='num'>4</div><div><h4>Size to the stop, not the story</h4><p>Place the stop beyond the far edge of the void, since a failed return is the cleanest signal. Keep the risk small enough that a wrong call on the return costs a fraction of the expected move.</p></div></div></div><div class='worked'><h5>Illustrative return-to-void short (not a recommendation)</h5><table><tr><td>Setup</td><td>Failed return up into the 61.5K to 60.5K band after the break</td></tr><tr><td>Entry (short, at the band midpoint)</td><td>61,000</td></tr><tr><td>Stop (above the far edge of the void)</td><td>61,600</td></tr><tr><td>Target (last tape low zone)</td><td>58,700</td></tr><tr><td>Risk and reward</td><td>600 risked, 2,300 targeted, roughly 3.8R</td></tr></table><p>The trade only exists if the return fails on thin volume. If it prints a full bar through the band on heavy size, the setup is void and you are out at the stop.</p></div><div class='tf-note'><b>Timeframe fit:</b> 15m to 1h to read the void and the return, with 4h for bias. The void is an intraday construct, so do not carry it on a daily chart without the lower timeframe confirming it.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC through 62K and 60K, 20 to 21 Nov</div>
+    </div>
+  </div>
+  <div class="skim">BTC broke $62K and $60K on 20 November, with reported intraday lows near $58,000 to $58,900 and heavy long liquidations.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT.P · 4H · 20 to 21 Nov 2026</div><h4>BTC broke $62K, then $60K, on thin trade and heavy long liquidations</h4><p>On Friday 20 November, US hours, the $62,000 to $64,000 range that had held before gave way. Outlets reported intraday lows between roughly $58,000 and $58,900 [Sources differ]. CoinGecko showed $58,395 at 20:15 UTC, which is 07:15 Sydney on 21 November, down 6.07% on the day. Liquidation totals varied by source, with one tally near $1.5 billion over 24 hours and about $1.41 billion on longs, and a second snapshot far lower [Sources differ]. No depth or L2 feed was verified for this issue, so the void is not confirmed on the book.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>Level or event</td><td>Value (price and time)</td></tr><tr><td>Prior range, now broken</td><td>$62,000 to $64,000 (Fri, US session)</td></tr><tr><td>Early November reference high</td><td>Above $81,000 at the start of the month</td></tr><tr><td>Intraday low reported</td><td>About $58,000 to $58,900 (Fri, 20 Nov)</td></tr><tr><td>CoinGecko snapshot</td><td>$58,395, down 6.07% on 24h, 07:15 Sydney 21 Nov</td></tr><tr><td>Live snapshot</td><td>$58,978, down 4.97% on 24h, down 13.8% on 7d, 11:47 Sydney 21 Nov</td></tr><tr><td>2026 cycle low reference</td><td>$57,700 to $57,803</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> The speed through $62K and $60K with long-heavy liquidations points to positioning that was crowded long into the range, which makes the 61.5K to 60.5K band worth checking for thin depth on any return.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">A classic voice and a current market view</div>
+    </div>
+  </div>
+  <div class="skim">The voices are Wyckoff on supply and demand as the tape records it, and Alexander Blume of Two Prime on liquidation exhaustion.</div>
+<div class='quote'><p>“Supply and demand may be studied on the tape of the stock ticker”</p><div class='attr'><b>Richard D. Wyckoff</b> · The Richard D. Wyckoff Method of Trading and Investing in Stocks (Method of Tape Reading) · 1931 · <a href='https://ia801901.us.archive.org/28/items/WyckoffMethodOfTapeReading/Wyckoff%20-%20Method%20of%20Tape%20Reading.pdf'>archive PDF</a></div></div><div class='quote'><p>“Every significant change in supply or demand is registered on the tape”</p><div class='attr'><b>Richard D. Wyckoff</b> · same course text, Section 5M · 1931 · <a href='https://ia801901.us.archive.org/28/items/WyckoffMethodOfTapeReading/Wyckoff%20-%20Method%20of%20Tape%20Reading.pdf'>archive PDF</a></div></div><div class='quote'><p>[paraphrased] Alexander Blume of Two Prime reads forced selling and leveraged liquidations as close to spent after this drop, and he sees a near-term floor as plausible.</p><div class='attr'><b>Alexander Blume</b> · Two Prime, reported by Startup Fortune · 2026 · <a href='https://startupfortune.com/bitcoin-falls-below-60000-as-the-nasdaqs-ai-selloff-drags-crypto-down/'>article</a></div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Shape mistaken for evidence</div>
+    </div>
+  </div>
+  <div class="skim">The biggest mistake is calling a fair value gap or a fast candle a void with no depth evidence behind the label.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Calling every gap a void</h5><p>A fair value gap formed on heavy volume is an accepted price move, not an empty book. Only thin participation turns the skipped range into a void, so check volume and depth before you attach the label.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Trusting a candle without the ladder</h5><p>One displacement candle cannot prove the book was empty. Pull the depth or the trade-by-trade tape at those prices, because a candle that looks thin can sit on a deep book.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Mistaking a pulled quote for a void</h5><p>Quote pulls before news make a normal ladder look empty for a few seconds. Re-check the book after the first prints, since a void that disappears in seconds was never a stable zone to trade.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Fading the first touch</h5><p>Voids are often slid through on the next pass, so a first touch into the zone is not confirmation. Wait for the reaction and let the failed return, not the arrival, set the trigger.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: the chart-only void</h5><p>Most retail void indicators flag a candle shape and draw a box around it. Without depth data the box is a shape, not a measurement. Use the tool as a prompt to go and look at the book, and never as a signal in its own right.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Two verified links and two canonical references</div>
+    </div>
+  </div>
+  <div class="skim">Start with the Wyckoff archive text and the TradingView explainer, then check the depth in your own tool before you act.</div>
+<div class='fr'><div class='fr-item'><div class='fr-type'>Book</div><div class='fr-body'><a href='https://ia801901.us.archive.org/28/items/WyckoffMethodOfTapeReading/Wyckoff%20-%20Method%20of%20Tape%20Reading.pdf'>The Richard D. Wyckoff Method of Trading and Investing in Stocks (archive PDF)</a><span>Original course text on supply, demand and the tape. Read the tape sections for the absence-of-supply logic behind voids.</span></div></div><div class='fr-item'><div class='fr-type'>Article</div><div class='fr-body'><a href='https://www.tradingview.com/chart/NAS100USD/tiM67JEP-Liquidity-Voids-Where-Price-Runs-Through-Empty-Space/'>Liquidity Voids: Where Price Runs Through Empty Space (TradingView)</a><span>A chart-based explainer with a clear definition. Judge its claims against depth data, which the piece does not show.</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://grizzlyparrottrading.com/market-basics/liquidity-voids-explained.html'>Liquidity Voids Explained (Grizzly Parrott Trading)</a><span>Futures-focused explainer on how voids form from news shocks, stop cascades and market maker pullbacks.</span></div></div><div class='fr-item'><div class='fr-type'>Reference</div><div class='fr-body'><a href='https://www.investopedia.com/terms/o/order-book.asp'>Order Book (Investopedia)</a><span>The ladder of bids and offers that a market order has to walk. Read the mechanics here before the void theory.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class='sources'><b>Sources</b><a href='https://ia801901.us.archive.org/28/items/WyckoffMethodOfTapeReading/Wyckoff%20-%20Method%20of%20Tape%20Reading.pdf'>Wyckoff, Method of Tape Reading (archive PDF)</a> <a href='https://www.tradingview.com/chart/NAS100USD/tiM67JEP-Liquidity-Voids-Where-Price-Runs-Through-Empty-Space/'>TradingView, Liquidity Voids</a> <a href='https://www.tokenpost.com/news/investing/62201'>TokenPost, 20 Nov</a> <a href='https://startupfortune.com/bitcoin-falls-below-60000-as-the-nasdaqs-ai-selloff-drags-crypto-down/'>Startup Fortune, 20 Nov</a> <a href='https://coinstats.app/ai/a/latest-news-for-bitcoin'>CoinStats, cycle lows</a> <a href='https://www.coingecko.com/en/coins/bitcoin'>CoinGecko, BTC</a></div>
+  <div>Alpha · Issue 62 · Saturday, 21 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
