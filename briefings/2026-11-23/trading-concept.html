@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Spoofing &amp; Iceberg Orders | Monday, 23 November 2026</title>
+<meta property="og:description" content="Spoofing fakes depth to move price; icebergs hide real size behind small clips. Why the displayed book is not the book that fills you.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Spoofing & Iceberg Orders: the book you see is not the book that fills you","preview":"Spoofing shows size it never intends to fill; icebergs hide size behind small clips. Judge a level by what trades there, not by how big it looks.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Spoofing &amp; Iceberg Orders</h1>
+  <div class="meta">
+    <span>Monday, 23 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue TBC</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Spoofing is displayed size placed to move other traders and pulled before it fills; an iceberg is real size hidden behind a small visible clip. Both mean the order book on your screen is not a reliable map of committed liquidity. <strong>Practical takeaway:</strong> judge a level by what actually trades there and how it behaves on repeat tests, not by how large it looks on the DOM. With BTC near 61,100 and the Fear and Greed index at 11, displayed walls deserve the least trust when fear is this high.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Fake size and hidden size</div>
+    </div>
+  </div>
+  <div class="skim">Spoofing is fake displayed size you never mean to fill; an iceberg is real size with most of it hidden.</div>
+<p>Spoofing is the practice of showing displayed size you never intend to fill. A trader stacks large bids or offers away from the touch so the book looks like real demand or supply, then cancels before the order executes. The aim is to move other participants’ prices and queue decisions, and then trade the opposite side. US law names this directly: the Commodity Exchange Act, as amended in 2010, targets bidding or offering with the intent to cancel before execution.</p><p>An iceberg is the mirror image. It is real intent with most of the size hidden. A large limit order exposes only a small clip, and the reserve behind it refills the visible portion as it trades. Because reserve is not shown on the public depth view, the displayed book understates the liquidity sitting at that price.</p><p>Both concepts break one assumption: that displayed depth equals committed liquidity. Spoofing overstates it on purpose, and icebergs understate it on purpose. A trader who reads the DOM at face value is reading a picture someone chose to draw.</p><div class="pills"><div class="pill-term"><b>Layering</b><span>Stacking several visible orders at different prices to build a fake wall.</span></div><div class="pill-term"><b>Iceberg clip</b><span>The small visible slice of a larger limit order.</span></div><div class="pill-term"><b>Reserve</b><span>The hidden remainder that refills the clip as it fills.</span></div><div class="pill-term"><b>Touch</b><span>The best bid and best offer, where real fills start.</span></div></div><div class="remember"><b>Remember</b> If you only remember one thing: judge a level by what trades there, not by how big it looks on the DOM.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How layers get placed and pulled</div>
+    </div>
+  </div>
+  <div class="skim">A spoofer layers visible size to push other participants, trades the other side, then cancels; an iceberg refills a small visible clip from reserve.</div>
+<p>The spoof sequence has four steps. First, the trader places several large orders at prices away from the touch, building a visible wall on one side. Second, algorithms and discretionary traders read that wall as supply or demand and adjust their quotes. Third, the trader fills on the opposite side, where the book has been pushed in their favour. Fourth, the layers are cancelled before they can execute. The cancellation pattern is what separates manipulation from a legitimate order that was simply pulled, which is why regulators focus on intent to cancel rather than on the cancel itself.</p><p>The iceberg sequence is simpler. The trader sets a total size and a display size. Each time the visible clip fills, the exchange or the broker’s software exposes the next clip from reserve, so the price keeps printing at one level while the displayed size stays roughly constant.</p><div class="formula"><b>Spoof tell</b> = large size added away from touch, then cancelled, with opposite-side fills in the same window. <div class="note">A proxy only. Exchanges with order-level data can see who cancelled; most crypto traders see aggregated depth, so this read is weaker.</div></div><div class="formula"><b>Iceberg tell</b> = repeated prints at one price while displayed size stays near the clip. <div class="note">Hidden reserve is inferred from behaviour, not observed directly.</div></div><table class="cmp"><tr><th>Feature</th><th>Spoofing</th><th>Iceberg</th></tr><tr><td>Intent</td><td>Cancel before fill</td><td>Fill the full hidden size</td></tr><tr><td>Visible size</td><td>Fake, meant to be pulled</td><td>Real, shown only in part</td></tr><tr><td>Legal status</td><td>Prohibited in US futures under the 2010 amendment</td><td>Standard order type on many venues</td></tr><tr><td>Tell at the tape</td><td>Size vanishes as price approaches</td><td>Repeated fills at one level with small visible size</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">Ghost bids versus a hidden reserve</div>
+    </div>
+  </div>
+  <div class="skim">The diagram contrasts a ghost bid stack that disappears as price approaches with an iceberg clip that keeps printing at one level.</div>
+<div class="svg-wrap"><svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="370" height="380" fill="#ffffff" stroke="#e7e5e4"/><text x="35" y="45" font-family="Inter, sans-serif" font-size="15" font-weight="bold" fill="#1c1917">Spoof layering (illustrative)</text><line x1="60" y1="60" x2="60" y2="380" stroke="#78716c"/><rect x="120" y="95" width="220" height="22" fill="#fbbf24" fill-opacity="0.35" stroke="#fbbf24" stroke-dasharray="4 3"/><text x="128" y="110" font-size="11" fill="#1c1917">ghost bid 1,200</text><rect x="120" y="125" width="220" height="22" fill="#fbbf24" fill-opacity="0.35" stroke="#fbbf24" stroke-dasharray="4 3"/><text x="128" y="140" font-size="11" fill="#1c1917">ghost bid 1,100</text><rect x="120" y="155" width="220" height="22" fill="#fbbf24" fill-opacity="0.35" stroke="#fbbf24" stroke-dasharray="4 3"/><text x="128" y="170" font-size="11" fill="#1c1917">ghost bid 900</text><rect x="120" y="185" width="220" height="22" fill="#fbbf24" fill-opacity="0.35" stroke="#fbbf24" stroke-dasharray="4 3"/><text x="128" y="200" font-size="11" fill="#1c1917">ghost bid 800</text><rect x="120" y="260" width="60" height="22" fill="#22c55e"/><text x="190" y="275" font-size="11" fill="#1c1917">real bid 180</text><line x1="260" y1="75" x2="160" y2="255" stroke="#ef4444" stroke-width="2"/><text x="225" y="80" font-size="11" fill="#ef4444">market sell hits real bid</text><text x="35" y="335" font-size="11" fill="#44403c">1 layer ghost bids   2 others react</text><text x="35" y="352" font-size="11" fill="#44403c">3 fill on the sell side   4 cancel the layers</text><text x="35" y="372" font-size="10" fill="#78716c">Sizes are schematic, not market data.</text><rect x="410" y="20" width="370" height="380" fill="#ffffff" stroke="#e7e5e4"/><text x="425" y="45" font-family="Inter, sans-serif" font-size="15" font-weight="bold" fill="#1c1917">Iceberg clip (illustrative)</text><text x="425" y="85" font-size="11" fill="#22c55e">clip refills from reserve after each fill</text><line x1="595" y1="95" x2="595" y2="118" stroke="#22c55e" stroke-width="2"/><rect x="460" y="120" width="270" height="40" fill="#a3e635" stroke="#1c1917"/><text x="470" y="145" font-size="12" fill="#1c1917">visible clip 50</text><rect x="460" y="170" width="270" height="90" fill="none" stroke="#78716c" stroke-dasharray="5 4"/><text x="470" y="220" font-size="12" fill="#44403c">hidden reserve (not displayed)</text><text x="425" y="300" font-size="11" fill="#44403c">Tape: repeated prints at one level</text><text x="425" y="317" font-size="11" fill="#44403c">while displayed size stays near 50.</text><text x="425" y="372" font-size="10" fill="#78716c">Sizes are schematic, not market data.</text></svg><div class="svg-caption"><em>Left: a spoofer’s layered bids stack above a small real bid, then vanish as the sell hits the real side. Right: an iceberg shows a 50-unit clip while reserve trades through at the same price. Both panels are schematic.</em></div></div><table class="cmp"><tr><th>Level behaviour</th><th>Likely read</th><th>Caveat</th></tr><tr><td>Large size appears, then shrinks as price nears it</td><td>Possible spoof or genuine pull</td><td>Cancellation alone is not proof of intent</td></tr><tr><td>Same price prints many times, displayed size flat</td><td>Possible iceberg refilling</td><td>Could also be algorithmic slicing</td></tr><tr><td>Large size holds and absorbs repeated sells</td><td>Real demand or supply</td><td>Confirm with price response, not the wall alone</td></tr></table><p>The diagram is the whole concept in one frame. Judge the left panel by what happens to the size as price approaches it. Judge the right panel by whether the price keeps trading at that level without the displayed size growing. Neither panel tells you intent on its own, which is why the table pairs each read with its caveat.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Reading depth without trusting it</div>
+    </div>
+  </div>
+  <div class="skim">Judge a level by repeated trades and cancellation behaviour, never by displayed size alone.</div>
+<div class="practice"><div class="practice-card"><div class="num">1</div><div><h4>Treat walls as claims, not levels</h4><p>A large displayed bid is a claim that someone will defend the price. Mark it as a level only after price trades into it and the size is still there at the touch. Until then it is a hypothesis.</p></div></div><div class="practice-card"><div class="num">2</div><div><h4>Watch the size as price approaches</h4><p>Real size tends to hold or get absorbed. Spoofed size tends to shrink or vanish within a few ticks of the touch. The shrinkage is the observation; the intent behind it is the inference.</p></div></div><div class="practice-card"><div class="num">3</div><div><h4>Count repeated prints at one price</h4><p>If a level keeps trading while the visible size stays small, reserve is likely refilling. That is a sign someone wants size done at that price, which matters more than the number on the book.</p></div></div></div><div class="worked"><h5>Worked example (illustrative, not a recorded trade)</h5><table><tr><td>Setup</td><td>BTC at 61,100; 800-unit bid appears at 60,900 with no prints there for ten minutes</td></tr><tr><td>Entry</td><td>Buy 0.5 BTC at 61,000 only if the 60,900 bid is still displayed and price has tested it twice</td></tr><tr><td>Stop</td><td>60,850 (150 below entry)</td></tr><tr><td>Target</td><td>61,400 (400 above entry)</td></tr><tr><td>R math</td><td>Risk 150, reward 400, reward-to-risk about 2.7 to 1</td></tr></table></div><div class="tf-note"><b>Timeframe fit:</b> read the book on 1m to 5m for execution, and use 1h or 4h to decide whether a wall matters at all.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Extreme fear, thin trust in the book</div>
+    </div>
+  </div>
+  <div class="skim">Live context: BTC at 61,102 with extreme fear at 11 means the book is likely to be thin and pulled-liquidity events more common, though no confirmed spoof on the last 48h was found this run.</div>
+<div class="tape"><div class="tape-label">● Live Tape · BTCUSDT.P · 1H · 23 Nov 2026</div><h4>No confirmed spoof or iceberg event this run; the live context is extreme fear and a thin-trust book.</h4><p>At 11:10 Sydney time on 23 Nov (00:10 UTC), <strong>BTC was near 61,102</strong>, up about 1.5% over 24 hours but down about 6.3% over seven days. The ticker block last updated at 06:44 Sydney time on 23 Nov (19:44 UTC on 22 Nov) showed the S&amp;P 500 down about 8.6% and VIX near 35.9. In that regime, displayed walls are more likely to be pulled, so the book is a weaker guide than usual. I did not find a verified order-level spoof or iceberg print on BTC in the last 48 hours, so no specific event is claimed here.</p><div class="nums"><div style="overflow-x:auto"><table><tr><td>BTC spot (CoinGecko, 00:10 UTC)</td><td>61,102; +1.53% 24h; -6.31% 7d</td></tr><tr><td>BTC 24h volume</td><td>About 27.6B USD</td></tr><tr><td>ETH spot</td><td>1,721.10; +2.26% 24h; -5.85% 7d</td></tr><tr><td>Total crypto market cap, 24h</td><td>-2.68%; BTC dominance 58.86%</td></tr><tr><td>Fear and Greed</td><td>11, Extreme Fear</td></tr><tr><td>VIX (ticker block)</td><td>35.89, up about 56.7% on the session</td></tr></table></div></div><iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe><div class="read"><b>Read</b> With fear this extreme, any large bid that appears and disappears near the touch deserves the same scepticism as a wall that fails to hold.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">The legal definition and what is missing</div>
+    </div>
+  </div>
+  <div class="skim">The legal definition of spoofing and the trader-level reasoning behind icebergs are where the real rules come from.</div>
+<div class="quote"><p>“bidding or offering with the intent to cancel the bid or offer before execution”</p><div class="attr"><b>Commodity Exchange Act</b> · US statute, amended 2010 · quoted via <a href="https://www.morganlewis.com/-/media/files/publication/outside-publication/article/fx-mm-spoofing-order-22dec15.pdf">Morgan Lewis spoofing note</a></div></div><div class="quote"><p>[paraphrased] Academic work on spoofing cases finds that proving intent is the hard part, because a cancelled order can look identical to a legitimate one that was pulled for another reason.</p><div class="attr"><b>Joost Pennings</b> · Criminal Law and Justice journal, spoofing article · <a href="https://academic.oup.com/cmlj/article/20/3/kmaf012/8257809">link</a></div></div><div class="quote"><p>Source unavailable: no verified classic trading-voice quote (Wyckoff, Livermore, Dalton) on spoofing or icebergs was retrieved this run; none is quoted here rather than guessed.</p><div class="attr"><b>Classic voice</b> · pending · no link</div></div><div class="quote"><p>Source unavailable: no verified current-trader quote on spoofing was retrieved this run; the search returned only educational primers, not attributable statements.</p><div class="attr"><b>Current trader</b> · pending · no link</div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the DOM misleads</div>
+    </div>
+  </div>
+  <div class="skim">Treating every cancelled order as proof of manipulation, or every big wall as real support.</div>
+<div class="trap"><div class="num">1</div><div><h5>Reading every cancellation as spoofing</h5><p>Orders get pulled for many legitimate reasons, including risk limits and quote updates. Look for a pattern across repeated placements and opposite-side fills before calling it manipulation.</p></div></div><div class="trap"><div class="num">2</div><div><h5>Treating a big bid as real support</h5><p>Displayed size is a claim, not a commitment. Wait for price to trade into the level and for the size to hold at the touch before you lean on it.</p></div></div><div class="trap"><div class="num">3</div><div><h5>Assuming hidden size is always there</h5><p>An iceberg is inferred from repeated prints, not seen. If the prints stop and the level breaks, treat the reserve as gone and re-price the level from scratch.</p></div></div><div class="trap anti"><div class="num">4</div><div><h5>Overhyped: spoof-hunting as a standalone edge</h5><p>Retail-speed traders see aggregated depth on a few venues, not order-level data, so “spoof detected” calls are usually guesses from cancellations. Use the concept as a reason to distrust walls, not as a signal in its own right.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Where to go deeper</div>
+    </div>
+  </div>
+  <div class="skim">Start with the regulatory definition, then the exchange-order-data primers listed below.</div>
+<div class="fr"><div class="fr-item"><div class="fr-type">Article · verified</div><div class="fr-body"><a href="https://www.morganlewis.com/-/media/files/publication/outside-publication/article/fx-mm-spoofing-order-22dec15.pdf">Morgan Lewis, spoofing and layering note</a><span>Plain-language account of the legal definition and the major spoofing cases.</span></div></div><div class="fr-item"><div class="fr-type">Article · verified</div><div class="fr-body"><a href="https://academic.oup.com/cmlj/article/20/3/kmaf012/8257809">Pennings, Spoofing in US futures markets: an interdisciplinary approach</a><span>Academic treatment of how spoofing is defined and how intent is evidenced.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.tradezella.com/learning-items/dom-depth-of-market">Tradezella, DOM (Depth of Market)</a><span>Short primer on reading the order book, with spoofing and iceberg basics.</span></div></div><div class="fr-item"><div class="fr-type">Article · not fetched</div><div class="fr-body"><a href="https://nexusfi.com/a/market-structure/iceberg-orders-hidden-liquidity">NexusFi Academy, iceberg orders and hidden liquidity</a><span>Explains reserve, displayed clips and why the DOM understates size at a level.</span></div></div><div class="fr-item"><div class="fr-type">Reference · standard, not fetched</div><div class="fr-body"><a href="https://www.investopedia.com/terms/i/iceberg-order.asp">Investopedia, iceberg order</a><span>Standard definition of the order type for quick reference.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b><a href="https://www.morganlewis.com/-/media/files/publication/outside-publication/article/fx-mm-spoofing-order-22dec15.pdf">Morgan Lewis, spoofing note (fetched)</a> <a href="https://academic.oup.com/cmlj/article/20/3/kmaf012/8257809">Pennings, Spoofing in US futures markets (fetched)</a> <a href="https://www.tradezella.com/learning-items/dom-depth-of-market">Tradezella, DOM primer (search result)</a> <a href="https://nexusfi.com/a/market-structure/iceberg-orders-hidden-liquidity">NexusFi Academy, iceberg orders (search result)</a> <a href="https://www.investopedia.com/terms/s/spoofing.asp">Investopedia, spoofing [standard reference, not fetched]</a> Live context: CoinGecko and ticker block fetched 23 Nov 2026, 00:10 UTC (11:10 Sydney).</div>
+  <div>Alpha · Issue TBC · Monday, 23 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
