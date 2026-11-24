@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Sweep Orders | Tuesday, 24 November 2026</title>
+<meta property="og:description" content="A sweep is one marketable order eating several book levels in one burst. It signals urgency, not direction. Read the void it leaves and the next prints.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Sweep Orders: one market order walks the book, and the gap it leaves is the signal","preview":"One marketable order walking several book levels in a burst. Urgency is the signal; the void it leaves and the next prints decide the read. BTC is testing this near $60k.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Sweep Orders</h1>
+  <div class="meta">
+    <span>Tuesday, 24 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue TBC</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">A sweep order is a single marketable order that eats several levels of the book in one burst, and it matters because it shows urgency: someone paid slippage to be filled now. It tells you who is in a hurry, not which way price will go, so read the void it leaves and the next three prints before you assign a side. <strong>BTC is testing that read right now</strong>, with the $61,365 four-month low already lost and price near $60,400.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">One order that stops waiting</div>
+    </div>
+  </div>
+  <div class="skim">A sweep order is one marketable order that consumes several book levels in a single burst, signalling <em>urgency</em> rather than direction.</div>
+<p>A sweep order is the moment a marketable order stops waiting. Rather than resting at one price, it crosses the spread and keeps consuming whatever sits on the other side of the book until its quantity is gone. The fact that matters is not raw size; it is the <strong>aggression</strong>. The participant accepted slippage to be filled now, and that choice is the information.</p><p>On the tape it reads as a burst of same-direction prints stepping to successively higher or lower prices, landing inside a very short window. A single print tells you nothing. Traders reconstruct the sweep by merging that burst into one event with a total size, a price range and a direction. Keep two things apart: this is an execution style, not the Smart Money Concepts “liquidity sweep”, where price pokes past a swing high or low to trigger stops. Same word, different event, and mixing them up is the first mistake most people make.</p><p>This issue builds on Liquidity Voids (21 Nov 2026), which covered what a thin book does when a large order walks through it, and on Orderbook Depth &amp; Spread (18 Nov 2026). The sweep is the trigger; the void is what it leaves behind.</p><div class='pills'><div class='pill-term'><b>Sweep</b><span>one marketable order consuming several book levels in one burst</span></div><div class='pill-term'><b>Marketable</b><span>priced to cross the spread, so it fills now</span></div><div class='pill-term'><b>Level walk</b><span>each fill steps the order to the next price</span></div><div class='pill-term'><b>Void</b><span>the band the book skipped after the walk</span></div></div><div class='remember'><b>Remember</b> A sweep is evidence of urgency, not of direction. Read it with what price does on the next few prints.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">How the walk fills and what it costs</div>
+    </div>
+  </div>
+  <div class="skim">It walks the resting book level by level, and the average fill and the void it leaves show how hurried it was.</div>
+<p>A limit order book stacks resting size at each price. Only so much sits at the best bid, so a marketable sell larger than that size must keep matching against the next bid, then the next, until it is complete. Every level it touches prints a trade at that level's price. The ordered sequence of those prints is the sweep, and the book itself changes with every fill.</p><p>The mechanic runs in four steps. First, the order arrives marketable and crosses the spread. Second, the matching engine fills at the best price, then steps to the next one. Third, the book updates after each fill, so the depth you saw a moment earlier is gone. Fourth, if the order finishes on a new level, the levels it skipped form the void that the next move has to cross.</p><div class='formula'><b>Average fill</b> = Σ (qty<sub>i</sub> × price<sub>i</sub>) ÷ Σ qty<sub>i</sub><div class='note'>Sum over every level the sweep touched. For a sell sweep, slippage = best bid − average fill.</div></div><p>Worked: a 16-unit market sell hits 7 units at 61,200, 6 at 61,150 and 3 at 61,100. The average fill is 61,162.5, so the sweep paid 37.5 of slippage against the best bid. The cost is part of the signal: a seller who pays 37.5 to exit now is in a hurry, and a hurried seller is what you are looking for.</p><table class='cmp'><tr><td>Variant</td><td>Execution</td><td>What the tape shows</td><td>What it tells you</td></tr><tr><td>Sweep</td><td>Marketable, multi-level, immediate</td><td>Burst of prints at stepping prices</td><td>Urgency: someone chose speed over price</td></tr><tr><td>Block trade</td><td>Negotiated or patient</td><td>One large print, sometimes delayed</td><td>Size, not urgency</td></tr><tr><td>Iceberg</td><td>Resting, sliced into hidden clips</td><td>Repeated prints at one price</td><td>Hidden size defending a level</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">ONE BOOK, BEFORE AND AFTER THE WALK</div>
+    </div>
+  </div>
+  <div class="skim">The same book before and after a 16-unit market sell, with the consumed levels and the resulting void marked.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><text x='200' y='40' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='13' fill='#1c1917'>BEFORE · resting book</text><text x='600' y='40' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='13' fill='#1c1917'>AFTER · sweep filled</text><rect x='220' y='85' width='24' height='22' fill='#ef4444' opacity='0.7'/><rect x='220' y='115' width='48' height='22' fill='#ef4444' opacity='0.7'/><rect x='220' y='145' width='60' height='22' fill='#ef4444' opacity='0.7'/><rect x='220' y='175' width='108' height='22' fill='#ef4444' opacity='0.7'/><rect x='96' y='225' width='84' height='22' fill='#fbbf24'/><rect x='108' y='255' width='72' height='22' fill='#fbbf24'/><rect x='144' y='285' width='36' height='22' fill='#fbbf24'/><rect x='156' y='315' width='24' height='22' fill='#22c55e'/><rect x='60' y='199' width='280' height='24' fill='#fef3c7'/><text x='200' y='215' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#78350f'>spread $50</text><text x='200' y='100' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,400</text><text x='200' y='130' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,350</text><text x='200' y='160' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,300</text><text x='200' y='190' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,250</text><text x='200' y='240' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,200</text><text x='200' y='270' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,150</text><text x='200' y='300' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,100</text><text x='200' y='330' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,050</text><rect x='620' y='85' width='24' height='22' fill='#ef4444' opacity='0.7'/><rect x='620' y='115' width='48' height='22' fill='#ef4444' opacity='0.7'/><rect x='620' y='145' width='60' height='22' fill='#ef4444' opacity='0.7'/><rect x='620' y='175' width='108' height='22' fill='#ef4444' opacity='0.7'/><rect x='496' y='225' width='84' height='22' fill='none' stroke='#fbbf24' stroke-width='1.5' stroke-dasharray='4 3'/><rect x='508' y='255' width='72' height='22' fill='none' stroke='#fbbf24' stroke-width='1.5' stroke-dasharray='4 3'/><rect x='544' y='285' width='36' height='22' fill='none' stroke='#fbbf24' stroke-width='1.5' stroke-dasharray='4 3'/><rect x='556' y='315' width='24' height='22' fill='#22c55e'/><rect x='544' y='345' width='36' height='22' fill='#22c55e'/><rect x='520' y='375' width='60' height='22' fill='#22c55e'/><rect x='60' y='199' width='280' height='24' fill='#fef3c7' opacity='0'/><text x='600' y='100' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,400</text><text x='600' y='130' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,350</text><text x='600' y='160' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,300</text><text x='600' y='190' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,250</text><text x='600' y='240' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,200</text><text x='600' y='270' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,150</text><text x='600' y='300' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,100</text><text x='600' y='330' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,050</text><text x='600' y='360' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>61,000</text><text x='600' y='390' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='10' fill='#1c1917'>60,950</text><text x='720' y='262' text-anchor='end' font-family='JetBrains Mono, monospace' font-size='11' fill='#ef4444'>VOID: no resting bids</text><text x='720' y='278' text-anchor='end' font-family='JetBrains Mono, monospace' font-size='11' fill='#ef4444'>61,200 → 61,100</text><text x='200' y='190' text-anchor='middle' font-family='JetBrains Mono, monospace' font-size='1' fill='#fff' opacity='0'>.</text><polygon points='54,296 66,296 60,310' fill='#ef4444'/><line x1='60' y1='200' x2='60' y2='294' stroke='#ef4444' stroke-width='3'/><text x='30' y='190' font-family='JetBrains Mono, monospace' font-size='10' fill='#ef4444'>MKT SELL 16</text><text x='400' y='408' text-anchor='middle' font-family='Inter, sans-serif' font-size='11' fill='#44403c'>Bar length = size (units). Amber = consumed by the sweep (7 + 6 + 3 = 16). Dashed = where that size used to sit.</text></svg><div class='svg-caption'><em>One resting book, drawn twice: before and after a 16-unit market sell walks the bids. The consumed levels leave a void between 61,200 and 61,100 with nothing resting in it.</em></div></div><p>The diagram shows the same book twice. On the left is the resting book before the sell. On the right is the book after it has walked the bids. The amber levels are the ones the sweep consumed, and the dashed outlines show where that size used to sit. The gap between 61,200 and 61,100 is the void: nothing rests there now, so the next sell that reaches that band meets little resistance.</p><table class='cmp'><tr><td>Metric</td><td>Before</td><td>After</td></tr><tr><td>Best bid / best ask</td><td>61,200 / 61,250</td><td>61,050 / 61,250</td></tr><tr><td>Spread</td><td>$50</td><td>$200</td></tr><tr><td>Bid size, top three levels</td><td>16 units</td><td>10 units</td></tr><tr><td>Ask size, top three levels</td><td>18 units</td><td>18 units (unchanged)</td></tr><tr><td>Average fill, 16-unit market sell</td><td>61,162.5</td><td>book consumed on the bid side</td></tr></table>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">THREE READS ON THE PRINT</div>
+    </div>
+  </div>
+  <div class="skim">A sweep is evidence of urgency, so trade it only with what price does on the next few prints.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Judge the sweep by the next three prints</h4><p>A sweep into a level that fails to move price is absorption: passive size is taking the aggression. A sweep that gets through and keeps stepping is initiative, and it usually leaves a void behind.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Map the void before you trade the retest</h4><p>The band the book skipped is where the next move meets the least resistance. Price returning into that band with same-direction sweeps is continuation; price returning and stalling there is the failed-void read.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Size the sweep against the instrument, not your feeling</h4><p>A 16-unit sweep means little on a thin alt book and a great deal on a deep BTC book. Compare it to typical print size on the same feed, or the threshold you set will be wrong for the next instrument.</p></div></div></div><div class='worked'><h5>Worked example (illustrative, not a signal)</h5><table><tr><td>Setup</td><td>Retest of 61,200 from below into the void, rejected by fresh sell sweeps</td></tr><tr><td>Entry</td><td>Short at 61,180</td></tr><tr><td>Stop</td><td>61,230, just above the void's top, so risk = 50</td></tr><tr><td>Target</td><td>61,000, the next round-number bid, so reward = 180</td></tr><tr><td>R math</td><td>180 ÷ 50 = 3.6R, if filled as drawn</td></tr></table></div><div class='tf-note'><b>Timeframe fit:</b> 1–5m tape for the sweep itself, 15m–1h for the void and retest structure, 4h for directional bias.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">BTC · 1H · 24 NOV 2026</div>
+    </div>
+  </div>
+  <div class="skim">BTC has lost the $61,365 four-month low and trades near $60,400 with Fear &amp; Greed at 11.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT.P · 1H · 24 Nov 2026</div><h4>BTC has lost the 61.4k four-month low and trades near 60k, with sentiment at extreme fear.</h4><p>At the 04:21 UTC snapshot (15:21 Sydney) <strong>BTC printed $60,400</strong>, down 1.5% over 24h and 6.5% over 7 days. That is below the <strong>$61,365 four-month low</strong> reported in the last day, and about 0.7% above the <strong>$60,000 round-number bid</strong> that market commentary is watching. The 19 Nov daily low was <strong>$61,712.8</strong>, so price has stepped down in stages rather than in one move. <strong>Sources differ</strong> on the current level: Coinglass showed $61,754 on its daily table, from a different snapshot time. The broader tape matches the mood: total crypto market cap −2.3% over 24h, <strong>Fear &amp; Greed at 11</strong>, BTC dominance 57.8%, and the SPX index ticker −2.4% with VIX at 26.6 (02:14 UTC snapshot).</p><p><strong>Honest caveat:</strong> I did not have a verified print-level log for this window, so I cannot name a specific sweep timestamp. The levels are sourced; whether the break came as a sweep burst is <strong>[Unconfirmed]</strong>. Pull the time-and-sales for the 61.4k break before you call it.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>Level / event</td><td>Value (price, time)</td></tr><tr><td>Daily close, 18 Nov (Coinglass)</td><td>$62,987.3</td></tr><tr><td>19 Nov daily low (Coinglass, in-progress day)</td><td>$61,712.8</td></tr><tr><td>Four-month low (CoinDCX, reported 23–24 Nov)</td><td>$61,365</td></tr><tr><td>Round-number bid zone (CoinDCX support reference)</td><td>$60,000</td></tr><tr><td>Live print, 04:21 UTC / 15:21 Sydney (CoinGecko)</td><td>$60,400, −1.5% 24h, −6.5% 7d</td></tr><tr><td>2026 low, 1 Jul (Coinglass)</td><td>$57,747.8</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> Price is trading below the 61.4k low, so the question is whether sell sweeps keep finding bids at 60k or whether those bids are real. Sweeps into 60k that fail to extend would point to absorption, not continuation.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">CLASSIC AND ANALYST VOICES</div>
+    </div>
+  </div>
+  <div class="skim">Wyckoff's tape-reading discipline, plus a publisher's view on sweep motive; no verified current trader this run.</div>
+<div class='quote'><p>“Tape reading is judging who is in a hurry, then waiting to see whether the market answers the push.” [paraphrased]</p><div class='attr'><b>Richard D. Wyckoff</b> · Studies in Tape Reading · first published 1910 · Source unavailable: no live link fetched this run</div></div><div class='quote'><p>Urgency is observable; motive is not. A seller paying up to exit may be hedging or closing, not opening a short. [paraphrased, Analyst Opinion]</p><div class='attr'><b>LuxAlgo Library</b> · Sweep Detection concept page · 2026 · <a href='https://www.luxalgo.com/library/concept/sweep-detection/'>luxalgo.com/library/concept/sweep-detection</a></div></div><div class='tf-note'><b>Source note:</b> No verified current-trader quote this issue. X/Twitter was not searched this run, so the second voice is a publisher, not a named trader. Swap in a verified trader quote before this card is re-run.</div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">FOUR WAYS TO MISREAD IT</div>
+    </div>
+  </div>
+  <div class="skim">Treating every sweep as a directional signal, when many are hedges, exits or rebalancing.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Calling every sweep directional</h5><p>Sweeps carry urgency, and urgency sometimes comes from informed traders, but plenty are hedges, exits or rebalancing. Require follow-through in price and a void or absorption context before you assign a side.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Mixing up two different sweeps</h5><p>The execution sweep is a marketable order walking the book. The Smart Money liquidity sweep is price running stops past a swing. Name which one you mean in your journal, or your backtests will blend two unrelated events.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Trusting a chart-based sweep count</h5><p>Chart tools often approximate sweeps from volume delta or volume spikes. Real detection needs sub-second timestamps and a reliable aggressor side, which consolidated feeds blur. Know whether your feed is tick-level before you count anything.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Reading a swept level as gone</h5><p>Books refill. A level emptied by a sweep can be restocked within the same second, and depth updates can lag the prints. Compare depth several seconds before and after the event, not a single snapshot.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: “sweep detection” indicators sold as signals</h5><p>Many packaged sweep scanners are a volume filter with a new name, and the research on urgency is probabilistic at best. Unless you have tested the sweep count out of sample on your own feed against plain volume spikes, treat it as a log, not an edge.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">THREE LINKS, TWO VERIFIED</div>
+    </div>
+  </div>
+  <div class="skim">Start with the LuxAlgo sweep page and the KuCoin order book guide, then the Investopedia reference.</div>
+<div class='fr'><div class='fr-item'><div class='fr-type'>Article · verified</div><div class='fr-body'><a href='https://www.luxalgo.com/library/concept/sweep-detection/'>Sweep Detection: Definition &amp; Indicators (LuxAlgo Library)</a><span>Defines sweeps as reconstructed from time and sales, and flags the naming clash with Smart Money liquidity sweeps.</span></div></div><div class='fr-item'><div class='fr-type'>Guide · verified</div><div class='fr-body'><a href='https://www.kucoin.com/knowledge-base/Concepts/what-is-order-book-in-crypto'>Order Book in Crypto Explained (KuCoin Learn)</a><span>Plain-English order book mechanics, depth charts, and the FAQ definition of sweeping the book.</span></div></div><div class='fr-item'><div class='fr-type'>Reference · standard</div><div class='fr-body'><a href='https://www.investopedia.com/terms/o/order-book.asp'>Order Book (Investopedia)</a><span>Standard reference for bids, asks and depth. Not fetched live this run.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b><a href="https://www.luxalgo.com/library/concept/sweep-detection/">LuxAlgo · Sweep Detection</a> <a href="https://www.kucoin.com/knowledge-base/Concepts/what-is-order-book-in-crypto">KuCoin Learn · Order Book</a> <a href="https://www.investopedia.com/terms/o/order-book.asp">Investopedia · Order Book</a> <a href="https://www.coinglass.com/currencies/BTC/historical-data/2026">Coinglass · BTC 2026 daily</a> <a href="https://www.coingecko.com/en/coins/bitcoin">CoinGecko · BTC</a> <a href="https://coindcx.com/blog/price-predictions/bitcoin-price-weekly">CoinDCX · BTC weekly levels</a></div>
+  <div>Alpha · Issue TBC · Tuesday, 24 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
