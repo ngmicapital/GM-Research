@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Bid/Ask Imbalance | Wednesday, 25 November 2026</title>
+<meta property="og:description" content="Bid/ask imbalance measures which side of the order book holds more resting size. It is context on posted intent, not a forecast. Confirm it with executed flow.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Bid/Ask Imbalance: the near book can lean bid while the tape keeps falling","preview":"Imbalance measures which side of the order book holds more resting size. It is a context reading on posted intent, not a forecast. Confirm it with executed flow.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Bid/Ask Imbalance</h1>
+  <div class="meta">
+    <span>Wednesday, 25 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue TBC</span>
+    <span class="pill">10 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Bid/ask imbalance is the normalised difference between resting bid size and resting ask size inside the same distance from price, and it matters because it shows where friction sits in the book before anything trades. <strong>Practical takeaway:</strong> treat it as a context reading on posted intent, never a directional call. On 24 November the near book leaned bid on Binance BTCUSDT while BTC slid under $60,000, which is the whole lesson: a lopsided book only means something once executed flow confirms it.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">The posted book, measured as a ratio</div>
+    </div>
+  </div>
+  <div class="skim">Bid/ask imbalance is the normalised difference between resting bid size and resting ask size inside the same distance from price.</div>
+<p>Bid/ask imbalance is a <strong>measurement of posted size</strong>, not a prediction. Take the resting bids and the resting asks inside the same distance from the mid, subtract one side from the other, and divide by the total. The output runs from −1 (all size on the ask) to +1 (all size on the bid), and zero means the near book is balanced. That is the whole number. Everything you do with it afterwards is interpretation, and most of the mistakes happen in that step.</p><p>The number is worth having because a lopsided book changes how easily price can move. When the ask side is thin, each incoming market buy eats through more levels and prints a bigger jump. A bid-heavy book does the reverse for sells. The imbalance does not say which way the move will go; it says where the friction sits, and that is a narrower claim than most traders assume.</p><p>Keep it separate from order flow. Imbalance reads intent that has not traded yet. Footprint cells and CVD read trades that already happened. The two can disagree for long stretches, and the disagreement is often the most useful part of the picture.</p><p><em>Builds on Footprint Charts (2026-11-22): that issue covered diagonal imbalances inside each candle. This is the book-side version of the same idea, measured before the trade rather than after.</em></p><div class='pills'><div class='pill-term'><b>Resting size</b><span>Limit orders posted and not yet filled. The raw input to imbalance.</span></div><div class='pill-term'><b>Band</b><span>The distance from mid over which both sides are summed. Both sides must use the same band.</span></div><div class='pill-term'><b>Static vs event</b><span>Static is the posted snapshot. Event imbalance tracks adds, pulls and fills over time.</span></div><div class='pill-term'><b>Diagonal imbalance</b><span>Footprint comparison of ask volume at one tick against bid volume one tick below.</span></div></div><div class='remember'><b>Remember</b> Imbalance describes the posted book at one moment. Only executed flow tells you whether that size actually defended anything.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">Band, sum, normalise, persist</div>
+    </div>
+  </div>
+  <div class="skim">It shows which side of the near book holds more posted size, and how easily a market order can push through the thin side.</div>
+<p>The mechanic is a ratio built in four steps from the visible book. Each step can be done wrong, and the errors compound.</p><ol><li><strong>Choose the band.</strong> Pick a distance from the top of book, for example 0 to 3% either side. Both sides must use the same distance, or the ratio compares unlike things.</li><li><strong>Sum the resting bids</strong> inside the band, then <strong>sum the resting asks</strong> inside the same band.</li><li><strong>Normalise the difference</strong> by the total so the result sits between −1 and +1 and can be compared across time.</li><li><strong>Track the value over time.</strong> A reading that flips sign every few seconds is noise. A reading that holds through several windows while price tests a level is information.</li></ol><div class='formula'><b>I</b> = (Bid<sub>band</sub> − Ask<sub>band</sub>) / (Bid<sub>band</sub> + Ask<sub>band</sub>)<div class='note'>I runs from −1 to +1. Both sums use the same distance from mid. Bid and ask are resting, cancellable size, so I is a snapshot of posted intent, not of executed trades.</div></div><p>The band choice changes the answer more than most traders expect. The table below shows the usual variants and where each one misleads.</p><table class='cmp'><tr><th>Variant</th><th>What it counts</th><th>Where it misleads</th></tr><tr><td>Top-of-book</td><td>Best bid size against best ask size</td><td>One queue can be pulled in milliseconds, so a small ratio flips easily</td></tr><tr><td>Near band (0 to 3%)</td><td>All resting size within a fixed distance</td><td>Ignores size just outside the band, which can matter on a sweep</td></tr><tr><td>Multi-level cumulative</td><td>Several price rungs summed on each side</td><td>Deep size far from price can dominate and tell you little about the next few prints</td></tr><tr><td>Event-based (order flow imbalance)</td><td>Adds, cancels and fills tracked across time</td><td>Needs a live feed with clean timestamps and is hard to eyeball on a chart</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">A near-book ladder, lopsided by design</div>
+    </div>
+  </div>
+  <div class="skim">A near-book ladder with a dashed band: bids stacked under mid, asks thin above, and the resulting ratio.</div>
+<div class='svg-wrap'><svg viewBox='0 0 800 420' width='100%' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='800' height='420' fill='#faf8f5'/><text x='20' y='30' font-family='JetBrains Mono, monospace' font-size='14' fill='#1c1917'>Illustrative near-book ladder (sizes in arbitrary units)</text><line x1='400' y1='60' x2='400' y2='380' stroke='#78716c' stroke-width='1'/><rect x='230' y='70' width='340' height='300' fill='none' stroke='#fbbf24' stroke-width='2' stroke-dasharray='6 4'/><text x='240' y='88' font-family='JetBrains Mono, monospace' font-size='12' fill='#78350f'>0 to 3% band</text><text x='20' y='120' font-family='Inter, sans-serif' font-size='13' fill='#44403c'>ASKS: resting sell size</text><text x='20' y='296' font-family='Inter, sans-serif' font-size='13' fill='#44403c'>BIDS: resting buy size</text><rect x='400' y='100' width='60' height='28' fill='#ef4444' opacity='0.8'/><text x='466' y='119' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>60</text><rect x='400' y='140' width='90' height='28' fill='#ef4444' opacity='0.8'/><text x='496' y='159' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>90</text><rect x='400' y='180' width='120' height='28' fill='#ef4444' opacity='0.8'/><text x='526' y='199' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>120</text><line x1='230' y1='216' x2='570' y2='216' stroke='#a3e635' stroke-width='3'/><text x='236' y='210' font-family='JetBrains Mono, monospace' font-size='11' fill='#1c1917'>mid</text><rect x='250' y='230' width='150' height='28' fill='#22c55e' opacity='0.8'/><text x='244' y='249' text-anchor='end' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>150</text><rect x='230' y='270' width='170' height='28' fill='#22c55e' opacity='0.8'/><text x='224' y='289' text-anchor='end' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>170</text><rect x='290' y='310' width='110' height='28' fill='#22c55e' opacity='0.8'/><text x='284' y='329' text-anchor='end' font-family='JetBrains Mono, monospace' font-size='12' fill='#1c1917'>110</text><text x='20' y='395' font-family='JetBrains Mono, monospace' font-size='13' fill='#1c1917'>Bid sum 430, ask sum 270: I = (430 − 270) / 700 = +0.23</text></svg><div class='svg-caption'><em>Same band on both sides, bids stacked under mid and asks thin above. The ratio is a sketch to show the arithmetic; it says nothing about which way price will break.</em></div></div><p>The table uses a real measurement rather than a sketch. BlackForge reported the resting size in the 0 to 3% band on Binance BTCUSDT at 15:53 UTC on 24 November, and the same formula gives the value shown.</p><table><tr><th>Input or output</th><th>Value</th></tr><tr><td>Bid side, 0 to −3% band</td><td>24,206,906</td></tr><tr><td>Ask side, 0 to +3% band</td><td>11,361,456</td></tr><tr><td>Bid minus ask</td><td>12,845,450</td></tr><tr><td>Bid plus ask</td><td>35,568,362</td></tr><tr><td>I (near band)</td><td>+0.36</td></tr><tr><td>Illustrative: 10,000 bid against 2,000 ask</td><td>+0.67</td></tr></table><p>Read the scale this way. +0.36 means the near band is clearly bid-leaning, not that buyers are in control. The units are as BlackForge reported them, and the ratio is unitless, so it can be compared across windows on the same pair.</p>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Use it as a filter, not a trigger</div>
+    </div>
+  </div>
+  <div class="skim">Use both sides over the same band, require persistence across windows, and never read a single snapshot as intent.</div>
+<div class='practice'><div class='practice-card'><div class='num'>1</div><div><h4>Use it as a filter, not a trigger</h4><p>Read the band at a level you already have a reason to care about, such as a prior low or a Wyckoff spring zone. A bid-heavy reading into support is context that makes the level more interesting, but it does not give you the entry.</p></div></div><div class='practice-card'><div class='num'>2</div><div><h4>Require persistence</h4><p>A single reading is worth nothing. Hold the band across several windows and check whether the bid side absorbs sell prints without shrinking. Size that disappears on the first test has told you what it was for.</p></div></div><div class='practice-card'><div class='num'>3</div><div><h4>Watch for the flip</h4><p>If the imbalance swings to the opposite side the moment price approaches the heavy side, the size was probably never meant to trade. That pattern belongs with the spoofing work in the 2026-11-23 issue.</p></div></div></div><div class='worked'><h5>Worked example (illustrative, not a live trade)</h5><p>Reclaim of $60,000 with a retest. Entry at <strong>$60,050</strong> only after executed buy flow confirms and the 0 to 3% band stays at or above +0.30 for three consecutive windows. Stop at <strong>$59,800</strong>, below the level, so risk is <strong>$250</strong>. Target at <strong>$60,550</strong>, a reward of <strong>$500</strong>, which is <strong>2R</strong>. If the band goes neutral before the target, the trade is closed on the band, not on the stop.</p></div><div class='tf-note'><b>Timeframe fit:</b> read the band on 1 to 5 minute windows for execution, and use the 1h to 4h structure to decide whether a bid-heavy reading matters at all.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Bid-heavy band, falling price, 24 Nov</div>
+    </div>
+  </div>
+  <div class="skim">On 24 November the Binance BTCUSDT 0 to 3% band read about +0.36 bid-heavy while price fell through $60,000, so posted bids did not hold.</div>
+<div class='tape'><div class='tape-label'>● Live Tape · BTCUSDT · 24 to 25 Nov 2026</div><h4>Bid-leaning near book while BTC slid under $60,000.</h4><p>BTC spiked above <strong>$64,500</strong> on Monday on a Nvidia headline, and that gain was given back by Tuesday. Price then traded around <strong>$60,000</strong> through the session and printed about <strong>$59,314</strong> on Kraken. [Sources differ] on liquidations: CoinGlass showed roughly <strong>$269M</strong> in 24h liquidations with longs at 62%, another report put the total at <strong>$347M</strong> with shorts at about 58%, and CryptoTicker cited <strong>$827M to $850M</strong>. Spot ETFs logged <strong>$569.7M</strong> of net outflows on 23 November. BlackForge measured the Binance BTCUSDT 0 to 3% band at 15:53 UTC on 24 November, which is 02:53 on 25 November in Sydney, and found the bid side clearly heavier, at <strong>I = +0.36</strong>. Around that time Kraken printed <strong>$60,112</strong> at 14:36 UTC, which is 01:36 Sydney on 25 November.</p><div class='nums'><div style='overflow-x:auto'><table><tr><td>Event</td><td>Value (price, time)</td></tr><tr><td>Monday spike high</td><td>Above $64,500, 23 Nov (US time), Nvidia headline</td></tr><tr><td>24h range (CoinGlass, 22:15 UTC+8)</td><td>$59,366.0 to $64,572.8</td></tr><tr><td>Kraken print</td><td>$60,112 at 14:36 UTC = 01:36 Sydney 25 Nov</td></tr><tr><td>Kraken low (reported)</td><td>$59,314, 24 Nov</td></tr><tr><td>BlackForge band reading (Binance)</td><td>I = +0.36 at 15:53 UTC = 02:53 Sydney 25 Nov</td></tr><tr><td>Live (CoinGecko, 03:04 UTC 25 Nov)</td><td>$59,020, −1.76% 24h, −7.9% 7d; Fear and Greed 11</td></tr></table></div></div><iframe src='https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=60&theme=dark' style='width:100%;height:420px;border:0;' loading='lazy'></iframe><div class='read'><b>Read</b> The posted bids were heavier in the near band while price kept sliding, so the resting size was not defending the level and the executed flow was the signal that mattered.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Effort versus result, and what the book is</div>
+    </div>
+  </div>
+  <div class="skim">The measurement is simple, but the voices that matter here are the ones who insist the book describes posted size, not future price.</div>
+<div class='quote'><p>“Volume is the effort and price is the result. When they stop agreeing, the market is telling you something.” [paraphrased]</p><div class='attr'><b>Richard D. Wyckoff</b> · The Richard D. Wyckoff Method, course material · 1930s · <a href='https://www.investopedia.com/terms/w/wyckoff-method.asp'>Investopedia: Wyckoff method</a></div></div><div class='quote'><p>“It describes the posted book, not what the price will do next.”</p><div class='attr'><b>BlackForge</b> · Glossary: Order book imbalance, explained · 2026 · <a href='https://blackforge.so/glossary/order-book-imbalance'>blackforge.so</a></div></div><div class='quote'><p>“Pair OBI with delta to separate real resting demand from bluff.”</p><div class='attr'><b>MarketTrace</b> · Order flow trading guide · 2026 · <a href='https://markettrace.ai/blog/order-flow-trading'>markettrace.ai</a></div></div><p><em>Note: the current-practitioner voice here is a data vendor and a publication, not a named trader. No named trader quote on this concept was verified in this run.</em></p>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the number lies</div>
+    </div>
+  </div>
+  <div class="skim">Treating a bid-heavy snapshot as a buy signal, when the bids may be pulled the moment price arrives.</div>
+<div class='trap'><div class='num'>1</div><div><h5>Reading the posted book as intent</h5><p>Resting size can be cancelled before anything trades against it. Ask how long the size has been there and whether it survived the first test. The spoofing issue from 23 November covers the pull pattern in detail.</p></div></div><div class='trap'><div class='num'>2</div><div><h5>Comparing unequal bands</h5><p>Bid size within 3% against ask size within 30% is a units mismatch, not an imbalance. Fix the band, apply it to both sides, and write it down next to every reading.</p></div></div><div class='trap'><div class='num'>3</div><div><h5>Confusing book imbalance with order flow</h5><p>A bid-heavy book can sit alongside taker sells that are doing the damage. Pair the static reading with executed aggressor flow before you believe either one.</p></div></div><div class='trap'><div class='num'>4</div><div><h5>Treating a fixed ratio as a rule</h5><p>Some vendors quote a 3:1 bid-to-ask ratio as a warning. BloFin describes that kind of ratio as unreliable as a prediction tool, because large orders can be pulled instantly. Use the ratio as a prompt to look at the tape, not as a threshold to trade.</p></div></div><div class='trap anti'><div class='num'>!</div><div><h5>Overhyped: imbalance that predicts price</h5><p>Academic work on order flow imbalance, including Cont, Kukanov and Stoikov (2010) [standard reference, not live-verified this run], found a near-linear link to very short-horizon price changes. Most of that evidence comes from traditional markets, not crypto. Any claim of a dependable crypto edge from a static book reading is marketing until you have tested it on your own data.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Book, glossary, and footprint links</div>
+    </div>
+  </div>
+  <div class="skim">The BlackForge glossary entry, Wikipedia's order book page, and the MarketTrace and Senzoukria pieces on imbalance versus footprint.</div>
+<div class='fr'><div class='fr-item'><div class='fr-type'>Glossary</div><div class='fr-body'><a href='https://blackforge.so/glossary/order-book-imbalance'>Order book imbalance, explained (BlackForge)</a><span>The formula, the matching-band requirement, and a measured BTCUSDT example. Fetched and checked this run.</span></div></div><div class='fr-item'><div class='fr-type'>Reference</div><div class='fr-body'><a href='https://en.wikipedia.org/wiki/Order_book'>Order book (Wikipedia)</a><span>Top of book, crossed books and depth definitions, for the vocabulary this issue uses.</span></div></div><div class='fr-item'><div class='fr-type'>Reference</div><div class='fr-body'><a href='https://www.investopedia.com/terms/o/order-book.asp'>Order book (Investopedia)</a><span>Standard plain-English definition of bids, asks and the book. [standard reference, not live-fetched]</span></div></div><div class='fr-item'><div class='fr-type'>Guide</div><div class='fr-body'><a href='https://markettrace.ai/blog/order-flow-trading'>Order flow trading in crypto perpetual futures (MarketTrace)</a><span>Why book imbalance and footprint answer different questions, and why aggregating venues helps.</span></div></div><div class='fr-item'><div class='fr-type'>Article</div><div class='fr-body'><a href='https://senzoukria.com/learn/order-flow-imbalance'>Order flow imbalance explained (Senzoukria)</a><span>The diagonal footprint convention and the 3:1 threshold, useful for separating cell imbalances from book imbalances.</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class='sources'><b>Sources</b><a href='https://blackforge.so/glossary/order-book-imbalance'>BlackForge: Order book imbalance, explained</a> <a href='https://en.wikipedia.org/wiki/Order_book'>Wikipedia: Order book</a> <a href='https://www.coinglass.com/currencies/BTC'>CoinGlass: Bitcoin price and liquidations</a> <a href='https://finance.yahoo.com/markets/crypto/articles/bitcoin-price-nears-60k-despite-145714968.html'>Yahoo Finance: Bitcoin nears $60K</a> <a href='https://cryptoticker.io/en/crypto-news-bitcoin-below-60000-ether-7-percent/'>CryptoTicker: Bitcoin below $60,000</a> <a href='https://markettrace.ai/blog/order-flow-trading'>MarketTrace: Order flow trading</a> <a href='https://blofin.com/en/academy/education/trading/order-book-explained'>BloFin: Order book explained</a> <a href='https://senzoukria.com/learn/order-flow-imbalance'>Senzoukria: Order flow imbalance (footprint)</a></div>
+  <div>Alpha · Issue TBC · Wednesday, 25 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
