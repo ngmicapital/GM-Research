@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha — Passive vs Aggressive Flow | Friday, 27 November 2026</title>
+<meta property="og:description" content="Limit orders rest and supply liquidity; market orders cross the spread and take it. Know who initiated before you trust any delta or sweep.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ngmicapital.github.io/GM-Research/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#faf8f5;
+  --bg-2:#f3f0ea;
+  --card:#ffffff;
+  --ink:#1c1917;
+  --ink-2:#44403c;
+  --muted:#78716c;
+  --rule:#e7e5e4;
+  --accent:#a3e635;
+  --accent-ink:#3f6212;
+  --accent-dim:#f7fee7;
+  --warn:#fbbf24;
+  --warn-dim:#fef3c7;
+  --warn-ink:#78350f;
+  --pos:#22c55e;
+  --neg:#ef4444;
+  --terminal-bg:#1c1917;
+  --terminal-ink:#fafaf9;
+  --terminal-accent:#bef264;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(63,98,18,0.25)}
+a:hover{border-bottom-color:var(--accent-ink)}
+.outer{display:flex;gap:36px;max-width:1160px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header{grid-column:1/-1;padding:32px 0 24px;border-bottom:2px solid var(--ink);margin-bottom:28px;width:100%}
+.pretitle{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px}
+.pretitle .dot{color:var(--accent);font-size:16px;vertical-align:-2px;margin:0 6px}
+h1{font-family:'DM Serif Display',serif;font-size:56px;line-height:1;letter-spacing:-0.015em;font-weight:400;margin-bottom:14px}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.meta .pill{background:var(--accent-dim);color:var(--accent-ink);padding:4px 10px;border-radius:3px;border:1px solid var(--accent);font-weight:600;letter-spacing:0.8px}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+.toc{width:40px;flex-shrink:0;transition:width 0.2s ease}
+.toc.toc-open{width:188px}
+.toc-sticky{position:sticky;top:24px}
+.toc-toggle{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;cursor:pointer;color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0;line-height:1}
+.toc-toggle:hover{background:var(--accent-dim);border-color:var(--accent)}
+.toc-body{display:none;margin-top:10px}
+.toc.toc-open .toc-body{display:block}
+.toc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.toc a{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--rule);text-transform:uppercase;letter-spacing:0.5px}
+.toc a:hover{color:var(--accent-ink)}
+.toc a .num{color:var(--accent-ink);margin-right:8px;font-weight:600}
+.content{flex:1;min-width:0}
+
+/* ── TL;DR ───────────────────────────────────────────────────── */
+.tldr{background:var(--accent-dim);border-left:4px solid var(--accent);padding:22px 26px;margin-bottom:44px;border-radius:2px}
+.tldr-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent-ink);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.tldr-text{font-size:16px;line-height:1.65;color:var(--ink)}
+.tldr-text strong{color:var(--accent-ink)}
+
+/* ── Sections ───────────────────────────────────────────────── */
+section{margin-bottom:56px}
+.section-header{display:flex;align-items:flex-end;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:22px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent-ink);letter-spacing:1px}
+.section-title{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;letter-spacing:-0.01em;font-weight:400}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:0.5px;text-transform:uppercase}
+
+.skim{background:var(--ink);color:var(--bg);padding:14px 20px;border-radius:3px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:500;line-height:1.55;margin-bottom:22px;position:relative}
+.skim::before{content:"SKIM";position:absolute;top:-9px;left:14px;background:var(--accent);color:var(--accent-ink);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:2px}
+
+p{margin-bottom:14px;color:var(--ink-2)}
+p strong,li strong{color:var(--ink);font-weight:600}
+
+/* Glossary pill row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.pill-term{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:7px 14px;font-size:12.5px;display:inline-flex;gap:8px;align-items:center}
+.pill-term b{font-family:'JetBrains Mono',monospace;color:var(--accent-ink);font-weight:700;font-size:11.5px}
+.pill-term span{color:var(--ink-2)}
+
+/* Key takeaway callout */
+.remember{background:var(--bg-2);border-left:3px solid var(--accent-ink);padding:14px 18px;margin-top:20px;font-style:italic;color:var(--ink);border-radius:2px}
+.remember b{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-ink);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Formula block */
+.formula{background:var(--warn-dim);border:1px solid var(--warn);border-radius:4px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--warn-ink);margin:14px 0;line-height:1.8;overflow-x:auto}
+.formula b{color:#431407;font-weight:700}
+.formula .note{font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Two-col comparison table */
+table.cmp{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:13.5px}
+table.cmp th,table.cmp td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{background:var(--bg-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink)}
+table.cmp td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent-ink);white-space:nowrap}
+
+/* SVG wrap */
+.svg-wrap{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;margin:18px 0}
+.svg-wrap svg{width:100%;height:auto;display:block}
+.svg-caption{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:10px;text-align:center}
+
+/* Practice cards */
+.practice{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.practice-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:16px 20px;display:flex;gap:16px}
+.practice-card .num{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent-ink);line-height:1;font-style:italic;flex-shrink:0}
+.practice-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;font-family:'Inter',sans-serif}
+.practice-card p{font-size:13.5px;line-height:1.55;margin:0}
+
+.worked{background:var(--bg-2);border-radius:4px;padding:16px 20px;margin:18px 0;font-size:13.5px;line-height:1.65}
+.worked h5{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:10px;font-weight:700}
+.worked table{width:100%;border-collapse:collapse}
+.worked td{padding:4px 0;vertical-align:top}
+.worked td:first-child{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);width:160px;font-size:12px}
+
+.tf-note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);letter-spacing:0.3px}
+.tf-note b{color:var(--accent-ink);font-weight:700}
+
+/* Live Tape dark card */
+.tape{background:var(--terminal-bg);color:var(--terminal-ink);border-radius:6px;padding:26px 28px;margin:16px 0}
+.tape-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;color:var(--terminal-accent);text-transform:uppercase;margin-bottom:14px}
+.tape h4{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:12px;color:var(--terminal-ink)}
+.tape p{color:#d6d3d1;margin-bottom:10px}
+.tape strong,.tape em,.tape b{color:var(--terminal-ink)}
+.tape .nums{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(163,230,53,0.08);border:1px solid rgba(163,230,53,0.25);border-radius:4px;padding:12px 14px;margin:14px 0;color:#ecfccb}
+.tape .nums table{width:100%;border-collapse:collapse}
+.tape .nums td{padding:4px 0;color:#ecfccb}
+.tape .nums td:first-child{color:#a8a29e;width:170px;font-size:11.5px;letter-spacing:0.5px}
+.tape iframe{border-radius:4px;margin:14px 0 10px}
+.tape .read{background:rgba(255,255,255,0.03);border-left:3px solid var(--terminal-accent);padding:12px 16px;margin-top:14px;font-size:14px;color:var(--terminal-ink)}
+.tape .read b{color:var(--terminal-accent);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+
+/* Quotes */
+.quote{border-left:4px solid var(--accent);background:var(--accent-dim);padding:16px 22px;margin:14px 0;border-radius:2px}
+.quote p{font-style:italic;font-size:15.5px;color:var(--ink);margin:0}
+.quote .attr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:0.5px}
+.quote .attr b{color:var(--accent-ink);font-style:normal}
+
+/* Traps */
+.trap{background:var(--warn-dim);border-left:3px solid var(--warn);border-radius:2px;padding:14px 20px;margin:10px 0;display:flex;gap:14px}
+.trap .num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--warn-ink);font-style:italic;line-height:1;flex-shrink:0}
+.trap h5{font-size:14.5px;font-weight:700;color:var(--warn-ink);margin-bottom:4px;font-family:'Inter',sans-serif}
+.trap p{font-size:13px;color:var(--ink-2);margin:0;line-height:1.55}
+.trap.anti{background:var(--bg-2);border-left-color:var(--ink)}
+.trap.anti h5{color:var(--ink)}
+
+/* Further Reading */
+.fr{display:grid;grid-template-columns:1fr;gap:8px;margin:14px 0}
+.fr-item{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.fr-item:last-child{border-bottom:none}
+.fr-type{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.fr-body{font-size:13.5px;color:var(--ink-2)}
+.fr-body a{color:var(--ink);font-weight:600;border-bottom-color:var(--rule)}
+.fr-body span{color:var(--muted);display:block;font-size:12.5px;margin-top:2px}
+
+/* Footer */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.8}
+.footer .sources{margin-bottom:16px}
+.footer .sources b{color:var(--ink);display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+.footer .sources a{color:var(--muted);border-bottom-color:var(--rule);font-size:11px;display:inline-block;margin-right:12px;line-height:1.8}
+.footer .disc{margin-top:12px;font-style:italic;color:var(--muted);font-size:11px}
+
+/* Mobile */
+@media(max-width:860px){
+  h1{font-size:40px}
+  .section-title{font-size:26px}
+  .outer{flex-direction:column;gap:20px}
+  .toc{width:100%!important;position:static}
+  .toc-toggle{display:none}
+  .toc-sticky{position:static;display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .toc-body{display:flex!important;gap:8px;overflow-x:auto;margin-top:0}
+  .toc a{white-space:nowrap;padding:5px 12px;background:var(--bg-2);border:1px solid var(--rule);border-radius:4px;border-bottom:1px solid var(--rule)}
+  .fr-item{grid-template-columns:1fr;gap:3px}
+  .practice-card{flex-direction:column;gap:4px}
+  .practice-card .num{font-size:24px}
+}
+</style>
+<script type="application/json" id="gm-meta">{"headline":"Passive vs Aggressive Flow: who is resting and who is crossing the spread","preview":"Limit orders rest and supply liquidity; market orders cross the spread and take it. Know who initiated before you trust any delta, sweep or absorption read.","tags":["concept","orderflow","BTC"]}</script>
+</head>
+<body>
+
+<div class="outer">
+
+<!-- ── Left TOC ──────────────────────────────────────────── -->
+<aside class="toc" id="toc">
+  <div class="toc-sticky">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('toc-open')" title="Toggle contents">☰</button>
+    <div class="toc-body">
+      <div class="toc-label">Contents</div>
+      <a href="#s01"><span class="num">§01</span>What It Is</a>
+      <a href="#s02"><span class="num">§02</span>Mechanics</a>
+      <a href="#s03"><span class="num">§03</span>Visual</a>
+      <a href="#s04"><span class="num">§04</span>In Practice</a>
+      <a href="#s05"><span class="num">§05</span>Live Tape</a>
+      <a href="#s06"><span class="num">§06</span>Quotes</a>
+      <a href="#s07"><span class="num">§07</span>Common Traps</a>
+      <a href="#s08"><span class="num">§08</span>Further Reading</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main column ───────────────────────────────────────── -->
+<div class="content">
+
+<!-- Header -->
+<header class="header">
+  <div class="pretitle">Alpha <span class="dot">●</span> Trading Concepts <span class="dot">●</span> Daily</div>
+  <h1><em>Alpha</em> — Passive vs Aggressive Flow</h1>
+  <div class="meta">
+    <span>Friday, 27 November 2026</span>
+    <span>·</span>
+    <span>Sydney, Australia</span>
+    <span>·</span>
+    <span>Issue 63</span>
+    <span class="pill">11 min read</span>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<div class="tldr">
+  <div class="tldr-label">TL;DR</div>
+  <p class="tldr-text">Passive vs aggressive flow is the split under every other orderflow read: limit orders rest in the book and supply liquidity, while market orders cross the spread and take it. It matters because <strong>delta only registers the aggressive side</strong>, so a flat delta bar beside a heavy bid can say more than a large green print. Practical takeaway: before you act on any sweep, absorption or delta signal, ask which side initiated and whether the passive size is refreshing. Today BTC is +0.75% on the day but −2.3% on the week, with the broader market down 2.7%, which is exactly where that check earns its keep.</p>
+</div>
+
+<section id="s01">
+  <div class="section-header">
+    <div class="section-num">§01</div>
+    <div>
+      <div class="section-title">What It Is</div>
+      <div class="section-sub">Who is resting and who is crossing</div>
+    </div>
+  </div>
+  <div class="skim">Passive orders are limit orders resting in the book; aggressive orders are market orders that cross the spread and take liquidity.</div>
+<p>Every print on the tape has two sides, and the question that decides how you read it is which side paid to be there. A <strong>passive</strong> order is a limit order resting in the book; it supplies liquidity and waits. An <strong>aggressive</strong> order is a market order that crosses the spread and takes that liquidity immediately. Everything else in orderflow, from delta to sweeps to absorption, is a measurement of which of these two groups is winning at a given level.</p><p>The distinction matters because the two groups leave different footprints. Aggressive buying shows up as a trade at the ask and pushes delta positive. Passive size shows up only as a level in the book, and it does not register on delta until something hits it. That asymmetry is why a flat delta bar next to a heavy bid can be more informative than a big green bar on its own. This issue builds on <strong>Absorption</strong> (26 Nov) and <strong>Sweep Orders</strong> (24 Nov), which both assume this split without defining it.</p><div class="pills"><div class="pill-term"><b>Limit order</b><span>Resting order that waits at a price and provides liquidity.</span></div><div class="pill-term"><b>Market order</b><span>Immediate execution against the best available resting size; crosses the spread.</span></div><div class="pill-term"><b>Initiator</b><span>The side that sent the aggressive order in a given trade.</span></div><div class="pill-term"><b>Spread</b><span>Gap between best bid and best ask; the cost of being aggressive.</span></div></div><div class="remember"><b>Remember</b> If you only remember one thing: before you read a delta bar, a sweep or an absorption, ask which side initiated the trade and which side was resting.</div>
+</section>
+
+<section id="s02">
+  <div class="section-header">
+    <div class="section-num">§02</div>
+    <div>
+      <div class="section-title">Mechanics</div>
+      <div class="section-sub">From the queue to the initiator</div>
+    </div>
+  </div>
+  <div class="skim">The side that initiates a trade shows on delta, while the resting side only shows once it is hit or refreshes.</div>
+<p>The mechanic is a queue. A limit order joins the queue at its price and waits; a market order skips the queue and takes whatever is on the other side. When aggressive buying exceeds the resting size at the ask, price steps up through the book. When it does not, the resting sellers absorb the buying and price stalls.</p><p><strong>Step 1.</strong> Identify the best bid and best ask, and the spread between them.<br><strong>Step 2.</strong> Classify each trade as buyer-initiated (lifted the ask) or seller-initiated (hit the bid). This is the aggressive side.<br><strong>Step 3.</strong> Measure how much aggressive size was needed to move price one tick. Thin resting size means a small aggressive push moves price; thick resting size means the push is absorbed.<br><strong>Step 4.</strong> Watch whether resting size refreshes after it is consumed. Refresh at the same level means passive participants are defending it.</p><div class="formula"><b>Aggression ratio</b> = aggressive buy volume ÷ (aggressive buy volume + aggressive sell volume)<div class="note">Above 0.5 means buyers are initiating more of the volume. It says nothing about passive size, so pair it with the book.</div></div><div class="formula"><b>Resting absorption</b> = aggressive volume at a level − price displacement in ticks × typical resting size<div class="note">A rough screen, not a standard metric. Large aggressive volume with little displacement points to passive size absorbing.</div></div><table class="cmp"><tr><th>Dimension</th><th>Passive (limit)</th><th>Aggressive (market)</th></tr><tr><td>Execution</td><td>Waits in queue, may not fill</td><td>Fills now, pays the spread</td></tr><tr><td>Shows on delta</td><td>No, until hit</td><td>Yes, at the moment of the trade</td></tr><tr><td>Typical intent</td><td>Provide liquidity, defend a level</td><td>Take liquidity, drive price</td></tr><tr><td>Risk to the sender</td><td>Missed fill if price leaves</td><td>Slippage through thin levels</td></tr></table>
+</section>
+
+<section id="s03">
+  <div class="section-header">
+    <div class="section-num">§03</div>
+    <div>
+      <div class="section-title">Visual</div>
+      <div class="section-sub">One book, two roles</div>
+    </div>
+  </div>
+  <div class="skim">One illustrative book with a market buy hitting the best ask, leaving resting sell size in place behind it.</div>
+<div class="svg-wrap"><svg viewBox="0 0 800 420" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="800" height="420" fill="#faf8f5"/>
+<text x="400" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" fill="#1c1917">Illustrative book: who is resting, who is crossing</text>
+<text x="40" y="60" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">ASKS (resting sell limits)</text>
+<text x="40" y="318" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">BIDS (resting buy limits)</text>
+<line x1="60" y1="228" x2="560" y2="228" stroke="#78716c" stroke-dasharray="4 4"/>
+<text x="560" y="222" font-family="JetBrains Mono, monospace" font-size="11" fill="#78716c">spread $10</text>
+<text x="330" y="112" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,320</text>
+<rect x="340" y="98" width="84" height="20" fill="#ef4444" opacity="0.75"/>
+<text x="432" y="112" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">2.1</text>
+<text x="330" y="152" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,310</text>
+<rect x="340" y="138" width="32" height="20" fill="#ef4444" opacity="0.75"/>
+<text x="380" y="152" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">0.8</text>
+<text x="330" y="192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,300</text>
+<rect x="340" y="178" width="136" height="20" fill="#ef4444" opacity="0.9"/>
+<text x="484" y="192" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">3.4 BTC rests</text>
+<text x="330" y="292" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,290</text>
+<rect x="340" y="278" width="0" height="20" fill="#22c55e"/>
+<rect x="260" y="278" width="80" height="20" fill="#22c55e" opacity="0.9"/>
+<text x="250" y="292" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">4.0</text>
+<text x="330" y="332" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,280</text>
+<rect x="300" y="318" width="40" height="20" fill="#22c55e" opacity="0.75"/>
+<text x="290" y="332" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">1.2</text>
+<text x="330" y="372" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">61,270</text>
+<rect x="260" y="358" width="80" height="20" fill="#22c55e" opacity="0.6"/>
+<text x="250" y="372" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#1c1917">2.6</text>
+<line x1="760" y1="188" x2="500" y2="188" stroke="#fbbf24" stroke-width="4"/>
+<polygon points="500,188 512,181 512,195" fill="#fbbf24"/>
+<text x="770" y="150" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#78350f">MARKET BUY 1.2 BTC</text>
+<text x="770" y="168" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#78350f">aggressive: crosses spread</text>
+<text x="770" y="206" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#78350f">fills 1.2 @ 61,300</text>
+<text x="770" y="222" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#78350f">2.2 BTC still resting</text>
+<text x="770" y="80" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#a3e635">LIMIT = passive</text>
+<text x="770" y="96" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">no print until hit</text>
+<text x="770" y="290" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">Bid size 4.0 @ 61,290 is</text>
+<text x="770" y="306" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#44403c">the passive side to watch</text>
+</svg><div class="svg-caption"><em>Illustrative book, not live data. The 1.2 BTC market buy lifts the best ask. It is aggressive flow that registers on delta. The 3.4 BTC of resting sell limits at 61,300 stays passive until something trades through it.</em></div></div><p>The diagram separates the two roles on one book. The red bars are sell limits resting above the spread, and the green bars are buy limits resting below it. The amber arrow is a market buy. It takes 1.2 BTC from the best ask at 61,300 and leaves 2.2 BTC of passive sell size in place. Read the picture from the arrow: a market order that fails to clear a level tells you the passive side is larger than the aggression.</p><table class="cmp"><tr><th>Level</th><th>Resting size</th><th>Role in the picture</th></tr><tr><td>61,320 ask</td><td>2.1 BTC</td><td>Passive sell, far from the spread</td></tr><tr><td>61,300 ask</td><td>3.4 BTC</td><td>Best ask; the market buy fills 1.2 here</td></tr><tr><td>61,290 bid</td><td>4.0 BTC</td><td>Best bid; the passive buy to watch</td></tr></table>
+</section>
+
+<section id="s04">
+  <div class="section-header">
+    <div class="section-num">§04</div>
+    <div>
+      <div class="section-title">In Practice</div>
+      <div class="section-sub">Read the refresh, not the size</div>
+    </div>
+  </div>
+  <div class="skim">Identify the initiator on each print, then check whether resting size refreshes after it is consumed.</div>
+<div class="practice"><div class="practice-card"><div class="num">1</div><div><h4>Name the initiator before the move</h4><p>Check which side crossed the spread on the last several prints at the level. A push made of market buys into a thick ask is a test, not a breakout yet. Confirm with the next print.</p></div></div><div class="practice-card"><div class="num">2</div><div><h4>Count the refresh, not the size</h4><p>A single large resting bid tells you little. The same bid refilling after it is hit tells you a passive buyer is defending the level. That refresh is the signal you are trading.</p></div></div><div class="practice-card"><div class="num">3</div><div><h4>Treat a widening spread as a warning</h4><p>When the spread opens, aggressive orders are paying more to get filled and passive makers are pulling back. Wait for the spread to close before reading the next push as conviction.</p></div></div></div><div class="worked"><h5>Worked example (illustrative, not a live trade)</h5><table><tr><td>Setup</td><td>Price holds 61,290 bid; 4.0 BTC refreshes after two aggressive sell prints</td></tr><tr><td>Entry</td><td>Limit buy 1.0 BTC at 61,290</td></tr><tr><td>Stop</td><td>61,240 (−50 points, 1R)</td></tr><tr><td>Target</td><td>61,400 (+110 points, 2.2R)</td></tr><tr><td>Invalidation</td><td>Bid size does not refresh on the next test; market sells take the level</td></tr></table></div><div class="tf-note"><b>Timeframe fit:</b> read passive vs aggressive on 1–5m for the level; confirm the bias on 1h or 4h. The split is a microstructure read, so it only holds while the book is visible.</div>
+</section>
+
+<section id="s05">
+  <div class="section-header">
+    <div class="section-num">§05</div>
+    <div>
+      <div class="section-title">Live Tape</div>
+      <div class="section-sub">Green day, weak week, Extreme Fear</div>
+    </div>
+  </div>
+  <div class="skim">BTC is up 0.75% over 24 hours but down 2.3% over seven days, in a market down 2.7% with Extreme Fear sentiment.</div>
+<div class="tape"><div class="tape-label">● Live Tape · BTCUSDT.P · 4H · 27 Nov 2026 (Sydney 13:11 · UTC 02:11)</div><h4>BTC green on the day, weaker on the week, and the broader market is down 2.7%.</h4><p>The live snapshot does not carry a print-level flow split, so this issue cannot name a timestamped passive-vs-aggressive event from this session. What the snapshot does show is a <strong>day-up, week-down</strong> setup: BTC is <strong>+0.75%</strong> over 24 hours but <strong>−2.3%</strong> over seven days, while total crypto market cap is <strong>−2.7%</strong> in the same 24 hours. Sentiment sits in <strong>Extreme Fear</strong>.</p><div class="nums"><div style="overflow-x:auto"><table><tr><td>BTC price (CoinGecko snapshot)</td><td>$61,273 · 24h +0.75% · 7d −2.32%</td></tr><tr><td>BTC 24h volume</td><td>$20.85B</td></tr><tr><td>ETH price</td><td>$1,715.90 · 24h +0.89% · 7d −3.20%</td></tr><tr><td>Total crypto market cap</td><td>−2.71% in 24h · BTC dominance 57.93%</td></tr><tr><td>Fear &amp; Greed</td><td>12 (Extreme Fear), prior reading 11</td></tr><tr><td>Macro snapshot (01:45 UTC)</td><td>SPX −1.92% · gold +2.46% · WTI +1.68% · DXY −0.01%</td></tr></table></div></div><iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT.P&interval=240&theme=dark" style="width:100%;height:420px;border:0;" loading="lazy"></iframe><div class="read"><b>Read</b> A green day inside a red week, with the wider market down, is where you should not take an up-print at face value until you know who initiated it and whether the passive bid is refreshing.</div></div>
+</section>
+
+<section id="s06">
+  <div class="section-header">
+    <div class="section-num">§06</div>
+    <div>
+      <div class="section-title">Quotes</div>
+      <div class="section-sub">Classic and current voices</div>
+    </div>
+  </div>
+  <div class="skim">The Wyckoff effort-versus-result principle and a current order flow explainer both reduce the split to the same question.</div>
+<div class="quote"><p>“Limit orders are passive. Market orders are aggressive.”</p><div class="attr"><b>Grantx</b> · Understanding Footprint Charts (quoted by NexusFi Academy) · 2020 · <a href="https://nexusfi.com/a/strategies/order-flow-analysis">nexusfi.com</a></div></div><div class="quote"><p>[paraphrased] Judge effort against result: heavy volume that fails to move price tells you someone is absorbing it, and that someone is the side with the resting size.</p><div class="attr"><b>Richard D. Wyckoff</b> · Stock market technique, course material · 1930s · link not fetched this session</div></div>
+</section>
+
+<section id="s07">
+  <div class="section-header">
+    <div class="section-num">§07</div>
+    <div>
+      <div class="section-title">Common Traps</div>
+      <div class="section-sub">Where the split misleads</div>
+    </div>
+  </div>
+  <div class="skim">Treating every market order as conviction, when it may be a stop, a liquidation or a rebalance.</div>
+<div class="trap"><div class="num">1</div><div><h5>Reading every market order as conviction</h5><p>A market buy can be a stop, a liquidation or a rebalancing order. Check whether the aggressive flow keeps pushing price after the first fill, not just whether it happened.</p></div></div><div class="trap"><div class="num">2</div><div><h5>Assuming the book is the position</h5><p>Resting size can be pulled before it fills. Treat passive size as a claim you verify on refresh and fill, not a fact you bank on. See the spoofing issue of 23 Nov.</p></div></div><div class="trap"><div class="num">3</div><div><h5>Using delta alone to read passive flow</h5><p>Passive participants do not register on delta until they are hit. A flat delta bar beside a heavy resting bid is the case delta misses, so pair it with book refresh.</p></div></div><div class="trap anti"><div class="num">×</div><div><h5>Overhyped: the passive/aggressive label as a standalone system</h5><p>The split is a definition that every order flow vendor repackages with a new name. It is useful as a question to ask of each print, not as a signal you can trade on its own.</p></div></div>
+</section>
+
+<section id="s08">
+  <div class="section-header">
+    <div class="section-num">§08</div>
+    <div>
+      <div class="section-title">Further Reading</div>
+      <div class="section-sub">Where to go deeper</div>
+    </div>
+  </div>
+  <div class="skim">The NexusFi and Investing Cube pieces, then Investopedia for the order type mechanics.</div>
+<div class="fr"><div class="fr-item"><div class="fr-type">Article</div><div class="fr-body"><a href="https://nexusfi.com/a/strategies/order-flow-analysis">Order Flow Analysis — NexusFi Academy</a><span>Passive and aggressive participation, initiative and absorption. Seen in search this session; not WebFetch-verified.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.investingcube.com/learn-to-trade/order-flow-trading-what-it-is-and-how-to-use-it-2026/">Order Flow Trading: What It Is and How to Use It (2026)</a><span>Market orders as aggressive, limit orders as passive; seen in search this session.</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.investopedia.com/terms/l/limitorder.asp">Limit Order — Investopedia</a><span>Standard reference for limit order mechanics [standard reference, not fetched].</span></div></div><div class="fr-item"><div class="fr-type">Guide</div><div class="fr-body"><a href="https://www.tradingview.com/support/">TradingView Support</a><span>Platform documentation for reading order book and depth tools [standard reference, not fetched].</span></div></div></div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+<div class="sources"><b>Sources</b><a href="https://nexusfi.com/a/strategies/order-flow-analysis">NexusFi Academy</a> <a href="https://www.investingcube.com/learn-to-trade/order-flow-trading-what-it-is-and-how-to-use-it-2026/">Investing Cube</a> <a href="https://www.investopedia.com/terms/l/limitorder.asp">Investopedia</a> Live snapshot: CoinGecko markets and global, Alternative.me Fear &amp; Greed, ticker feed (27 Nov 2026, 01:45–02:11 UTC).</div>
+  <div>Alpha · Issue 63 · Friday, 27 November 2026 · Sydney · NGM Capital</div>
+  <div class="disc">Education, not advice. Trade your own system.</div>
+</div>
+
+</div><!-- end .content -->
+</div><!-- end .outer -->
+
+<div style="font-family:sans-serif;font-size:12px;padding:10px 16px;background:#0A1628;text-align:center;"><a href="../../index.html" style="color:#8BA4C0;text-decoration:none;">&#8592; All Briefings</a> <span style="color:#a3e635;font-weight:600;"> &middot; Alpha</span></div>
+</body>
+</html>
